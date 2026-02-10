@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "head.njk" %}
+<body class="intro-pending">
+{% include "nav.njk" %}
+
+{{ content | safe }}
+
+{% include "footer.njk" %}
+
+{% include "scripts.njk" %}
+</body>
+</html>

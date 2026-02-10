@@ -1,0 +1,198 @@
+    <div id="book" class="page">
+        <section class="page-hero hero-overlay">
+            <div class="hero-overlay__bg hero-overlay__bg--opacity-30" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768668598/PXL_20250909_012413658_ltfflz.jpg');"></div>
+            <div class="hero-overlay__content">
+                <h1>Book Your Sauna Session</h1>
+                <p>Experience authentic Finnish sauna at our Aldergrove location</p>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="grid-2 grid-2--responsive-gap">
+                <!-- Location Info -->
+                <div class="fade-in">
+                    <h2>Aldergrove Sauna</h2>
+                    <p class="info-section__intro">Experience our S8 mobile sauna and S2 electric sauna in a beautiful country setting.</p>
+
+                    <!-- Booking Type Selection -->
+                    <div class="info-section">
+                        <h3 class="info-section__title">Choose Your Experience</h3>
+                        <div class="booking-options">
+                            <!-- Private Session Option -->
+                            <label id="privateOption" class="booking-option booking-option--selected">
+                                <input type="radio" name="bookingType" value="private" checked class="booking-option__input">
+                                <div class="booking-option__header">
+                                    <span class="booking-option__title booking-option__title--accent">Private Session</span>
+                                    <span class="booking-option__price booking-option__price--accent">$300</span>
+                                </div>
+                                <p class="booking-option__desc">2-hour exclusive access • Up to 14 guests • Complete privacy</p>
+                            </label>
+
+                            <!-- Social Sauna Option -->
+                            <label id="socialOption" class="booking-option">
+                                <input type="radio" name="bookingType" value="social" class="booking-option__input">
+                                <div class="booking-option__header">
+                                    <span class="booking-option__title">Social Sauna</span>
+                                    <span class="booking-option__price">$39 <span class="booking-option__price-suffix">/ person</span></span>
+                                </div>
+                                <p class="booking-option__desc">2-hour session • Meet fellow sauna enthusiasts • Up to 12 spots per session</p>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="included-box">
+                        <h3 class="info-section__title">What's Included</h3>
+                        <ul class="included-list">
+                            <li class="included-list__item">
+                                <span class="included-list__check">✓</span>
+                                2-hour session
+                            </li>
+                            <li class="included-list__item">
+                                <span class="included-list__check">✓</span>
+                                S8 wood-fired mobile sauna
+                            </li>
+                            <li class="included-list__item">
+                                <span class="included-list__check">✓</span>
+                                S2 electric sauna
+                            </li>
+                            <li class="included-list__item">
+                                <span class="included-list__check">✓</span>
+                                Beautiful country setting
+                            </li>
+                        </ul>
+                        <p class="included-box__note">Please bring your own towels and water bottles</p>
+                    </div>
+                </div>
+
+                <!-- Booking Form -->
+                <div class="fade-in">
+                    <div class="booking-form-container">
+                        <h3 class="booking-form-container__title">Select Date & Time</h3>
+
+                        <form id="bookingForm" onsubmit="handleBookingSubmit(event)">
+                            <!-- Calendar -->
+                            <div class="form-group">
+                                <label>Select Date</label>
+                                <div id="bookingCalendar" class="calendar-container"></div>
+                            </div>
+
+                            <!-- Time Slots -->
+                            <div class="form-group">
+                                <label>Available Time Slots</label>
+                                <div id="timeSlots" class="time-slots-grid">
+                                    <!-- Time slots will be populated by JavaScript -->
+                                </div>
+                                <p id="noSlotsMessage" class="no-slots-message">Please select a date to see available times</p>
+                            </div>
+
+                            <!-- Customer Info -->
+                            <div class="form-group">
+                                <label for="bookingName">Full Name *</label>
+                                <input type="text" id="bookingName" name="name" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bookingEmail">Email *</label>
+                                <input type="email" id="bookingEmail" name="email" required>
+                            </div>
+
+                            <div class="form-group" id="guestsGroup">
+                                <label for="bookingGuests" id="guestsLabel">Number of Guests (1-14) *</label>
+                                <input type="number" id="bookingGuests" name="guests" min="1" max="14" value="2" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bookingNotes">Special Requests (optional)</label>
+                                <textarea id="bookingNotes" name="notes" rows="3" placeholder="Any special requests or questions?"></textarea>
+                            </div>
+
+                            <!-- Booking Summary -->
+                            <div id="bookingSummary" class="booking-summary">
+                                <h4 class="booking-summary__title">Booking Summary</h4>
+                                <div class="booking-summary__row">
+                                    <span>Type:</span>
+                                    <strong id="summaryTypeBooking">Private Session</strong>
+                                </div>
+                                <div class="booking-summary__row">
+                                    <span>Date:</span>
+                                    <strong id="summaryDateBooking">-</strong>
+                                </div>
+                                <div class="booking-summary__row">
+                                    <span>Time:</span>
+                                    <strong id="summaryTimeBooking">-</strong>
+                                </div>
+                                <div class="booking-summary__row">
+                                    <span>Guests:</span>
+                                    <strong id="summaryGuestsBooking">2</strong>
+                                </div>
+                                <div class="booking-summary__row booking-summary__row--subtotal">
+                                    <span>Subtotal:</span>
+                                    <strong id="summarySubtotalBooking">$300</strong>
+                                </div>
+                                <div class="booking-summary__row">
+                                    <span>GST (5%):</span>
+                                    <strong id="summaryGSTBooking">$15.00</strong>
+                                </div>
+                                <div class="booking-summary__row booking-summary__row--total">
+                                    <span>Total:</span>
+                                    <strong class="booking-summary__total-value" id="summaryTotalBooking">$336.00</strong>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn--full-width" id="bookingSubmitBtn" disabled>
+                                Request Booking
+                            </button>
+                            <p class="booking-note">
+                                You'll receive a confirmation email within 24 hours
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Booking Info Section -->
+        <section class="bg-grey hero-overlay">
+            <div class="hero-overlay__bg hero-overlay__bg--opacity-20" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768668974/PXL_20250909_012331585_g6nvxo.jpg');"></div>
+            <div class="container hero-overlay__content">
+                <h2 class="text-center fade-in">Good to Know</h2>
+                <div class="grid-3 grid-3--mt-2">
+                    <div class="fade-in feature-block">
+                        <h3 class="info-section__title">Arrival</h3>
+                        <p>Please arrive 10 minutes early. We'll provide a brief orientation on sauna use and safety.</p>
+                    </div>
+                    <div class="fade-in feature-block">
+                        <h3 class="info-section__title">What to Bring</h3>
+                        <p>Please bring your own towels and water bottles. Swimwear is optional for private sessions.</p>
+                    </div>
+                    <div class="fade-in feature-block">
+                        <h3 class="info-section__title">Cancellation</h3>
+                        <p>Free cancellation up to 24 hours before your session. Full refund, no questions asked.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ for Booking -->
+        <section class="container">
+            <h2 class="text-center fade-in">Booking Questions</h2>
+            <div class="content-wrapper--800">
+                <div class="faq-item fade-in">
+                    <h3 class="faq-question">How do I confirm my booking?</h3>
+                    <p class="faq-answer">After submitting your request, we'll send you a confirmation email within 24 hours with payment details and final instructions.</p>
+                </div>
+                <div class="faq-item fade-in">
+                    <h3 class="faq-question">What if my preferred time isn't available?</h3>
+                    <p class="faq-answer">Contact us directly at secretsaunacompany@gmail.com and we'll do our best to accommodate your schedule.</p>
+                </div>
+                <div class="faq-item fade-in">
+                    <h3 class="faq-question">Can I book for more than 12 people?</h3>
+                    <p class="faq-answer">Our location accommodates up to 12 guests across both saunas. For larger groups, contact us to discuss options or multiple sessions.</p>
+                </div>
+                <div class="faq-item fade-in">
+                    <h3 class="faq-question">Is the location wheelchair accessible?</h3>
+                    <p class="faq-answer">Please contact us to discuss accessibility needs and we'll do our best to accommodate.</p>
+                </div>
+            </div>
+        </section>
+    </div>

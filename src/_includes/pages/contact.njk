@@ -1,0 +1,57 @@
+    <div id="contact" class="page page--has-bg">
+        <div class="page-bg--fixed page-bg--opacity-30" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768271313/IMG_2819_bl3kb1.jpg');"></div>
+        <section class="page-hero">
+            <h1>Get Your Free Quote</h1>
+            <p>Tell us about your space and we'll create a custom design plan—no obligation, no pressure</p>
+        </section>
+
+        <section class="container">
+            <form class="contact-form contact-form--styled" method="POST" action="https://formspree.io/f/mdaaejwp" onsubmit="handleSubmit(event)">
+                <input type="hidden" name="_next" value="https://www.secretsaunacompany.ca/#gallery">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone (optional)</label>
+                    <input type="tel" id="phone" name="phone">
+                </div>
+
+                <div class="form-group">
+                    <label for="interest">I'm interested in</label>
+                    <select id="interest" name="sauna">
+                        <option value="">Select one</option>
+                        <option value="s2-s4">Standard Model (S2 or S4)</option>
+                        <option value="s6-s8">Standard Model (S6 or S8)</option>
+                        <option value="sc">Commercial Model (SC)</option>
+                        <option value="custom">Custom Build</option>
+                        <option value="mobile">Mobile Sauna</option>
+                        <option value="question">Just Have Questions</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Tell us about your space (optional)</label>
+                    <textarea id="message" name="message" placeholder="E.g., backyard size, timeline, any specific features you're interested in..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn--full-width">Get My Free Quote</button>
+            </form>
+
+            <div class="contact-info">
+                <p class="contact-info__label"><strong>Email</strong></p>
+                <p class="contact-info__value"><a href="mailto:secretsaunacompany@gmail.com" class="link--charcoal">secretsaunacompany@gmail.com</a></p>
+
+                <p class="contact-info__label"><strong>Based in</strong></p>
+                <p>Squamish, British Columbia</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- BOOKING PAGE -->

@@ -247,8 +247,8 @@ exports.handler = async (event, context) => {
   // SECURITY: Restrict CORS to your domain only
   // Change 'https://yourdomain.com' to your actual domain
   const allowedOrigins = [
-    'https://secretsaunacompany.com',
-    'https://www.secretsaunacompany.com',
+    'https://secretsaunacompany.ca',
+    'https://www.secretsaunacompany.ca',
     'http://localhost:8888', // For local development with Netlify CLI
     'http://localhost:3000'  // For local development
   ];

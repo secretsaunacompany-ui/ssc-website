@@ -1,0 +1,85 @@
+    <div id="locations" class="page page--has-bg">
+        <!-- Fixed Background Image -->
+        <div class="page-bg--fixed page-bg--opacity-15" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768616089/PXL_20250907_221307193_dtioaf.jpg');"></div>
+
+        <section class="page-hero">
+            <h1>Where to Find Us</h1>
+            <p>Experience our saunas across British Columbia and beyond</p>
+        </section>
+
+        <section class="container">
+            <!-- Map Filter Buttons -->
+            <div class="map-filters">
+                <button class="map-filter-btn active" data-filter="all" onclick="filterMapMarkers('all')">
+                    All Locations
+                </button>
+                <button class="map-filter-btn" data-filter="commercial" onclick="filterMapMarkers('commercial')">
+                    Commercial Saunas
+                </button>
+                <button class="map-filter-btn" data-filter="residential" onclick="filterMapMarkers('residential')">
+                    Residential Saunas
+                </button>
+            </div>
+
+            <!-- Map Container -->
+            <div id="map" class="map-container"></div>
+
+            <!-- Commercial Locations Info -->
+            <h2 class="text-center fade-in heading--mb-2">Visit Our Saunas</h2>
+
+            <div class="grid-2 grid-2--mb-4">
+                <div class="offering-card slide-up">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768616084/PXL_20250910_044921755_wobuh2.jpg" alt="Secret Sauna Company Aldergrove" class="card-image">
+                    <div class="card-content">
+                        <h3>Secret Sauna Company - Aldergrove</h3>
+                        <p class="location-card__highlight">Our Home Base</p>
+                        <p>Experience both our S2 and S8 models with cold plunge and beautiful country views.</p>
+                        <a href="#" onclick="showPage('book'); return false;" class="btn location-card__btn">Book Now</a>
+                        <p class="location-card__meta">Models: S2, S8 | Features: Cold Plunge, Country Views</p>
+                    </div>
+                </div>
+
+                <div class="offering-card slide-up">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409622/IMG_5228_1_z2bz8q.jpg" alt="The Good Sauna Vancouver" class="card-image">
+                    <div class="card-content">
+                        <h3>The Good Sauna</h3>
+                        <p class="location-card__address">1216 Franklin St, Vancouver, BC</p>
+                        <p>Visit our SC model at Container Brewing in East Vancouver's Strathcona neighbourhood.</p>
+                        <a href="https://www.thegoodsauna.com/" target="_blank" rel="noopener noreferrer" class="btn location-card__btn">Visit Website</a>
+                        <p class="location-card__meta">Model: SC</p>
+                    </div>
+                </div>
+
+                <div class="offering-card slide-up">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409619/PXL_20251217_173040936_cnznku.jpg" alt="Gatherwell Ambleside Sauna" class="card-image">
+                    <div class="card-content">
+                        <h3>Gatherwell - Ambleside</h3>
+                        <p class="location-card__address">Ambleside Beach, West Vancouver, BC</p>
+                        <p>Experience our custom build sauna on the beautiful waterfront at Ambleside Park.</p>
+                        <a href="https://www.gatherwell.ca/book-a-session-ambleside" target="_blank" rel="noopener noreferrer" class="btn location-card__btn">Book a Session</a>
+                        <p class="location-card__meta">Model: Custom Build</p>
+                    </div>
+                </div>
+
+                <div class="offering-card slide-up">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409618/IMG_7123_bmcx9s.jpg" alt="Finnish Sauna Co Sea Edge" class="card-image">
+                    <div class="card-content">
+                        <h3>The Finnish Sauna Co. - Sea Edge</h3>
+                        <p class="location-card__address">209 Island Hwy W, Parksville, BC</p>
+                        <p>Our SC model oceanfront sauna at the Sea Edge Seaside Hotel, just meters from the beach.</p>
+                        <a href="https://www.thefinnishsauna.ca/sea-edge-sauna" target="_blank" rel="noopener noreferrer" class="btn location-card__btn">Book a Session</a>
+                        <p class="location-card__meta">Model: SC</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="text-center center-wrapper--padded">
+                <p class="text--centered-60ch">
+                    We've built saunas across British Columbia and beyond, from residential backyards to commercial wellness centers. Our saunas are designed to bring authentic Finnish sauna culture to communities everywhere.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <!-- CONTACT PAGE -->

@@ -4,13 +4,15 @@
   "description": "Secret Sauna Company website with analytics",
   "main": "index.html",
   "scripts": {
-    "dev": "netlify dev",
-    "build": "echo 'No build step required for static site'"
+    "dev": "npx @11ty/eleventy --serve",
+    "build": "npx @11ty/eleventy",
+    "dev:netlify": "netlify dev"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0"
   },
   "devDependencies": {
+    "@11ty/eleventy": "^2.0.0",
     "netlify-cli": "^17.0.0"
   }
 }

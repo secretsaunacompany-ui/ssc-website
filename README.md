@@ -1,6 +1,6 @@
 # Secret Sauna Company — Website
 
-Single-page application for [secretsaunaco.com](https://secretsaunaco.com).
+Single-page application for [secretsaunacompany.ca](https://secretsaunacompany.ca).
 
 ## Stack
 

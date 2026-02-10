@@ -115,8 +115,8 @@ function getClientIP(headers) {
 exports.handler = async (event, context) => {
   // SECURITY: Restrict CORS to your domain only
   const allowedOrigins = [
-    'https://secretsaunacompany.com',
-    'https://www.secretsaunacompany.com',
+    'https://secretsaunacompany.ca',
+    'https://www.secretsaunacompany.ca',
     'http://localhost:8888',
     'http://localhost:3000'
   ];

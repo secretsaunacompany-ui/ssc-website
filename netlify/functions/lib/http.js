@@ -1,8 +1,8 @@
 const DEFAULT_ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
   : [
-    'https://secretsaunacompany.com',
-    'https://www.secretsaunacompany.com'
+    'https://secretsaunacompany.ca',
+    'https://www.secretsaunacompany.ca'
   ];
 
 function getAllowedOrigin(event, allowedOrigins = DEFAULT_ALLOWED_ORIGINS) {

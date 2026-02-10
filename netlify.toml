@@ -1,10 +1,8 @@
 # Netlify Configuration for Analytics
 
 [build]
-  # No build command needed for static site
-  command = "echo 'Static site - no build required'"
-  # Publish directory (where your HTML files are)
-  publish = "."
+  command = "npx @11ty/eleventy"
+  publish = "dist"
   # Functions directory
   functions = "netlify/functions"
 
@@ -34,14 +32,14 @@
 
 # Force HTTPS redirect
 [[redirects]]
-  from = "http://secretsaunacompany.com/*"
-  to = "https://secretsaunacompany.com/:splat"
+  from = "http://secretsaunacompany.ca/*"
+  to = "https://secretsaunacompany.ca/:splat"
   status = 301
   force = true
 
 [[redirects]]
-  from = "http://www.secretsaunacompany.com/*"
-  to = "https://www.secretsaunacompany.com/:splat"
+  from = "http://www.secretsaunacompany.ca/*"
+  to = "https://www.secretsaunacompany.ca/:splat"
   status = 301
   force = true
 
