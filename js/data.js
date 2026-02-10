@@ -11,7 +11,7 @@
     const saunaModels = {
         s2: {
             name: 'S2 Standard Sauna',
-            basePrice: 20500,
+            basePrice: 22500,
             size: "5' x 7'",
             capacity: '2-3 people',
             heater: 'Homecraft 7.5kW H Series',
@@ -27,7 +27,7 @@
         },
         s4: {
             name: 'S4 Standard Sauna',
-            basePrice: 26500,
+            basePrice: 29000,
             size: "7' x 7'",
             capacity: '4-5 people',
             heater: 'Harvia M3 or Homecraft 7.5kW',
@@ -46,7 +46,7 @@
         },
         s6: {
             name: 'S6 Standard Sauna',
-            basePrice: 32500,
+            basePrice: 35500,
             size: "7' x 9'",
             capacity: '6-7 people',
             heater: 'Harvia M3 or Homecraft 7.5kW',
@@ -62,7 +62,7 @@
         },
         s8: {
             name: 'S8 Standard Sauna',
-            basePrice: 40000,
+            basePrice: 44000,
             size: "7' x 11'",
             capacity: '8-10 people',
             heater: 'Harvia M3 or Homecraft 7.5kW',
@@ -78,7 +78,7 @@
         },
         sc: {
             name: 'SC Commercial Sauna',
-            basePrice: 52000,
+            basePrice: 57000,
             size: "7' x 12' or larger",
             capacity: '10-12+ people',
             heater: 'Harvia Pro20 or Homecraft 9kW Apex',
