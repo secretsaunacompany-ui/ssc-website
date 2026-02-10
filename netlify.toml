@@ -1,0 +1,64 @@
+# Netlify Configuration for Analytics
+
+[build]
+  # No build command needed for static site
+  command = "echo 'Static site - no build required'"
+  # Publish directory (where your HTML files are)
+  publish = "."
+  # Functions directory
+  functions = "netlify/functions"
+
+[build.environment]
+  # Node version for functions
+  NODE_VERSION = "18"
+
+# Redirect rules (optional)
+[[redirects]]
+  from = "/analytics"
+  to = "/analytics-dashboard-netlify.html"
+  status = 200
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # SECURITY: Content Security Policy - restricts what resources can be loaded
+    # Adjust 'script-src' and 'style-src' domains as needed for your CDNs
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://res.cloudinary.com https://*.basemaps.cartocdn.com data:; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://*.supabase.co https://unpkg.com https://formspree.io https://cdn.jsdelivr.net; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formspree.io"
+    # SECURITY: Permissions Policy - restricts browser features
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
+
+# Force HTTPS redirect
+[[redirects]]
+  from = "http://secretsaunacompany.com/*"
+  to = "https://secretsaunacompany.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.secretsaunacompany.com/*"
+  to = "https://www.secretsaunacompany.com/:splat"
+  status = 301
+  force = true
+
+# Cache static assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Don't cache HTML
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Cache analytics scripts
+[[headers]]
+  for = "/analytics-*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"

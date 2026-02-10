@@ -1,0 +1,16 @@
+{
+  "name": "ssc-website-analytics",
+  "version": "1.0.0",
+  "description": "Secret Sauna Company website with analytics",
+  "main": "index.html",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'No build step required for static site'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
+}

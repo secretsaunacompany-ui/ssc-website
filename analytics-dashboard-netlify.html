@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Secret Sauna Company</title>
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dlhqdgmih/image/upload/v1768254526/CircleWhite2025_gqtclg.png">
+
+    <!-- Chart.js for visualizations (with SRI hash for security) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <style>
+        :root {
+            --color-bg: #0f0f0f;
+            --color-bg-dark: #1a1a1a;
+            --color-bg-light: #242424;
+            --color-text: #e8e8e8;
+            --color-text-muted: #888;
+            --color-warm-wood: #d4a574;
+            --color-accent: #d4a574;
+            --color-success: #4ade80;
+            --color-warning: #fbbf24;
+            --color-danger: #f87171;
+            --color-border: #2a2a2a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Header */
+        .dashboard-header {
+            background: var(--color-bg-dark);
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--color-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            color: var(--color-warm-wood);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            background: var(--color-warm-wood);
+            color: var(--color-bg);
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--color-warm-wood);
+            border: 1px solid var(--color-warm-wood);
+        }
+
+        .btn-outline:hover {
+            background: rgba(212, 165, 116, 0.1);
+        }
+
+        /* Time range selector */
+        .time-range {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--color-bg-light);
+            padding: 0.3rem;
+            border-radius: 6px;
+        }
+
+        .time-range button {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: none;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .time-range button.active {
+            background: var(--color-warm-wood);
+            color: var(--color-bg);
+        }
+
+        .time-range button:hover:not(.active) {
+            background: rgba(212, 165, 116, 0.1);
+            color: var(--color-text);
+        }
+
+        /* Main content */
+        .dashboard-main {
+            padding: 2rem 0;
+        }
+
+        /* Real-time indicator */
+        .realtime-section {
+            background: linear-gradient(135deg, var(--color-bg-dark) 0%, var(--color-bg-light) 100%);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--color-border);
+        }
+
+        .realtime-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pulse-dot {
+            width: 12px;
+            height: 12px;
+            background: var(--color-success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .realtime-text {
+            font-size: 1.1rem;
+        }
+
+        .realtime-count {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-success);
+            margin-left: auto;
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--color-bg-dark);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--color-warm-wood);
+        }
+
+        .stat-label {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-warm-wood);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* Charts grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: var(--color-bg-dark);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .chart-subtitle {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .chart-container.tall {
+            height: 400px;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 0.75rem;
+            color: var(--color-text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .data-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .data-table tr:hover {
+            background: var(--color-bg-light);
+        }
+
+        .metric-badge {
+            background: var(--color-bg-light);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-warm-wood);
+        }
+
+        /* Loading state */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--color-border);
+            border-top-color: var(--color-warm-wood);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error state */
+        .error {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid var(--color-danger);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            color: var(--color-danger);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--color-text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Login overlay styles */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--color-bg);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-overlay.hidden {
+            display: none;
+        }
+
+        .login-box {
+            background: var(--color-bg-dark);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            color: var(--color-warm-wood);
+            margin-bottom: 0.5rem;
+        }
+
+        .login-box p {
+            color: var(--color-text-muted);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: var(--color-warm-wood);
+        }
+
+        .login-box .btn {
+            width: 100%;
+            padding: 0.8rem;
+            font-size: 1rem;
+        }
+
+        .login-error {
+            color: var(--color-danger);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .login-error.visible {
+            display: block;
+        }
+
+        /* Booking Ops */
+        .ops-card {
+            background: var(--color-bg-dark);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .ops-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .ops-title {
+            font-size: 1.4rem;
+            margin: 0 0 0.35rem 0;
+        }
+
+        .ops-subtitle {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .ops-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .ops-controls input[type="date"],
+        .ops-controls input[type="number"] {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .ops-summary {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .ops-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            border: 1px solid transparent;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .ops-pill.open { color: #0fdf8f; border-color: rgba(15, 223, 143, 0.35); }
+        .ops-pill.full { color: #fbbf24; border-color: rgba(251, 191, 36, 0.35); }
+        .ops-pill.blocked { color: #f87171; border-color: rgba(248, 113, 113, 0.35); }
+        .ops-pill.private { color: #a78bfa; border-color: rgba(167, 139, 250, 0.35); }
+
+        .ops-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .ops-calendar {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ops-calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .ops-calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.35rem;
+            text-align: center;
+        }
+
+        .ops-calendar-day {
+            padding: 0.5rem 0;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--color-text);
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .ops-calendar-day.muted {
+            color: #555;
+            cursor: default;
+        }
+
+        .ops-calendar-day.today {
+            border-color: var(--color-warm-wood);
+            color: var(--color-warm-wood);
+        }
+
+        .ops-calendar-day.selected {
+            background: var(--color-warm-wood);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .ops-date-display {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            margin-right: 0.5rem;
+        }
+
+        /* Staffing Coverage Widget */
+        .staffing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .staffing-alerts {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .staffing-alert-icon {
+            font-size: 1.5rem;
+        }
+
+        .staffing-alert-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .staffing-alert-text strong {
+            color: #f87171;
+        }
+
+        .staffing-alert-detail {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+        }
+
+        .staffing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .staffing-day {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.2s;
+        }
+
+        .staffing-day.today {
+            border-color: var(--color-warm-wood);
+        }
+
+        .staffing-day.good {
+            border-left: 3px solid var(--color-success);
+        }
+
+        .staffing-day.attention {
+            border-left: 3px solid var(--color-danger);
+            background: rgba(248, 113, 113, 0.05);
+        }
+
+        .staffing-day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .staffing-day-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .staffing-day-date {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        .staffing-bookings {
+            font-size: 0.85rem;
+            color: var(--color-warm-wood);
+            margin-bottom: 0.75rem;
+        }
+
+        .staffing-shifts {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .staffing-shift {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .shift-label {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-bg-light);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .staffing-shift.filled .shift-label {
+            background: rgba(74, 222, 128, 0.2);
+            color: var(--color-success);
+        }
+
+        .staffing-shift.empty .shift-label {
+            background: rgba(248, 113, 113, 0.2);
+            color: var(--color-danger);
+        }
+
+        .shift-name {
+            color: var(--color-text);
+        }
+
+        .staffing-shift.empty .shift-name {
+            color: var(--color-text-muted);
+        }
+
+        .staffing-notes {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--color-border);
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        .staffing-error {
+            padding: 2rem;
+            text-align: center;
+            color: var(--color-danger);
+        }
+
+        .staffing-empty {
+            padding: 2rem;
+            text-align: center;
+            color: var(--color-text-muted);
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Overlay - Protects Admin Dashboard -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <h2>Admin Login</h2>
+            <p>Enter the admin password to access analytics</p>
+            <div id="loginError" class="login-error">Incorrect password. Please try again.</div>
+            <form id="loginForm" onsubmit="return handleLogin(event)">
+                <input type="password" id="adminPassword" placeholder="Enter password" required autocomplete="current-password">
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <header class="dashboard-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="https://res.cloudinary.com/dlhqdgmih/image/upload/v1768255497/FINAL_LOGO_TEXT1.1_qwtccv.png" alt="Secret Sauna Company">
+                    <h1>Analytics Dashboard</h1>
+                </div>
+                <div class="header-actions">
+                    <div class="time-range">
+                        <button class="time-range-btn" data-days="7">7 Days</button>
+                        <button class="time-range-btn active" data-days="30">30 Days</button>
+                        <button class="time-range-btn" data-days="90">90 Days</button>
+                    </div>
+                    <a href="index.html" class="btn btn-outline">Back to Website</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-main">
+        <div class="container">
+            <!-- Booking Ops -->
+            <div class="ops-card">
+                <div class="ops-header">
+                    <div>
+                        <h2 class="ops-title">Booking Ops</h2>
+                        <p class="ops-subtitle">Manage availability, social capacity, and private blocks.</p>
+                    </div>
+                    <div class="ops-controls">
+                        <div class="ops-date-display" id="opsDateDisplay">Selected: --</div>
+                        <button class="btn btn-outline" id="opsRefreshBtn" type="button">Refresh</button>
+                        <button class="btn btn-outline" id="opsBlockDayBtn" type="button">Block Day</button>
+                        <button class="btn btn-outline" id="opsResetDayBtn" type="button">Reset Day</button>
+                        <button class="btn btn-outline" id="opsExportBtn" type="button">Export CSV</button>
+                    </div>
+                </div>
+                <div class="ops-calendar">
+                    <div class="ops-calendar-header">
+                        <button class="btn btn-outline" id="opsPrevMonth" type="button">‹</button>
+                        <div id="opsMonthLabel">Month</div>
+                        <button class="btn btn-outline" id="opsNextMonth" type="button">›</button>
+                    </div>
+                    <div class="ops-calendar-grid" id="opsCalendarGrid"></div>
+                </div>
+                <div class="ops-summary" id="opsSummary">Loading booking availability...</div>
+                <table class="data-table" id="opsSlotsTable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Social Capacity</th>
+                            <th>Booked</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="5" class="loading">
+                                <div class="spinner"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Staffing Coverage -->
+            <div class="ops-card" id="staffingCoverageCard">
+                <div class="staffing-header">
+                    <div>
+                        <h2 class="ops-title">Staffing Coverage</h2>
+                        <p class="ops-subtitle">Staff schedule vs bookings - Aldergrove (Fri/Sat/Sun)</p>
+                    </div>
+                    <button class="btn btn-outline" id="staffingRefreshBtn" type="button">Refresh</button>
+                </div>
+                <div id="staffingAlerts"></div>
+                <div class="staffing-grid" id="staffingGrid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time visitors -->
+            <div class="realtime-section">
+                <div class="realtime-content">
+                    <div class="pulse-dot"></div>
+                    <span class="realtime-text">Visitors right now</span>
+                    <span class="realtime-count" id="realtimeCount">-</span>
+                </div>
+            </div>
+
+            <!-- Key metrics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Page Views</div>
+                    <div class="stat-value" id="statPageViews">-</div>
+                    <div class="stat-change">Loading...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Unique Visitors</div>
+                    <div class="stat-value" id="statUniqueVisitors">-</div>
+                    <div class="stat-change">Loading...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg. Session Duration</div>
+                    <div class="stat-value" id="statAvgDuration">-</div>
+                    <div class="stat-change">Loading...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Bounce Rate</div>
+                    <div class="stat-value" id="statBounceRate">-</div>
+                    <div class="stat-change">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Traffic chart -->
+            <div class="chart-card full-width">
+                <div class="chart-header">
+                    <h2 class="chart-title">Traffic Overview</h2>
+                    <p class="chart-subtitle">Page views and unique visitors over time</p>
+                </div>
+                <div class="chart-container tall">
+                    <canvas id="trafficChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Secondary charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Traffic Sources</h2>
+                        <p class="chart-subtitle">Where your visitors come from</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="referrersChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Device Types</h2>
+                        <p class="chart-subtitle">Desktop, mobile, and tablet breakdown</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="devicesChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Browsers</h2>
+                        <p class="chart-subtitle">Browser usage statistics</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="browsersChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Operating Systems</h2>
+                        <p class="chart-subtitle">OS distribution</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="osChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top pages -->
+            <div class="chart-card full-width">
+                <div class="chart-header">
+                    <h2 class="chart-title">Top Pages</h2>
+                    <p class="chart-subtitle">Most visited pages on your website</p>
+                </div>
+                <table class="data-table" id="topPagesTable">
+                    <thead>
+                        <tr>
+                            <th>Page</th>
+                            <th>Page Views</th>
+                            <th>Unique Visitors</th>
+                            <th>Avg. Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="loading">
+                                <div class="spinner"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // =====================================================
+        // SECURITY: Admin Authentication
+        // =====================================================
+        // Authentication: hash password, store as token, validate server-side
+        const SESSION_KEY = 'ssc_admin_session';
+        const SESSION_DURATION = 4 * 60 * 60 * 1000; // 4 hours
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function getAdminToken() {
+            try {
+                const session = JSON.parse(sessionStorage.getItem(SESSION_KEY));
+                if (!session || Date.now() > session.expiry) {
+                    sessionStorage.removeItem(SESSION_KEY);
+                    return null;
+                }
+                return session.token;
+            } catch {
+                return null;
+            }
+        }
+
+        function isSessionValid() {
+            return !!getAdminToken();
+        }
+
+        function createSession(token) {
+            const session = {
+                token,
+                expiry: Date.now() + SESSION_DURATION
+            };
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+            const hash = await hashPassword(password);
+
+            // Store the hash and try a server call to validate
+            createSession(hash);
+            try {
+                const resp = await fetch('/.netlify/functions/booking-admin?action=sessions&days=1', {
+                    headers: { 'X-Admin-Token': hash }
+                });
+                if (resp.ok) {
+                    document.getElementById('loginOverlay').classList.add('hidden');
+                    document.getElementById('loginError').classList.remove('visible');
+                    if (typeof init === 'function') init();
+                } else {
+                    sessionStorage.removeItem(SESSION_KEY);
+                    document.getElementById('loginError').classList.add('visible');
+                    document.getElementById('adminPassword').value = '';
+                }
+            } catch {
+                sessionStorage.removeItem(SESSION_KEY);
+                document.getElementById('loginError').classList.add('visible');
+                document.getElementById('adminPassword').value = '';
+            }
+            return false;
+        }
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (isSessionValid()) {
+                document.getElementById('loginOverlay').classList.add('hidden');
+            }
+        });
+    </script>
+    <script src="analytics-dashboard-netlify.js"></script>
+</body>
+</html>
