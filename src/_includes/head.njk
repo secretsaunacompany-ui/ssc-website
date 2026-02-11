@@ -3,28 +3,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Primary SEO Meta Tags -->
-    <title>Secret Sauna Company | Handcrafted Finnish Saunas in British Columbia</title>
-    <meta name="description" content="Authentic Finnish saunas handcrafted in Squamish, BC. Traditional wood-fired and electric saunas built with Western Red Cedar. Custom builds, standard models S2-SC, and mobile saunas. Get a free quote today.">
-    <meta name="keywords" content="Finnish sauna, outdoor sauna, custom sauna, mobile sauna, sauna BC, sauna Vancouver, sauna Squamish, wood-fired sauna, cedar sauna, traditional sauna, sauna builder, handcrafted sauna, backyard sauna, commercial sauna">
+    <title>{{ title | default("Secret Sauna Company | Handcrafted Finnish Saunas in British Columbia") }}</title>
+    <meta name="description" content="{{ description | default("Authentic Finnish saunas handcrafted in Squamish, BC. Traditional wood-fired and electric saunas built with Western Red Cedar. Custom builds, standard models S2-SC, and mobile saunas. Get a free quote today.") }}">
+    <meta name="keywords" content="{{ keywords | default("Finnish sauna, outdoor sauna, custom sauna, mobile sauna, sauna BC, sauna Vancouver, sauna Squamish, wood-fired sauna, cedar sauna, traditional sauna, sauna builder, handcrafted sauna, backyard sauna, commercial sauna") }}">
     <meta name="author" content="Secret Sauna Company">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://www.secretsaunacompany.ca/">
+    <link rel="canonical" href="{{ canonical | default("https://www.secretsaunacompany.ca/") }}">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.secretsaunacompany.ca/">
-    <meta property="og:title" content="Secret Sauna Company | Handcrafted Finnish Saunas in BC">
-    <meta property="og:description" content="Authentic Finnish saunas handcrafted in Squamish, BC. Traditional construction with Western Red Cedar. Custom builds starting at $22,500.">
-    <meta property="og:image" content="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250655/IMG_7991-EDIT_gz1kqt.jpg">
+    <meta property="og:url" content="{{ canonical | default("https://www.secretsaunacompany.ca/") }}">
+    <meta property="og:title" content="{{ og_title | default(title) | default("Secret Sauna Company | Handcrafted Finnish Saunas in BC") }}">
+    <meta property="og:description" content="{{ og_description | default(description) | default("Authentic Finnish saunas handcrafted in Squamish, BC. Traditional construction with Western Red Cedar. Custom builds starting at $22,500.") }}">
+    <meta property="og:image" content="{{ og_image | default("https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250655/IMG_7991-EDIT_gz1kqt.jpg") }}">
     <meta property="og:locale" content="en_CA">
     <meta property="og:site_name" content="Secret Sauna Company">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://www.secretsaunacompany.ca/">
-    <meta name="twitter:title" content="Secret Sauna Company | Handcrafted Finnish Saunas in BC">
-    <meta name="twitter:description" content="Authentic Finnish saunas handcrafted in Squamish, BC. Traditional construction with Western Red Cedar.">
-    <meta name="twitter:image" content="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250655/IMG_7991-EDIT_gz1kqt.jpg">
+    <meta name="twitter:url" content="{{ canonical | default("https://www.secretsaunacompany.ca/") }}">
+    <meta name="twitter:title" content="{{ og_title | default(title) | default("Secret Sauna Company | Handcrafted Finnish Saunas in BC") }}">
+    <meta name="twitter:description" content="{{ og_description | default(description) | default("Authentic Finnish saunas handcrafted in Squamish, BC. Traditional construction with Western Red Cedar.") }}">
+    <meta name="twitter:image" content="{{ og_image | default("https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250655/IMG_7991-EDIT_gz1kqt.jpg") }}">
 
     <!-- Geographic Meta Tags (Local SEO) -->
     <meta name="geo.region" content="CA-BC">
@@ -44,6 +44,8 @@
         "image": "https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250655/IMG_7991-EDIT_gz1kqt.jpg",
         "telephone": "",
         "email": "secretsaunacompany@gmail.com",
+        "paymentAccepted": ["Cash", "Check", "E-Transfer", "Bank Transfer"],
+        "currenciesAccepted": "CAD",
         "address": {
             "@type": "PostalAddress",
             "streetAddress": "38918 Progress Way",
@@ -66,6 +68,7 @@
         ],
         "priceRange": "$22,500 - $57,000+",
         "openingHours": "Mo-Fr 09:00-17:00",
+        "hasMap": "https://maps.google.com/?q=Secret+Sauna+Company,+38918+Progress+Way,+Squamish,+BC",
         "sameAs": [
             "https://www.instagram.com/secretsaunaco",
             "https://www.facebook.com/secretsaunaco"
@@ -134,66 +137,46 @@
     }
     </script>
 
-    <!-- Schema.org - FAQ Page -->
+    {% if breadcrumb_name %}
+    <!-- Schema.org - BreadcrumbList -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
+        "@type": "BreadcrumbList",
+        "itemListElement": [
             {
-                "@type": "Question",
-                "name": "How long does it take to receive a sauna?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Each sauna is unique and timelines can vary; however a typical build takes around 4-6 weeks. You'll be kept informed of your order's progress at every step along the way."
-                }
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.secretsaunacompany.ca/"
             },
             {
-                "@type": "Question",
-                "name": "What are your saunas made of?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Generally we build with 2x4 framing, Rockwool insulation, metal exterior cladding, and locally sourced Western Red Cedar interior."
-                }
-            },
-            {
-                "@type": "Question",
-                "name": "What type of foundation is needed for a sauna?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Most of our residential saunas are built with open deck flooring for natural ventilation and drainage. Ideally the sauna is placed on packed gravel, concrete feet, or pavers."
-                }
-            },
-            {
-                "@type": "Question",
-                "name": "What's the difference between wood-fired and electric saunas?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Wood-fired saunas offer authentic heat and atmosphere, ideal for outdoor settings. Electric saunas provide convenient, consistent temperature control—better for indoor or residential installations."
-                }
-            },
-            {
-                "@type": "Question",
-                "name": "Do you build infrared saunas?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Generally no. At Secret Sauna Co. we build traditional Finnish saunas which have a proven history over millennia."
-                }
+                "@type": "ListItem",
+                "position": 2,
+                "name": "{{ breadcrumb_name }}",
+                "item": "{{ canonical }}"
             }
         ]
     }
     </script>
+    {% endif %}
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768254526/CircleWhite2025_gqtclg.png">
 
-    <!-- Fonts -->
+    <!-- Preconnect & Preload -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+    {% if preload_image %}
+    <link rel="preload" as="image" href="{{ preload_image }}">
+    {% endif %}
+
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <!-- External Stylesheet -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css">
 
     <!-- Leaflet.js for Maps - lazy loaded when locations page is visited -->
 </head>

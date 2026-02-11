@@ -328,33 +328,10 @@
         var total = summaryTotalEl ? summaryTotalEl.textContent : '';
         config += '\nEstimated Total: ' + total;
 
-        // Close modal and navigate to contact
+        // Close modal and navigate to contact with config data
         this.close();
-        if (window.navigation && window.navigation.showPage) {
-            window.navigation.showPage('contact');
-        } else if (window.showPage) {
-            window.showPage('contact');
-        }
-
-        // Pre-fill the message field
-        setTimeout(function() {
-            var messageField = document.querySelector('textarea[name="message"]');
-            if (messageField) {
-                messageField.value = 'I\'m interested in the following configuration:\n\n' + config + '\n\nPlease contact me to discuss further.';
-            }
-
-            // Set the dropdown to the appropriate model
-            var saunaSelect = document.querySelector('select[name="sauna"]');
-            if (saunaSelect && currentModel) {
-                if (currentModel.name.indexOf('S2') !== -1 || currentModel.name.indexOf('S4') !== -1) {
-                    saunaSelect.value = 's2-s4';
-                } else if (currentModel.name.indexOf('S6') !== -1 || currentModel.name.indexOf('S8') !== -1) {
-                    saunaSelect.value = 's6-s8';
-                } else if (currentModel.name.indexOf('SC') !== -1) {
-                    saunaSelect.value = 'sc';
-                }
-            }
-        }, 300);
+        sessionStorage.setItem('ssc_quote_config', config);
+        window.location.href = '/contact/';
     };
 
     // ============================================

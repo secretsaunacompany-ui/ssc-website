@@ -37,10 +37,7 @@
                 }
                 alert('Thank you for your message! We\'ll be in touch soon.');
                 form.reset();
-                if (typeof showPage === 'function') {
-                    showPage('gallery');
-                }
-                window.location.hash = '#gallery';
+                window.location.href = '/gallery/';
             })
             .catch(function() {
                 alert('Sorry, something went wrong. Please try again or email us directly.');

@@ -1,53 +1,19 @@
 /**
  * Secret Sauna Company - Navigation Module
- * Navigation management and page switching
+ * Mobile menu toggle, Leaflet lazy loading, and page-specific initialization
  */
 (function() {
     'use strict';
 
     // ============================================
-    // Navigation Manager
+    // Mobile Menu Toggle
     // ============================================
-    function NavigationManager() {
-        this.currentPage = 'home';
-    }
-
-    NavigationManager.prototype.showPage = function(pageId) {
-        var pages = document.querySelectorAll('.page');
-        pages.forEach(function(page) { page.classList.remove('active'); });
-
-        var targetPage = document.getElementById(pageId);
-        if (targetPage) {
-            targetPage.classList.add('active');
-            this.currentPage = pageId;
-        }
-
-        // Close mobile menu if open
-        var navLinks = document.getElementById('navLinks');
-        if (navLinks) {
-            navLinks.classList.remove('active');
-        }
-
-        // Scroll to top smoothly
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        // Reinitialize scroll animations for the new page
-        if (window.scrollAnimations && window.scrollAnimations.reinit) {
-            window.scrollAnimations.reinit();
-        }
-    };
-
-    NavigationManager.prototype.toggleMenu = function() {
+    function toggleMenu() {
         var navLinks = document.getElementById('navLinks');
         if (navLinks) {
             navLinks.classList.toggle('active');
         }
-    };
-
-    // ============================================
-    // Create instance
-    // ============================================
-    var navigation = new NavigationManager();
+    }
 
     // ============================================
     // Leaflet Lazy Loading for Maps
@@ -79,13 +45,11 @@
     }
 
     // ============================================
-    // Enhanced showPage with lazy loading
+    // Page-specific initialization
     // ============================================
-    function showPage(pageId) {
-        navigation.showPage(pageId);
-
-        // Initialize map when locations page is shown
-        if (pageId === 'locations') {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map if on locations page
+        if (document.getElementById('map')) {
             loadLeaflet().then(function() {
                 setTimeout(function() {
                     if (window.initMap) {
@@ -95,31 +59,46 @@
             });
         }
 
-        // Initialize booking system when book page is shown
-        if (pageId === 'book') {
+        // Initialize booking system if on book page
+        if (document.getElementById('bookingCalendar') || document.querySelector('.booking-section')) {
             setTimeout(function() {
                 if (window.initBookingSystem) {
                     window.initBookingSystem();
                 }
             }, 100);
         }
-    }
 
-    function toggleMenu() {
-        navigation.toggleMenu();
-    }
+        // Pre-fill contact form from quote configurator (via sessionStorage)
+        var quoteConfig = sessionStorage.getItem('ssc_quote_config');
+        if (quoteConfig) {
+            var messageField = document.querySelector('textarea[name="message"]');
+            if (messageField) {
+                messageField.value = 'I\'m interested in the following configuration:\n\n' + quoteConfig + '\n\nPlease contact me to discuss further.';
+                sessionStorage.removeItem('ssc_quote_config');
+            }
+        }
+    });
+
+    // ============================================
+    // Hash redirect for backward compatibility
+    // ============================================
+    (function() {
+        var hash = window.location.hash.replace('#', '');
+        if (hash && window.location.pathname === '/') {
+            var validPages = ['about', 'saunas', 'process', 'gallery', 'faq', 'locations', 'contact', 'book'];
+            if (validPages.indexOf(hash) !== -1) {
+                window.location.replace('/' + hash + '/');
+            }
+        }
+    })();
 
     // ============================================
     // Export to global scope
     // ============================================
     window.SSC = window.SSC || {};
-    window.SSC.navigation = navigation;
     window.SSC.loadLeaflet = loadLeaflet;
 
     // Global functions for onclick handlers
-    window.showPage = showPage;
     window.toggleMenu = toggleMenu;
-    window.navigation = navigation;
-    window.navigateTo = showPage; // Alias used in requestQuote
 
 })();

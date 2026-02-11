@@ -44,15 +44,6 @@
         });
 
         console.log('Secret Sauna Company website initialized');
-
-        // Handle initial hash navigation
-        var hash = window.location.hash.replace('#', '');
-        var targetPage = hash ? document.getElementById(hash) : null;
-        if (targetPage && targetPage.classList.contains('page')) {
-            if (window.navigation && window.navigation.showPage) {
-                window.navigation.showPage(hash);
-            }
-        }
     });
 
     // ============================================
