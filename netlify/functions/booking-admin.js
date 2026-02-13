@@ -61,7 +61,7 @@ exports.handler = async (event) => {
       if (action === 'reservations') {
         const { data: reservations } = await supabase
           .from('booking_reservations')
-          .select('date, start_time, end_time, booking_type, guests, name, email, notes, created_at')
+          .select('id, date, start_time, end_time, booking_type, guests, name, email, notes, created_at')
           .in('date', dateList)
           .order('date', { ascending: true })
           .order('start_time', { ascending: true });
@@ -208,6 +208,27 @@ exports.handler = async (event) => {
           .upsert(updates, { onConflict: 'date,start_time' });
 
         if (error) throw error;
+        return jsonResponse(200, headers, { success: true });
+      }
+
+      if (action === 'cancel_reservation') {
+        const { reservation_id } = payload;
+        if (!reservation_id) {
+          return jsonResponse(400, headers, { error: 'Missing reservation_id' });
+        }
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(reservation_id)) {
+          return jsonResponse(400, headers, { error: 'Invalid reservation_id format' });
+        }
+        const { data, error } = await supabase
+          .from('booking_reservations')
+          .delete()
+          .eq('id', reservation_id)
+          .select();
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          return jsonResponse(404, headers, { error: 'Reservation not found' });
+        }
         return jsonResponse(200, headers, { success: true });
       }
 
