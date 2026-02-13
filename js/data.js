@@ -205,9 +205,6 @@
         // Minimum hours in advance required for booking (to ensure staff are alerted)
         minAdvanceHours: 18,
 
-        // Fully blocked dates (local YYYY-MM-DD)
-        blockedDates: ['2026-01-18', '2026-01-23', '2026-01-24', '2026-01-25'],
-
         // Availability + booking endpoints
         availabilityEndpoint: '/.netlify/functions/booking-availability',
         reserveEndpoint: '/.netlify/functions/booking-reserve',

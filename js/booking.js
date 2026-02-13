@@ -54,21 +54,10 @@
         return date.toLocaleDateString('en-US', options);
     };
 
-    BookingManager.prototype.isDateBlocked = function(date) {
-        var BOOKING_CONFIG = window.BOOKING_CONFIG || window.SSC.BOOKING_CONFIG;
-        var dateKey = this.formatDateKey(date);
-        return (BOOKING_CONFIG.blockedDates || []).indexOf(dateKey) !== -1;
-    };
-
     // Generate available time slots for a given date
     BookingManager.prototype.getAvailableSlots = function(date, bookingType) {
         var self = this;
         var BOOKING_CONFIG = window.BOOKING_CONFIG || window.SSC.BOOKING_CONFIG;
-
-        if (this.isDateBlocked(date)) {
-            this.currentSlots = [];
-            return Promise.resolve([]);
-        }
 
         var dateKey = this.formatDateKey(date);
         return this.fetchSlots(dateKey).then(function(slots) {
@@ -113,10 +102,6 @@
     // Check if a date is bookable
     BookingManager.prototype.isDateBookable = function(date) {
         var BOOKING_CONFIG = window.BOOKING_CONFIG || window.SSC.BOOKING_CONFIG;
-
-        if (this.isDateBlocked(date)) {
-            return false;
-        }
 
         var now = new Date();
         var today = new Date();
