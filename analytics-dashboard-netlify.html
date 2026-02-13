@@ -478,99 +478,8 @@
             flex-wrap: wrap;
         }
 
-        .ops-controls input[type="date"],
-        .ops-controls input[type="number"] {
-            background: var(--color-bg);
-            border: 1px solid var(--color-border);
-            color: var(--color-text);
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.9rem;
-        }
 
-        .ops-summary {
-            color: var(--color-text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
 
-        .ops-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.2rem 0.6rem;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            border: 1px solid transparent;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-
-        .ops-pill.open { color: #0fdf8f; border-color: rgba(15, 223, 143, 0.35); }
-        .ops-pill.full { color: #fbbf24; border-color: rgba(251, 191, 36, 0.35); }
-        .ops-pill.blocked { color: #f87171; border-color: rgba(248, 113, 113, 0.35); }
-        .ops-pill.private { color: #a78bfa; border-color: rgba(167, 139, 250, 0.35); }
-
-        .ops-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .ops-calendar {
-            background: var(--color-bg);
-            border: 1px solid var(--color-border);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .ops-calendar-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .ops-calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 0.35rem;
-            text-align: center;
-        }
-
-        .ops-calendar-day {
-            padding: 0.5rem 0;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            color: var(--color-text);
-            cursor: pointer;
-            border: 1px solid transparent;
-        }
-
-        .ops-calendar-day.muted {
-            color: #555;
-            cursor: default;
-        }
-
-        .ops-calendar-day.today {
-            border-color: var(--color-warm-wood);
-            color: var(--color-warm-wood);
-        }
-
-        .ops-calendar-day.selected {
-            background: var(--color-warm-wood);
-            color: #000;
-            font-weight: 600;
-        }
-
-        .ops-date-display {
-            font-size: 0.9rem;
-            color: var(--color-text-muted);
-            margin-right: 0.5rem;
-        }
 
         /* Staffing Coverage Widget */
         .staffing-header {
@@ -760,48 +669,17 @@
 
     <main class="dashboard-main">
         <div class="container">
-            <!-- Booking Ops -->
+            <!-- Booking Ops (moved to standalone admin page) -->
             <div class="ops-card">
                 <div class="ops-header">
                     <div>
                         <h2 class="ops-title">Booking Ops</h2>
-                        <p class="ops-subtitle">Manage availability, social capacity, and private blocks.</p>
+                        <p class="ops-subtitle">Booking management has moved to a dedicated admin page.</p>
                     </div>
                     <div class="ops-controls">
-                        <div class="ops-date-display" id="opsDateDisplay">Selected: --</div>
-                        <button class="btn btn-outline" id="opsRefreshBtn" type="button">Refresh</button>
-                        <button class="btn btn-outline" id="opsBlockDayBtn" type="button">Block Day</button>
-                        <button class="btn btn-outline" id="opsResetDayBtn" type="button">Reset Day</button>
-                        <button class="btn btn-outline" id="opsExportBtn" type="button">Export CSV</button>
+                        <a href="/admin" class="btn">Open Booking Admin</a>
                     </div>
                 </div>
-                <div class="ops-calendar">
-                    <div class="ops-calendar-header">
-                        <button class="btn btn-outline" id="opsPrevMonth" type="button">‹</button>
-                        <div id="opsMonthLabel">Month</div>
-                        <button class="btn btn-outline" id="opsNextMonth" type="button">›</button>
-                    </div>
-                    <div class="ops-calendar-grid" id="opsCalendarGrid"></div>
-                </div>
-                <div class="ops-summary" id="opsSummary">Loading booking availability...</div>
-                <table class="data-table" id="opsSlotsTable">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Social Capacity</th>
-                            <th>Booked</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td colspan="5" class="loading">
-                                <div class="spinner"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
 
             <!-- Staffing Coverage -->
