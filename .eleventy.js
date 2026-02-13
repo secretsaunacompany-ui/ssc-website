@@ -7,6 +7,8 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy("analytics-tracker-netlify.js");
   eleventyConfig.addPassthroughCopy("analytics-dashboard-netlify.js");
   eleventyConfig.addPassthroughCopy("analytics-dashboard-netlify.html");
+  eleventyConfig.addPassthroughCopy("booking-ops.html");
+  eleventyConfig.addPassthroughCopy("booking-ops.js");
   eleventyConfig.addPassthroughCopy("supabase-schema.sql");
   eleventyConfig.addPassthroughCopy({ "src/robots.txt": "robots.txt" });
 

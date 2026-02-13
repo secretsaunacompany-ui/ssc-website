@@ -16,6 +16,11 @@
   to = "/analytics-dashboard-netlify.html"
   status = 200
 
+[[redirects]]
+  from = "/admin"
+  to = "/booking-ops.html"
+  status = 200
+
 # Headers for security
 [[headers]]
   for = "/*"

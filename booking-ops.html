@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Admin - Secret Sauna Company</title>
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dlhqdgmih/image/upload/v1768254526/CircleWhite2025_gqtclg.png">
+
+    <style>
+        :root {
+            --color-bg: #0f0f0f;
+            --color-bg-dark: #1a1a1a;
+            --color-bg-light: #242424;
+            --color-text: #e8e8e8;
+            --color-text-muted: #888;
+            --color-warm-wood: #d4a574;
+            --color-accent: #d4a574;
+            --color-success: #4ade80;
+            --color-warning: #fbbf24;
+            --color-danger: #f87171;
+            --color-border: #2a2a2a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        /* Login overlay */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--color-bg);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-overlay.hidden {
+            display: none;
+        }
+
+        .login-box {
+            background: var(--color-bg-dark);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            color: var(--color-warm-wood);
+            margin-bottom: 0.5rem;
+        }
+
+        .login-box p {
+            color: var(--color-text-muted);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: var(--color-warm-wood);
+        }
+
+        .login-error {
+            color: var(--color-danger);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .login-error.visible {
+            display: block;
+        }
+
+        /* Header */
+        .admin-header {
+            background: var(--color-bg-dark);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .admin-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-warm-wood);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--color-warm-wood);
+            border-radius: 6px;
+            background: var(--color-warm-wood);
+            color: var(--color-bg);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--color-warm-wood);
+        }
+
+        .btn-sm {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-danger {
+            border-color: var(--color-danger);
+            background: transparent;
+            color: var(--color-danger);
+        }
+
+        .btn-danger:hover {
+            background: var(--color-danger);
+            color: var(--color-bg);
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .stat-card {
+            background: var(--color-bg-dark);
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        /* Main layout */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Calendar */
+        .calendar-panel {
+            background: var(--color-bg-dark);
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            padding: 1.25rem;
+        }
+
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-nav button {
+            background: none;
+            border: none;
+            color: var(--color-text-muted);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .calendar-nav button:hover {
+            color: var(--color-text);
+            background: var(--color-bg-light);
+        }
+
+        .calendar-nav .month-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            text-align: center;
+        }
+
+        .calendar-day {
+            padding: 0.4rem 0.2rem;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            border: none;
+            background: none;
+            color: var(--color-text);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            background: var(--color-bg-light);
+        }
+
+        .calendar-day.muted {
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+            cursor: default;
+        }
+
+        .calendar-day.muted:hover {
+            background: none;
+        }
+
+        .calendar-day.today {
+            box-shadow: inset 0 0 0 2px var(--color-warning);
+        }
+
+        .calendar-day.selected {
+            background: var(--color-warm-wood);
+            color: var(--color-bg);
+            font-weight: 600;
+        }
+
+        .calendar-day .dot {
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+        }
+
+        .calendar-day .dot.booked {
+            background: var(--color-success);
+        }
+
+        .calendar-day .dot.blocked {
+            background: var(--color-danger);
+        }
+
+        .calendar-legend {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+        }
+
+        .calendar-legend span::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        .calendar-legend .legend-booked::before {
+            background: var(--color-success);
+        }
+
+        .calendar-legend .legend-blocked::before {
+            background: var(--color-danger);
+        }
+
+        .calendar-legend .legend-today::before {
+            box-shadow: inset 0 0 0 2px var(--color-warning);
+        }
+
+        /* Day detail panel */
+        .detail-panel {
+            background: var(--color-bg-dark);
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            padding: 1.25rem;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .detail-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .day-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .day-summary {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            margin-bottom: 1rem;
+        }
+
+        /* Slot cards */
+        .slot-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .slot-card {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .slot-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .slot-time {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .slot-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+        }
+
+        .slot-actions {
+            display: flex;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .capacity-inline {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .capacity-input {
+            width: 50px;
+            padding: 0.25rem 0.4rem;
+            background: var(--color-bg-dark);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            color: var(--color-text);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .capacity-input:focus {
+            outline: none;
+            border-color: var(--color-warm-wood);
+        }
+
+        /* Status pills */
+        .ops-pill {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .ops-pill.open {
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--color-success);
+        }
+
+        .ops-pill.full {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--color-warning);
+        }
+
+        .ops-pill.blocked {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--color-danger);
+        }
+
+        .ops-pill.private {
+            background: rgba(212, 165, 116, 0.15);
+            color: var(--color-warm-wood);
+        }
+
+        /* Reservation detail expansion */
+        .reservations-detail {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--color-border);
+            display: none;
+        }
+
+        .reservations-detail.expanded {
+            display: block;
+        }
+
+        .reservations-detail h4 {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .reservation-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .reservation-row:last-child {
+            border-bottom: none;
+        }
+
+        .reservation-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .reservation-info .name {
+            font-weight: 500;
+        }
+
+        .reservation-info .meta {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        .no-reservations {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            font-style: italic;
+        }
+
+        /* Loading text */
+        .loading-text {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .day-actions {
+                width: 100%;
+            }
+
+            .day-actions .btn {
+                flex: 1;
+                font-size: 0.8rem;
+                padding: 0.4rem 0.5rem;
+            }
+
+            .slot-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.4rem;
+            }
+
+            .reservation-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login overlay -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <h2>Booking Admin</h2>
+            <p>Enter the admin password to access booking management</p>
+            <div id="loginError" class="login-error">Incorrect password. Please try again.</div>
+            <form id="loginForm" onsubmit="return handleLogin(event)">
+                <input type="password" id="adminPassword" placeholder="Enter password" required autocomplete="current-password">
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="container">
+            <h1>Booking Admin</h1>
+            <div class="header-actions">
+                <button class="btn btn-outline btn-sm" id="refreshBtn" type="button">Refresh</button>
+                <button class="btn btn-outline btn-sm" id="logoutBtn" type="button">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stats bar -->
+    <div class="container">
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-card"><span class="stat-label">Today</span><div class="stat-value loading-text">Loading...</div></div>
+            <div class="stat-card"><span class="stat-label">Weekend</span><div class="stat-value loading-text">Loading...</div></div>
+            <div class="stat-card"><span class="stat-label">7-Day</span><div class="stat-value loading-text">Loading...</div></div>
+            <div class="stat-card"><span class="stat-label">Blocked</span><div class="stat-value loading-text">Loading...</div></div>
+        </div>
+    </div>
+
+    <!-- Main grid -->
+    <div class="container">
+        <div class="admin-grid">
+            <!-- Calendar panel -->
+            <div class="calendar-panel">
+                <div class="calendar-nav">
+                    <button id="prevMonth" type="button">&lsaquo;</button>
+                    <span class="month-label" id="monthLabel"></span>
+                    <button id="nextMonth" type="button">&rsaquo;</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+                <div class="calendar-legend">
+                    <span class="legend-booked">booked</span>
+                    <span class="legend-blocked">blocked</span>
+                    <span class="legend-today">today</span>
+                </div>
+            </div>
+
+            <!-- Day detail panel -->
+            <div class="detail-panel">
+                <div class="detail-header">
+                    <h2 id="dateDisplay">Loading...</h2>
+                    <div class="day-actions">
+                        <button class="btn btn-sm" id="blockDayBtn" type="button">Block Day</button>
+                        <button class="btn btn-outline btn-sm" id="resetSlotsBtn" type="button">Reset Slots</button>
+                        <button class="btn btn-outline btn-sm" id="exportBtn" type="button">Export CSV</button>
+                    </div>
+                </div>
+                <div class="day-summary" id="daySummary"></div>
+                <div class="slot-cards" id="slotCards">
+                    <div class="loading-text">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth script (inline, runs before external JS) -->
+    <script>
+        const SESSION_KEY = 'ssc_admin_session';
+        const SESSION_DURATION = 4 * 60 * 60 * 1000; // 4 hours
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function getAdminToken() {
+            try {
+                const session = JSON.parse(sessionStorage.getItem(SESSION_KEY));
+                if (!session || Date.now() > session.expiry) {
+                    sessionStorage.removeItem(SESSION_KEY);
+                    return '';
+                }
+                return session.token || '';
+            } catch {
+                return '';
+            }
+        }
+
+        function isSessionValid() {
+            return !!getAdminToken();
+        }
+
+        function createSession(token) {
+            const session = {
+                token,
+                expiry: Date.now() + SESSION_DURATION
+            };
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+            const hash = await hashPassword(password);
+
+            createSession(hash);
+            try {
+                const resp = await fetch('/.netlify/functions/booking-admin?action=sessions&days=1', {
+                    headers: { 'X-Admin-Token': hash }
+                });
+                if (resp.ok) {
+                    document.getElementById('loginOverlay').classList.add('hidden');
+                    document.getElementById('loginError').classList.remove('visible');
+                    if (typeof initAdmin === 'function') initAdmin();
+                } else {
+                    sessionStorage.removeItem(SESSION_KEY);
+                    document.getElementById('loginError').classList.add('visible');
+                    document.getElementById('adminPassword').value = '';
+                }
+            } catch {
+                sessionStorage.removeItem(SESSION_KEY);
+                document.getElementById('loginError').classList.add('visible');
+                document.getElementById('adminPassword').value = '';
+            }
+            return false;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (isSessionValid()) {
+                document.getElementById('loginOverlay').classList.add('hidden');
+            }
+        });
+    </script>
+
+    <script src="booking-ops.js"></script>
+</body>
+</html>
