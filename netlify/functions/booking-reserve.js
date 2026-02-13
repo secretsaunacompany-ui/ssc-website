@@ -1,17 +1,24 @@
-// Netlify Function: Booking Reservation (public)
+// Netlify Function: Booking Reserve (public)
 // Endpoint: /.netlify/functions/booking-reserve
 
 const { buildCorsHeaders, jsonResponse, parseJsonBody } = require('./lib/http');
 const { getSupabaseClient } = require('./lib/supabase');
 const {
-  DEFAULT_SOCIAL_CAPACITY,
   SLOT_DEFINITIONS,
-  PRIVATE_MAX_GUESTS,
+  DEFAULT_SOCIAL_CAPACITY,
   SOCIAL_MAX_GUESTS,
+  PRIVATE_MAX_GUESTS,
   MIN_ADVANCE_HOURS,
   isValidDate,
-  isValidTime
+  isValidTime,
+  normalizeTime
 } = require('./lib/booking');
+
+function isValidSlot(startTime, endTime) {
+  const s = normalizeTime(startTime);
+  const e = normalizeTime(endTime);
+  return SLOT_DEFINITIONS.some((slot) => slot.start === s && slot.end === e);
+}
 
 exports.handler = async (event) => {
   const headers = buildCorsHeaders(event, {
@@ -29,70 +36,89 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { data: payload, error } = parseJsonBody(event.body);
-    if (error) {
-      return jsonResponse(400, headers, { error });
-    }
-
     let supabase;
     try {
       supabase = getSupabaseClient();
     } catch {
       return jsonResponse(500, headers, { error: 'Missing Supabase environment variables' });
     }
-    const date = payload.date;
-    const startTime = payload.start_time;
-    const endTime = payload.end_time;
-    const bookingType = payload.booking_type;
-    const guests = parseInt(payload.guests || 1, 10);
 
-    if (!isValidDate(date) || !isValidTime(startTime) || !isValidTime(endTime)) {
-      return jsonResponse(400, headers, { error: 'Invalid booking time' });
+    const { data: payload, error: parseError } = parseJsonBody(event.body);
+    if (parseError) {
+      return jsonResponse(400, headers, { error: parseError });
     }
 
-    const slotMatch = SLOT_DEFINITIONS.find((slot) => slot.start === startTime && slot.end === endTime);
-    if (!slotMatch) {
-      return jsonResponse(400, headers, { error: 'Invalid slot selection' });
+    const { date, start_time, end_time, booking_type, notes } = payload;
+
+    // --- Validate fields ---
+
+    if (!date || !isValidDate(date)) {
+      return jsonResponse(400, headers, { error: 'Invalid date' });
     }
 
-    if (!['private', 'social'].includes(bookingType)) {
+    if (!start_time || !end_time || !isValidTime(start_time) || !isValidTime(end_time)) {
+      return jsonResponse(400, headers, { error: 'Invalid time' });
+    }
+
+    if (!isValidSlot(start_time, end_time)) {
+      return jsonResponse(400, headers, { error: 'Invalid time slot' });
+    }
+
+    if (booking_type !== 'social' && booking_type !== 'private') {
       return jsonResponse(400, headers, { error: 'Invalid booking type' });
     }
 
-    const slotDateTime = new Date(`${date}T${startTime}:00`);
-    const earliestBookable = new Date(Date.now() + MIN_ADVANCE_HOURS * 60 * 60 * 1000);
-    if (slotDateTime < earliestBookable) {
+    const guests = parseInt(payload.guests || 1, 10);
+    const maxGuests = booking_type === 'private' ? PRIVATE_MAX_GUESTS : SOCIAL_MAX_GUESTS;
+    if (!Number.isFinite(guests) || guests < 1 || guests > maxGuests) {
+      return jsonResponse(400, headers, { error: 'Invalid number of guests' });
+    }
+
+    const name = payload.name ? String(payload.name).trim().slice(0, 200) : '';
+    if (!name) {
+      return jsonResponse(400, headers, { error: 'Name is required' });
+    }
+
+    const email = payload.email ? String(payload.email).trim().toLowerCase() : '';
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return jsonResponse(400, headers, { error: 'Valid email is required' });
+    }
+
+    // Check minimum advance time
+    const normStart = normalizeTime(start_time);
+    const normEnd = normalizeTime(end_time);
+    const slotStart = new Date(`${date}T${normStart}:00`);
+    const earliest = new Date(Date.now() + MIN_ADVANCE_HOURS * 60 * 60 * 1000);
+    if (slotStart < earliest) {
       return jsonResponse(409, headers, { error: 'Slot is no longer bookable' });
     }
 
-    if (bookingType === 'private' && (guests < 1 || guests > PRIVATE_MAX_GUESTS)) {
-      return jsonResponse(400, headers, { error: 'Invalid guest count' });
+    // --- Check availability ---
+
+    const [slotResult, reservationResult] = await Promise.all([
+      supabase
+        .from('booking_slots')
+        .select('capacity_social, is_blocked')
+        .eq('date', date)
+        .eq('start_time', normStart)
+        .maybeSingle(),
+      supabase
+        .from('booking_reservations')
+        .select('booking_type, guests')
+        .eq('date', date)
+        .eq('start_time', normStart)
+    ]);
+
+    const slotOverride = slotResult.data;
+    const existingBookings = reservationResult.data || [];
+
+    if (slotOverride?.is_blocked) {
+      return jsonResponse(409, headers, { error: 'This time slot is not available' });
     }
-
-    if (bookingType === 'social' && (guests < 1 || guests > SOCIAL_MAX_GUESTS)) {
-      return jsonResponse(400, headers, { error: 'Invalid guest count' });
-    }
-
-    const { data: slotOverrides } = await supabase
-      .from('booking_slots')
-      .select('capacity_social, is_blocked')
-      .eq('date', date)
-      .eq('start_time', startTime)
-      .single();
-
-    const { data: reservations } = await supabase
-      .from('booking_reservations')
-      .select('booking_type, guests')
-      .eq('date', date)
-      .eq('start_time', startTime);
-
-    const capacity = typeof slotOverrides?.capacity_social === 'number' ? slotOverrides.capacity_social : DEFAULT_SOCIAL_CAPACITY;
-    const isBlocked = Boolean(slotOverrides?.is_blocked);
 
     let bookedSocial = 0;
     let hasPrivate = false;
-
-    reservations?.forEach((row) => {
+    existingBookings.forEach((row) => {
       if (row.booking_type === 'private') {
         hasPrivate = true;
       } else {
@@ -100,50 +126,38 @@ exports.handler = async (event) => {
       }
     });
 
-    if (isBlocked) {
-      return jsonResponse(409, headers, { error: 'Slot is blocked' });
-    }
-
     if (hasPrivate) {
-      return jsonResponse(409, headers, { error: 'Slot already booked' });
+      return jsonResponse(409, headers, { error: 'This time slot is not available' });
     }
 
-    if (bookingType === 'private' && bookedSocial > 0) {
-      return jsonResponse(409, headers, { error: 'Slot already has social bookings' });
-    }
+    const capacity = typeof slotOverride?.capacity_social === 'number'
+      ? slotOverride.capacity_social
+      : DEFAULT_SOCIAL_CAPACITY;
 
-    if (bookingType === 'social' && bookedSocial + guests > capacity) {
-      return jsonResponse(409, headers, { error: 'Not enough spots available' });
-    }
-
-    // Validate and sanitize contact fields
-    const name = payload.name ? String(payload.name).trim().slice(0, 200) : null;
-    const email = payload.email ? String(payload.email).trim() : null;
-    const phone = payload.phone ? String(payload.phone).replace(/[^\d+\-() ]/g, '').trim() : null;
-
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return jsonResponse(400, headers, { error: 'Invalid email address' });
-    }
-
-    if (phone) {
-      const digits = phone.replace(/\D/g, '');
-      if (digits.length < 7 || digits.length > 15) {
-        return jsonResponse(400, headers, { error: 'Invalid phone number' });
+    if (booking_type === 'private') {
+      if (existingBookings.length > 0) {
+        return jsonResponse(409, headers, { error: 'This time slot already has bookings' });
+      }
+    } else {
+      if (bookedSocial + guests > capacity) {
+        return jsonResponse(409, headers, { error: 'Not enough spots available' });
       }
     }
+
+    // --- Insert reservation ---
 
     const { error: insertError } = await supabase
       .from('booking_reservations')
       .insert({
         date,
-        start_time: startTime,
-        end_time: endTime,
-        booking_type: bookingType,
+        start_time: normStart,
+        end_time: normEnd,
+        booking_type,
         guests,
         name,
         email,
-        notes: payload.notes ? String(payload.notes).trim().slice(0, 1000) : null,
-        status: 'confirmed'
+        notes: notes ? String(notes).trim().slice(0, 1000) : null,
+        created_at: new Date().toISOString()
       });
 
     if (insertError) throw insertError;
