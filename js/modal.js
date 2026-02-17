@@ -76,8 +76,8 @@
             this.updateSpecs();
             this.updateImages();
             this.updatePrices();
-            this.handleHeaterOptions();
             this.resetForm();
+            this.handleHeaterOptions();
             this.calculateTotal();
 
             this.modal.classList.add('active');
