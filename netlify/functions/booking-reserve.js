@@ -5,7 +5,6 @@ const { buildCorsHeaders, jsonResponse, parseJsonBody } = require('./lib/http');
 const { getSupabaseClient } = require('./lib/supabase');
 const {
   SLOT_DEFINITIONS,
-  DEFAULT_SOCIAL_CAPACITY,
   SOCIAL_MAX_GUESTS,
   PRIVATE_MAX_GUESTS,
   MIN_ADVANCE_HOURS,
@@ -93,74 +92,33 @@ exports.handler = async (event) => {
       return jsonResponse(409, headers, { error: 'Slot is no longer bookable' });
     }
 
-    // --- Check availability ---
+    // --- Atomic reserve via RPC (prevents race conditions) ---
 
-    const [slotResult, reservationResult] = await Promise.all([
-      supabase
-        .from('booking_slots')
-        .select('capacity_social, is_blocked')
-        .eq('date', date)
-        .eq('start_time', normStart)
-        .maybeSingle(),
-      supabase
-        .from('booking_reservations')
-        .select('booking_type, guests')
-        .eq('date', date)
-        .eq('start_time', normStart)
-    ]);
-
-    const slotOverride = slotResult.data;
-    const existingBookings = reservationResult.data || [];
-
-    if (slotOverride?.is_blocked) {
-      return jsonResponse(409, headers, { error: 'This time slot is not available' });
-    }
-
-    let bookedSocial = 0;
-    let hasPrivate = false;
-    existingBookings.forEach((row) => {
-      if (row.booking_type === 'private') {
-        hasPrivate = true;
-      } else {
-        bookedSocial += row.guests || 1;
-      }
+    const { data, error: rpcError } = await supabase.rpc('reserve_booking_slot', {
+      p_date: date,
+      p_start_time: normStart,
+      p_end_time: normEnd,
+      p_booking_type: booking_type,
+      p_guests: guests,
+      p_name: name,
+      p_email: email,
+      p_notes: notes ? String(notes).trim().slice(0, 1000) : null
     });
 
-    if (hasPrivate) {
-      return jsonResponse(409, headers, { error: 'This time slot is not available' });
-    }
-
-    const capacity = typeof slotOverride?.capacity_social === 'number'
-      ? slotOverride.capacity_social
-      : DEFAULT_SOCIAL_CAPACITY;
-
-    if (booking_type === 'private') {
-      if (existingBookings.length > 0) {
+    if (rpcError) {
+      // Match on hint field (set via RAISE EXCEPTION ... USING HINT) for reliable error mapping
+      const hint = rpcError.hint || '';
+      if (hint === 'SLOT_BLOCKED' || hint === 'SLOT_UNAVAILABLE') {
+        return jsonResponse(409, headers, { error: 'This time slot is not available' });
+      }
+      if (hint === 'SLOT_HAS_BOOKINGS') {
         return jsonResponse(409, headers, { error: 'This time slot already has bookings' });
       }
-    } else {
-      if (bookedSocial + guests > capacity) {
+      if (hint === 'CAPACITY_EXCEEDED') {
         return jsonResponse(409, headers, { error: 'Not enough spots available' });
       }
+      throw rpcError;
     }
-
-    // --- Insert reservation ---
-
-    const { error: insertError } = await supabase
-      .from('booking_reservations')
-      .insert({
-        date,
-        start_time: normStart,
-        end_time: normEnd,
-        booking_type,
-        guests,
-        name,
-        email,
-        notes: notes ? String(notes).trim().slice(0, 1000) : null,
-        created_at: new Date().toISOString()
-      });
-
-    if (insertError) throw insertError;
 
     return jsonResponse(200, headers, { success: true });
   } catch (error) {

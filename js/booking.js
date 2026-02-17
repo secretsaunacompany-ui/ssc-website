@@ -351,6 +351,16 @@
     }
 
     // ============================================
+    // Pricing Calculation
+    // ============================================
+    function calculateBookingPricing(bookingType, numGuests) {
+        const subtotal = bookingType === 'private' ? 500 : numGuests * 45;
+        const gst = subtotal * 0.05;
+        const total = subtotal + gst;
+        return { subtotal, gst, total };
+    }
+
+    // ============================================
     // Booking Summary Update
     // ============================================
     function updateBookingSummary() {
@@ -393,19 +403,11 @@
         const summarySubtotal = document.getElementById('summarySubtotalBooking');
         const summaryGST = document.getElementById('summaryGSTBooking');
 
-        let subtotal = 0;
-        if (bookingType === 'private') {
-            subtotal = 500;
-        } else {
-            subtotal = numGuests * 45;
-        }
+        const pricing = calculateBookingPricing(bookingType, numGuests);
 
-        const gst = subtotal * 0.05;
-        const total = subtotal + gst;
-
-        if (summarySubtotal) summarySubtotal.textContent = `$${subtotal.toFixed(2)}`;
-        if (summaryGST) summaryGST.textContent = `$${gst.toFixed(2)}`;
-        if (summaryTotal) summaryTotal.textContent = `$${total.toFixed(2)}`;
+        if (summarySubtotal) summarySubtotal.textContent = `$${pricing.subtotal.toFixed(2)}`;
+        if (summaryGST) summaryGST.textContent = `$${pricing.gst.toFixed(2)}`;
+        if (summaryTotal) summaryTotal.textContent = `$${pricing.total.toFixed(2)}`;
     }
 
     // ============================================
@@ -421,7 +423,7 @@
 
         const bookingType = getSelectedBookingType();
         const numGuests = parseInt(document.getElementById('bookingGuests').value) || 1;
-        const total = bookingType === 'private' ? 500 : numGuests * 45;
+        const pricing = calculateBookingPricing(bookingType, numGuests);
         const selectedSlot = (bookingManager.currentSlots || []).find((s) => s.start === bookingManager.selectedTime);
 
         if (!selectedSlot) {
@@ -444,7 +446,9 @@
             guests: numGuests,
             notes: document.getElementById('bookingNotes').value,
             dateKey: bookingManager.formatDateKey(bookingManager.selectedDate),
-            total: total
+            subtotal: pricing.subtotal,
+            gst: pricing.gst,
+            total: pricing.total
         };
 
         const submitBtn = document.getElementById('bookingSubmitBtn');
@@ -488,7 +492,7 @@
                 },
                 body: JSON.stringify({
                     subject: `New ${formData.bookingTypeDisplay} Booking - ${formData.date}`,
-                    message: `\nNew Booking Request:\n\nType: ${formData.bookingTypeDisplay}\nDate: ${formData.date}\nTime: ${formData.time}\nName: ${formData.name}\nEmail: ${formData.email}\nGuests: ${formData.guests}\nNotes: ${formData.notes || 'None'}\n\nTotal: $${formData.total}${formData.bookingType === 'social' ? ` ($45 x ${formData.guests} spots)` : ' (flat rate)'}\n                `
+                    message: `\nNew Booking Request:\n\nType: ${formData.bookingTypeDisplay}\nDate: ${formData.date}\nTime: ${formData.time}\nName: ${formData.name}\nEmail: ${formData.email}\nGuests: ${formData.guests}\nNotes: ${formData.notes || 'None'}\n\nSubtotal: $${formData.subtotal.toFixed(2)}${formData.bookingType === 'social' ? ` ($45 x ${formData.guests} spots)` : ' (flat rate)'}\nGST (5%): $${formData.gst.toFixed(2)}\nTotal: $${formData.total.toFixed(2)}\n                `
                 })
             });
         })
@@ -500,7 +504,7 @@
 
             // Show success message
             const emailNote = emailFailed ? '\n\nNote: We received your booking, but email delivery failed. If you don\'t hear from us within 24 hours, please email us directly.' : '';
-            alert(`Thank you for your ${formData.bookingTypeDisplay} booking request!\n\nDate: ${formData.date}\nTime: ${formData.time}\nTotal: $${formData.total}\n\nWe'll send you a confirmation email within 24 hours with payment details and final instructions.${emailNote}`);
+            alert(`Thank you for your ${formData.bookingTypeDisplay} booking request!\n\nDate: ${formData.date}\nTime: ${formData.time}\nTotal: $${formData.total.toFixed(2)} (incl. GST)\n\nWe'll send you a confirmation email within 24 hours with payment details and final instructions.${emailNote}`);
 
             // Reset form
             document.getElementById('bookingForm').reset();

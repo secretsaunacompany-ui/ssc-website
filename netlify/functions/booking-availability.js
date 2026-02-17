@@ -1,5 +1,7 @@
 // Netlify Function: Booking Availability (public)
 // Endpoint: /.netlify/functions/booking-availability
+// NOTE: Booking validation rules also exist in the reserve_booking_slot RPC function
+// (supabase-schema.sql). Keep both in sync when rules change.
 
 const { buildCorsHeaders, jsonResponse } = require('./lib/http');
 const { getSupabaseClient } = require('./lib/supabase');

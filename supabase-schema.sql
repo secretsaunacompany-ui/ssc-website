@@ -184,3 +184,84 @@ LEFT JOIN sessions s ON pv.session_id = s.session_id;
 -- Grant select on view
 GRANT SELECT ON analytics_overview TO service_role;
 -- GRANT SELECT ON analytics_overview TO anon;  -- Uncomment for anon access
+
+-- =====================================================
+-- Atomic Booking Reservation (prevents race conditions)
+-- =====================================================
+CREATE OR REPLACE FUNCTION reserve_booking_slot(
+    p_date DATE,
+    p_start_time TIME,
+    p_end_time TIME,
+    p_booking_type TEXT,
+    p_guests INTEGER,
+    p_name TEXT,
+    p_email TEXT,
+    p_notes TEXT DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+DECLARE
+    v_capacity INTEGER;
+    v_is_blocked BOOLEAN;
+    v_booked_social INTEGER;
+    v_has_private BOOLEAN;
+BEGIN
+    -- Advisory lock on date+time to handle empty-slot case
+    -- Separator prevents ambiguous concatenation (e.g., date '2026-02-1' + time '709:00')
+    PERFORM pg_advisory_xact_lock(hashtext(p_date::TEXT || '|' || p_start_time::TEXT));
+
+    -- Check slot overrides (capacity, blocking)
+    SELECT capacity_social, is_blocked
+    INTO v_capacity, v_is_blocked
+    FROM booking_slots
+    WHERE date = p_date AND start_time = p_start_time
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        v_capacity := 12;
+        v_is_blocked := false;
+    END IF;
+
+    IF v_is_blocked THEN
+        RAISE EXCEPTION 'Slot is blocked' USING HINT = 'SLOT_BLOCKED';
+    END IF;
+
+    -- Count existing reservations (locked)
+    -- Note: no status filter -- cancellations are hard deletes, so all rows are active
+    SELECT
+        COALESCE(SUM(CASE WHEN booking_type = 'social' THEN guests ELSE 0 END), 0),
+        COALESCE(BOOL_OR(booking_type = 'private'), false)
+    INTO v_booked_social, v_has_private
+    FROM booking_reservations
+    WHERE date = p_date AND start_time = p_start_time
+    FOR UPDATE;
+
+    -- Business rules
+    IF v_has_private THEN
+        RAISE EXCEPTION 'Slot has a private booking' USING HINT = 'SLOT_UNAVAILABLE';
+    END IF;
+
+    IF p_booking_type = 'private' AND v_booked_social > 0 THEN
+        RAISE EXCEPTION 'Slot already has bookings' USING HINT = 'SLOT_HAS_BOOKINGS';
+    END IF;
+
+    IF p_booking_type = 'social' AND v_booked_social + p_guests > v_capacity THEN
+        RAISE EXCEPTION 'Not enough capacity' USING HINT = 'CAPACITY_EXCEEDED';
+    END IF;
+
+    -- Insert (still inside transaction)
+    INSERT INTO booking_reservations (
+        date, start_time, end_time, booking_type,
+        guests, name, email, notes, created_at
+    ) VALUES (
+        p_date, p_start_time, p_end_time, p_booking_type,
+        p_guests, p_name, p_email, p_notes, NOW()
+    );
+
+    RETURN jsonb_build_object('success', true);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION reserve_booking_slot TO service_role;
