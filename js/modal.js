@@ -15,6 +15,7 @@
     // State Management
     // ============================================
     let currentModel = null;
+    let currentModelId = null;
     let currentImageIndex = 0;
 
     // ============================================
@@ -69,6 +70,7 @@
         open(modelId) {
             const saunaModels = window.SSC.saunaModels;
             currentModel = saunaModels[modelId];
+            currentModelId = modelId;
             if (!currentModel) return;
 
             this.updateSpecs();
@@ -187,6 +189,22 @@
                 woodUpgrade.classList.remove('disabled');
                 const input = woodUpgrade.querySelector('input');
                 if (input) input.disabled = false;
+            }
+
+            // Swap electric heater upgrade based on model
+            const electricLabel = document.getElementById('heaterElectricLabel');
+            const electricPrice = document.getElementById('heaterElectricPrice');
+            const electricInput = document.querySelector('#heaterElectricUpgrade input');
+            if (electricLabel && electricPrice && electricInput) {
+                if (currentModelId === 'sc') {
+                    electricLabel.textContent = 'Homecraft 15kW Apex (Electric)';
+                    electricPrice.textContent = '+$2,000';
+                    electricInput.value = '2000';
+                } else {
+                    electricLabel.textContent = 'Homecraft Revive 9kW (Electric)';
+                    electricPrice.textContent = '+$2,000';
+                    electricInput.value = '2000';
+                }
             }
         }
 
