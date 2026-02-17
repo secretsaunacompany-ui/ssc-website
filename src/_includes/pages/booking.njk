@@ -21,14 +21,14 @@
                     "@type": "Offer",
                     "name": "Private Sauna Session",
                     "description": "2-hour exclusive access for up to 14 guests. Includes S8 wood-fired and S2 electric sauna.",
-                    "price": "300",
+                    "price": "500",
                     "priceCurrency": "CAD"
                 },
                 {
                     "@type": "Offer",
                     "name": "Social Sauna Session",
                     "description": "2-hour shared session. Meet fellow sauna enthusiasts. Up to 12 spots per session.",
-                    "price": "39",
+                    "price": "45",
                     "priceCurrency": "CAD"
                 }
             ]
@@ -36,9 +36,10 @@
     }
     </script>
 
-    <div id="book" class="page">
+    <div id="book" class="page page--has-bg">
+        <div class="page-bg--fixed page-bg--opacity-10" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768271313/IMG_2819_bl3kb1.jpg');"></div>
         <section class="page-hero hero-overlay">
-            <div class="hero-overlay__bg hero-overlay__bg--opacity-30" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768668598/PXL_20250909_012413658_ltfflz.jpg');"></div>
+            <div class="hero-overlay__bg hero-overlay__bg--opacity-30" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768668598/PXL_20250909_012413658_ltfflz.jpg');"></div>
             <div class="hero-overlay__content">
                 <h1>Book Your Sauna Session</h1>
                 <p>Experience authentic Finnish sauna at our Aldergrove location</p>
@@ -61,7 +62,7 @@
                                 <input type="radio" name="bookingType" value="private" checked class="booking-option__input">
                                 <div class="booking-option__header">
                                     <span class="booking-option__title booking-option__title--accent">Private Session</span>
-                                    <span class="booking-option__price booking-option__price--accent">$300</span>
+                                    <span class="booking-option__price booking-option__price--accent">$500</span>
                                 </div>
                                 <p class="booking-option__desc">2-hour exclusive access • Up to 14 guests • Complete privacy</p>
                             </label>
@@ -71,7 +72,7 @@
                                 <input type="radio" name="bookingType" value="social" class="booking-option__input">
                                 <div class="booking-option__header">
                                     <span class="booking-option__title">Social Sauna</span>
-                                    <span class="booking-option__price">$39 <span class="booking-option__price-suffix">/ person</span></span>
+                                    <span class="booking-option__price">$45 <span class="booking-option__price-suffix">/ person</span></span>
                                 </div>
                                 <p class="booking-option__desc">2-hour session • Meet fellow sauna enthusiasts • Up to 12 spots per session</p>
                             </label>
@@ -107,7 +108,7 @@
                     <div class="booking-form-container">
                         <h3 class="booking-form-container__title">Select Date & Time</h3>
 
-                        <form id="bookingForm" onsubmit="handleBookingSubmit(event)">
+                        <form id="bookingForm" data-action="booking-submit">
                             <!-- Calendar -->
                             <div class="form-group">
                                 <label>Select Date</label>
@@ -165,15 +166,15 @@
                                 </div>
                                 <div class="booking-summary__row booking-summary__row--subtotal">
                                     <span>Subtotal:</span>
-                                    <strong id="summarySubtotalBooking">$300</strong>
+                                    <strong id="summarySubtotalBooking">$500</strong>
                                 </div>
                                 <div class="booking-summary__row">
                                     <span>GST (5%):</span>
-                                    <strong id="summaryGSTBooking">$15.00</strong>
+                                    <strong id="summaryGSTBooking">$25.00</strong>
                                 </div>
                                 <div class="booking-summary__row booking-summary__row--total">
                                     <span>Total:</span>
-                                    <strong class="booking-summary__total-value" id="summaryTotalBooking">$336.00</strong>
+                                    <strong class="booking-summary__total-value" id="summaryTotalBooking">$525.00</strong>
                                 </div>
                             </div>
 
@@ -191,7 +192,7 @@
 
         <!-- Booking Info Section -->
         <section class="bg-grey hero-overlay">
-            <div class="hero-overlay__bg hero-overlay__bg--opacity-20" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768668974/PXL_20250909_012331585_g6nvxo.jpg');"></div>
+            <div class="hero-overlay__bg hero-overlay__bg--opacity-20" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768668974/PXL_20250909_012331585_g6nvxo.jpg');"></div>
             <div class="container hero-overlay__content">
                 <h2 class="text-center fade-in">Good to Know</h2>
                 <div class="grid-3 grid-3--mt-2">

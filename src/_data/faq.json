@@ -1,0 +1,59 @@
+{
+    "items": [
+        {
+            "question": "How long does it take to receive a sauna?",
+            "answer": "Each sauna is unique and timelines can vary; however a typical build takes around 4-6 weeks. You'll be kept informed of your order's progress at every step along the way.",
+            "schemaAnswer": "Each sauna is unique and timelines can vary; however a typical build takes around 4-6 weeks. You'll be kept informed of your order's progress at every step along the way."
+        },
+        {
+            "question": "What are your saunas made of?",
+            "answer": "Generally we build with 2x4 framing, Rockwool insulation, metal exterior cladding, and locally sourced Western Red Cedar interior. We work with a variety of products to ensure each customer is satisfied with their sauna.",
+            "schemaAnswer": "Generally we build with 2x4 framing, Rockwool insulation, metal exterior cladding, and locally sourced Western Red Cedar interior."
+        },
+        {
+            "question": "What type of foundation is needed?",
+            "answer": "Most of our residential saunas are built with open deck flooring for natural ventilation and drainage. Ideally the sauna is placed on packed gravel, concrete feet, or pavers\u2014allowing airflow beneath while ensuring water from inside has a place to drain.",
+            "schemaAnswer": "Most of our residential saunas are built with open deck flooring for natural ventilation and drainage. Ideally the sauna is placed on packed gravel, concrete feet, or pavers."
+        },
+        {
+            "question": "What's the difference between wood-fired and electric saunas?",
+            "answer": "Wood-fired saunas offer authentic heat and atmosphere, ideal for outdoor settings. Electric saunas provide convenient, consistent temperature control\u2014better for indoor or residential installations. We can help determine what's right for your situation.",
+            "schemaAnswer": "Wood-fired saunas offer authentic heat and atmosphere, ideal for outdoor settings. Electric saunas provide convenient, consistent temperature control; better for indoor or residential installations."
+        },
+        {
+            "question": "Do I need a special license to tow a mobile sauna?",
+            "answer": "No additional permits are required to transport the sauna\u2014it's ready to be taken on your next adventure!",
+            "schemaAnswer": "No additional permits are required to transport the sauna; it's ready to be taken on your next adventure."
+        },
+        {
+            "question": "What does the Limited Warranty cover?",
+            "answer": "Every sauna is backed by our 2-5 Limited Warranty: two years on workmanship (materials, labour, finishes) and five years on structural integrity (framing, substructure, load-bearing components). All wired saunas also ship with third-party electrical certification and full documentation. <a href=\"/warranty/\">View full warranty details</a>.",
+            "schemaAnswer": "Every sauna is backed by our 2-5 Limited Warranty: two years on workmanship (materials, labour, finishes) and five years on structural integrity (framing, substructure, load-bearing components). All wired saunas also ship with third-party electrical certification. Full details at secretsaunacompany.ca/warranty."
+        },
+        {
+            "question": "What kind of maintenance do saunas require?",
+            "answer": "Each piece of the sauna\u2014from benches to rocks\u2014wears at different rates. Regular cleaning and maintenance is important. Every sauna comes with detailed instructions on weekly, monthly, and yearly care.",
+            "schemaAnswer": "Each piece of the sauna wears at different rates. Regular cleaning and maintenance is important. Every sauna comes with detailed instructions on weekly, monthly, and yearly care."
+        },
+        {
+            "question": "How does payment work?",
+            "answer": "We accept a variety of payments and work with clients to determine the most appropriate plan. Our typical structure is 30% deposit, 30% at halfway, 30% once almost complete, and the final 10% upon delivery.",
+            "schemaAnswer": "Our typical structure is 30% deposit, 30% at halfway, 30% once almost complete, and the final 10% upon delivery. We accept a variety of payment methods."
+        },
+        {
+            "question": "Do you build infrared saunas?",
+            "answer": "Generally no. At Secret Sauna Co. we build traditional Finnish saunas which have a proven history over millennia.",
+            "schemaAnswer": "Generally no. At Secret Sauna Co. we build traditional Finnish saunas which have a proven history over millennia."
+        },
+        {
+            "question": "What's included in a rental?",
+            "answer": "Sauna rentals include delivery, setup, firewood, and pickup. We provide everything you need for a complete sauna experience\u2014you just provide the location and the guests.",
+            "schemaAnswer": "Sauna rentals include delivery, setup, firewood, and pickup. We provide everything you need for a complete sauna experience."
+        },
+        {
+            "question": "Do you work outside British Columbia?",
+            "answer": "While we're based in BC, we've completed projects throughout Western Canada. Contact us to discuss your location and project scope.",
+            "schemaAnswer": "While we're based in BC, we've completed projects throughout Western Canada. Contact us to discuss your location and project scope."
+        }
+    ]
+}
