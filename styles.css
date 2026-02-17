@@ -119,6 +119,16 @@ body::after {
     mix-blend-mode: overlay;
 }
 
+a {
+    color: var(--color-warm-wood);
+    text-decoration-color: rgba(196, 165, 123, 0.4);
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--color-off-white);
+}
+
 ::selection {
     background: var(--color-warm-wood-alpha-30);
     color: var(--color-off-white);
@@ -1446,7 +1456,7 @@ footer::before {
 .footer-section a {
     color: var(--color-charcoal);
     text-decoration: none;
-    display: inline-block;
+    display: block;
     margin-bottom: var(--spacing-xs);
     font-size: 0.9rem;
     transition: color var(--transition-fast);
