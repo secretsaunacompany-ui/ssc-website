@@ -8,195 +8,285 @@
     // ============================================
     // Scroll Animation Manager
     // ============================================
-    function ScrollAnimationManager() {
-        this.observerOptions = {
-            threshold: 0.15,
-            rootMargin: '0px 0px -50px 0px'
-        };
+    class ScrollAnimationManager {
+        constructor() {
+            this.observerOptions = {
+                threshold: 0.15,
+                rootMargin: '0px 0px -50px 0px'
+            };
 
-        var self = this;
-        this.observer = new IntersectionObserver(
-            function(entries) { self.handleIntersection(entries); },
-            this.observerOptions
-        );
-    }
+            this.observer = new IntersectionObserver(
+                (entries) => { this.handleIntersection(entries); },
+                this.observerOptions
+            );
+        }
 
-    ScrollAnimationManager.prototype.handleIntersection = function(entries) {
-        entries.forEach(function(entry) {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
-    };
-
-    ScrollAnimationManager.prototype.init = function() {
-        var self = this;
-        var animatedElements = document.querySelectorAll(
-            '.fade-in, .slide-up, .slide-left, .slide-right, .scale-in'
-        );
-
-        animatedElements.forEach(function(el) {
-            el.classList.remove('visible');
-            self.observer.observe(el);
-        });
-
-        // Trigger immediate check for elements already in view
-        setTimeout(function() {
-            animatedElements.forEach(function(el) {
-                var rect = el.getBoundingClientRect();
-                if (rect.top < window.innerHeight && rect.bottom > 0) {
-                    el.classList.add('visible');
+        handleIntersection(entries) {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
                 }
             });
-        }, 50);
-    };
+        }
 
-    ScrollAnimationManager.prototype.reinit = function() {
-        var self = this;
-        setTimeout(function() { self.init(); }, 100);
-    };
+        init() {
+            const animatedElements = document.querySelectorAll(
+                '.fade-in, .slide-up, .slide-left, .slide-right, .scale-in'
+            );
+
+            animatedElements.forEach((el) => {
+                el.classList.remove('visible');
+                this.observer.observe(el);
+            });
+
+            // Set stagger indices for animated grid children
+            const staggerContainers = document.querySelectorAll(
+                '.grid-2, .grid-3, .model-grid, .grid-offerings, .comparison-grid'
+            );
+            staggerContainers.forEach((container) => {
+                const children = container.children;
+                for (let i = 0; i < children.length; i++) {
+                    children[i].style.setProperty('--stagger-index', i);
+                }
+            });
+
+            // Set stagger indices for gallery items and FAQ items
+            document.querySelectorAll('.gallery-item, .faq-item').forEach((el) => {
+                const parent = el.parentElement;
+                if (!parent.dataset.staggered) {
+                    parent.dataset.staggered = 'true';
+                    const siblings = parent.querySelectorAll(':scope > .gallery-item, :scope > .faq-item');
+                    siblings.forEach((sibling, j) => {
+                        sibling.style.setProperty('--stagger-index', j);
+                    });
+                }
+            });
+
+            // Trigger immediate check for elements already in view
+            setTimeout(() => {
+                animatedElements.forEach((el) => {
+                    const rect = el.getBoundingClientRect();
+                    if (rect.top < window.innerHeight && rect.bottom > 0) {
+                        el.classList.add('visible');
+                    }
+                });
+            }, 50);
+        }
+    }
 
     // ============================================
     // Hero Intro Animation
     // ============================================
-    function HeroIntroAnimation() {
-        this.isActive = false;
-        this.isRevealed = false;
-        this.scrollThreshold = 50; // Pixels of scroll needed to trigger reveal
-        this.scrollAccumulator = 0;
-        this.readyForReveal = false;
-        this.touchStartY = 0;
-
-        // Bind methods
-        var self = this;
-        this.boundTouchStart = function(e) { self.handleTouchStart(e); };
-        this.boundPreventScroll = function(e) { self.preventScroll(e); };
-        this.boundHandleWheel = function(e) { self.handleWheel(e); };
-        this.boundHandleTouch = function(e) { self.handleTouch(e); };
-    }
-
-    HeroIntroAnimation.prototype.init = function() {
-        // Only run on home page and first visit
-        if (sessionStorage.getItem('heroIntroShown')) {
-            document.body.classList.remove('intro-pending');
-            return;
-        }
-
-        this.isActive = true;
-        document.body.classList.add('hero-intro-active');
-
-        window.addEventListener('wheel', this.boundHandleWheel, { passive: false });
-        window.addEventListener('touchstart', this.boundTouchStart, { passive: true });
-        window.addEventListener('touchmove', this.boundHandleTouch, { passive: false });
-        window.addEventListener('keydown', this.boundPreventScroll, { passive: false });
-
-        // Small delay before listening for scroll to trigger reveal
-        var self = this;
-        setTimeout(function() {
-            self.readyForReveal = true;
-        }, 300);
-    };
-
-    HeroIntroAnimation.prototype.preventScroll = function(e) {
-        if (this.isActive && !this.isRevealed) {
-            if (['ArrowDown', 'ArrowUp', 'Space', 'PageDown', 'PageUp'].indexOf(e.key) !== -1) {
-                e.preventDefault();
-                this.triggerReveal();
-            }
-        }
-    };
-
-    HeroIntroAnimation.prototype.handleWheel = function(e) {
-        if (this.isActive && !this.isRevealed && this.readyForReveal) {
-            e.preventDefault();
-
-            // Accumulate scroll delta
-            this.scrollAccumulator += Math.abs(e.deltaY);
-
-            if (this.scrollAccumulator >= this.scrollThreshold) {
-                this.triggerReveal();
-            }
-        }
-    };
-
-    HeroIntroAnimation.prototype.handleTouchStart = function(e) {
-        this.touchStartY = e.touches[0].clientY;
-    };
-
-    HeroIntroAnimation.prototype.handleTouch = function(e) {
-        if (this.isActive && !this.isRevealed && this.readyForReveal) {
-            var touchY = e.touches[0].clientY;
-            var deltaY = this.touchStartY - touchY;
-
-            if (Math.abs(deltaY) > 30) {
-                e.preventDefault();
-                this.triggerReveal();
-            }
-        }
-    };
-
-    HeroIntroAnimation.prototype.triggerReveal = function() {
-        if (this.isRevealed) return;
-        this.isRevealed = true;
-        document.body.classList.remove('intro-pending');
-
-        // Reveal nav first
-        var nav = document.querySelector('nav');
-        if (nav) {
-            nav.classList.add('revealed');
-        }
-
-        // Reveal hero content with slight delay
-        setTimeout(function() {
-            var heroContent = document.querySelector('.hero-content');
-            if (heroContent) {
-                heroContent.classList.add('revealed');
-            }
-        }, 200);
-
-        // Remove scroll lock after animation
-        var self = this;
-        setTimeout(function() {
-            self.cleanup();
-        }, 1200);
-
-        // Mark as shown for this session
-        sessionStorage.setItem('heroIntroShown', 'true');
-    };
-
-    HeroIntroAnimation.prototype.cleanup = function() {
-        this.isActive = false;
-        document.body.classList.remove('hero-intro-active');
-        document.body.classList.remove('intro-pending');
-        window.removeEventListener('wheel', this.boundHandleWheel);
-        window.removeEventListener('touchstart', this.boundTouchStart);
-        window.removeEventListener('touchmove', this.boundHandleTouch);
-        window.removeEventListener('keydown', this.boundPreventScroll);
-    };
-
-    // Reset for page navigation back to home
-    HeroIntroAnimation.prototype.reset = function() {
-        if (!sessionStorage.getItem('heroIntroShown')) {
+    class HeroIntroAnimation {
+        constructor() {
             this.isActive = false;
             this.isRevealed = false;
+            this.scrollThreshold = 50; // Pixels of scroll needed to trigger reveal
             this.scrollAccumulator = 0;
             this.readyForReveal = false;
-            this.init();
+            this.touchStartY = 0;
+
+            // Bind methods
+            this.boundTouchStart = (e) => { this.handleTouchStart(e); };
+            this.boundPreventScroll = (e) => { this.preventScroll(e); };
+            this.boundHandleWheel = (e) => { this.handleWheel(e); };
+            this.boundHandleTouch = (e) => { this.handleTouch(e); };
         }
-    };
+
+        init() {
+            // Only run on home page and first visit
+            if (sessionStorage.getItem('heroIntroShown')) {
+                document.body.classList.remove('intro-pending');
+                return;
+            }
+
+            document.body.classList.add('intro-pending');
+            this.isActive = true;
+            document.body.classList.add('hero-intro-active');
+
+            window.addEventListener('wheel', this.boundHandleWheel, { passive: false });
+            window.addEventListener('touchstart', this.boundTouchStart, { passive: true });
+            window.addEventListener('touchmove', this.boundHandleTouch, { passive: false });
+            window.addEventListener('keydown', this.boundPreventScroll, { passive: false });
+
+            // Small delay before listening for scroll to trigger reveal
+            setTimeout(() => {
+                this.readyForReveal = true;
+            }, 300);
+        }
+
+        preventScroll(e) {
+            if (this.isActive && !this.isRevealed) {
+                if (['ArrowDown', 'ArrowUp', 'Space', 'PageDown', 'PageUp'].includes(e.key)) {
+                    e.preventDefault();
+                    this.triggerReveal();
+                }
+            }
+        }
+
+        handleWheel(e) {
+            if (this.isActive && !this.isRevealed && this.readyForReveal) {
+                e.preventDefault();
+
+                // Accumulate scroll delta
+                this.scrollAccumulator += Math.abs(e.deltaY);
+
+                if (this.scrollAccumulator >= this.scrollThreshold) {
+                    this.triggerReveal();
+                }
+            }
+        }
+
+        handleTouchStart(e) {
+            this.touchStartY = e.touches[0].clientY;
+        }
+
+        handleTouch(e) {
+            if (this.isActive && !this.isRevealed && this.readyForReveal) {
+                const touchY = e.touches[0].clientY;
+                const deltaY = this.touchStartY - touchY;
+
+                if (Math.abs(deltaY) > 30) {
+                    e.preventDefault();
+                    this.triggerReveal();
+                }
+            }
+        }
+
+        triggerReveal() {
+            if (this.isRevealed) return;
+            this.isRevealed = true;
+            document.body.classList.remove('intro-pending');
+
+            // Reveal nav first
+            const nav = document.querySelector('nav');
+            if (nav) {
+                nav.classList.add('revealed');
+            }
+
+            // Reveal hero content with slight delay
+            setTimeout(() => {
+                const heroContent = document.querySelector('.hero-content');
+                if (heroContent) {
+                    heroContent.classList.add('revealed');
+                }
+            }, 200);
+
+            // Remove scroll lock after animation
+            setTimeout(() => {
+                this.cleanup();
+            }, 1200);
+
+            // Mark as shown for this session
+            sessionStorage.setItem('heroIntroShown', 'true');
+        }
+
+        cleanup() {
+            this.isActive = false;
+            document.body.classList.remove('hero-intro-active');
+            document.body.classList.remove('intro-pending');
+            window.removeEventListener('wheel', this.boundHandleWheel);
+            window.removeEventListener('touchstart', this.boundTouchStart);
+            window.removeEventListener('touchmove', this.boundHandleTouch);
+            window.removeEventListener('keydown', this.boundPreventScroll);
+        }
+    }
+
+    // ============================================
+    // Parallax
+    // ============================================
+    function initHeroParallax() {
+        const heroImage = document.querySelector('.hero-image');
+        const heroContent = document.querySelector('.hero-content');
+        const pageHeroes = document.querySelectorAll('.page-hero');
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const overlayBgs = document.querySelectorAll('.hero-overlay__bg');
+        const fullWidthImages = document.querySelectorAll('.full-width-image');
+
+        // Wrap full-width images in overflow-hidden containers
+        fullWidthImages.forEach((img) => {
+            if (img.parentElement.classList.contains('full-width-image-wrap')) return;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'full-width-image-wrap';
+            // Carry over animation classes
+            if (img.classList.contains('scale-in')) {
+                wrapper.classList.add('scale-in');
+                img.classList.remove('scale-in');
+            }
+            img.parentNode.insertBefore(wrapper, img);
+            wrapper.appendChild(img);
+        });
+
+        if (!heroImage && !heroContent && overlayBgs.length === 0 && fullWidthImages.length === 0 && pageHeroes.length === 0) return;
+
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const scrollY = window.pageYOffset;
+                    const viewH = window.innerHeight;
+
+                    // Hero image -- strongest effect
+                    if (heroImage && scrollY <= viewH) {
+                        heroImage.style.top = `${-(scrollY * 0.6)}px`;
+                    }
+
+                    // Hero content text fade on scroll
+                    if (!prefersReducedMotion && heroContent && scrollY <= viewH) {
+                        const fadeProgress = Math.min(scrollY / (viewH * 0.6), 1);
+                        heroContent.style.opacity = 1 - fadeProgress;
+                    }
+
+                    // Overlay backgrounds
+                    overlayBgs.forEach((bg) => {
+                        const rect = bg.parentElement.getBoundingClientRect();
+                        if (rect.bottom > 0 && rect.top < viewH) {
+                            const progress = (viewH - rect.top) / (viewH + rect.height);
+                            bg.style.transform = `translateY(${-(progress - 0.5) * 80}px)`;
+                        }
+                    });
+
+                    // Page hero content fade on scroll
+                    if (!prefersReducedMotion) {
+                        pageHeroes.forEach((hero) => {
+                            const rect = hero.getBoundingClientRect();
+                            const heroH = hero.offsetHeight;
+                            if (rect.top < 0 && rect.bottom > 0) {
+                                const scrolledPast = Math.abs(rect.top);
+                                const fadeProgress = Math.min(scrolledPast / (heroH * 0.5), 1);
+                                hero.style.opacity = 1 - fadeProgress;
+                            } else if (rect.top >= 0) {
+                                hero.style.opacity = 1;
+                            }
+                        });
+                    }
+
+                    // Full-width images
+                    fullWidthImages.forEach((img) => {
+                        const wrap = img.parentElement;
+                        const rect = wrap.getBoundingClientRect();
+                        if (rect.bottom > 0 && rect.top < viewH) {
+                            const progress = (viewH - rect.top) / (viewH + rect.height);
+                            img.style.transform = `translateY(${-(progress - 0.5) * 100}px)`;
+                        }
+                    });
+
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }, { passive: true });
+    }
 
     // ============================================
     // Create instances and export
     // ============================================
-    var scrollAnimations = new ScrollAnimationManager();
-    var heroIntro = new HeroIntroAnimation();
+    const scrollAnimations = new ScrollAnimationManager();
+    const heroIntro = new HeroIntroAnimation();
 
     window.SSC = window.SSC || {};
     window.SSC.scrollAnimations = scrollAnimations;
     window.SSC.heroIntro = heroIntro;
-
-    // Also expose directly for backward compatibility
-    window.scrollAnimations = scrollAnimations;
-    window.heroIntro = heroIntro;
+    window.SSC.initHeroParallax = initHeroParallax;
 
 })();

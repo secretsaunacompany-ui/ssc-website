@@ -9,7 +9,7 @@
     // Mobile Menu Toggle
     // ============================================
     function toggleMenu() {
-        var navLinks = document.getElementById('navLinks');
+        const navLinks = document.getElementById('navLinks');
         if (navLinks) {
             navLinks.classList.toggle('active');
         }
@@ -18,25 +18,25 @@
     // ============================================
     // Leaflet Lazy Loading for Maps
     // ============================================
-    var leafletLoaded = false;
+    let leafletLoaded = false;
 
     function loadLeaflet() {
-        return new Promise(function(resolve) {
+        return new Promise((resolve) => {
             if (leafletLoaded) {
                 resolve();
                 return;
             }
 
             // Load CSS
-            var link = document.createElement('link');
+            const link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
             document.head.appendChild(link);
 
             // Load JS
-            var script = document.createElement('script');
+            const script = document.createElement('script');
             script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-            script.onload = function() {
+            script.onload = () => {
                 leafletLoaded = true;
                 resolve();
             };
@@ -47,13 +47,13 @@
     // ============================================
     // Page-specific initialization
     // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', () => {
         // Initialize map if on locations page
         if (document.getElementById('map')) {
-            loadLeaflet().then(function() {
-                setTimeout(function() {
-                    if (window.initMap) {
-                        window.initMap();
+            loadLeaflet().then(() => {
+                setTimeout(() => {
+                    if (window.SSC.initMap) {
+                        window.SSC.initMap();
                     }
                 }, 100);
             });
@@ -61,19 +61,19 @@
 
         // Initialize booking system if on book page
         if (document.getElementById('bookingCalendar') || document.querySelector('.booking-section')) {
-            setTimeout(function() {
-                if (window.initBookingSystem) {
-                    window.initBookingSystem();
+            setTimeout(() => {
+                if (window.SSC.initBookingSystem) {
+                    window.SSC.initBookingSystem();
                 }
             }, 100);
         }
 
         // Pre-fill contact form from quote configurator (via sessionStorage)
-        var quoteConfig = sessionStorage.getItem('ssc_quote_config');
+        const quoteConfig = sessionStorage.getItem('ssc_quote_config');
         if (quoteConfig) {
-            var messageField = document.querySelector('textarea[name="message"]');
+            const messageField = document.querySelector('textarea[name="message"]');
             if (messageField) {
-                messageField.value = 'I\'m interested in the following configuration:\n\n' + quoteConfig + '\n\nPlease contact me to discuss further.';
+                messageField.value = `I'm interested in the following configuration:\n\n${quoteConfig}\n\nPlease contact me to discuss further.`;
                 sessionStorage.removeItem('ssc_quote_config');
             }
         }
@@ -83,11 +83,17 @@
     // Hash redirect for backward compatibility
     // ============================================
     (function() {
-        var hash = window.location.hash.replace('#', '');
+        const hash = window.location.hash.replace('#', '');
         if (hash && window.location.pathname === '/') {
-            var validPages = ['about', 'saunas', 'process', 'gallery', 'faq', 'locations', 'contact', 'book'];
-            if (validPages.indexOf(hash) !== -1) {
-                window.location.replace('/' + hash + '/');
+            const redirectMap = {
+                'process': '/about/',
+                'gallery': '/saunas/'
+            };
+            const validPages = ['about', 'saunas', 'faq', 'locations', 'contact', 'book'];
+            if (redirectMap[hash]) {
+                window.location.replace(redirectMap[hash]);
+            } else if (validPages.includes(hash)) {
+                window.location.replace(`/${hash}/`);
             }
         }
     })();
@@ -97,8 +103,6 @@
     // ============================================
     window.SSC = window.SSC || {};
     window.SSC.loadLeaflet = loadLeaflet;
-
-    // Global functions for onclick handlers
-    window.toggleMenu = toggleMenu;
+    window.SSC.toggleMenu = toggleMenu;
 
 })();
