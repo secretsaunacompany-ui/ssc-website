@@ -228,8 +228,4 @@
     window.SSC.residentialLocations = residentialLocations;
     window.SSC.BOOKING_CONFIG = BOOKING_CONFIG;
 
-    // Also expose saunaModels directly for backward compatibility
-    window.saunaModels = saunaModels;
-    window.BOOKING_CONFIG = BOOKING_CONFIG;
-
 })();

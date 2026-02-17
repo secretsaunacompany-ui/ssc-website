@@ -1,0 +1,20 @@
+    <!-- Gallery Lightbox -->
+    <div id="galleryLightbox" class="lightbox-overlay">
+        <button class="lightbox-close" data-action="close-lightbox" aria-label="Close lightbox">&times;</button>
+        <button class="lightbox-nav lightbox-prev" data-action="lightbox-nav" data-dir="-1" aria-label="Previous image">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15,18 9,12 15,6"></polyline>
+            </svg>
+        </button>
+        <button class="lightbox-nav lightbox-next" data-action="lightbox-nav" data-dir="1" aria-label="Next image">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9,6 15,12 9,18"></polyline>
+            </svg>
+        </button>
+        <div class="lightbox-content">
+            <img id="lightboxImage" src="" alt="Gallery image">
+        </div>
+        <div class="lightbox-counter">
+            <span id="lightboxCurrent">1</span> / <span id="lightboxTotal">25</span>
+        </div>
+    </div>

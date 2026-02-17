@@ -10,18 +10,18 @@
     // ============================================
     function handleSubmit(event) {
         event.preventDefault();
-        var form = event.target;
-        var submitBtn = form.querySelector('button[type="submit"]');
-        var originalText = submitBtn ? submitBtn.textContent : null;
-        var formEndpoint = form.getAttribute('action') || 'https://formspree.io/f/mdaaejwp';
+        const form = event.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn ? submitBtn.textContent : null;
+        const formEndpoint = form.getAttribute('action') || 'https://formspree.io/f/mdaaejwp';
 
         if (submitBtn) {
             submitBtn.textContent = 'Sending...';
             submitBtn.disabled = true;
         }
 
-        var formData = new FormData(form);
-        var encoded = new URLSearchParams(formData).toString();
+        const formData = new FormData(form);
+        const encoded = new URLSearchParams(formData).toString();
 
         fetch(formEndpoint, {
             method: 'POST',
@@ -31,7 +31,7 @@
             },
             body: encoded
         })
-            .then(function(response) {
+            .then((response) => {
                 if (!response.ok) {
                     throw new Error('Form submission failed');
                 }
@@ -39,10 +39,10 @@
                 form.reset();
                 window.location.href = '/gallery/';
             })
-            .catch(function() {
+            .catch(() => {
                 alert('Sorry, something went wrong. Please try again or email us directly.');
             })
-            .finally(function() {
+            .finally(() => {
                 if (submitBtn) {
                     submitBtn.textContent = originalText;
                     submitBtn.disabled = false;
@@ -55,8 +55,5 @@
     // ============================================
     window.SSC = window.SSC || {};
     window.SSC.handleSubmit = handleSubmit;
-
-    // Global function for form onsubmit handler
-    window.handleSubmit = handleSubmit;
 
 })();

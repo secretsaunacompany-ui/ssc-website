@@ -97,9 +97,10 @@
     </script>
 
     <!-- SAUNAS PAGE -->
-    <div id="saunas" class="page">
+    <div id="saunas" class="page page--has-bg">
+        <div class="page-bg--fixed page-bg--opacity-10" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768271313/IMG_2819_bl3kb1.jpg');"></div>
         <section class="page-hero hero-overlay">
-            <div class="hero-overlay__bg hero-overlay__bg--opacity-30" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250656/IMG_7875-EDIT-EDIT_dbj20g.jpg');"></div>
+            <div class="hero-overlay__bg hero-overlay__bg--opacity-30" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768250656/IMG_7875-EDIT-EDIT_dbj20g.jpg');"></div>
             <div class="hero-overlay__content">
                 <h1>Our Saunas</h1>
                 <p>Standard models, custom builds, and mobile saunas</p>
@@ -191,7 +192,7 @@
             <p class="text-center fade-in text--intro-70ch">Handcrafted in Squamish, B.C. Built to the same standards as your house and designed to last just as long. Fully insulated Finnish style saunas where form follows function.</p>
 
             <div class="model-grid">
-                <div class="model-card slide-up" onclick="openModal('s2')">
+                <div class="model-card slide-up" data-action="open-modal" data-model="s2">
                     <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768486096/20250610_124511_dtirpu.jpg" alt="S2 Finnish Sauna - 2-3 person compact outdoor sauna with Western Red Cedar interior" class="model-card-image">
                     <div class="model-card-content">
                         <div class="model-header">
@@ -206,7 +207,7 @@
                     </div>
                 </div>
 
-                <div class="model-card slide-up" onclick="openModal('s4')">
+                <div class="model-card slide-up" data-action="open-modal" data-model="s4">
                     <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768272416/PXL_20240808_173352968.MP_yhb9bq.jpg" alt="S4 Finnish Sauna - 4-5 person traditional cedar sauna with three-tier bench system" class="model-card-image">
                     <div class="model-card-content">
                         <div class="model-header">
@@ -221,7 +222,7 @@
                     </div>
                 </div>
 
-                <div class="model-card slide-up" onclick="openModal('s6')">
+                <div class="model-card slide-up" data-action="open-modal" data-model="s6">
                     <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768272421/20250313_124032-EDIT_uu36i8.jpg" alt="S6 Finnish Sauna - 6-7 person mobile sauna available in wood-fired or electric" class="model-card-image">
                     <div class="model-card-content">
                         <div class="model-header">
@@ -236,7 +237,7 @@
                     </div>
                 </div>
 
-                <div class="model-card slide-up" onclick="openModal('s8')">
+                <div class="model-card slide-up" data-action="open-modal" data-model="s8">
                     <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768256585/IMG_7704_tliztu.jpg" alt="S8 Finnish Sauna - 8-10 person luxury outdoor sauna with full customization options" class="model-card-image">
                     <div class="model-card-content">
                         <div class="model-header">
@@ -251,7 +252,7 @@
                     </div>
                 </div>
 
-                <div class="model-card slide-up" onclick="openModal('sc')">
+                <div class="model-card slide-up" data-action="open-modal" data-model="sc">
                     <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250659/PXL_20250605_233559063.MP-EDIT_zvmio8.jpg" alt="SC Commercial Finnish Sauna - 10-14 person commercial-grade sauna for resorts and wellness centers" class="model-card-image">
                     <div class="model-card-content">
                         <div class="model-header">
@@ -296,5 +297,57 @@
         </section>
 
         <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768256600/PXL_20241206_001021963.MP_g6jdgp.jpg" alt="Sauna detail" class="full-width-image scale-in">
+
+        <section class="wide-container">
+            <h2 class="text-center fade-in">Our Work</h2>
+            <p class="text-center fade-in text--intro-70ch">A selection of recent builds across British Columbia.</p>
+            <div class="gallery">
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324977/DSC03225-EDIT_crqtkp.jpg" alt="Luxury Finnish sauna exterior with modern metal cladding in forest setting">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250657/PXL_20250605_231738816.MP_javbdv.jpg" alt="Handcrafted Western Red Cedar sauna interior with three-tier benches">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324963/PXL_20250119_184356235.MP-EDIT_diy2x7.jpg" alt="Custom sauna with panoramic window overlooking BC mountains">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250654/IMG_6592_ln0gz8.jpg" alt="Traditional wood-fired sauna heater with hot stones for authentic loyly">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324972/PXL_20250605_233615654_or7ngn.jpg" alt="Commercial sauna interior with professional-grade cedar benching">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250653/IMG_6404_hrncws.jpg" alt="Finnish sauna exterior with metal cladding in natural forest setting">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324985/IMG_7463_fevmyz.jpg" alt="Spacious sauna interior with warm cedar tones and ambient lighting">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324962/20250425_132951_ozdcq1.jpg" alt="Outdoor Finnish sauna installation in British Columbia backyard">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324976/20250117_192120_yeltdd.jpg" alt="Finnish sauna at dusk with warm interior lighting">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768252902/PXL_20250219_164112953_qm9dcl.jpg" alt="Sauna build in progress with precision cedar framing">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768253182/IMG-20240421-WA0054-EDIT-EDIT_n613ap.jpg" alt="Finished sauna exterior with natural wood finish">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324968/DSC03239_jnnm5q.jpg" alt="Interior sauna detail showing cedar bench craftsmanship">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768275843/IMG_2891_wfwy7y.jpg" alt="Completed sauna installation in residential backyard setting">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250656/IMG_7294_scub94.jpg" alt="Mobile sauna unit ready for delivery">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324973/PXL_20250605_232338418_yo0pnm.jpg" alt="Sauna interior with warm ambient lighting and cedar walls">
+                </div>
+            </div>
+        </section>
     </div>
 
