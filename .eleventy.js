@@ -3,6 +3,44 @@ module.exports = function(eleventyConfig) {
 
   eleventyConfig.addPassthroughCopy("js");
   eleventyConfig.addPassthroughCopy("styles.css");
+
+  // Post-build minification: JS (esbuild) + CSS (lightningcss)
+  eleventyConfig.on('eleventy.after', async () => {
+    const fs = require('fs');
+    const path = require('path');
+    const esbuild = require('esbuild');
+    const { transform } = require('lightningcss');
+
+    const distDir = path.resolve(__dirname, 'dist');
+
+    // Minify JS files in dist/js/
+    const jsDir = path.join(distDir, 'js');
+    if (fs.existsSync(jsDir)) {
+      const jsFiles = fs.readdirSync(jsDir).filter(f => f.endsWith('.js'));
+      for (const file of jsFiles) {
+        const filePath = path.join(jsDir, file);
+        const result = await esbuild.transform(fs.readFileSync(filePath, 'utf8'), {
+          minify: true,
+          loader: 'js',
+        });
+        fs.writeFileSync(filePath, result.code);
+      }
+      console.log('[minify] JS: ' + jsFiles.length + ' files minified');
+    }
+
+    // Minify CSS: dist/styles.css
+    const cssPath = path.join(distDir, 'styles.css');
+    if (fs.existsSync(cssPath)) {
+      const cssCode = fs.readFileSync(cssPath);
+      const result = transform({
+        filename: 'styles.css',
+        code: cssCode,
+        minify: true,
+      });
+      fs.writeFileSync(cssPath, result.code);
+      console.log('[minify] CSS: styles.css minified');
+    }
+  });
   eleventyConfig.addPassthroughCopy("netlify");
   eleventyConfig.addPassthroughCopy("analytics-tracker-netlify.js");
   eleventyConfig.addPassthroughCopy("analytics-dashboard-netlify.js");

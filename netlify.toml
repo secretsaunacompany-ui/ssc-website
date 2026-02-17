@@ -21,6 +21,26 @@
   to = "/booking-ops.html"
   status = 200
 
+[[redirects]]
+  from = "/process/"
+  to = "/about/"
+  status = 301
+
+[[redirects]]
+  from = "/process"
+  to = "/about/"
+  status = 301
+
+[[redirects]]
+  from = "/gallery/"
+  to = "/saunas/"
+  status = 301
+
+[[redirects]]
+  from = "/gallery"
+  to = "/saunas/"
+  status = 301
+
 # Headers for security
 [[headers]]
   for = "/*"
@@ -59,6 +79,18 @@
   for = "/*.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+# Cache JS assets with long-term immutable headers
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache CSS with long-term immutable headers
+[[headers]]
+  for = "/styles.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
 # Cache analytics scripts
 [[headers]]
