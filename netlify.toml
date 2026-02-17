@@ -55,10 +55,17 @@
     # SECURITY: Permissions Policy - restricts browser features
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
 
+# Canonical domain: www
+[[redirects]]
+  from = "https://secretsaunacompany.ca/*"
+  to = "https://www.secretsaunacompany.ca/:splat"
+  status = 301
+  force = true
+
 # Force HTTPS redirect
 [[redirects]]
   from = "http://secretsaunacompany.ca/*"
-  to = "https://secretsaunacompany.ca/:splat"
+  to = "https://www.secretsaunacompany.ca/:splat"
   status = 301
   force = true
 
