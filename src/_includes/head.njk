@@ -1,10 +1,17 @@
 <head>
+    <style>
+      body.pre-js nav { opacity: 0; transform: translateY(-30px); pointer-events: none; }
+      body.pre-js .hero-content { opacity: 0; transform: translateY(40px); pointer-events: none; }
+    </style>
+    <noscript><style>
+      body.pre-js nav, body.pre-js .hero-content { opacity: 1 !important; transform: none !important; pointer-events: auto !important; }
+    </style></noscript>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Primary SEO Meta Tags -->
     <title>{{ title | default("Secret Sauna Company | Handcrafted Finnish Saunas in British Columbia") }}</title>
-    <meta name="description" content="{{ description | default("Authentic Finnish saunas handcrafted in Squamish, BC. Traditional wood-fired and electric saunas built with Western Red Cedar. Custom builds, standard models S2-SC, and mobile saunas. Get a free quote today.") }}">
+    <meta name="description" content="{{ description | default("Authentic Finnish saunas handcrafted in Squamish, BC. Traditional wood-fired and electric saunas built with Western Red Cedar. Custom builds, standard models S2-SC, and mobile saunas. Get a quote today.") }}">
     <meta name="keywords" content="{{ keywords | default("Finnish sauna, outdoor sauna, custom sauna, mobile sauna, sauna BC, sauna Vancouver, sauna Squamish, wood-fired sauna, cedar sauna, traditional sauna, sauna builder, handcrafted sauna, backyard sauna, commercial sauna") }}">
     <meta name="author" content="Secret Sauna Company">
     <meta name="robots" content="index, follow">

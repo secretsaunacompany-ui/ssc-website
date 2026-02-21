@@ -79,6 +79,7 @@
     // Initialize on DOM Ready
     // ============================================
     document.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.remove('pre-js');
         document.body.classList.add('js-loaded');
 
         // Initialize scroll animations

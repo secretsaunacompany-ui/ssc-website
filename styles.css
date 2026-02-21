@@ -185,6 +185,11 @@ p {
     padding: 0 5%;
 }
 
+section.wide-container {
+    padding-top: var(--spacing-3xl);
+    padding-bottom: var(--spacing-3xl);
+}
+
 section {
     padding: var(--spacing-3xl) 5%;
 }
@@ -1703,6 +1708,10 @@ footer::before {
     gap: 3rem;
 }
 
+.grid-2--square {
+    grid-template-columns: repeat(2, 1fr);
+}
+
 .grid-2--responsive-gap {
     gap: clamp(1.5rem, 4vw, 3rem);
     align-items: start;
@@ -2356,6 +2365,16 @@ footer::before {
     #bookingSummary div[style*="display: flex"] strong {
         text-align: right;
         word-break: break-word;
+    }
+
+    .feature-image--overflow {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .page-bg--fixed {
+        position: absolute;
+        height: 100%;
     }
 }
 

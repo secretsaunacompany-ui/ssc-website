@@ -203,7 +203,7 @@
         maxAdvanceDays: 60,
 
         // Minimum hours in advance required for booking (to ensure staff are alerted)
-        minAdvanceHours: 18,
+        minAdvanceHours: 24,
 
         // Availability + booking endpoints
         availabilityEndpoint: '/.netlify/functions/booking-availability',
