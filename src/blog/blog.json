@@ -1,0 +1,7 @@
+{
+  "layout": "blog-post.njk",
+  "tags": "blog",
+  "permalink": "/blog/{{ page.fileSlug }}/",
+  "sitemap_priority": "0.6",
+  "sitemap_changefreq": "monthly"
+}

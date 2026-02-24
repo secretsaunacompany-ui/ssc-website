@@ -16,6 +16,8 @@
     <meta name="author" content="Secret Sauna Company">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="{{ canonical | default("https://www.secretsaunacompany.ca/") }}">
+    <link rel="alternate" hreflang="en-ca" href="{{ canonical | default("https://www.secretsaunacompany.ca/") }}">
+    <link rel="sitemap" type="application/xml" href="https://www.secretsaunacompany.ca/sitemap.xml">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -44,6 +46,7 @@
     {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
+        "additionalType": "https://www.wikidata.org/wiki/Q57036478",
         "name": "Secret Sauna Company",
         "description": "Handcrafted Finnish saunas built in Squamish, British Columbia. Traditional wood-fired and electric saunas using Western Red Cedar.",
         "url": "https://www.secretsaunacompany.ca",
@@ -167,6 +170,43 @@
     }
     </script>
     {% endif %}
+
+    <!-- Schema.org - WebSite (sitelinks search box eligibility) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Secret Sauna Company",
+        "url": "https://www.secretsaunacompany.ca",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://www.secretsaunacompany.ca/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+
+    <!-- Schema.org - Organization (brand entity) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Secret Sauna Company",
+        "url": "https://www.secretsaunacompany.ca",
+        "logo": "https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768255497/FINAL_LOGO_TEXT1.1_qwtccv.png",
+        "sameAs": [
+            "https://www.instagram.com/secretsaunaco",
+            "https://www.facebook.com/secretsaunaco"
+        ],
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "secretsaunacompany@gmail.com",
+            "contactType": "sales",
+            "areaServed": "CA",
+            "availableLanguage": "English"
+        }
+    }
+    </script>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768254526/CircleWhite2025_gqtclg.png">

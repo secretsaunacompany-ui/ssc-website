@@ -2232,6 +2232,98 @@ footer::before {
 }
 
 /* ============================================
+   Service Area Pages
+   ============================================ */
+.service-area-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0;
+    align-items: center;
+    max-width: none;
+}
+
+.service-area-links a {
+    font-size: 1rem;
+}
+
+/* ============================================
+   Blog
+   ============================================ */
+.blog-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.blog-card {
+    display: block;
+    padding: var(--spacing-lg);
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-soft-grey);
+    text-decoration: none;
+    transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.blog-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-warm-wood);
+}
+
+.blog-card__date {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    letter-spacing: 0.03em;
+}
+
+.blog-card__title {
+    font-size: 1.5rem;
+    color: var(--color-off-white);
+    margin-bottom: var(--spacing-xs);
+    margin-top: var(--spacing-xs);
+}
+
+.blog-card__excerpt {
+    color: var(--color-charcoal);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.blog-post__meta {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+}
+
+.blog-post__content {
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.blog-post__content h2 {
+    margin-top: var(--spacing-2xl);
+}
+
+.blog-post__content img {
+    border-radius: var(--radius-sm);
+    margin: var(--spacing-lg) 0;
+}
+
+.blog-post__footer {
+    max-width: 700px;
+    margin: var(--spacing-2xl) auto var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-border-subtle);
+}
+
+.blog-empty {
+    text-align: center;
+    padding: var(--spacing-3xl) 0;
+    color: var(--color-text-muted);
+}
+
+/* ============================================
    Responsive Design (consolidated)
    ============================================ */
 @media (max-width: 1200px) {

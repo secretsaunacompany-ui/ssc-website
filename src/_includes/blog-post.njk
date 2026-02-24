@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "head.njk" %}
+<body class="pre-js">
+    {% include "nav.njk" %}
+
+    <article class="blog-post page">
+        <section class="page-hero">
+            <h1>{{ title }}</h1>
+            <p class="blog-post__meta">
+                <time datetime="{{ date | date('YYYY-MM-DD') }}">{{ date | date("MMMM D, YYYY") }}</time>
+                {% if author %} &middot; {{ author }}{% endif %}
+            </p>
+        </section>
+
+        <section class="container blog-post__content">
+            {{ content | safe }}
+        </section>
+
+        <section class="container blog-post__footer">
+            <a href="/blog/" class="link--accent">&larr; Back to all posts</a>
+        </section>
+    </article>
+
+    <!-- Schema.org - Article -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "{{ title }}",
+        "datePublished": "{{ date | date('YYYY-MM-DD') }}",
+        "author": {
+            "@type": "Organization",
+            "name": "Secret Sauna Company"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Secret Sauna Company",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768255497/FINAL_LOGO_TEXT1.1_qwtccv.png"
+            }
+        },
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "{{ canonical }}"
+        }
+    }
+    </script>
+
+    {% include "footer.njk" %}
+    {% include "scripts.njk" %}
+</body>
+</html>

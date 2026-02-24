@@ -1,0 +1,66 @@
+    <div id="{{ area_id }}" class="page page--has-bg">
+        <div class="page-bg--fixed page-bg--opacity-15" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/{{ hero_image }}');"></div>
+
+        <section class="page-hero">
+            <h1>{{ page_h1 }}</h1>
+            <p>{{ page_subtitle }}</p>
+        </section>
+
+        <section class="container section--pt-6">
+            <div class="grid-2 grid-2--responsive-gap">
+                <div class="fade-in">
+                    {{ intro_content | safe }}
+                </div>
+                <div class="fade-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/{{ intro_image }}" alt="{{ intro_image_alt }}" class="img--full-cover-500" style="border-radius: var(--radius-sm);">
+                </div>
+            </div>
+        </section>
+
+        {% if features %}
+        <section class="bg-grey hero-overlay">
+            <div class="hero-overlay__bg hero-overlay__bg--opacity-15" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/{{ features_bg_image }}');"></div>
+            <div class="hero-overlay__content container">
+                <h2 class="text-center fade-in">{{ features_heading }}</h2>
+                <div class="grid-3 grid-3--mt-3">
+                    {% for feature in features %}
+                    <div class="feature-block fade-in">
+                        <h3>{{ feature.title }}</h3>
+                        <p class="text--centered-60ch">{{ feature.description }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        {% if local_content %}
+        <section class="container">
+            <div class="fade-in">
+                {{ local_content | safe }}
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="container text-center section--warm-glow">
+            <div class="pos-relative--z1 fade-in">
+                <h2>Ready to Build Your Sauna{{ " in " + area_name if area_name != "the Sea-to-Sky Corridor" else " in the Sea-to-Sky" }}?</h2>
+                <p class="cta__text text--centered-60ch">Every project starts with a conversation. Tell us about your space and we'll design something built to last.</p>
+                <div class="cta__buttons">
+                    <a href="/contact/" class="btn">Get a Quote</a>
+                    <a href="/saunas/" class="btn btn-outline">View Our Saunas</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="fade-in">
+                <h3>We Also Serve</h3>
+                <p class="service-area-links">
+                    {% for link in sibling_areas %}
+                    <a href="{{ link.url }}" class="link--accent">{{ link.name }}</a>{% if not loop.last %} &middot; {% endif %}
+                    {% endfor %}
+                </p>
+            </div>
+        </section>
+    </div>

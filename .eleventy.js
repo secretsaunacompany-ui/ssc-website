@@ -1,6 +1,25 @@
 module.exports = function(eleventyConfig) {
   eleventyConfig.addFilter("currentYear", () => new Date().getFullYear());
 
+  // Date formatting filter for blog posts and sitemap
+  eleventyConfig.addFilter("date", (dateObj, format) => {
+    if (!dateObj) return '';
+    const d = new Date(dateObj);
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    if (format === 'YYYY-MM-DD') {
+      return d.toISOString().split('T')[0];
+    }
+    if (format === 'MMMM D, YYYY') {
+      return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+    }
+    return d.toISOString();
+  });
+
+  // Blog collection
+  eleventyConfig.addCollection("blog", function(collectionApi) {
+    return collectionApi.getFilteredByTag("blog").sort((a, b) => a.date - b.date);
+  });
+
   eleventyConfig.addPassthroughCopy("js");
   eleventyConfig.addPassthroughCopy("styles.css");
 
@@ -84,7 +103,7 @@ module.exports = function(eleventyConfig) {
       includes: "_includes",
       data: "_data"
     },
-    templateFormats: ["njk", "html"],
+    templateFormats: ["njk", "html", "md"],
     htmlTemplateEngine: "njk"
   };
 };

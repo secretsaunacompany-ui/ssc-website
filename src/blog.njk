@@ -1,0 +1,39 @@
+---
+layout: base.njk
+title: "Blog | Secret Sauna Company"
+description: "Sauna building insights, project updates, and Finnish sauna culture from Secret Sauna Company in Squamish, BC."
+canonical: "https://www.secretsaunacompany.ca/blog/"
+breadcrumb_name: "Blog"
+sitemap_priority: "0.7"
+sitemap_changefreq: "weekly"
+permalink: /blog/
+---
+<div id="blog" class="page">
+    <section class="page-hero">
+        <h1>Blog</h1>
+        <p>Building notes, sauna culture, and project updates from our Squamish workshop.</p>
+    </section>
+
+    <section class="container">
+        {% set posts = collections.blog | reverse %}
+        {% if posts.length > 0 %}
+        <div class="blog-list">
+            {% for post in posts %}
+            <a href="{{ post.url }}" class="blog-card fade-in">
+                <div class="blog-card__content">
+                    <time class="blog-card__date" datetime="{{ post.date | date('YYYY-MM-DD') }}">{{ post.date | date("MMMM D, YYYY") }}</time>
+                    <h2 class="blog-card__title">{{ post.data.title }}</h2>
+                    {% if post.data.description %}
+                    <p class="blog-card__excerpt">{{ post.data.description }}</p>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="blog-empty fade-in">
+            <p>Posts coming soon. In the meantime, <a href="/contact/" class="link--accent-underline">get in touch</a> if you have questions about our saunas.</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
