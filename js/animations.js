@@ -94,7 +94,9 @@
         }
 
         init() {
-            // Only run on home page and first visit
+            // Only run on home page (requires .hero section)
+            if (!document.querySelector('.hero')) return;
+
             if (sessionStorage.getItem('heroIntroShown')) {
                 document.body.classList.remove('intro-pending');
                 return;
@@ -113,6 +115,13 @@
             setTimeout(() => {
                 this.readyForReveal = true;
             }, 300);
+
+            // Auto-reveal after 4s if user hasn't scrolled (accessibility fallback)
+            setTimeout(() => {
+                if (!this.isRevealed) {
+                    this.triggerReveal();
+                }
+            }, 4000);
         }
 
         preventScroll(e) {
@@ -158,11 +167,16 @@
             this.isRevealed = true;
             document.body.classList.remove('intro-pending');
 
-            // Reveal nav first
-            const nav = document.querySelector('nav');
-            if (nav) {
-                nav.classList.add('revealed');
-            }
+            // Reveal nav after a frame so the browser computes the
+            // intermediate .hero-intro-active nav state (opacity: 0 with
+            // transition) before we add .revealed — without this, the
+            // browser batches both changes and skips the CSS transition.
+            requestAnimationFrame(() => {
+                const nav = document.querySelector('nav');
+                if (nav) {
+                    nav.classList.add('revealed');
+                }
+            });
 
             // Reveal hero content with slight delay
             setTimeout(() => {
