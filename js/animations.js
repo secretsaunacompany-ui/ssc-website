@@ -75,134 +75,13 @@
     }
 
     // ============================================
-    // Hero Intro Animation
+    // Hero Intro Animation (CSS-only, no scroll lock)
     // ============================================
     class HeroIntroAnimation {
-        constructor() {
-            this.isActive = false;
-            this.isRevealed = false;
-            this.scrollThreshold = 50; // Pixels of scroll needed to trigger reveal
-            this.scrollAccumulator = 0;
-            this.readyForReveal = false;
-            this.touchStartY = 0;
-
-            // Bind methods
-            this.boundTouchStart = (e) => { this.handleTouchStart(e); };
-            this.boundPreventScroll = (e) => { this.preventScroll(e); };
-            this.boundHandleWheel = (e) => { this.handleWheel(e); };
-            this.boundHandleTouch = (e) => { this.handleTouch(e); };
-        }
-
         init() {
-            // Only run on home page (requires .hero section)
-            if (!document.querySelector('.hero')) return;
-
-            if (sessionStorage.getItem('heroIntroShown')) {
-                document.body.classList.remove('intro-pending');
-                return;
-            }
-
-            document.body.classList.add('intro-pending');
-            this.isActive = true;
-            document.body.classList.add('hero-intro-active');
-
-            window.addEventListener('wheel', this.boundHandleWheel, { passive: false });
-            window.addEventListener('touchstart', this.boundTouchStart, { passive: true });
-            window.addEventListener('touchmove', this.boundHandleTouch, { passive: false });
-            window.addEventListener('keydown', this.boundPreventScroll, { passive: false });
-
-            // Small delay before listening for scroll to trigger reveal
-            setTimeout(() => {
-                this.readyForReveal = true;
-            }, 300);
-
-            // Auto-reveal after 4s if user hasn't scrolled (accessibility fallback)
-            setTimeout(() => {
-                if (!this.isRevealed) {
-                    this.triggerReveal();
-                }
-            }, 4000);
-        }
-
-        preventScroll(e) {
-            if (this.isActive && !this.isRevealed) {
-                if (['ArrowDown', 'ArrowUp', 'Space', 'PageDown', 'PageUp'].includes(e.key)) {
-                    e.preventDefault();
-                    this.triggerReveal();
-                }
-            }
-        }
-
-        handleWheel(e) {
-            if (this.isActive && !this.isRevealed && this.readyForReveal) {
-                e.preventDefault();
-
-                // Accumulate scroll delta
-                this.scrollAccumulator += Math.abs(e.deltaY);
-
-                if (this.scrollAccumulator >= this.scrollThreshold) {
-                    this.triggerReveal();
-                }
-            }
-        }
-
-        handleTouchStart(e) {
-            this.touchStartY = e.touches[0].clientY;
-        }
-
-        handleTouch(e) {
-            if (this.isActive && !this.isRevealed && this.readyForReveal) {
-                const touchY = e.touches[0].clientY;
-                const deltaY = this.touchStartY - touchY;
-
-                if (Math.abs(deltaY) > 30) {
-                    e.preventDefault();
-                    this.triggerReveal();
-                }
-            }
-        }
-
-        triggerReveal() {
-            if (this.isRevealed) return;
-            this.isRevealed = true;
+            // Nav is always visible. Hero content fades in via CSS animation.
+            // Nothing to do here -- animations are pure CSS now.
             document.body.classList.remove('intro-pending');
-
-            // Reveal nav after a frame so the browser computes the
-            // intermediate .hero-intro-active nav state (opacity: 0 with
-            // transition) before we add .revealed — without this, the
-            // browser batches both changes and skips the CSS transition.
-            requestAnimationFrame(() => {
-                const nav = document.querySelector('nav');
-                if (nav) {
-                    nav.classList.add('revealed');
-                }
-            });
-
-            // Reveal hero content with slight delay
-            setTimeout(() => {
-                const heroContent = document.querySelector('.hero-content');
-                if (heroContent) {
-                    heroContent.classList.add('revealed');
-                }
-            }, 200);
-
-            // Remove scroll lock after animation
-            setTimeout(() => {
-                this.cleanup();
-            }, 1200);
-
-            // Mark as shown for this session
-            sessionStorage.setItem('heroIntroShown', 'true');
-        }
-
-        cleanup() {
-            this.isActive = false;
-            document.body.classList.remove('hero-intro-active');
-            document.body.classList.remove('intro-pending');
-            window.removeEventListener('wheel', this.boundHandleWheel);
-            window.removeEventListener('touchstart', this.boundTouchStart);
-            window.removeEventListener('touchmove', this.boundHandleTouch);
-            window.removeEventListener('keydown', this.boundPreventScroll);
         }
     }
 

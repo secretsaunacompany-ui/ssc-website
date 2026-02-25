@@ -293,48 +293,21 @@ nav .container {
 }
 
 /* ============================================
-   Hero Intro Animation
+   Hero Intro Animation (CSS-only)
    ============================================ */
-.hero-intro-active {
-    overflow: hidden;
+.hero-content {
+    animation: heroFadeIn 1.2s ease 0.3s both;
 }
 
-.hero-intro-active nav {
-    opacity: 0;
-    transform: translateY(-30px);
-    transition: opacity 0.8s ease, transform 0.8s ease;
-}
-
-.hero-intro-active nav.revealed {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.hero-intro-active .hero-content {
-    opacity: 0;
-    transform: translateY(40px);
-    transition: opacity 1s ease, transform 1s ease;
-}
-
-body.intro-pending nav {
-    opacity: 0;
-    transform: translateY(-30px);
-    pointer-events: none;
-}
-
-body.intro-pending {
-    overflow: hidden;
-}
-
-body.intro-pending .hero-content {
-    opacity: 0;
-    transform: translateY(40px);
-    pointer-events: none;
-}
-
-.hero-intro-active .hero-content.revealed {
-    opacity: 1;
-    transform: translateY(0);
+@keyframes heroFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ============================================
