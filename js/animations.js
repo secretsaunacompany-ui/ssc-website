@@ -75,13 +75,42 @@
     }
 
     // ============================================
-    // Hero Intro Animation (CSS-only, no scroll lock)
+    // Hero Intro Animation
     // ============================================
     class HeroIntroAnimation {
         init() {
-            // Nav is always visible. Hero content fades in via CSS animation.
-            // Nothing to do here -- animations are pure CSS now.
-            document.body.classList.remove('intro-pending');
+            // Only run on homepage (body.page-home set by template)
+            if (!document.body.classList.contains('page-home')) return;
+
+            // Reveal nav + hero content on first scroll gesture
+            const reveal = () => {
+                document.body.classList.add('hero-revealed');
+                cleanup();
+            };
+
+            const cleanup = () => {
+                window.removeEventListener('wheel', reveal);
+                window.removeEventListener('touchstart', reveal);
+                window.removeEventListener('keydown', onKey);
+            };
+
+            const onKey = (e) => {
+                if (['ArrowDown', 'ArrowUp', 'Space', 'PageDown', 'PageUp'].includes(e.key)) {
+                    reveal();
+                }
+            };
+
+            // wheel + touchstart + keydown only -- NOT scroll (fires during page init)
+            window.addEventListener('wheel', reveal, { once: true, passive: true });
+            window.addEventListener('touchstart', reveal, { once: true, passive: true });
+            window.addEventListener('keydown', onKey);
+
+            // Safety: auto-reveal after 5s if user hasn't interacted
+            setTimeout(() => {
+                if (!document.body.classList.contains('hero-revealed')) {
+                    reveal();
+                }
+            }, 5000);
         }
     }
 
