@@ -2,13 +2,13 @@
     "items": [
         {
             "question": "How long does it take to receive a sauna?",
-            "answer": "Each sauna is unique and timelines can vary; however a typical build takes around 4-6 weeks. You'll be kept informed of your order's progress at every step along the way.",
-            "schemaAnswer": "Each sauna is unique and timelines can vary; however a typical build takes around 4-6 weeks. You'll be kept informed of your order's progress at every step along the way."
+            "answer": "A typical build takes 4-6 weeks. Timelines vary depending on the project, and we keep you updated throughout.",
+            "schemaAnswer": "A typical build takes 4-6 weeks. Timelines vary depending on the project, and we keep you updated throughout."
         },
         {
             "question": "What are your saunas made of?",
-            "answer": "Generally we build with 2x4 framing, Rockwool insulation, metal exterior cladding, and locally sourced Western Red Cedar interior. We work with a variety of products to ensure each customer is satisfied with their sauna.",
-            "schemaAnswer": "Generally we build with 2x4 framing, Rockwool insulation, metal exterior cladding, and locally sourced Western Red Cedar interior."
+            "answer": "Generally we build with 2x4 framing, Rockwool insulation, metal exterior cladding, and locally sourced Western Red Cedar interior. Materials can be adjusted based on the project.",
+            "schemaAnswer": "Generally we build with 2x4 framing, Rockwool insulation, metal exterior cladding, and locally sourced Western Red Cedar interior. Materials can be adjusted based on the project."
         },
         {
             "question": "What type of foundation is needed?",
@@ -22,8 +22,8 @@
         },
         {
             "question": "Do I need a special license to tow a mobile sauna?",
-            "answer": "No additional permits are required to transport the sauna\u2014it's ready to be taken on your next adventure!",
-            "schemaAnswer": "No additional permits are required to transport the sauna; it's ready to be taken on your next adventure."
+            "answer": "No additional permits are required to transport the sauna. It's registered as a standard trailer.",
+            "schemaAnswer": "No additional permits are required to transport the sauna. It is registered as a standard trailer."
         },
         {
             "question": "What does the Limited Warranty cover?",
