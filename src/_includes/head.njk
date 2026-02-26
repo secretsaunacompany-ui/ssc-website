@@ -1,10 +1,13 @@
 <head>
     <style>
-      body.pre-js nav { opacity: 0; transform: translateY(-30px); pointer-events: none; }
-      body.pre-js .hero-content { opacity: 0; transform: translateY(40px); pointer-events: none; }
+      /* Homepage hero intro: hide nav + hero text until scroll reveals them */
+      body.page-home:not(.hero-revealed) nav { opacity: 0; transform: translateY(-20px); pointer-events: none; }
+      body.page-home:not(.hero-revealed) .hero-content { opacity: 0; transform: translateY(30px); pointer-events: none; }
+      body.page-home.hero-revealed nav { transition: opacity 0.8s ease, transform 0.8s ease; }
+      body.page-home.hero-revealed .hero-content { transition: opacity 1s ease 0.15s, transform 1s ease 0.15s; }
     </style>
     <noscript><style>
-      body.pre-js nav, body.pre-js .hero-content { opacity: 1 !important; transform: none !important; pointer-events: auto !important; }
+      body.page-home nav, body.page-home .hero-content { opacity: 1 !important; transform: none !important; pointer-events: auto !important; }
     </style></noscript>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -73,7 +76,8 @@
         "areaServed": [
             {"@type": "Place", "name": "Squamish"},
             {"@type": "Place", "name": "Sea-to-Sky Corridor"},
-            {"@type": "Place", "name": "British Columbia"}
+            {"@type": "Place", "name": "British Columbia"},
+            {"@type": "Place", "name": "Western Canada"}
         ],
         "priceRange": "$22,500 - $57,000+",
         "openingHours": "Mo-Fr 09:00-17:00",
@@ -222,7 +226,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <!-- External Stylesheet -->
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/styles.css?v=20260226">
 
     <!-- Leaflet.js for Maps - lazy loaded when locations page is visited -->
 </head>
