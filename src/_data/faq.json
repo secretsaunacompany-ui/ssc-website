@@ -52,8 +52,8 @@
         },
         {
             "question": "Do you work outside British Columbia?",
-            "answer": "We're based in Squamish, BC and primarily serve the Sea-to-Sky corridor, Greater Vancouver, and surrounding areas. We've delivered saunas as far as Williams Lake, Edmonton, and San Francisco, so distance isn't usually a dealbreaker. Contact us to discuss your location and project scope.",
-            "schemaAnswer": "We're based in Squamish, BC and primarily serve the Sea-to-Sky corridor, Greater Vancouver, and surrounding areas. We've delivered saunas to Williams Lake, Edmonton, and San Francisco. Contact us to discuss your location."
+            "answer": "We're based in Squamish, BC and primarily serve the Sea-to-Sky corridor, Greater Vancouver, and surrounding areas. Our saunas have ended up as far as Williams Lake, Edmonton, and San Francisco. If you're outside our usual range, get in touch and we can figure out the logistics.",
+            "schemaAnswer": "We're based in Squamish, BC and primarily serve the Sea-to-Sky corridor, Greater Vancouver, and surrounding areas. Our saunas have ended up as far as Williams Lake, Edmonton, and San Francisco. Contact us to discuss your location."
         }
     ]
 }
