@@ -8,6 +8,7 @@ eleventyExcludeFromCollections: true
 {%- if not page.data.eleventyExcludeFromCollections and page.url and page.url != false %}
     <url>
         <loc>https://www.secretsaunacompany.ca{{ page.url }}</loc>
+        <lastmod>{{ page.date | date('YYYY-MM-DD') }}</lastmod>
         <changefreq>{{ page.data.sitemap_changefreq | default("monthly") }}</changefreq>
         <priority>{{ page.data.sitemap_priority | default("0.7") }}</priority>
     </url>
