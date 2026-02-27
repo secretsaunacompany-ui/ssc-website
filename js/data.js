@@ -183,42 +183,6 @@
     ];
 
     // ============================================
-    // Booking Configuration
-    // ============================================
-    const BOOKING_CONFIG = {
-        // Fixed slot schedule
-        slots: [
-            { start: '09:00', end: '11:00' },
-            { start: '11:00', end: '13:00' },
-            { start: '13:00', end: '15:00' },
-            { start: '15:00', end: '17:00' },
-            { start: '17:00', end: '19:00' },
-            { start: '19:00', end: '21:00' }
-        ],
-
-        // Days of operation (0 = Sunday, 6 = Saturday)
-        operatingDays: [0, 5, 6], // Friday (5), Saturday (6), Sunday (0) only
-
-        // Maximum days in advance for booking
-        maxAdvanceDays: 60,
-
-        // Minimum hours in advance required for booking (to ensure staff are alerted)
-        minAdvanceHours: 24,
-
-        // Availability + booking endpoints
-        availabilityEndpoint: '/.netlify/functions/booking-availability',
-        reserveEndpoint: '/.netlify/functions/booking-reserve',
-
-        // Capacity rules
-        socialCapacity: 12,
-        socialMaxGuests: 12,
-        privateMaxGuests: 14,
-
-        // Your email service endpoint (Formspree - free tier)
-        formEndpoint: 'https://formspree.io/f/xykkkonr'
-    };
-
-    // ============================================
     // Export to global scope
     // ============================================
     window.SSC = window.SSC || {};
@@ -226,6 +190,5 @@
     window.SSC.commercialLocations = commercialLocations;
     window.SSC.edmontonLocation = edmontonLocation;
     window.SSC.residentialLocations = residentialLocations;
-    window.SSC.BOOKING_CONFIG = BOOKING_CONFIG;
 
 })();
