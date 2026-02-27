@@ -27,7 +27,11 @@ function isAuthorized(event) {
 
 exports.handler = async (event) => {
   const headers = buildCorsHeaders(event, {
-    allowAnyOrigin: true,
+    allowedOrigins: [
+      'https://secretsaunacompany.ca',
+      'https://www.secretsaunacompany.ca',
+      'https://book.secretsaunacompany.ca',
+    ],
     allowHeaders: 'Content-Type, X-Admin-Token',
     allowMethods: 'GET, POST, OPTIONS'
   });
