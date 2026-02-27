@@ -2,9 +2,12 @@
 <html lang="en">
 {% include "head.njk" %}
 <body class="pre-js{% if bodyClass %} {{ bodyClass }}{% endif %}">
+<a href="#main" class="skip-to-content">Skip to content</a>
 {% include "nav.njk" %}
 
+<main id="main">
 {{ content | safe }}
+</main>
 
 {% include "footer.njk" %}
 

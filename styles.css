@@ -105,6 +105,33 @@ body {
     margin: 0 auto;
 }
 
+/* Skip-to-content link (accessibility) */
+.skip-to-content {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    z-index: 9999;
+    padding: 0.75rem 1.5rem;
+    background: var(--color-warm-wood);
+    color: var(--color-muted-black);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+}
+
+.skip-to-content:focus {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    width: auto;
+    height: auto;
+    overflow: visible;
+}
+
 body::after {
     content: '';
     position: fixed;

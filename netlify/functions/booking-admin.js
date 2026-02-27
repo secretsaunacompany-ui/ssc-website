@@ -12,6 +12,23 @@ const {
 } = require('./lib/booking');
 let supabase;
 
+// Simple in-memory rate limiter (per serverless instance)
+const rateMap = new Map();
+const RATE_WINDOW_MS = 60 * 1000;
+const RATE_MAX_REQUESTS = 30;
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const entry = rateMap.get(ip);
+  if (!entry || now - entry.start > RATE_WINDOW_MS) {
+    rateMap.set(ip, { start: now, count: 1 });
+    return false;
+  }
+  entry.count++;
+  if (entry.count > RATE_MAX_REQUESTS) return true;
+  return false;
+}
+
 function addDays(dateStr, offset) {
   const date = new Date(`${dateStr}T00:00:00`);
   date.setDate(date.getDate() + offset);
@@ -38,6 +55,11 @@ exports.handler = async (event) => {
 
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
+  }
+
+  const clientIp = event.headers['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
+  if (isRateLimited(clientIp)) {
+    return jsonResponse(429, headers, { error: 'Too many requests' });
   }
 
   try {
