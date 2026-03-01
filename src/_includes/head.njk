@@ -211,6 +211,63 @@
     }
     </script>
 
+    {% if bodyClass == "page-home" %}
+    <!-- Schema.org - Reviews & AggregateRating -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Secret Sauna Company",
+        "url": "https://www.secretsaunacompany.ca",
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "5",
+            "reviewCount": "3",
+            "bestRating": "5",
+            "worstRating": "1"
+        },
+        "review": [
+            {
+                "@type": "Review",
+                "reviewRating": {
+                    "@type": "Rating",
+                    "ratingValue": "5"
+                },
+                "author": {
+                    "@type": "Person",
+                    "name": "Private Client, Squamish BC"
+                },
+                "reviewBody": "Great sauna, great people! Anthony and Lee provide the best authentic sauna experience in the Sea to Sky."
+            },
+            {
+                "@type": "Review",
+                "reviewRating": {
+                    "@type": "Rating",
+                    "ratingValue": "5"
+                },
+                "author": {
+                    "@type": "Person",
+                    "name": "Private Client, Squamish BC"
+                },
+                "reviewBody": "Secret sauna co. Has the highest build quality saunas I've seen making them the ultimate sauna for rental or purchase."
+            },
+            {
+                "@type": "Review",
+                "reviewRating": {
+                    "@type": "Rating",
+                    "ratingValue": "5"
+                },
+                "author": {
+                    "@type": "Person",
+                    "name": "Private Client, Squamish BC"
+                },
+                "reviewBody": "Outstanding quality sauna. Great experience with them. Highly recommend."
+            }
+        ]
+    }
+    </script>
+    {% endif %}
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768254526/CircleWhite2025_gqtclg.png">
 

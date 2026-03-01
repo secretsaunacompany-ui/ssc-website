@@ -24,7 +24,11 @@
         handleIntersection(entries) {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
+                    if (entry.target.classList.contains('gallery-item--reveal')) {
+                        entry.target.classList.add('gallery-item--visible');
+                    } else {
+                        entry.target.classList.add('visible');
+                    }
                 }
             });
         }
@@ -48,6 +52,13 @@
                 for (let i = 0; i < children.length; i++) {
                     children[i].style.setProperty('--stagger-index', i);
                 }
+            });
+
+            // Gallery mosaic reveal on scroll
+            const galleryItems = document.querySelectorAll('.gallery-item--reveal');
+            galleryItems.forEach((el, i) => {
+                el.style.transitionDelay = `${(i % 6) * 0.08}s`;
+                this.observer.observe(el);
             });
 
             // Set stagger indices for gallery items and FAQ items

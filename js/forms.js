@@ -35,9 +35,8 @@
                 if (!response.ok) {
                     throw new Error('Form submission failed');
                 }
-                alert('Thank you for your message! We\'ll be in touch soon.');
                 form.reset();
-                window.location.href = '/gallery/';
+                window.location.href = '/contact/thank-you/';
             })
             .catch(() => {
                 alert('Sorry, something went wrong. Please try again or email us directly.');
