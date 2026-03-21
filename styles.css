@@ -2047,6 +2047,19 @@ footer::before {
     backdrop-filter: blur(4px);
 }
 
+.contact-form .form-fieldset {
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+.contact-form .form-fieldset legend {
+    font-size: 0.9rem;
+    color: var(--color-text-muted, #999);
+    margin-bottom: 1rem;
+    padding: 0;
+}
+
 /* --- Contact Info Section --- */
 .contact-info {
     text-align: center;

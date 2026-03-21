@@ -7,6 +7,12 @@
 
     const formatCurrency = window.SSC.formatCurrency;
 
+    function escapeText(str) {
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
     function buildComparisonTable() {
         const container = document.getElementById('compareTable');
         if (!container) return;
@@ -22,16 +28,16 @@
             { label: 'Interior Upgrade', key: 'interiorUpgrade', format: 'currency', prefix: '+' }
         ];
 
-        let html = '<div class="compare-scroll"><table class="compare-table">';
+        let html = '<div class="compare-scroll"><table class="compare-table" aria-label="Compare sauna models">';
 
         // Header row
-        html += '<thead><tr><th class="compare-table__label-col">Spec</th>';
+        html += '<thead><tr><th scope="col" class="compare-table__label-col">Spec</th>';
         keys.forEach(function(key) {
             var model = models[key];
             var name = key.toUpperCase();
             var popular = key === 's4' ? '<span class="compare-badge">Most Popular</span>' : '';
             var colClass = key === 's4' ? ' class="compare-table__highlight"' : '';
-            html += '<th' + colClass + '>' + name + popular + '</th>';
+            html += '<th scope="col"' + colClass + '>' + escapeText(name) + popular + '</th>';
         });
         html += '</tr></thead>';
 
@@ -39,17 +45,26 @@
         html += '<tbody>';
         rows.forEach(function(row) {
             html += '<tr>';
-            html += '<td class="compare-table__label-col">' + row.label + '</td>';
+            html += '<th scope="row" class="compare-table__label-col">' + escapeText(row.label) + '</th>';
             keys.forEach(function(key) {
                 var model = models[key];
+                if (!model) {
+                    html += '<td>\u2014</td>';
+                    return;
+                }
                 var value = model[row.key];
                 var colClass = key === 's4' ? ' class="compare-table__highlight"' : '';
+
+                if (value == null) {
+                    html += '<td' + colClass + '>\u2014</td>';
+                    return;
+                }
 
                 if (row.format === 'currency') {
                     value = (row.prefix || '') + formatCurrency(value);
                 }
 
-                html += '<td' + colClass + '>' + value + '</td>';
+                html += '<td' + colClass + '>' + escapeText(String(value)) + '</td>';
             });
             html += '</tr>';
         });
