@@ -194,6 +194,7 @@
     {
         "@context": "https://schema.org",
         "@type": "Organization",
+        "@id": "#organization",
         "name": "Secret Sauna Company",
         "url": "https://www.secretsaunacompany.ca",
         "logo": "https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768255497/FINAL_LOGO_TEXT1.1_qwtccv.png",
@@ -207,6 +208,17 @@
             "contactType": "sales",
             "areaServed": "CA",
             "availableLanguage": "English"
+        },
+        "member": {
+            "@type": "Person",
+            "name": "Lee Salo",
+            "jobTitle": "Co-Owner & Builder",
+            "worksFor": { "@id": "#organization" },
+            "knowsAbout": [
+                "Finnish sauna construction",
+                "wood-fired sauna design",
+                "commercial sauna installation"
+            ]
         }
     }
     </script>

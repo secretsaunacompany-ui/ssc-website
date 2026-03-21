@@ -6,8 +6,16 @@
         </section>
 
         <section class="container">
+            <div class="advisor-container fade-in"
+                 data-advisor-type="inquiry"
+                 data-advisor-placeholder="Tell us about your project — we'll help you figure out what to ask for"
+                 data-advisor-multi-turn="true"
+                 data-advisor-starters='["I want a backyard sauna for my family","I\u0027m looking for a commercial installation","Not sure what I need — help me figure it out"]'>
+            </div>
+
             <form class="contact-form contact-form--styled" method="POST" action="https://formspree.io/f/mdaaejwp" data-action="contact-submit">
                 <input type="hidden" name="_next" value="https://www.secretsaunacompany.ca/contact/thank-you/">
+                <input type="hidden" name="_subject" value="New Sauna Inquiry from Website">
                 <div class="form-group">
                     <label for="name">Name</label>
                     <input type="text" id="name" name="name" required>
@@ -24,21 +32,63 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="interest">I'm interested in</label>
-                    <select id="interest" name="sauna">
+                    <label for="project-type">Project type</label>
+                    <select id="project-type" name="project_type">
                         <option value="">Select one</option>
-                        <option value="s2-s4">Standard Model (S2 or S4)</option>
-                        <option value="s6-s8">Standard Model (S6 or S8)</option>
-                        <option value="sc">Commercial Model (SC)</option>
-                        <option value="custom">Custom Build</option>
-                        <option value="mobile">Mobile Sauna</option>
-                        <option value="question">Just Have Questions</option>
+                        <option value="residential">Residential</option>
+                        <option value="commercial">Commercial</option>
+                        <option value="rental">Rental</option>
+                        <option value="other">Other</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="message">Tell us about your space (optional)</label>
-                    <textarea id="message" name="message" placeholder="E.g., backyard size, timeline, any specific features you're interested in..."></textarea>
+                    <label for="timeline">Timeline</label>
+                    <select id="timeline" name="timeline">
+                        <option value="">Select one</option>
+                        <option value="this-season">This season</option>
+                        <option value="next-season">Next season</option>
+                        <option value="exploring">Just exploring</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="budget">Budget range</label>
+                    <select id="budget" name="budget">
+                        <option value="">Select one</option>
+                        <option value="under-25k">Under $25K</option>
+                        <option value="25k-40k">$25K - $40K</option>
+                        <option value="40k-60k">$40K - $60K</option>
+                        <option value="60k-plus">$60K+</option>
+                        <option value="not-sure">Not sure yet</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="heat-source">Heat source preference</label>
+                    <select id="heat-source" name="heat_source">
+                        <option value="">Select one</option>
+                        <option value="wood-fired">Wood-fired</option>
+                        <option value="electric">Electric</option>
+                        <option value="not-sure">Not sure yet</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="capacity">Capacity</label>
+                    <select id="capacity" name="capacity">
+                        <option value="">Select one</option>
+                        <option value="2-3">2-3 people</option>
+                        <option value="4-5">4-5 people</option>
+                        <option value="6-8">6-8 people</option>
+                        <option value="8-plus">8+ people</option>
+                        <option value="not-sure">Not sure yet</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Anything else you'd like us to know? (optional)</label>
+                    <textarea id="message" name="message" placeholder="E.g., backyard size, specific features, questions you have..."></textarea>
                 </div>
 
                 <button type="submit" class="btn btn--full-width">Get My Quote</button>
