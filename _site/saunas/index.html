@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+      /* Homepage hero intro: hide nav + hero text until scroll reveals them */
+      body.page-home:not(.hero-revealed) nav { opacity: 0; transform: translateY(-20px); pointer-events: none; }
+      body.page-home:not(.hero-revealed) .hero-content { opacity: 0; transform: translateY(30px); pointer-events: none; }
+      body.page-home.hero-revealed nav { transition: opacity 0.8s ease, transform 0.8s ease; }
+      body.page-home.hero-revealed .hero-content { transition: opacity 1s ease 0.15s, transform 1s ease 0.15s; }
+    </style>
+    <noscript><style>
+      body.page-home nav, body.page-home .hero-content { opacity: 1 !important; transform: none !important; pointer-events: auto !important; }
+    </style></noscript>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Primary SEO Meta Tags -->
+    <title>Our Sauna Models | S2 to SC | Secret Sauna Company</title>
+    <meta name="description" content="Compare our Finnish sauna models from the compact S2 ($22,500) to the commercial SC ($57,000+). Custom builds, standard models, and mobile saunas handcrafted in Squamish, BC.">
+    <meta name="keywords" content="Finnish sauna models, outdoor sauna sizes, backyard sauna options, commercial sauna, residential sauna, sauna pricing Canada, custom sauna BC">
+    <meta name="author" content="Secret Sauna Company">
+    <meta name="robots" content="index, follow">
+    <meta name="facebook-domain-verification" content="dzmqgtqkla4fihio34g7dr28e3s0l4" />
+    <link rel="canonical" href="https://www.secretsaunacompany.ca/saunas/">
+    <link rel="alternate" hreflang="en-ca" href="https://www.secretsaunacompany.ca/saunas/">
+    <link rel="sitemap" type="application/xml" href="https://www.secretsaunacompany.ca/sitemap.xml">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.secretsaunacompany.ca/saunas/">
+    <meta property="og:title" content="Our Sauna Models | S2 to SC | Secret Sauna Company">
+    <meta property="og:description" content="Compare our Finnish sauna models from the compact S2 ($22,500) to the commercial SC ($57,000+). Custom builds, standard models, and mobile saunas handcrafted in Squamish, BC.">
+    <meta property="og:image" content="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250655/IMG_7991-EDIT_gz1kqt.jpg">
+    <meta property="og:locale" content="en_CA">
+    <meta property="og:site_name" content="Secret Sauna Company">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://www.secretsaunacompany.ca/saunas/">
+    <meta name="twitter:title" content="Our Sauna Models | S2 to SC | Secret Sauna Company">
+    <meta name="twitter:description" content="Compare our Finnish sauna models from the compact S2 ($22,500) to the commercial SC ($57,000+). Custom builds, standard models, and mobile saunas handcrafted in Squamish, BC.">
+    <meta name="twitter:image" content="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250655/IMG_7991-EDIT_gz1kqt.jpg">
+
+    <!-- Geographic Meta Tags (Local SEO) -->
+    <meta name="geo.region" content="CA-BC">
+    <meta name="geo.placename" content="Squamish">
+    <meta name="geo.position" content="49.7016;-123.1558">
+    <meta name="ICBM" content="49.7016, -123.1558">
+
+    <!-- Schema.org Structured Data - LocalBusiness -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "additionalType": "https://www.wikidata.org/wiki/Q57036478",
+        "name": "Secret Sauna Company",
+        "description": "Handcrafted Finnish saunas built in Squamish, British Columbia. Traditional wood-fired and electric saunas using Western Red Cedar.",
+        "url": "https://www.secretsaunacompany.ca",
+        "logo": "https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768255497/FINAL_LOGO_TEXT1.1_qwtccv.png",
+        "image": "https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250655/IMG_7991-EDIT_gz1kqt.jpg",
+        "telephone": "",
+        "email": "secretsaunacompany@gmail.com",
+        "paymentAccepted": ["Cash", "Check", "E-Transfer", "Bank Transfer"],
+        "currenciesAccepted": "CAD",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "38918 Progress Way",
+            "addressLocality": "Squamish",
+            "addressRegion": "BC",
+            "postalCode": "V8B 0K7",
+            "addressCountry": "CA"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 49.7016,
+            "longitude": -123.1558
+        },
+        "areaServed": [
+            {"@type": "Place", "name": "Squamish"},
+            {"@type": "Place", "name": "Sea-to-Sky Corridor"},
+            {"@type": "Place", "name": "British Columbia"},
+            {"@type": "Place", "name": "Western Canada"}
+        ],
+        "priceRange": "$22,500 - $57,000+",
+        "openingHours": "Mo-Fr 09:00-17:00",
+        "hasMap": "https://maps.google.com/?q=Secret+Sauna+Company,+38918+Progress+Way,+Squamish,+BC",
+        "sameAs": [
+            "https://www.instagram.com/secretsaunaco",
+            "https://www.facebook.com/secretsaunaco"
+        ],
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Finnish Saunas",
+            "itemListElement": [
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Product",
+                        "name": "S2 Finnish Sauna",
+                        "description": "2-3 person compact Finnish sauna with three-tier benches",
+                        "brand": "Secret Sauna Company"
+                    },
+                    "price": "22500",
+                    "priceCurrency": "CAD"
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Product",
+                        "name": "S4 Finnish Sauna",
+                        "description": "4-5 person Finnish sauna with Western Red Cedar interior",
+                        "brand": "Secret Sauna Company"
+                    },
+                    "price": "29000",
+                    "priceCurrency": "CAD"
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Product",
+                        "name": "S6 Finnish Sauna",
+                        "description": "6-7 person Finnish sauna, available as mobile or semi-permanent",
+                        "brand": "Secret Sauna Company"
+                    },
+                    "price": "35500",
+                    "priceCurrency": "CAD"
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Product",
+                        "name": "S8 Finnish Sauna",
+                        "description": "8-10 person luxury Finnish sauna with full customization",
+                        "brand": "Secret Sauna Company"
+                    },
+                    "price": "44000",
+                    "priceCurrency": "CAD"
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Product",
+                        "name": "SC Commercial Sauna",
+                        "description": "10-14 person commercial-grade Finnish sauna for resorts and gyms",
+                        "brand": "Secret Sauna Company"
+                    },
+                    "price": "57000",
+                    "priceCurrency": "CAD"
+                }
+            ]
+        }
+    }
+    </script>
+
+    
+    <!-- Schema.org - BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.secretsaunacompany.ca/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Our Saunas",
+                "item": "https://www.secretsaunacompany.ca/saunas/"
+            }
+        ]
+    }
+    </script>
+    
+
+    <!-- Schema.org - WebSite (sitelinks search box eligibility) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Secret Sauna Company",
+        "url": "https://www.secretsaunacompany.ca",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://www.secretsaunacompany.ca/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+
+    <!-- Schema.org - Organization (brand entity) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Secret Sauna Company",
+        "url": "https://www.secretsaunacompany.ca",
+        "logo": "https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768255497/FINAL_LOGO_TEXT1.1_qwtccv.png",
+        "sameAs": [
+            "https://www.instagram.com/secretsaunaco",
+            "https://www.facebook.com/secretsaunaco"
+        ],
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "secretsaunacompany@gmail.com",
+            "contactType": "sales",
+            "areaServed": "CA",
+            "availableLanguage": "English"
+        }
+    }
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768254526/CircleWhite2025_gqtclg.png">
+
+    <!-- Preconnect & Preload -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+    
+    <link rel="preload" as="image" href="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768250656/IMG_7875-EDIT-EDIT_dbj20g.jpg">
+    
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- External Stylesheet -->
+    <link rel="stylesheet" href="/styles.css?v=20260226">
+
+    <!-- Leaflet.js for Maps - lazy loaded when locations page is visited -->
+</head>
+
+<body class="pre-js">
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <a href="/" class="logo">
+                <img loading="eager" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768254526/CircleWhite2025_gqtclg.png" alt="Secret Sauna Company">
+            </a>
+            <button class="mobile-menu-btn" data-action="toggle-menu" aria-label="Toggle mobile menu">☰</button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/about/">About</a></li>
+                <li><a href="/saunas/">Saunas</a></li>
+                <li><a href="/locations/">Locations</a></li>
+                <li><a href="/contact/">Contact</a></li>
+                <li><a href="https://book.secretsaunacompany.ca" class="nav-link--accent">Book</a></li>
+            </ul>
+        </div>
+    </nav>
+
+
+    <!-- Schema.org - Product listings -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Secret Sauna Company Models",
+        "description": "Handcrafted Finnish sauna models from residential to commercial",
+        "numberOfItems": 5,
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "item": {
+                    "@type": "Product",
+                    "name": "S2 Finnish Sauna",
+                    "description": "2-3 person compact Finnish sauna. 5' x 7' exterior with three-tier benches, Western Red Cedar interior, full insulation, and metal exterior cladding.",
+                    "brand": {"@type": "Brand", "name": "Secret Sauna Company"},
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "22500",
+                        "priceCurrency": "CAD",
+                        "availability": "https://schema.org/InStock",
+                        "url": "https://www.secretsaunacompany.ca/saunas/"
+                    }
+                }
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "item": {
+                    "@type": "Product",
+                    "name": "S4 Finnish Sauna",
+                    "description": "4-5 person Finnish sauna. 7' x 7' exterior with Western Red Cedar interior, full insulation, choice of bench configuration, and one large window.",
+                    "brand": {"@type": "Brand", "name": "Secret Sauna Company"},
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "29000",
+                        "priceCurrency": "CAD",
+                        "availability": "https://schema.org/InStock",
+                        "url": "https://www.secretsaunacompany.ca/saunas/"
+                    }
+                }
+            },
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "item": {
+                    "@type": "Product",
+                    "name": "S6 Finnish Sauna",
+                    "description": "6-7 person Finnish sauna. 7' x 9' exterior, available as mobile or semi-permanent. Western Red Cedar interior with full customization options.",
+                    "brand": {"@type": "Brand", "name": "Secret Sauna Company"},
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "35500",
+                        "priceCurrency": "CAD",
+                        "availability": "https://schema.org/InStock",
+                        "url": "https://www.secretsaunacompany.ca/saunas/"
+                    }
+                }
+            },
+            {
+                "@type": "ListItem",
+                "position": 4,
+                "item": {
+                    "@type": "Product",
+                    "name": "S8 Finnish Sauna",
+                    "description": "8-10 person luxury Finnish sauna. 7' x 11' exterior with full customization, premium interior options, and commercial-grade construction.",
+                    "brand": {"@type": "Brand", "name": "Secret Sauna Company"},
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "44000",
+                        "priceCurrency": "CAD",
+                        "availability": "https://schema.org/InStock",
+                        "url": "https://www.secretsaunacompany.ca/saunas/"
+                    }
+                }
+            },
+            {
+                "@type": "ListItem",
+                "position": 5,
+                "item": {
+                    "@type": "Product",
+                    "name": "SC Commercial Sauna",
+                    "description": "10-14+ person commercial-grade Finnish sauna. 7' x 12'+ exterior, built for resorts, spas, and commercial facilities. Fully custom specifications.",
+                    "brand": {"@type": "Brand", "name": "Secret Sauna Company"},
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "57000",
+                        "priceCurrency": "CAD",
+                        "availability": "https://schema.org/InStock",
+                        "url": "https://www.secretsaunacompany.ca/saunas/"
+                    }
+                }
+            }
+        ]
+    }
+    </script>
+
+    <!-- SAUNAS PAGE -->
+    <div id="saunas" class="page page--has-bg">
+        <div class="page-bg--fixed page-bg--opacity-10" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768271313/IMG_2819_bl3kb1.jpg');"></div>
+        <section class="page-hero hero-overlay">
+            <div class="hero-overlay__bg hero-overlay__bg--opacity-30" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768250656/IMG_7875-EDIT-EDIT_dbj20g.jpg');"></div>
+            <div class="hero-overlay__content">
+                <h1>Our Saunas</h1>
+                <p>Standard models, custom builds, and mobile saunas</p>
+            </div>
+        </section>
+
+        <section class="container">
+            <h2 class="text-center fade-in">Why Traditional Finnish Saunas?</h2>
+            <p class="text-center fade-in text--intro-70ch">Not all saunas are created equal. Here's why our construction method delivers a superior experience that lasts decades.</p>
+
+            <div class="comparison-grid">
+                <div class="comparison-card slide-up">
+                    <div class="comparison-header ours">
+                        <h3>Our Finnish Saunas</h3>
+                        <span class="comparison-badge">Built Like Your Home</span>
+                    </div>
+                    <ul class="comparison-list">
+                        <li><span class="check">✓</span> Fully insulated envelope (R-13+ walls)</li>
+                        <li><span class="check">✓</span> 2x4 framing with vapor barrier</li>
+                        <li><span class="check">✓</span> Interior cedar cladding + exterior metal</li>
+                        <li><span class="check">✓</span> Proper löyly (steam) at 80-100°C</li>
+                        <li><span class="check">✓</span> Heats evenly, retains heat efficiently</li>
+                        <li><span class="check">✓</span> Built to last 25+ years outdoors</li>
+                        <li><span class="check">✓</span> Proven health benefits over millennia</li>
+                    </ul>
+                </div>
+
+                <div class="comparison-card slide-up">
+                    <div class="comparison-header barrels">
+                        <h3>Barrel Saunas</h3>
+                        <span class="comparison-badge-alt">Common Alternative</span>
+                    </div>
+                    <ul class="comparison-list">
+                        <li><span class="x">✗</span> No insulation (single-wall construction)</li>
+                        <li><span class="x">✗</span> Stave construction with metal bands</li>
+                        <li><span class="x">✗</span> Exposed wood inside and out</li>
+                        <li><span class="x">✗</span> Difficult to achieve proper heat</li>
+                        <li><span class="x">✗</span> Loses heat quickly in cold weather</li>
+                        <li><span class="x">✗</span> 5-10 year lifespan typical</li>
+                        <li><span class="x">✗</span> Higher energy costs to operate</li>
+                    </ul>
+                </div>
+
+                <div class="comparison-card slide-up">
+                    <div class="comparison-header infrared">
+                        <h3>Infrared "Saunas"</h3>
+                        <span class="comparison-badge-alt">Not a True Sauna</span>
+                    </div>
+                    <ul class="comparison-list">
+                        <li><span class="x">✗</span> Heats your body, not the air</li>
+                        <li><span class="x">✗</span> No steam (löyly) possible</li>
+                        <li><span class="x">✗</span> Max temp ~60°C (not hot enough)</li>
+                        <li><span class="x">✗</span> No authentic sauna experience</li>
+                        <li><span class="x">✗</span> Unproven long-term health claims</li>
+                        <li><span class="x">✗</span> Often made with cheap materials</li>
+                        <li><span class="x">✗</span> Indoor use only</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-grey hero-overlay">
+            <div class="container hero-overlay__content">
+                <h2 class="text-center fade-in">Rooted in Science</h2>
+                <p class="text-center fade-in text--intro-70ch">Traditional Finnish sauna bathing isn't just relaxing—it's backed by decades of peer-reviewed research.</p>
+
+                <div class="grid-3 grid-3--mt-2">
+                    <div class="slide-up stat-card">
+                        <span class="stat-number">40%</span>
+                        <p>Lower risk of cardiovascular disease with regular sauna use (4-7x/week)</p>
+                        <span class="stat-source">— JAMA Internal Medicine</span>
+                    </div>
+                    <div class="slide-up stat-card">
+                        <span class="stat-number">66%</span>
+                        <p>Reduction in dementia risk for frequent sauna bathers</p>
+                        <span class="stat-source">— University of Eastern Finland</span>
+                    </div>
+                    <div class="slide-up stat-card">
+                        <span class="stat-number">24%</span>
+                        <p>Lower all-cause mortality for those who sauna 4+ times weekly</p>
+                        <span class="stat-source">— 20-year Finnish study</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="container">
+            <h2 class="text-center fade-in">Standard Builds</h2>
+            <p class="text-center fade-in text--intro-70ch">Handcrafted in Squamish, B.C. Every model features three-tier Western Red Cedar benches, panoramic windows, and accent walls as standard. Speakers and integrated lighting available across the range.</p>
+
+            <div class="model-grid">
+                <div class="model-card slide-up" data-action="open-modal" data-model="s2">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768486096/20250610_124511_dtirpu.jpg" srcset="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_400/v1768486096/20250610_124511_dtirpu.jpg 400w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768486096/20250610_124511_dtirpu.jpg 800w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1200/v1768486096/20250610_124511_dtirpu.jpg 1200w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768486096/20250610_124511_dtirpu.jpg 1920w" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px" alt="S2 Finnish Sauna - 2-3 person compact outdoor sauna with Western Red Cedar interior" class="model-card-image">
+                    <div class="model-card-content">
+                        <div class="model-header">
+                            <h3>S2</h3>
+                            <span class="model-capacity">2–3 Person</span>
+                        </div>
+                        <p>Our most compact build. Full Finnish performance in a 5x7 footprint. Two layout options: maximize seating or dedicate more space to the upper bench.</p>
+                        <div class="model-specs">
+                            <span>5' × 7'</span>
+                            <span class="model-price">From $22,500</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="model-card slide-up" data-action="open-modal" data-model="s4">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768272416/PXL_20240808_173352968.MP_yhb9bq.jpg" srcset="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_400/v1768272416/PXL_20240808_173352968.MP_yhb9bq.jpg 400w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768272416/PXL_20240808_173352968.MP_yhb9bq.jpg 800w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1200/v1768272416/PXL_20240808_173352968.MP_yhb9bq.jpg 1200w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768272416/PXL_20240808_173352968.MP_yhb9bq.jpg 1920w" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px" alt="S4 Finnish Sauna - 4-5 person traditional cedar sauna with three-tier bench system" class="model-card-image">
+                    <div class="model-card-content">
+                        <div class="model-header">
+                            <h3>S4</h3>
+                            <span class="model-capacity">4–5 Person</span>
+                        </div>
+                        <p>Our most popular residential model. Flexible bench configuration with room to find your preferred heat level across all three tiers.</p>
+                        <div class="model-specs">
+                            <span>7' × 7'</span>
+                            <span class="model-price">From $29,000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="model-card slide-up" data-action="open-modal" data-model="s6">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768272421/20250313_124032-EDIT_uu36i8.jpg" srcset="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_400/v1768272421/20250313_124032-EDIT_uu36i8.jpg 400w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768272421/20250313_124032-EDIT_uu36i8.jpg 800w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1200/v1768272421/20250313_124032-EDIT_uu36i8.jpg 1200w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768272421/20250313_124032-EDIT_uu36i8.jpg 1920w" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px" alt="S6 Finnish Sauna - 6-7 person mobile sauna available in wood-fired or electric" class="model-card-image">
+                    <div class="model-card-content">
+                        <div class="model-header">
+                            <h3>S6</h3>
+                            <span class="model-capacity">6–7 Person</span>
+                        </div>
+                        <p>Room for a proper group session. Wood-burning or electric. Available with front deck. Built as mobile on a trailer or semi-permanent on skids.</p>
+                        <div class="model-specs">
+                            <span>9' × 7'</span>
+                            <span class="model-price">From $35,500</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="model-card slide-up" data-action="open-modal" data-model="s8">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768256585/IMG_7704_tliztu.jpg" srcset="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_400/v1768256585/IMG_7704_tliztu.jpg 400w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768256585/IMG_7704_tliztu.jpg 800w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1200/v1768256585/IMG_7704_tliztu.jpg 1200w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768256585/IMG_7704_tliztu.jpg 1920w" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px" alt="S8 Finnish Sauna - 8-10 person luxury outdoor sauna with full customization options" class="model-card-image">
+                    <div class="model-card-content">
+                        <div class="model-header">
+                            <h3>S8</h3>
+                            <span class="model-capacity">8–10 Person</span>
+                        </div>
+                        <p>Our largest standard build. Full three-tier benching with room to move. Wood-burning or electric, with optional front deck.</p>
+                        <div class="model-specs">
+                            <span>12' × 7'</span>
+                            <span class="model-price">From $44,000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="model-card slide-up" data-action="open-modal" data-model="sc">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768250659/PXL_20250605_233559063.MP-EDIT_zvmio8.jpg" srcset="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_400/v1768250659/PXL_20250605_233559063.MP-EDIT_zvmio8.jpg 400w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768250659/PXL_20250605_233559063.MP-EDIT_zvmio8.jpg 800w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1200/v1768250659/PXL_20250605_233559063.MP-EDIT_zvmio8.jpg 1200w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768250659/PXL_20250605_233559063.MP-EDIT_zvmio8.jpg 1920w" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px" alt="SC Commercial Finnish Sauna - 10-14 person commercial-grade sauna for resorts and wellness centers" class="model-card-image">
+                    <div class="model-card-content">
+                        <div class="model-header">
+                            <h3>SC</h3>
+                            <span class="model-capacity">10–14 Person</span>
+                        </div>
+                        <p>Commercial-grade performance. Durable epoxy flooring, reinforced benches, upgraded trim. Optional changing room and front deck. Built for resorts, gyms, and wellness centers. Custom sizes available.</p>
+                        <div class="model-specs">
+                            <span>12' × 7'+</span>
+                            <span class="model-price">From $57,000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="center-wrapper">
+                <a href="/contact/" class="btn">Get Your Quote</a>
+            </div>
+        </section>
+
+        <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768256591/IMG_3663_pp2juf.jpg" srcset="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_400/v1768256591/IMG_3663_pp2juf.jpg 400w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768256591/IMG_3663_pp2juf.jpg 800w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1200/v1768256591/IMG_3663_pp2juf.jpg 1200w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768256591/IMG_3663_pp2juf.jpg 1920w" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px" alt="Sauna Craftsmanship" class="full-width-image scale-in">
+
+        <section class="container">
+            <div class="grid-2">
+                <div class="offering-card slide-up">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768409618/PXL_20251217_180620919_et8wbi.jpg" srcset="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_400/v1768409618/PXL_20251217_180620919_et8wbi.jpg 400w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768409618/PXL_20251217_180620919_et8wbi.jpg 800w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1200/v1768409618/PXL_20251217_180620919_et8wbi.jpg 1200w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768409618/PXL_20251217_180620919_et8wbi.jpg 1920w" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px" alt="Custom Sauna" class="card-image">
+                    <div class="card-content">
+                        <h3>Custom Builds</h3>
+                        <p>Designed for your property, built to your vision. From intimate backyard saunas to commercial installations, each custom build begins with understanding how you'll use the space.</p>
+                        <a href="/contact/" class="link--accent">Inquire about custom →</a>
+                    </div>
+                </div>
+                <div class="offering-card slide-up">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768250652/DSC03363-EDIT_mdrrrs.jpg" srcset="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_400/v1768250652/DSC03363-EDIT_mdrrrs.jpg 400w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768250652/DSC03363-EDIT_mdrrrs.jpg 800w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1200/v1768250652/DSC03363-EDIT_mdrrrs.jpg 1200w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768250652/DSC03363-EDIT_mdrrrs.jpg 1920w" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px" alt="Mobile Sauna" class="card-image">
+                    <div class="card-content">
+                        <h3>Mobile Builds</h3>
+                        <p>Fully equipped, road-ready saunas for hospitality partners and rental operators. Designed for durability and ease of use. Available for lease, rental partnerships, or purchase.</p>
+                        <a href="/contact/" class="link--accent">Inquire about mobile →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768256600/PXL_20241206_001021963.MP_g6jdgp.jpg" srcset="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_400/v1768256600/PXL_20241206_001021963.MP_g6jdgp.jpg 400w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768256600/PXL_20241206_001021963.MP_g6jdgp.jpg 800w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1200/v1768256600/PXL_20241206_001021963.MP_g6jdgp.jpg 1200w, https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768256600/PXL_20241206_001021963.MP_g6jdgp.jpg 1920w" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px" alt="Sauna detail" class="full-width-image scale-in">
+
+        <section class="wide-container">
+            <h2 class="text-center fade-in">Our Work</h2>
+            <p class="text-center fade-in text--intro-70ch">A selection of recent builds across British Columbia.</p>
+            <div class="gallery">
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324977/DSC03225-EDIT_crqtkp.jpg" alt="Luxury Finnish sauna exterior with modern metal cladding in forest setting">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250657/PXL_20250605_231738816.MP_javbdv.jpg" alt="Handcrafted Western Red Cedar sauna interior with three-tier benches">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324963/PXL_20250119_184356235.MP-EDIT_diy2x7.jpg" alt="Custom sauna with panoramic window overlooking BC mountains">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250654/IMG_6592_ln0gz8.jpg" alt="Traditional wood-fired sauna heater with hot stones for authentic loyly">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324972/PXL_20250605_233615654_or7ngn.jpg" alt="Commercial sauna interior with professional-grade cedar benching">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250653/IMG_6404_hrncws.jpg" alt="Finnish sauna exterior with metal cladding in natural forest setting">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324985/IMG_7463_fevmyz.jpg" alt="Spacious sauna interior with warm cedar tones and ambient lighting">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324962/20250425_132951_ozdcq1.jpg" alt="Outdoor Finnish sauna installation in British Columbia backyard">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324976/20250117_192120_yeltdd.jpg" alt="Finnish sauna at dusk with warm interior lighting">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768252902/PXL_20250219_164112953_qm9dcl.jpg" alt="Sauna build in progress with precision cedar framing">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768253182/IMG-20240421-WA0054-EDIT-EDIT_n613ap.jpg" alt="Finished sauna exterior with natural wood finish">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324968/DSC03239_jnnm5q.jpg" alt="Interior sauna detail showing cedar bench craftsmanship">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768275843/IMG_2891_wfwy7y.jpg" alt="Completed sauna installation in residential backyard setting">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250656/IMG_7294_scub94.jpg" alt="Mobile sauna unit ready for delivery">
+                </div>
+                <div class="gallery-item scale-in">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324973/PXL_20250605_232338418_yo0pnm.jpg" alt="Sauna interior with warm ambient lighting and cedar walls">
+                </div>
+            </div>
+        </section>
+    </div>
+
+
+
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768255497/FINAL_LOGO_TEXT1.1_qwtccv.png" alt="Secret Sauna Company" class="footer-logo">
+                <p class="footer-tagline">Designed by Finnish Standards, Inspired by Tradition and Rooted in Science.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="/">Home</a>
+                <a href="/about/">About</a>
+                <a href="/saunas/">Saunas</a>
+                <a href="/faq/">FAQ</a>
+                <a href="/warranty/">Warranty</a>
+                <a href="/contact/">Contact</a>
+            </div>
+            <div class="footer-section">
+                <h4>Service Areas</h4>
+                <a href="/squamish/">Squamish</a>
+                <a href="/whistler/">Whistler</a>
+                <a href="/north-shore/">North Shore</a>
+                <a href="/vancouver/">Vancouver</a>
+                <a href="/sea-to-sky/">Sea-to-Sky</a>
+            </div>
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <a href="mailto:secretsaunacompany@gmail.com">Email Us</a>
+                <a href="https://instagram.com/secretsaunaco" target="_blank" rel="noopener noreferrer">Instagram</a>
+                <a href="https://www.facebook.com/profile.php?id=61556176987817" target="_blank" rel="noopener noreferrer">Facebook</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Secret Sauna Company. All rights reserved.</p>
+        </div>
+    </footer>
+
+        <!-- Sauna Model Modal -->
+    <div id="saunaModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" data-action="close-modal" aria-label="Close modal">&times;</button>
+
+            <div class="modal-gallery">
+                <div id="modalMainMedia" class="modal-main-media"></div>
+                <div id="modalThumbnails" class="modal-thumbnails"></div>
+            </div>
+
+            <div class="modal-body">
+                <div class="modal-specs">
+                    <h2 id="modalTitle">S4 Standard Sauna</h2>
+
+                    <div class="specs-grid">
+                        <div class="spec-item">
+                            <label>Exterior Size</label>
+                            <span id="specSize">7' x 7'</span>
+                        </div>
+                        <div class="spec-item">
+                            <label>Capacity</label>
+                            <span id="specCapacity">4-5 people</span>
+                        </div>
+                        <div class="spec-item">
+                            <label>Base Price</label>
+                            <span id="specPrice">$29,000</span>
+                        </div>
+                        <div class="spec-item">
+                            <label>Heater Included</label>
+                            <span id="specHeater">Harvia M3 or Homecraft 7.5kW</span>
+                        </div>
+                    </div>
+
+                    <div class="standard-features">
+                        <h4>Standard Features Included</h4>
+                        <ul>
+                            <li>Knotty Western Red Cedar interior</li>
+                            <li>One large window</li>
+                            <li>One exterior accent wall</li>
+                            <li>Metal exterior cladding</li>
+                            <li>Full insulation package</li>
+                            <li>Your choice of bench configuration</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="modal-addons">
+                    <h3>Customize Your Sauna</h3>
+
+                    <div class="addon-category">
+                        <h4>Heater Upgrade</h4>
+                        <label class="addon-option">
+                            <input type="radio" name="heater" value="0" checked data-addon="heater">
+                            <span class="addon-label">Standard heater (included)</span>
+                            <span class="addon-price">Included</span>
+                        </label>
+                        <label class="addon-option" id="heaterElectricUpgrade">
+                            <input type="radio" name="heater" value="2000" data-addon="heater">
+                            <span class="addon-label" id="heaterElectricLabel">Homecraft Revive 9kW (Electric)</span>
+                            <span class="addon-price" id="heaterElectricPrice">+$2,000</span>
+                        </label>
+                        <label class="addon-option" id="heaterWoodUpgrade">
+                            <input type="radio" name="heater" value="3000" data-addon="heater">
+                            <span class="addon-label">Kuuma Banya (Wood-fired)</span>
+                            <span class="addon-price">+$3,000</span>
+                        </label>
+                    </div>
+
+                    <div class="addon-category">
+                        <h4>Changing Room</h4>
+                        <label class="addon-option">
+                            <input type="radio" name="changing" value="0" checked data-addon="changing">
+                            <span class="addon-label">No changing room</span>
+                            <span class="addon-price">—</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="changing" value="3500" data-addon="changing">
+                            <span class="addon-label">3' Changing room</span>
+                            <span class="addon-price">+$3,500</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="changing" value="4500" data-addon="changing">
+                            <span class="addon-label">4' Changing room</span>
+                            <span class="addon-price">+$4,500</span>
+                        </label>
+                    </div>
+
+                    <div class="addon-category">
+                        <h4>Front Deck</h4>
+                        <label class="addon-option">
+                            <input type="radio" name="deck" value="0" checked data-addon="deck">
+                            <span class="addon-label">No deck</span>
+                            <span class="addon-price">—</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="deck" value="2000" data-addon="deck">
+                            <span class="addon-label">2' Front deck</span>
+                            <span class="addon-price">+$2,000</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="deck" value="3000" data-addon="deck">
+                            <span class="addon-label">3' Front deck</span>
+                            <span class="addon-price">+$3,000</span>
+                        </label>
+                    </div>
+
+                    <div class="addon-category">
+                        <h4>Exterior Cladding</h4>
+                        <label class="addon-option">
+                            <input type="radio" name="exterior" value="0" checked data-addon="exterior">
+                            <span class="addon-label">Standard metal cladding</span>
+                            <span class="addon-price">Included</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="exterior" value="2500" data-addon="exterior">
+                            <span class="addon-label">Standing seam metal</span>
+                            <span class="addon-price">+$2,500</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="exterior" value="2500" data-addon="exterior">
+                            <span class="addon-label">Cedar exterior</span>
+                            <span class="addon-price">+$2,500</span>
+                        </label>
+                    </div>
+
+                    <div class="addon-category">
+                        <h4>Interior Wood</h4>
+                        <label class="addon-option">
+                            <input type="radio" name="interior" value="0" checked data-addon="interior">
+                            <span class="addon-label">Knotty Western Red Cedar</span>
+                            <span class="addon-price">Included</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="interior" value="interiorUpgrade" data-addon="interior">
+                            <span class="addon-label">Clear Cedar</span>
+                            <span class="addon-price" id="clearCedarPrice">+$1,500</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="interior" value="interiorUpgrade" data-addon="interior">
+                            <span class="addon-label">Thermowood</span>
+                            <span class="addon-price" id="thermowoodPrice">+$1,500</span>
+                        </label>
+                    </div>
+
+                    <div class="addon-category">
+                        <h4>Bench Configuration</h4>
+                        <label class="addon-option">
+                            <input type="radio" name="bench" value="0" checked data-addon="bench">
+                            <span class="addon-label">L-Shaped benches</span>
+                            <span class="addon-price">Included</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="bench" value="0" data-addon="bench">
+                            <span class="addon-label">U-Shaped benches</span>
+                            <span class="addon-price">Included</span>
+                        </label>
+                    </div>
+
+                    <div class="addon-category premium-package-category">
+                        <h4>Premium Finish Package</h4>
+                        <p class="package-description">Clear cedar interior, cedar or standing seam exterior, WiFi controller, lighting package, Bluetooth speakers. <strong>Save $1,000</strong> vs selecting individually.</p>
+                        <label class="addon-option">
+                            <input type="radio" name="premiumPackage" value="0" checked data-addon="premiumPackage" data-action="premium-change">
+                            <span class="addon-label">No package (select options individually)</span>
+                            <span class="addon-price">—</span>
+                        </label>
+                        <label class="addon-option premium-option">
+                            <input type="radio" name="premiumPackage" value="premiumFinishPrice" data-addon="premiumPackage" data-action="premium-change">
+                            <span class="addon-label">Premium Finish Package</span>
+                            <span class="addon-price" id="premiumFinishPrice">+$7,500</span>
+                        </label>
+                    </div>
+
+                    <div class="addon-category">
+                        <h4>Additional Options</h4>
+                        <label class="addon-option">
+                            <input type="checkbox" value="1500" data-addon="window">
+                            <span class="addon-label">Additional window</span>
+                            <span class="addon-price">+$1,500</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="checkbox" value="1500" data-addon="lighting">
+                            <span class="addon-label">Interior & exterior lighting package</span>
+                            <span class="addon-price">+$1,500</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="checkbox" value="1000" data-addon="speakers">
+                            <span class="addon-label">Built-in Bluetooth speakers</span>
+                            <span class="addon-price">+$1,000</span>
+                        </label>
+                    </div>
+
+                    <div class="price-summary">
+                        <div class="price-row base">
+                            <span>Base Price</span>
+                            <span id="summaryBase">$29,000</span>
+                        </div>
+                        <div id="addonsList"></div>
+                        <div class="price-row total">
+                            <span>Estimated Total</span>
+                            <span id="summaryTotal">$29,000</span>
+                        </div>
+                        <button class="quote-btn" data-action="request-quote">Request Quote for This Configuration</button>
+                        <p class="contact-note">Final pricing confirmed after consultation. Custom requests welcome.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Gallery Lightbox -->
+    <div id="galleryLightbox" class="lightbox-overlay">
+        <button class="lightbox-close" data-action="close-lightbox" aria-label="Close lightbox">&times;</button>
+        <button class="lightbox-nav lightbox-prev" data-action="lightbox-nav" data-dir="-1" aria-label="Previous image">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15,18 9,12 15,6"></polyline>
+            </svg>
+        </button>
+        <button class="lightbox-nav lightbox-next" data-action="lightbox-nav" data-dir="1" aria-label="Next image">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9,6 15,12 9,18"></polyline>
+            </svg>
+        </button>
+        <div class="lightbox-content">
+            <img id="lightboxImage" src="" alt="Gallery image">
+        </div>
+        <div class="lightbox-counter">
+            <span id="lightboxCurrent">1</span> / <span id="lightboxTotal">25</span>
+        </div>
+    </div>
+
+
+
+    <!-- External JavaScript - Modular Architecture -->
+    <!-- Load order matters: data & utils first, then components, then init last -->
+    <script src="/js/data.js?v=20260226" defer></script>
+    <script src="/js/utils.js?v=20260226" defer></script>
+    <script src="/js/animations.js?v=20260226" defer></script>
+    <script src="/js/navigation.js?v=20260226" defer></script>
+    <script src="/js/gallery.js?v=20260226" defer></script>
+    <script src="/js/modal.js?v=20260226" defer></script>
+    <script src="/js/map.js?v=20260226" defer></script>
+    <script src="/js/booking.js?v=20260226" defer></script>
+    <script src="/js/forms.js?v=20260226" defer></script>
+    <script src="/js/init.js?v=20260226" defer></script>
+
+    <!-- Analytics Tracker - Netlify Edition -->
+    <script src="/analytics-tracker-netlify.js?v=20260226" defer></script>
+
+</body>
+</html>

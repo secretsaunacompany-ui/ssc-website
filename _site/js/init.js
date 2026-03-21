@@ -121,11 +121,6 @@
             }
         });
 
-        // Initialize AI advisors
-        if (SSC.initAdvisors) {
-            SSC.initAdvisors();
-        }
-
         console.log('Secret Sauna Company website initialized');
     });
 

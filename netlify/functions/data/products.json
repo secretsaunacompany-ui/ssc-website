@@ -1,0 +1,152 @@
+{
+  "_comment": "SSC product data for advisor system prompts. Keep in sync with js/data.js when pricing or models change.",
+  "models": {
+    "s2": {
+      "name": "S2",
+      "fullName": "S2 Standard Sauna",
+      "basePrice": 22500,
+      "size": "5' x 7'",
+      "capacity": "2-3 people",
+      "heater": "Homecraft 7.5kW H Series (electric)",
+      "electricOnly": true,
+      "interiorUpgrade": 1000,
+      "premiumFinishPrice": 7000,
+      "description": "Compact sauna for couples or small spaces. Electric heater only."
+    },
+    "s4": {
+      "name": "S4",
+      "fullName": "S4 Standard Sauna",
+      "basePrice": 29000,
+      "size": "7' x 7'",
+      "capacity": "4-5 people",
+      "heater": "Harvia M3 or Homecraft 7.5kW (wood-fired or electric)",
+      "electricOnly": false,
+      "interiorUpgrade": 1500,
+      "premiumFinishPrice": 7500,
+      "description": "Most popular residential model. Fits families and small groups."
+    },
+    "s6": {
+      "name": "S6",
+      "fullName": "S6 Standard Sauna",
+      "basePrice": 35500,
+      "size": "7' x 9'",
+      "capacity": "6-7 people",
+      "heater": "Harvia M3 or Homecraft 7.5kW (wood-fired or electric)",
+      "electricOnly": false,
+      "interiorUpgrade": 2500,
+      "premiumFinishPrice": 8500,
+      "description": "Great for entertaining. Room for larger groups with full bench layouts."
+    },
+    "s8": {
+      "name": "S8",
+      "fullName": "S8 Standard Sauna",
+      "basePrice": 44000,
+      "size": "7' x 11'",
+      "capacity": "8-10 people",
+      "heater": "Harvia M3 or Homecraft 7.5kW (wood-fired or electric)",
+      "electricOnly": false,
+      "interiorUpgrade": 3500,
+      "premiumFinishPrice": 9500,
+      "description": "Large residential or small commercial. Major gathering space."
+    },
+    "sc": {
+      "name": "SC",
+      "fullName": "SC Commercial Sauna",
+      "basePrice": 57000,
+      "size": "7' x 12' or larger",
+      "capacity": "10-12+ people",
+      "heater": "Harvia Pro20 or Homecraft 9kW Apex (wood-fired or electric)",
+      "electricOnly": false,
+      "interiorUpgrade": 4500,
+      "premiumFinishPrice": 10500,
+      "description": "Commercial-grade. Custom dimensions available. Built for high-traffic venues."
+    }
+  },
+  "addons": {
+    "heaterUpgrade": {
+      "options": [
+        { "name": "Standard (included)", "price": 0 },
+        { "name": "Homecraft Revive 9kW Electric", "price": 2000 },
+        { "name": "Kuuma Banya Wood-fired", "price": 3000, "note": "Not available on S2" }
+      ]
+    },
+    "changingRoom": {
+      "options": [
+        { "name": "None", "price": 0 },
+        { "name": "3' Changing Room", "price": 3500 },
+        { "name": "4' Changing Room", "price": 4500 }
+      ]
+    },
+    "frontDeck": {
+      "options": [
+        { "name": "None", "price": 0 },
+        { "name": "2' Front Deck", "price": 2000 },
+        { "name": "3' Front Deck", "price": 3000 }
+      ]
+    },
+    "exteriorCladding": {
+      "options": [
+        { "name": "Standard metal (included)", "price": 0 },
+        { "name": "Standing seam metal", "price": 2500 },
+        { "name": "Cedar exterior", "price": 2500 }
+      ]
+    },
+    "interiorWood": {
+      "options": [
+        { "name": "Knotty Western Red Cedar (included)", "price": 0 },
+        { "name": "Clear Cedar", "price": "varies by model" },
+        { "name": "Thermowood", "price": "varies by model" }
+      ]
+    },
+    "benchConfig": {
+      "options": [
+        { "name": "L-Shaped", "price": 0 },
+        { "name": "U-Shaped", "price": 0 }
+      ]
+    },
+    "premiumFinishPackage": {
+      "note": "Bundles clear cedar interior + cedar exterior + WiFi + interior/exterior lighting + Bluetooth speakers. Saves ~$1,000 vs individual upgrades.",
+      "price": "varies by model ($7,000-$10,500)"
+    },
+    "additionalOptions": [
+      { "name": "Additional window", "price": 1500 },
+      { "name": "Interior + exterior lighting", "price": 1500 },
+      { "name": "Bluetooth speakers", "price": 1000 }
+    ]
+  },
+  "construction": {
+    "framing": "2x4 construction",
+    "insulation": "Rockwool",
+    "exteriorDefault": "Metal cladding",
+    "interiorDefault": "Locally sourced Western Red Cedar",
+    "foundation": "Open deck flooring for ventilation and drainage. Place on packed gravel, concrete feet, or pavers.",
+    "warranty": "2-year workmanship + 5-year structural integrity",
+    "electricalCert": "Third-party electrical certification included on all wired saunas"
+  },
+  "payment": {
+    "structure": "30% deposit / 30% at halfway / 30% near completion / 10% on delivery",
+    "methods": "Various payment methods accepted"
+  },
+  "timeline": {
+    "typical": "4-6 weeks",
+    "note": "Timelines vary depending on project complexity and current workload"
+  },
+  "serviceAreas": {
+    "primary": "Sea-to-Sky corridor, Greater Vancouver, Fraser Valley",
+    "extended": "BC-wide and beyond (Williams Lake, Edmonton, San Francisco completed)",
+    "note": "Contact us to discuss logistics for locations outside our primary area"
+  },
+  "portfolio": {
+    "commercial": [
+      { "name": "The Good Sauna", "location": "Vancouver, BC", "type": "SC", "venue": "Brewery partnership" },
+      { "name": "Gatherwell - Ambleside", "location": "West Vancouver, BC", "type": "Custom", "venue": "Waterfront public sauna" },
+      { "name": "Finnish Sauna Co. - Sea Edge", "location": "Parksville, BC", "type": "SC", "venue": "Oceanfront hotel" },
+      { "name": "Custom Commercial Unit", "location": "Edmonton, AB", "type": "Custom", "venue": "Private wellness center" },
+      { "name": "Brackendale Art Gallery", "location": "Squamish, BC", "type": "Mobile", "venue": "Cultural events" }
+    ],
+    "residential": {
+      "locations": ["Squamish", "Brackendale", "Pemberton", "Abbotsford", "Williams Lake", "California"],
+      "models": ["S2", "S4", "S6", "S8"]
+    }
+  }
+}

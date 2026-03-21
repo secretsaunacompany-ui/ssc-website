@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.secretsaunacompany.ca/sitemap.xml
