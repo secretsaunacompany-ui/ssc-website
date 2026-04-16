@@ -5,9 +5,12 @@
       body.page-home:not(.hero-revealed) .hero-content { opacity: 0; transform: translateY(30px); pointer-events: none; }
       body.page-home.hero-revealed nav { transition: opacity 0.8s ease, transform 0.8s ease; }
       body.page-home.hero-revealed .hero-content { transition: opacity 1s ease 0.15s, transform 1s ease 0.15s; }
+      /* Stage 1: lock scroll while viewer admires hero, then while they read */
+      body.page-home.hero-locked { overflow: hidden; overscroll-behavior: none; touch-action: none; }
     </style>
     <noscript><style>
       body.page-home nav, body.page-home .hero-content { opacity: 1 !important; transform: none !important; pointer-events: auto !important; }
+      body.page-home.hero-locked { overflow: auto !important; touch-action: auto !important; }
     </style></noscript>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

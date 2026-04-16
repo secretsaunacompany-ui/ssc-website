@@ -93,35 +93,65 @@
             // Only run on homepage (body.page-home set by template)
             if (!document.body.classList.contains('page-home')) return;
 
-            // Reveal nav + hero content on first scroll gesture
-            const reveal = () => {
-                document.body.classList.add('hero-revealed');
-                cleanup();
+            // Three-stage flow:
+            //   0 = pure hero photo, scroll locked
+            //   1 = nav + hero text revealed, scroll still locked
+            //   2 = scroll unlocked, page moves normally
+            let stage = 0;
+            let lastGestureTime = 0;
+            const GESTURE_COOLDOWN = 600; // ms -- treat rapid wheel events as one gesture
+
+            const body = document.body;
+            body.classList.add('hero-locked');
+
+            const blockScroll = (e) => {
+                if (stage < 2) e.preventDefault();
             };
 
-            const cleanup = () => {
-                window.removeEventListener('wheel', reveal);
-                window.removeEventListener('touchstart', reveal);
-                window.removeEventListener('keydown', onKey);
+            const onGesture = (e) => {
+                const now = Date.now();
+                if (now - lastGestureTime < GESTURE_COOLDOWN) return;
+                lastGestureTime = now;
+
+                if (stage === 0) {
+                    body.classList.add('hero-revealed');
+                    stage = 1;
+                } else if (stage === 1) {
+                    body.classList.remove('hero-locked');
+                    stage = 2;
+                    cleanup();
+                }
             };
 
             const onKey = (e) => {
-                if (['ArrowDown', 'ArrowUp', 'Space', 'PageDown', 'PageUp'].includes(e.key)) {
-                    reveal();
+                if (['ArrowDown', 'ArrowUp', ' ', 'Space', 'PageDown', 'PageUp'].includes(e.key)) {
+                    if (stage < 2) e.preventDefault();
+                    onGesture(e);
                 }
             };
 
-            // wheel + touchstart + keydown only -- NOT scroll (fires during page init)
-            window.addEventListener('wheel', reveal, { once: true, passive: true });
-            window.addEventListener('touchstart', reveal, { once: true, passive: true });
+            const cleanup = () => {
+                window.removeEventListener('wheel', blockScroll, { passive: false });
+                window.removeEventListener('touchmove', blockScroll, { passive: false });
+                window.removeEventListener('wheel', onGesture);
+                window.removeEventListener('touchstart', onGesture);
+                window.removeEventListener('keydown', onKey);
+            };
+
+            window.addEventListener('wheel', blockScroll, { passive: false });
+            window.addEventListener('touchmove', blockScroll, { passive: false });
+            window.addEventListener('wheel', onGesture, { passive: true });
+            window.addEventListener('touchstart', onGesture, { passive: true });
             window.addEventListener('keydown', onKey);
 
-            // Safety: auto-reveal after 5s if user hasn't interacted
+            // Safety: auto-reveal at 5s, auto-unlock at 10s if user never interacts
+            setTimeout(() => { if (stage === 0) onGesture(); }, 5000);
             setTimeout(() => {
-                if (!document.body.classList.contains('hero-revealed')) {
-                    reveal();
+                if (stage < 2) {
+                    lastGestureTime = 0; // bypass cooldown for safety unlock
+                    onGesture();
                 }
-            }, 5000);
+            }, 10000);
         }
     }
 
