@@ -2283,7 +2283,11 @@ footer::before {
 
 /* --- Footer Logo --- */
 .footer-logo {
-    height: 150px;
+    max-height: 150px;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    aspect-ratio: 1920 / 953;
     margin-bottom: 1rem;
 }
 
