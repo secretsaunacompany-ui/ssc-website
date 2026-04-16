@@ -29,12 +29,14 @@
         </section>
 
         <section class="container">
+{% if site.features.advisor %}
             <div class="advisor-container fade-in"
                  data-advisor-type="faq"
                  data-advisor-placeholder="What do you want to know?"
                  data-advisor-multi-turn="false"
                  data-advisor-starters='["Can I put a sauna on a floating dock?","What electrical work do I need?","How does delivery work to Whistler?"]'>
             </div>
+{% endif %}
 
             {% for item in faq.items %}
             <div class="faq-item fade-in">

@@ -1,4 +1,7 @@
 {
   "title": "Secret Sauna Company | Handcrafted Finnish Saunas in British Columbia",
-  "url": "https://secretsaunacompany.ca"
+  "url": "https://secretsaunacompany.ca",
+  "features": {
+    "advisor": false
+  }
 }

@@ -6,12 +6,14 @@
         </section>
 
         <section class="container">
+{% if site.features.advisor %}
             <div class="advisor-container fade-in"
                  data-advisor-type="inquiry"
                  data-advisor-placeholder="Tell us about your project — we'll help you figure out what to ask for"
                  data-advisor-multi-turn="true"
                  data-advisor-starters='["I want a backyard sauna for my family","I\u0027m looking for a commercial installation","Not sure what I need — help me figure it out"]'>
             </div>
+{% endif %}
 
             <form class="contact-form contact-form--styled" method="POST" action="https://formspree.io/f/mdaaejwp" data-action="contact-submit">
                 <input type="hidden" name="_next" value="https://www.secretsaunacompany.ca/contact/thank-you/">

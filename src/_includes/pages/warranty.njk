@@ -94,12 +94,14 @@
         </section>
 
         <section class="container">
+{% if site.features.advisor %}
             <div class="advisor-container fade-in"
                  data-advisor-type="care"
                  data-advisor-placeholder="Need care advice for your sauna?"
                  data-advisor-multi-turn="false"
                  data-advisor-starters='["How do I winterize my sauna?","The wood is turning grey — is that normal?","What\u0027s the weekly cleaning routine?"]'>
             </div>
+{% endif %}
         </section>
 
         <section class="container">
