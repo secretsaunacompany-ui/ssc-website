@@ -1,3 +1,14 @@
+---
+status: shipped
+current: null
+next: Re-enable AI Advisor widget (gated off in production; needs backend wiring + UX rethink)
+testing: null
+pinned: false
+shipped:
+  - date: 2025-12-15
+    item: Static site live on production (eleventy + Netlify)
+---
+
 # SSC Website — Roadmap
 
 Ideas parked for later. Order is not a priority ranking.
