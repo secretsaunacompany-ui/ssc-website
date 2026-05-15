@@ -13,8 +13,8 @@
 # Redirect rules (optional)
 [[redirects]]
   from = "/analytics"
-  to = "/analytics-dashboard-netlify.html"
-  status = 200
+  to = "https://ops.secretsaunacompany.ca/"
+  status = 302
 
 [[redirects]]
   from = "/ops"
