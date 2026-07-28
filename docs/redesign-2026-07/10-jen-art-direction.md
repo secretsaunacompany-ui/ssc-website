@@ -303,7 +303,7 @@ Array of build objects, in publication order. Fields, types, and whether the uni
 | `hero` | string | no | Cloudinary public ID, delivered per Saul §3 roles. If absent → degradation 7.5(a) |
 | `details` | string[] | no | 0–2 Cloudinary public IDs for the detail pair. If absent → 7.5(b) |
 | `drawing` | string \| null | no | Cloudinary public ID of the reproduced drawing (§1.3), reproduction style per Saul. `null` until drawings exist (§6 #2) |
-| `permission` | string | yes | `"named"` \| `"anonymous"` \| `"name_only"` \| `"pending"` — from Q45. **`"pending"` → the unit does not render at all.** This is the publish gate, in data, where it can't be forgotten |
+| `permission` | string | yes | `"named"` \| `"anonymous"` \| `"name_only"` — from Q45. This is the publish gate, in data, where it can't be forgotten. **The gate is an allowlist and fails CLOSED:** a unit renders only if `permission` is exactly one of those three strings. Anything else — `"pending"`, absent, empty, misspelled, a typo, a value someone invents later — renders nothing. Do not implement this as `if (permission !== "pending")`; a denylist means one typo publishes a client's home without consent. |
 
 ### 7.3 The unit, section by section
 
@@ -330,7 +330,7 @@ b. **`details` has 0 or 1 entries:** one entry → single full-bleed plate (C si
 c. **No `drawing`:** detail pair is photographs only. Never substitute a decorative graphic.
 d. **`permission: "anonymous"`:** `display_name` is `"Private Residence"`, `location` stays at region granularity, photographs render only if the anonymous-but-shown permission covers them (Q45 allows this combination explicitly).
 e. **`permission: "name_only"`:** name renders, `hero`/`details` are ignored even if present → state (a).
-f. **`permission: "pending"`:** unit skipped in the template loop. `/saunas/` and home must render correctly with 2, 1, or 0 publishable builds — the loop has no minimum.
+f. **Anything not on the allowlist** (`"pending"`, absent, empty, misspelled, unrecognised): unit skipped in the template loop. `/saunas/` and home must render correctly with 2, 1, or 0 publishable builds — the loop has no minimum. Ted: implement as membership in an explicit set of the three permitted values, never as an inequality against `"pending"`. A build with no `permission` key at all must render nothing, silently and by default.
 g. **Missing optional credit fields:** row omitted (7.3 part 5). The credits block renders with as few as three rows (model/footprint/capacity, all required).
 
 ### 7.6 Worked example — Clarke (S2, Kitsilano, delivered 2026-06-22)

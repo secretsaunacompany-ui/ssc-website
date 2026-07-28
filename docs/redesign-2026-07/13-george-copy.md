@@ -147,7 +147,14 @@ Full rewrite. "We" throughout [src: brief — "We = Lee and Anthony"].
 H1: **About**
 Sub (replaces "Designed by Finnish Standards, Inspired by Tradition and Rooted in Science" — retired everywhere, including the footer):
 
-> **A small sauna company in Squamish, British Columbia.** [src: brief]
+> **A sauna company in Squamish, British Columbia.** [NEEDS LEE — headcount phrasing]
+
+*(Was "A small sauna company… [src: brief]". The brief contains the word "small"
+zero times; it says keep the headcount **"slightly vague."** "Small" is a claim
+about the size of the business, and my own Open Item #4 already asks Lee to
+confirm how vague he wants this. Citing the brief for it was the same defect the
+review caught nine of — introduced while fixing the other nine. The neutral
+version above ships safely; the adjective waits for his answer.)*
 
 ### Section: the story
 Heading: **Where this started**
@@ -459,7 +466,7 @@ Titles aimed at 60 characters or fewer; descriptions 140 to 160.
 |---|---|---|
 | Home | Secret Sauna Company \| Finnish Saunas Built in Squamish, BC | Finnish saunas designed and built in Squamish, British Columbia. Standard models from $22,500, custom and commercial builds, and sessions you can book before you buy. [src: saunas.njk:213; locations.njk] |
 | Saunas | Sauna Models & Custom Builds \| Secret Sauna Company | Five standard Finnish sauna models from $22,500 to $57,000, plus custom and commercial builds. Fully insulated, Western Red Cedar, wood-fired or electric. [src: saunas.njk:213–273, :287] |
-| About | About \| Secret Sauna Company, Squamish BC | A small sauna company in Squamish. Born from the hidden saunas in the local woods and a first build on a trailer. Finnish tradition, built properly. [src: per Lee, 2026-07-28] |
+| About | About \| Secret Sauna Company, Squamish BC | A sauna company in Squamish. Born from the hidden saunas in the local woods and a first build on a trailer. Finnish tradition, built properly. [src: per Lee, 2026-07-28 — origin story only; "small" removed pending the headcount answer, see §hero note] |
 | Process | How a Build Happens \| Secret Sauna Company | Four stages from conversation to delivery. 3D design approval, a four-to-six-week build in Squamish, staged 30/30/30/10 payments, and support after delivery. [src: about.njk:15; faq.json:5, :40] |
 | Contact | Get a Quote \| Secret Sauna Company | Tell us about your space and how you'd use it. We'll come back with a design plan and a number. [src: contact.njk:5 — reply-time clause removed pending Lee] |
 | Warranty | 2-5 Year Limited Warranty \| Secret Sauna Company | Two years on workmanship, five on structure, third-party electrical certification on every wired build. What's covered, what isn't, and how claims work. [src: faq.json:30; warranty.njk:13] |

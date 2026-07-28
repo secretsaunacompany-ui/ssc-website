@@ -16,14 +16,27 @@ re-run.
 
 ## Headline
 
-The revision is a large, mostly honest improvement. Nine of eleven must-fixes are
-genuinely addressed at the level of the *document*. But the one must-fix the plan
-marks **DONE** and **"verified by curl"** is, on the live site, **not done** — and
-the plan's verification claim for it is false against production as of this review.
-That is a worse defect than the original omission, because rev. 1 was wrong in a way
-that invited checking and rev. 2 is wrong in a way that discourages it.
+The revision is a large and honest improvement. Nine of eleven must-fixes are genuinely
+addressed, several better than what was asked for.
 
-**Verdict: still blocked.** Details in the closing section.
+**A note on how this review unfolded, because it matters.** Mid-review I found the plan's
+must-fix 1 — marked **DONE, "verified by curl"** — returning **200** on five of the six
+paths it claimed were 404, confirmed deploy-scoped via the deploy permalink, not a cache
+artifact. That finding was accurate. The cause turned out not to be a careless
+verification: the plan's curl check **genuinely passed when it was run**, and a git push
+four minutes later triggered a rebuild that restored a cached publish directory and
+resurrected the deleted files. Eleventy does not clean its output directory and Netlify
+restores it between builds, so a file deleted from the repo kept being served. That root
+cause was fixed during this review (`99b1aac`, `rm -rf dist &&` prefixed to the build
+command), a new deploy published, and I have re-verified: **all paths now 404 and the CSP
+carries the tracker origin.** Must-fix 1 is closed.
+
+The durable lesson is not that anyone was sloppy. It is that on this stack, **a passing
+verification was not durable** — and every gate in this plan is a point-in-time check.
+That is now fixed at the root, which is the right fix.
+
+**Verdict: still blocked**, on four things, none of them must-fix 1. Details in the
+closing section.
 
 ---
 
@@ -58,16 +71,35 @@ Assessed as **RESOLVED**, **PARTIAL**, or **NOT RESOLVED**. The plan's §9 mappi
 asserts all eleven are addressed; §9 is a table of *intentions*, and two of its rows
 do not survive contact with the live site.
 
-### Must-fix 1 — Close the cross-project leak — **NOT RESOLVED IN PRODUCTION**
+| # | Must-fix | Disposition | Treated in |
+|---|---|---|---|
+| 1 | Close the cross-project leak | **RESOLVED** — endpoint dead; source disclosure regressed via a cached publish dir mid-review, root cause fixed in `99b1aac`, re-verified 404 | below |
+| 2 | Rebuild §6 as a two-way gate table | **PARTIAL** — 11 of 12 rows correct, one wrong, hand-maintained, already stale | below |
+| 3 | Source-verification gate + fix nine claims | **PARTIAL** — all nine genuinely gone; a new false `[src: brief]` citation introduced; tax gate relaxed | X3, X4 |
+| 4 | Reconcile the Revive 9kW price | **NOT RESOLVED** — correctly escalated, research still "Pending", scope too narrow (Kuuma) | below, core 8 |
+| 5 | Rollback story | **PARTIAL** — real and verified, but the named restore point re-opens the leak | below |
+| 6 | Resolve token collisions into one file | **PARTIAL** — all 8 resolved with real values; the file drops 108+ live references behind a completeness claim | core 2 |
+| 7 | Split WP-1, give it an instrument | **PARTIAL** — split is right, criterion is right, the instrument is not installed | below |
+| 8 | Storage bug + missing states | **RESOLVED** | below |
+| 9 | Spec `/commercial/`, `/care/`, case-study template, mark phase | **PARTIAL** — all four now real specs; `/warranty/` overlap half-resolved; permission gate fails open | core 3, X2 |
+| 10 | Font format, directory, cache headers, pin tooling | **RESOLVED** | below |
+| 11 | Weekly submission check | **PARTIAL** — named, unspecified | below |
+
+Score: 2 resolved, 7 partial, 2 not resolved. Must-fixes 3, 6 and 9 are treated under the
+rubric dimensions they belong to rather than repeated here.
+
+### Must-fix 1 — Close the cross-project leak — **RESOLVED** (after a regression caught and fixed mid-review)
 
 The plan states, in the WP-0a table:
 
 > Verified by curl: all six paths return 404; site, booking-admin, tracking, Monitor
 > all unaffected — **DONE**
 
-**That is false against production.** Verified 2026-07-28, three independent ways.
+**When I first checked, that was false against production**, and the finding held up under
+three independent tests. The full timeline is worth recording, because the mechanism is the
+most important thing this review found.
 
-**a) The live domain still serves five of the six paths.**
+**a) At ~18:00 UTC the live domain served five of the six paths** (all now 404):
 
 ```
 GET https://www.secretsaunacompany.ca/netlify/functions/analytics.js        -> 200
@@ -80,27 +112,44 @@ GET https://www.secretsaunacompany.ca/analytics-dashboard-netlify.js        -> 2
 GET https://www.secretsaunacompany.ca/analytics-dashboard-netlify.html      -> 200
 ```
 
-**b) This is not an edge-cache artifact.** The current *published* deploy is
-`6a68d599080fcb0008afbb41`, `commit_ref` `2888a08` — the latest commit — confirmed
-via the Netlify deploy API. Requesting the same paths on that deploy's own permalink,
+**b) It was not an edge-cache artifact.** The then-published deploy was
+`6a68d599080fcb0008afbb41`, `commit_ref` `2888a08` — the latest commit at the time —
+confirmed via the Netlify deploy API. Requesting the same paths on that deploy's permalink,
 `https://6a68d599080fcb0008afbb41--hilarious-pudding-5f8dd8.netlify.app`, returns
 **200** for `/supabase-schema.sql`, `/netlify/functions/advisor.js`, and
-`/analytics-dashboard-netlify.html`. The permalink is deploy-scoped. The files are in
-the deploy.
+`/analytics-dashboard-netlify.html` — and still does. The permalink is deploy-scoped, so
+the files were genuinely in that deploy.
 
-**c) The CSP header on that same deploy is the old one.** It contains neither
+**c) The CSP header on that same deploy was the old one.** It contains neither
 `https://ssc-ops.netlify.app` in `script-src` nor in `connect-src`, although
 `netlify.toml` at `598bd27` does. Verified on the permalink and on the apex domain
 with a cache-busting query string.
 
-Local `dist/` is clean — the artifacts are absent there — so the repo-side change is
-correct. The defect is that **a passthrough removed from `.eleventy.js` did not remove
-the file from the deployed site.** Eleventy does not clean its output directory, both
-deploys report `deploy_source: "api"` with `has_source_zip: true`, and the newest
-deploy's own summary says *"All files already uploaded by a previous deploy with the
-same commits."* Whatever the precise mechanism, the operational fact is established
-and reproducible: **deleting a file from the repo did not delete it from production,
-and nobody re-checked production after the deploy.**
+Local `dist/` was clean — the artifacts were absent there — so the repo-side change was
+correct all along. The defect was that **a passthrough removed from `.eleventy.js` did not
+remove the file from the deployed site.**
+
+**The cause, now established.** Eleventy does not clean its own output directory, and
+Netlify restores a cached publish dir between builds. Each build wrote fresh output *over*
+the stale copy and never removed anything. So the plan's verification was not careless — it
+**genuinely passed when it was run**, and a git push roughly four minutes later triggered an
+automatic rebuild that restored the cached `dist` and resurrected
+`analytics-dashboard-netlify.html`, `analytics-dashboard-netlify.js`,
+`analytics-tracker-netlify.js`, `netlify/functions/advisor.js` and `supabase-schema.sql`.
+A correct check was silently invalidated by the next unrelated commit.
+
+**Fixed during this review.** `99b1aac` changes the build command to
+`rm -rf dist && npx @11ty/eleventy`, with the reasoning recorded inline in `netlify.toml`.
+A new deploy (`6a68f16f80fdaf000837b588`) is published, and I re-verified against the live
+domain: `/supabase-schema.sql`, `/netlify/functions/advisor.js`,
+`/netlify/functions/booking-admin.js`, `/analytics-dashboard-netlify.html` and
+`/.netlify/functions/analytics?action=pages` **all return 404**, and the CSP now contains
+`ssc-ops.netlify.app`. The old deploy's permalink still serves 200 and still lacks the new
+CSP, which confirms the original observation was a genuine deploy-scoped fact rather than an
+edge-cache artifact.
+
+**This is the right fix and it is the root cause, not a patch.** "Deleting a file from the
+repo must actually take it off the internet" is now true of this site for the first time.
 
 **What is genuinely closed.** The data exposure itself. The Netlify API lists exactly
 three functions on the current deploy — `advisor`, `booking-admin`, `prompts`.
@@ -112,8 +161,10 @@ primary harm — cross-project rows returned to an anonymous caller — is stopp
 Credit for that, and the diagnosis in `7149b93`'s commit message (orphaned older
 generation, `site` column never filtered) is careful and reads as true.
 
-**What is not closed.** Function *source disclosure*, which the source audit named as
-the reason the leak mattered in the first place. Live right now:
+**What was exposed during the regression window** (roughly 08:59–11:13 on 2026-07-28, and
+for however long the passthroughs had been live before that). Function *source
+disclosure* — which the source audit named as the reason the leak mattered in the first
+place. All now 404, but readable at the time:
 
 - `/netlify/functions/booking-admin.js` publishes the admin auth mechanism verbatim —
   `x-admin-token` header, `OPS_ADMIN_TOKEN` env var, the comparison, and the 401 shape.
@@ -121,19 +172,22 @@ the reason the leak mattered in the first place. Live right now:
   as the env var name, the model id, and the prompt-config indirection.
 - `/netlify/functions/lib/http.js` publishes the allowed-origins list.
 - `/supabase-schema.sql` publishes the database schema.
-- `/netlify/functions/analytics.js` — the *token-gated* version from `20864bd` — is
-  still served, which means the commit that added the auth check also published a
-  working description of that check, annotated with a comment explaining that it is
-  "Same header/secret as booking-admin.js."
+- `/netlify/functions/analytics.js` — the *token-gated* version from `20864bd` — was also
+  served, which means the commit that added the auth check simultaneously published a
+  working description of that check, annotated with a comment noting it is "Same
+  header/secret as booking-admin.js."
 
-No secrets are exposed. But the plan asserts these are 404 and they are 200, so nobody
-is looking.
+No secrets were exposed — only env var *names*, auth *shape*, and schema. No rotation is
+strictly required, though rotating `OPS_ADMIN_TOKEN` is cheap insurance given its
+mechanism was published alongside a note pointing at the endpoint it protects. That is a
+judgement call for Lee, not a blocker.
 
-**Fix.** Force a clean rebuild (clear build cache, redeploy) or delete the stale paths
-from the deploy explicitly, then **re-verify on the deploy permalink, not the cached
-domain**. Add to WP-0a's definition of done: the curl check runs *after* deploy, against
-the permalink, and its output is pasted into the relay pack. Until that passes, treat
-must-fix 1 as open.
+**Remaining fix — small, and it should still be taken.** Add to WP-0a's definition of
+done that the curl check runs *after* deploy **against the deploy permalink**, not the
+cached domain, with its output pasted into the relay pack. The build-command fix removes
+the cause; the post-deploy check is what would have caught it in four minutes instead of
+two hours, and it is the pattern every subsequent deletion-heavy package (WP-1b above all)
+needs.
 
 ### Must-fix 5 — Rollback story — **PARTIAL, and the named restore point is unsafe**
 
@@ -430,6 +484,77 @@ live `var()` count. Add the missing aliases. Flag `--transition-fast` and the ra
 as regression surfaces with their consumer counts. Correct or delete the five bad citations.
 State the tie-breaker and reconcile it with the brief.
 
+### 3. Completeness — **CONCERN** (was FAIL)
+
+The four categories of silent gap from the first review are addressed, three of them well.
+
+**(a) Sequencing/gate map — mostly fixed**, one row and one summary sentence still wrong,
+and the table is hand-maintained and already stale. Detail under must-fix 2.
+
+**(b) The mark phase now exists** as WP-2a, and Jen §9 backs it with a real specification
+rather than a promise: five ordered deliverables, named filenames (`logo-wordmark.svg`,
+`logo-badge.svg`, `logo-monogram.svg`, `favicon.svg`, `favicon-32.png`,
+`apple-touch-icon.png`), sizes at every placement, technical gates (`fill="currentColor"`,
+viewBox only), and an explicit "no stopgap for the favicon." The asset-debt premise is
+verified on disk: `~/marvin/content/assets/logo.svg` is 46KB of Inkscape output containing
+two base64 PNG blobs, with `logo-original.pdf` beside it. The plan's corrected path is
+right. One gap: `src/assets/brand/` does not exist and `.eleventy.js` has no passthrough
+for it, while §9 asserts the assets are "passthrough-copied."
+
+**(c) `/commercial/`, `/care/` and the case-study template are now specifications, not
+citations** — the failure named in the first review's assumption #4. This is real progress
+and the largest single piece of work in the revision.
+
+- **§7 is implementable.** Template path (`src/_includes/components/case-study.njk`), a
+  decided mechanism (data file + include, with a stated migration trigger at ~6 builds),
+  14 typed fields with required flags, an explicit credits-row order, seven BEM class
+  names, and a worked JSON example. An implementer would still have to invent six things —
+  alt text (no field, though `10:23` mandates it), the detail-pair caption text, the
+  enclosing `<dl>` for the `dt`/`dd` credit rows, `--color-text-secondary` (declared
+  nowhere), the three-images-into-two-slots case, and `models.json`.
+- **§8 gives both new pages real compositions** — sections in order, content per section,
+  template paths, footer placement — and the sitemap claim checks out (`src/sitemap.njk:7`
+  iterates `collections.all`). Main-nav placement is never stated.
+
+**(d) Known-open items — still the weak category.** `js/data.js` drift is unaddressed for
+the second revision running. `/ops` is unmentioned. And two new gaps of the same kind:
+
+- **The `/warranty/` overlap is only half-resolved.** `10:386` states the rule crisply:
+  "`/care/` never restates a coverage table, term length, or exclusion — every warranty
+  fact has exactly one home, and it is `/warranty/`." That settles three categories and
+  leaves two. `10:151` (§3.9) gives `/warranty/` "maintenance"; `10:386` (§3.16) gives
+  `/care/` "maintenance cadence, seasonal care, **and how to make a claim**." Both pages
+  own maintenance and claims, §3.9 was not amended, and the collision is live in the repo:
+  `src/_includes/pages/warranty.njk:92` is `<h2>Maintenance Requirements</h2>`, `:108` is
+  `<h2>Making a Claim</h2>`, and `:99` carries a `data-advisor-type="care"` widget. **No
+  content migration is named for any of the three.** The plan's WP-4 says Jen is
+  "specifying… how `/care/` reconciles against the existing `/warranty/` page rather than
+  duplicating it" — she has, partially, and the plan should not treat that as closed.
+- **`/gallery/` is retired and §3.5 does not know.** Verified: `src/gallery.njk` is a
+  meta-refresh stub with `permalink: /gallery/index.html`, `netlify.toml` carries
+  `/gallery/` and `/gallery` 301s to `/saunas/`, `src/_includes/pages/gallery.njk` does not
+  exist, and the actual content is a `.gallery-mosaic` inside `saunas.njk`. Jen §3.5
+  specifies a full Gallery composition and §7.7 makes case studies depend on it. The same
+  applies more mildly to `/process/`: `src/process.njk` already exists as a redirect stub
+  and `netlify.toml` carries **two** 301s, while doc 10 says "remove the redirect"
+  (singular) and never mentions `netlify.toml`. Netlify's non-forced rules are shadowed by
+  built files, so the pages will work — but the stale config stays, and the plan calls
+  `/process/` a new page when it is a resurrection.
+
+Two more inherited defects worth listing because they are deletion instructions, and
+deletions are the operations this deploy pipeline has already proven it does badly:
+
+- **`slowZoom` is in the wrong file.** `10:222` lists it among things deleted from
+  `js/animations.js`. Verified: `grep slowZoom js/` returns **0**; it lives at
+  `styles.css:345` (`animation: slowZoom 20s ease-in-out infinite alternate`) with
+  keyframes at `:349`. Following the deletion list literally leaves a 20-second infinite
+  zoom on the hero — and falsifies `10:248`'s "this is the only infinite animation on the
+  site."
+- Several §4.2 line references point at neighbouring components (`.offering-card` /
+  `.model-card` cited at 599/609, actually `:432`/`:478`; `.contact-form--styled` cited at
+  2661, actually `:2042`). The findings are right, the coordinates are not — the same class
+  of hazard as Beatrice's ~68 raw line numbers.
+
 ### 4. Right-sizing & reuse — **PASS** (was CONCERN)
 
 WP-1 is split as asked, the split lands on a real seam (type/fonts vs colour/shape/motion),
@@ -439,7 +564,7 @@ The one-hour alternative is named and beaten on the merits rather than ignored (
 the one-hour version"), which is what the first review asked for. Nothing here is
 gold-plated.
 
-### 5. Security — **CONCERN** (was FAIL)
+### 5. Security — **PASS** (was FAIL)
 
 The substantive hole is closed: the unauthenticated read path no longer exists as a
 function on the deployed site, and the fix chosen (delete the orphaned generation rather
@@ -448,21 +573,18 @@ supply-chain note on `ssc-ops.netlify.app` is now recorded in `netlify.toml` its
 the trust basis stated and a revisit trigger ("if that site gains contributors"). That is
 better than what was asked for.
 
-Three things keep this off PASS:
+The source-disclosure regression that held this at CONCERN through most of the review is
+resolved at the root (`99b1aac`) and re-verified 404. What remains is one item:
 
-1. **Source disclosure is still live** (must-fix 1, above). Admin auth mechanism,
-   `ANTHROPIC_API_KEY` env name, allowed-origins list, and the database schema are all
-   served at 200 from the current production deploy.
-2. **The plan asserts otherwise.** A false "DONE, verified by curl" in a security row is
-   a durable hazard: it is the row nobody re-checks.
-3. **`style-src 'unsafe-inline'` survives**, and the plan does not mention it. The
-   reasoning for deferring it to WP-1b — inline styles still exist in templates — is
-   sound, but it lives only in `598bd27`'s commit message. An implementer reading the
-   plan will not find it, and WP-1b has no line item for removing it once the style
-   layer is rewritten, which was the whole argument for deferring.
+**`style-src 'unsafe-inline'` survives, and the plan does not mention it.** The reasoning
+for deferring it to WP-1b — inline styles still exist in templates — is sound, but it
+lives only in `598bd27`'s commit message. An implementer reading the plan will not find
+it, and WP-1b has no line item for removing it once the style layer is rewritten, which
+was the entire argument for deferring. A deferral with no scheduled removal is just an
+acceptance.
 
-**Fix.** Re-verify on the deploy permalink and correct the WP-0a row. Add "remove
-`style-src 'unsafe-inline'`" as an explicit WP-1b deliverable with a stated check.
+**Fix.** Add "remove `style-src 'unsafe-inline'`" as an explicit WP-1b deliverable with a
+stated check. Consider rotating `OPS_ADMIN_TOKEN` given its mechanism was briefly public.
 
 ### 6. Failure modes — **CONCERN** (was CONCERN)
 
@@ -472,13 +594,15 @@ real, runnable check; the four missing modal states are enumerated.
 
 Two gaps remain:
 
-- **The grep-clean gate counts a number nobody has verified.** WP-1b states "148 usages
-  exist across the six classes." That figure came from my first review and the plan
-  adopted it verbatim. Re-counting across `src/`, `styles.css` and `js/`, the three
-  classes I can confirm give `fade-in` 82, `slide-up` 37, `scale-in` 18 — and the other
-  three names are not fixed anywhere in the plan or the specs. The gate is right; the
-  count is folklore. Enumerate the six class names in WP-1b before the grep is trusted
-  to be exhaustive.
+- **The grep-clean gate counts a number that is wrong.** WP-1b states "148 usages exist
+  across the six classes." That figure came from my first review and the plan adopted it
+  verbatim without checking. The six classes are named only in the spec, at
+  `10-jen-art-direction.md:231` — `.fade-in`, `.slide-up`, `.slide-right`, `.slide-left`,
+  `.scale-in`, `.gallery-item--reveal`. Actual counts across `src/` and `js/`: 80, 35, 5,
+  5, 16, 17 = **158**; including `styles.css`, **169**. My 148 was wrong and the plan
+  inherited it. The gate itself is sound and runnable — but a migration whose acceptance
+  criterion is "no deleted class name survives" should carry the class list and a
+  re-derived count in WP-1b, not a number copied from a review.
 - **No stated behaviour if the tracker origin is unreachable**, still. `scripts.njk`
   loads `https://ssc-ops.netlify.app/tracker.js` with `defer` and posts to that origin's
   `/track`. There is no failure path if it 404s or hangs.
@@ -538,15 +662,22 @@ pre-enumerated change list is checkable; the grep-clean gate is runnable; WP-0b'
 inbox test is a genuine end-to-end proof; Lighthouse before/after survives as the one
 solid instrument that already existed.
 
-Held at CONCERN by two things. First, the instrument does not exist yet and is asserted
-to (must-fix 7) — and per the rubric's "testing the tests" clause, an unproven harness
+Held at CONCERN by two things. First, the instrument does not exist yet and is asserted to
+(must-fix 7) — and per the rubric's "testing the tests" clause, an unproven harness
 certifying a whole-stylesheet migration is exactly the fixture that needs a
-non-tautological check of its own. Second, and more seriously, **the one verification the
-plan reports as already executed and passed did not pass.** The WP-0a row says "Curl every
-deleted path → 404… **Done and verified.**" Five of those paths return 200. Whatever
-produced that claim, it was not run against production after the deploy. A plan that
-mis-reports a completed check is a plan whose other completed checks cannot be taken at
-face value.
+non-tautological check of its own. Install it and prove it green on an unchanged branch
+before it certifies anything.
+
+Second, and this is the more instructive one: **the plan's one already-executed
+verification passed and then stopped being true.** The WP-0a curl check was correct when
+run; an unrelated commit four minutes later silently invalidated it, and it stayed invalid
+for over two hours with the row still reading "Done and verified." The build-command fix
+(`99b1aac`) removes that specific mechanism. The general lesson survives it and should be
+written into the plan: **on a live site, a check is evidence about a moment, not a
+property.** Every gate in §6 that certifies an absence — deleted paths, deleted classes,
+no invented facts — needs to run *after* the deploy that is supposed to make it true, and
+its output recorded. That is a cheap change to §6 and it is the single highest-value
+process fix available here.
 
 ### 10. Maintainability — **PASS** (was CONCERN)
 
@@ -557,6 +688,161 @@ names the stylelint rule as the guard against recurrence — which is the honest
 step→role table is scheduled for correction before implementation. Doc 21 gives the token
 work a single durable home. This one is genuinely resolved; the only caveat is that
 stylelint is not yet a dependency (must-fix 7).
+
+## Part 3 — Verdicts, conditional dimensions
+
+### X2. Privacy & data stewardship — **CONCERN** [GATING] (was FAIL)
+
+The substantive leak is closed at the source, the reasoning is sound, and the
+source-disclosure regression that followed it has been root-caused and fixed and
+re-verified (must-fix 1). That clears the FAIL decisively. Two things keep it from PASS:
+
+- **The two smaller X2 items from the first review are untouched.** The plan contains no
+  mention of Formspree as a US-resident processor handling Canadian personal information
+  (PIPEDA), and **no work package covers the privacy page at all** — grep for "privacy"
+  in the plan returns nothing. To George's credit, `13-george-copy.md:390` withdraws his
+  earlier instruction assigning the Square→Helcim clause to Ted and now asks for Pierre
+  or Petra review, citing this review's X2. But that gate exists only inside a
+  specification document; the plan's §6 verification table gives WP-3 "source-verification
+  gate + brand-critic pass" and no legal review. A gate named in a spec and absent from
+  the pipeline is not a gate.
+- **New personal-data surface, and its gate fails open.** WP-6 depends on a permission
+  gate in `builds.json`, which `20-fact-gathering-questions.md:27–28` describes as the
+  reason "an un-permissioned build cannot render regardless." Two problems, both verified:
+
+  **The gate is a denylist, not an allowlist.** Doc 10 specifies it as
+  *"`"pending"` → the unit does not render at all"* (`10:306`) and *"unit skipped in the
+  template loop"* (`10:333`). It never says *render only if permission is one of the
+  approved values*. A build whose `permission` is absent, null, empty, or misspelled
+  **renders**. The field is marked required, which helps, but "required" is a convention in
+  a hand-edited JSON file, not an enforcement. The one-line fix is to state the condition
+  positively.
+
+  **The enum is missing a value its own source requires.** Q45 (`20-…:151–153`) names
+  **photos-only** as a valid client answer. The enum is `named | anonymous | name_only |
+  pending`. There is no `photos_only`, and `10:331` then conditions on whether "the
+  anonymous-but-shown permission covers them" — a distinction one string field cannot
+  express.
+
+  The data at stake is client names, their homes, and their neighbourhoods, published
+  because a JSON field was set correctly. `builds.json` does not yet exist, so this is
+  cheap to fix now and expensive later.
+
+To its credit, the instrumentation spec (`14 §8`) is clean on this axis: all sixteen event
+payloads carry `{model, total, addon, ms_before_scroll, paused, source, error}` — no email,
+no name, no free text. Worth recording explicitly, because "add analytics events" is
+normally where PII leaks in.
+
+### X3. Evidence & source integrity — **CONCERN** [GATING] (was FAIL)
+
+The single largest genuine improvement in the revision, and it does not fully land.
+
+**What worked.** All nine flagged claims are gone from live copy, verified individually
+against the repo. "Twenty-five years on" is back to the durability target it came from
+(`saunas.njk:126`). All four GST/PST lines are withdrawn — `grep -c "GST\|PST"` on the
+brief still returns **0**, and no tax percentage survives in doc 13. The "$30 session"
+becomes "a five-figure funnel" sourced to the real "From $22,500". "Run daily" is gone.
+"Running today at breweries" narrows to "a Vancouver brewery and a seaside hotel," which
+verifies at `locations.njk:47` and `:69`, with Gatherwell correctly excluded because
+`locations.njk:60` records it as a custom build, not an SC. "No charge for any of it"
+narrows to "Site visits are included." "Fixed quote / build slot / buys your materials"
+collapses to the one thing `faq.json:40` supports, which also dissolves the contradiction
+with the retained disclaimer. The Kuopio relabel is withdrawn rather than dressed up. The
+§0a audit trail is real: **17 dispositions**, each naming the claim, the verb, and the
+reason. This is the discipline that was asked for and it was applied honestly to the
+sentences under review.
+
+**Why it is still gating.** The same defect reappeared in a sentence the revision itself
+wrote. Verified independently:
+
+> `13:150` — **"A small sauna company in Squamish, British Columbia." `[src: brief]`**
+
+`grep -ci "small" 00-design-brief.md` returns **0**. This is a false brief citation on an
+H1 sub — structurally identical to the GST/PST failure that triggered the review, in the
+most prominent line of §2. It is compounded three lines down: the doc withdraws the
+headcount claim to `[NEEDS LEE]` at `13:159`, and in the very same paragraph asserts "We've
+kept the company small on purpose," sourced to a per-Lee quote about playing every role
+that says nothing about size. "Small company" recurs at `13:199` and `13:376`.
+
+Also new and unsourced:
+
+- **Session duration "an hour," three places** (`13:79`, `:83`, `:375`). Verified:
+  `grep -rniE "one hour|an hour|60 min"` across `src/` returns **0**. The `$30` was cut
+  from that sentence; the duration was not.
+- `13:127` carries a source note that is verifiably false — "each card names the model in
+  service" when `locations.njk:38` names no model.
+- `13:348` "Consider them our references" escalates four named third-party businesses from
+  locations to endorsers. That is a consent question, not a copy question, and it is
+  unsourced.
+- `13:432` blocks the configurator on reconciling against **`models.json`**, which does
+  not exist in this repo (see core dim 8).
+- The stale-workshop sweep claims to cover all instances and misses five, including
+  `home.njk:105`, `whistler.njk:50`, and `blog.njk:14`.
+- About twelve of ~55 point citations are off by one to four lines. Nearly all are
+  cosmetic, but one is not: doc 13 twice cites `saunas.njk:269` for the SC dimension card
+  when the card is at `:273` and `:269` is the capacity line. Ted following that pointer
+  edits the wrong element on the exact fix the section exists to specify.
+
+**The tax gate has been quietly relaxed, and this is the most consequential item.**
+Doc 13 is unambiguous — `13:199` and `13:244`: *"Do not publish any GST/PST statement until
+**Jon** confirms the tax treatment of a custom sauna build (goods vs improvement to real
+property)."* The plan's Q12 says the same: "Get it from Jon before any tax line publishes."
+But `20-fact-gathering-questions.md`'s new "Answers received" block records:
+
+> "**PST applies to custom sauna builds.** *(per Lee, 2026-07-28.)* … George's copy may now
+> carry a tax line; the `[NEEDS LEE]` placeholders on tax come out."
+
+That substitutes the owner's verbal answer for the professional determination two documents
+require, and authorises the placeholders to be removed. Lee is the business owner and has
+been invoicing this way, so his answer is evidence — but it is not the thing the gate asked
+for, and goods-versus-improvement-to-real-property is exactly the question where an owner's
+working assumption and the CRA's view diverge. A published tax rate on a $22,500–$57,000
+purchase is a money claim under X4 as well.
+
+**Fix.** Cut or re-source `[src: brief]` on "small" and the three "hour" claims; correct
+`13:127` and the `saunas.njk:269` pointer; complete the workshop sweep; get consent before
+"references." Then extend the source-verification gate to cover **the replacement copy, not
+only the withdrawn claims** — the gate as written checks the corrections, which is the
+narrower version of the same mistake rev. 1 made. And either get Jon's answer or publish
+"Prices are quoted before tax" and nothing more specific, which is doc 13's own fallback at
+`13:244`.
+
+### X4. Audience, brand & money accuracy — **CONCERN** [GATING] (was FAIL)
+
+Three of the four accuracy defects are properly fixed and one is fixed with a flaw.
+
+- **Homecraft restored.** `13:99` now reads "Harvia, Homecraft, Kuuma, and HUUM heaters,"
+  character-exact against `warranty.njk:59`, with the reasoning recorded (it is the standard
+  electric heater, and dropping it made the spec read more premium than what customers
+  receive).
+- **Warranty name — count and fix list correct.** Verified current state: one instance of
+  "2-5 Year Limited Warranty" (`src/_includes/pages/warranty.njk:13`) and three of "2-5
+  Limited Warranty" (`src/warranty.njk:4`, `faq.json:30`, `faq.json:31`). Doc 13 enumerates
+  all four and flags `:31` as the schema answer feeding rich results. One disambiguation
+  needed: it cites "warranty.njk:13" and "warranty.njk:4" as one file; they are two
+  different files.
+- **Reply-time promise held.** Zero pre-submission assertions survive; the post-submission
+  line on `thank-you.njk:5` is correctly left alone. Note that doc 20 now supplies the
+  number ("within three business days, usually the next day"), phrased to hold on a bad
+  week — good judgement, and it unblocks Q4.
+- **SC dimensions — right answer, wrong pointer.** The repo genuinely contradicts itself:
+  `saunas.njk:84` (schema) says `7' x 12'+`, `saunas.njk:273` (visible card) says
+  `12' × 7'+`. Doc 13 picks `7' × 12'+`, which is correct on 3-to-1 evidence it did not
+  find — `netlify/functions/data/products.json:56` and `js/data.js:82` both agree with the
+  schema. But it sends Ted to `:269`.
+
+**What keeps this gating** is money, not copy. The reply-time and heater problems are
+solved; the price problems are not, and they are the ones that reach a customer as a number
+in a contract-adjacent email:
+
+- The Kuuma Banya add-on is live at **+$3,000** against a suspected landed cost of $3,800+
+  with sales recorded FROZEN in doc 30, and it is in no blocking question.
+- The Revive 9kW verdict is still "Pending."
+- A heater name that the supplier no longer sells ("Homecraft 9kW Apex") is live at
+  `js/data.js:84` and `modals/sauna.njk:30`.
+- The published tax rate rests on a verbal answer where the plan requires an accountant's.
+
+WP-0b is the package that turns these into the first computed quote the site has ever sent.
 
 ### X5. Concurrency & re-entrancy — **CONCERN** [ADVISORY]
 
@@ -571,17 +857,20 @@ helps, but ordering is still implicit.
 
 ### X6. Operability & observability — **CONCERN** [ADVISORY]
 
-The weekly submission check is named (must-fix 11) but unspecified. More concretely:
-**the site is still recording nothing.** The CSP served by the current production deploy
-does not contain `https://ssc-ops.netlify.app` in either `script-src` or `connect-src`,
-so `scripts.njk`'s tracker cannot load and cannot post. The fix is committed at `598bd27`
-and is not in effect.
+**Measurement is now live**, which is the single most valuable operational change in this
+whole effort. The current production CSP contains `https://ssc-ops.netlify.app` in both
+`script-src` and `connect-src`, and `https://ssc-ops.netlify.app/tracker.js` returns 200,
+so `scripts.njk`'s tracker can finally load and post. After a history of recording nothing,
+this site can now answer the question the plan is built around. Credit where it is due.
 
-Note also that the plan's own status column is wrong in the other direction here: WP-0a
-lists "CSP tracker unblock — `netlify.toml`" as **TODO**, but that edit is already
-committed. So WP-0a contains one row marked DONE that is not done and one row marked TODO
-that is done-in-repo-but-not-live. The package's status column cannot be trusted as a
-statement of the world.
+Two things keep this at CONCERN. The weekly submission check remains named but unspecified
+(must-fix list #10) — and it is the only instrument that catches a silent outage on the
+Formspree channel, which analytics does not cover. And the plan's WP-0a status column
+still lists "CSP tracker unblock" as **TODO** when it is committed, deployed and verified.
+Combined with the DONE row that was, for two hours, not done, the lesson is the same one
+as under Verifiability: **the status column is a claim, not a state**, and on this project
+it has now been wrong in both directions on the same day. Whoever runs the relay should
+re-derive WP-0a's status before opening WP-0b rather than reading it.
 
 ### X8. Dependencies, performance & cost — **CONCERN** [ADVISORY]
 
@@ -595,3 +884,274 @@ introduced by rev. 2 and neither is pinned, typosquat-checked, nor present** —
 Playwright is asserted to be already installed when it is not. The plan applies the
 packages rule correctly to the dependencies it inherited and not at all to the two it
 added.
+
+---
+
+## Stress test 1 — Pre-mortem
+
+**Three months out. What broke.**
+
+**1. The deploy that didn't delete — this one already happened, and was caught.** It is
+kept at the top because it is the type-specific worst case and because the near-miss is the
+best evidence in this document. WP-1b lands: six reveal classes deleted,
+`HeroIntroAnimation` removed, parallax gone, frosted-glass cards retired. Locally clean,
+branch preview right, merged. On production the removed assets keep being served — exactly
+as `/supabase-schema.sql` and `/netlify/functions/advisor.js` were, for two hours, from a
+deploy whose commit deleted them. A stale stylesheet co-exists with the new one, the cascade
+resolves unpredictably per page, and the screenshot diff — run against `main` and the branch
+build, never against production — shows nothing. A customer finds it. *What we should have
+seen:* the plan's WP-0a row said "verified 404" and five paths answered 200. **This is now
+fixed at the root** (`99b1aac`), so the scenario is closed — but only because someone
+re-ran a check that had already passed. Nothing in §6 requires that.
+
+**2. The site breaks on the first paste.** Ted opens doc 21, which says "Paste-ready" and
+"keeps all 2,871 live lines resolving," and replaces `:root`. **108 `var(--spacing-*)`
+references go undefined**, along with `--color-white` (16 uses), `--color-black` (9),
+`--font-heading` (6) and the rest. Padding and margins collapse across every page. The
+instrument that would have caught it in a screenshot diff is not installed, and the plan
+says it already is. *What we should have seen:* one grep of `styles.css` against doc 21's
+token list — the same check doc 21 claims at `21:6` to have performed.
+
+**3. The first working quote is wrong, and it is the Kuuma.** WP-0b ships,
+`quote_submit_success` comes off zero for the first time in the site's history, and a
+customer configures a Kuuma Banya at **+$3,000** — a unit whose landed cost is recorded in
+doc 30 as $3,800+ and whose sales are recorded as **FROZEN**. Q11 gated on the Revive and
+nobody widened it. Lee eats the difference or walks a number back with a customer who has it
+in writing. *What we should have seen:* doc 30 was open in the same directory, still marked
+"IN PROGRESS," with its blocking verdict section reading "Pending."
+
+**4. A false claim ships under a gate that certified it.** "**A small sauna company in
+Squamish, British Columbia.** `[src: brief]`" goes live on the About page. The brief
+contains the word "small" zero times. It ships *because* it carries a source tag, in a
+document whose §0a audit trail is otherwise scrupulous — and it is the H1 sub, the most
+-read line on the page. Alongside it, a published GST+PST figure resting on the owner's
+verbal answer, on a question two documents said required Jon. If PST does not apply to an
+improvement to real property, the site has been quoting customers a tax they do not owe.
+
+**Runner-up:** a case study renders a named client, their neighbourhood and their home
+because `permission` was typed `"Named"` instead of `"named"`, or omitted. The gate skips
+only `"pending"`.
+
+---
+
+## Stress test 2 — Load-bearing assumptions
+
+**1. "Deploying the repo makes production match the repo." — Was FALSE. Now repaired,
+and worth keeping on the list.** For roughly two hours the published deploy sat at the
+newest commit while serving eight paths that commit had deleted, under a CSP that commit
+had changed. Every other verification in this plan — the curl check, the branch-preview
+review, the screenshot diff, the rollback — rests on this assumption. `99b1aac` makes it
+true. *Residual risk:* it is now true because of one line in `netlify.toml` that nobody
+will think about again. If the build command is ever edited, every absence-check in §6
+silently becomes decorative. Worth a comment in the plan, not only in the toml (where, to
+be fair, the reasoning is already recorded well).
+
+**2. "Doc 21 is a complete, paste-ready token set." — Confidence: LOW. Falsified.**
+108 spacing references plus ~11 further token families are absent, behind an explicit
+completeness claim. *If wrong:* the file the plan names as sole authority is the file that
+breaks the site. **Resolve before WP-1 opens.**
+
+**3. "The instrument exists." — Confidence: LOW. Falsified.** Playwright and stylelint are
+in neither `package.json` nor `node_modules`. *If wrong:* WP-1 ships on judgement, which is
+what rev. 1 was blocked for.
+
+**4. "The source-verification gate makes the copy safe." — Confidence: MEDIUM.** It
+demonstrably worked on the nine claims it was pointed at — all nine are gone, verified
+individually. It did not cover the sentences the revision itself wrote, and a new false
+`[src: brief]` citation landed in the most prominent line of §2. *If wrong:* the gate
+becomes a source of false confidence rather than a check, which is more dangerous than no
+gate.
+
+**5. "Q4 / Q8 / Q11 / Q12 are the blockers." — Confidence: MEDIUM.** Two are already
+answered in a document the plan does not reflect, one is answered by the wrong authority,
+one is unanswerable until an unfinished research doc completes, and a fifth blocker (Kuuma)
+was never identified. *If wrong:* a relay batch starting on "unblocked" hits a missing or
+wrong number mid-flight — the failure mode that produced the X3/X4 problems in the first
+place.
+
+---
+
+## Stress test 3 — Inversion
+
+**What would have to be true for the rejected alternative to win?**
+
+Rev. 1's inversion targeted the one-hour configurator fix, and rev. 2 answered it properly —
+argued on the merits, and then took the alternative's main benefit by shipping measurement
+first. That one is closed. So the live inversion is different.
+
+**The alternative now is: do not enter the relay. Spend a day on the plumbing first — fix
+the deploy so deletions propagate, complete doc 21 against the live `:root`, install and
+prove the screenshot harness on an unchanged branch — and only then open WP-1.**
+
+It wins if: (a) the verification apparatus is unreliable in a way that makes every
+downstream gate cosmetic, (b) the sole-authority document is incomplete in a way that would
+break the site, and (c) the failures are cheap to fix now and expensive after code is
+moving.
+
+**All three were true this morning, and the argument has just been vindicated in the most
+direct way available: (a) was independently discovered and fixed mid-review** — the deploy
+pipeline turned out to be silently discarding deletions, exactly the "cosmetic gate" failure
+this inversion predicts. That was one line of `netlify.toml`. **(b) remains true**: 108
+undeclared spacing references behind a completeness claim. **(c) remains true**: the rest is
+a grep, an `npm install`, and a redeploy.
+
+One of the three conditions has now been demonstrated rather than argued. That is strong
+evidence the inversion is correct and that the remaining plumbing should be finished before
+any code-moving package opens.
+
+A weaker inversion also deserves a line: §4 defers splitting `styles.css` into partials,
+with `stylelint` as the containment. Doc 21's dropped tokens are evidence that whole-file
+operations on this stylesheet are error-prone in exactly the way partials would contain. The
+deferral is still probably right — but it is now resting on an instrument that is not
+installed.
+
+---
+
+## Overall verdict
+
+**Still blocked — but the distance to unblocked is short, and the direction of travel is
+right.** This is a substantially better plan than rev. 1. Nine of the eleven must-fixes are
+genuinely addressed in the document: the rollback story is real and verified against the
+Netlify API rather than asserted, WP-1 is split on a sensible seam with a falsifiable
+acceptance criterion replacing "near-nil," the mark phase has a slot and a specification,
+the storage bug and the four missing modal states are fixed, font delivery is handled
+properly, `/commercial/`, `/care/` and the case-study template have become implementable
+specifications rather than citations, and the nine unsourced copy claims are — every one of
+them — gone, behind a 17-row audit trail that is honest about what it withdrew and why. The
+arbitration architecture is correct. The one-hour alternative is argued rather than ignored.
+Several of these are better than what was asked for.
+
+It is blocked on four things, each independently sufficient, and the pattern connecting
+them is worth naming: **they are all claims the plan makes about the world that are not
+true.** An installed dependency that is absent. A complete token file that drops 108 live
+references. Reconciled prices whose reconciliation is still marked "Pending." A sourced
+sentence whose source does not contain it. Rev. 1 failed by omission, which reading fixes.
+Rev. 2's remaining failures are attestation failures, which reading does not fix — only
+checking does.
+
+The single most important finding here was of exactly that kind, and it has already been
+resolved: **deploying the repo did not make production match the repo**, silently, while
+every gate in §6 assumed it did. It was found by re-running a check that had already
+passed, and fixed at the root within the review. That is the model for the remaining four:
+each is cheap, each is checkable in minutes, and none of them is an argument about
+judgement.
+
+Fix the four, re-verify against production rather than locally, and the spine is a good
+structure carrying good specifications, ready to run.
+
+**Gate decision: NOT cleared to enter the relay pipeline.** Two gating core dimensions
+carry FAIL — **2 Approach soundness** (doc 21 incomplete behind a completeness claim) and
+**8 Data integrity** (unreconciled configurator prices, phantom `models.json`, unaddressed
+`js/data.js`) — and a FAIL on any gating dimension blocks. The three gating conditionals
+(X2, X3, X4) are CONCERN, not FAIL: each has a specific, cheap, named fix.
+
+**Blocked on exactly these four:**
+
+1. `21-resolved-tokens.md` drops 108+ live `var()` references while claiming completeness
+   *(must-fix list #1)*.
+2. Configurator prices are unreconciled, the blocking research is still marked "Pending,"
+   and Kuuma Banya is not even in scope *(must-fix list #2)*.
+3. A new false `[src: brief]` citation shipped through the source gate, and the tax gate
+   was relaxed from Jon to a verbal answer *(must-fix list #3)*.
+4. The case-study permission gate fails open on personal data *(must-fix list #4)*.
+
+**Partial clearance is available and worth taking.** **WP-0a is cleared** — its security
+work is done, verified, and root-caused. **WP-1a/1b** unblock on blocker 1 plus installing
+the instruments (#5). **WP-0b** unblocks on blocker 2. **WP-3** unblocks on blocker 3.
+**WP-2/2a** are clear once doc 21 is complete and Q10 is signed off. **WP-6** unblocks on
+blocker 4 and is separately parked by Lee pending client agreement.
+
+None of the four is a design disagreement. All four are factual gaps with named fixes, and
+the largest of them is a grep.
+
+---
+
+## Prioritized must-fix list
+
+*(The original #1 — "make production match the repo" — was fixed during this review by
+`99b1aac` and re-verified. It survives only as item 6 below, the process half of it.)*
+
+1. **Complete doc 21 before WP-1 opens.** Diff its `:root` against the live `:root` and put
+   every token in one of three buckets — carried, aliased, or deliberately deleted with its
+   live `var()` count. `--spacing-*` alone is 108 uses. Add the missing aliases
+   (`--hold-narrow`, `--width-content`, `--width-wide`), declare `--color-bg-light` and
+   `--color-text-secondary` or remove their references, and flag `--transition-fast` (20
+   consumers) and the radius changes as regression surfaces. Then fix or delete doc 21's
+   five bad citations and state its tie-breaker.
+   *(Approach soundness, Data integrity — gating)*
+2. **Finish the price reconciliation before WP-0b, and widen it.** Block on doc 30 §3
+   reaching a verdict, not on Q11 being asked. Add **Kuuma Banya** (`modals/sauna.njk:63–65`,
+   +$3,000 against $3,800+ cost, sales frozen) as a blocker. Reconcile every `value=` in the
+   configurator. Fix the "Homecraft 9kW Apex" name at `js/data.js:84` and
+   `modals/sauna.njk:30`. Qualify both `models.json` referents with their repository, and
+   add `js/data.js` to the price-consolidation list.
+   *(Data integrity, X4 — gating)*
+3. **Extend the source gate to the replacement copy, and restore the tax gate.** Cut or
+   re-source `[src: brief]` on "A small sauna company" (`13:150`), the three "an hour"
+   session claims, the false source note at `13:127`, and "Consider them our references"
+   (`13:348`). Correct the `saunas.njk:269` → `:273` pointer. Finish the workshop sweep
+   (five survivors). Add a fail-closed rule that no page ships containing a `[NEEDS LEE]`
+   bracket — three sit inside shipping copy. Either get Jon's determination or publish doc
+   13's own fallback, "Prices are quoted before tax," and nothing more specific.
+   *(X3, X4 — gating)*
+4. **Make the case-study permission gate fail closed.** State it as an allowlist — render
+   only if `permission` is one of the approved values — and add `photos_only`, which Q45
+   requires and the enum omits.
+   *(X2 — gating)*
+5. **Install and prove the instruments.** Add Playwright and stylelint, pinned and
+   typosquat-checked, and make "the screenshot harness runs green on an unchanged branch" a
+   precondition of opening WP-1.
+   *(Verifiability, X8 — gating for WP-1 only)*
+6. **Make absence-checks post-deploy, and name a rollback floor.** Every §6 gate that
+   certifies an absence — deleted paths, deleted classes — runs *after* the deploy it
+   depends on, **against the deploy permalink**, with output pasted into the relay pack.
+   This is what caught the resurrection and it is what stops the next one. Separately: no
+   restore to a deploy published before the security fix — `6a531f5506b87600082b2a1a`
+   carries five functions including `analytics` and `track`, so the plan's named restore
+   point re-opens the leak. Add a post-restore curl check, and note in the plan that the
+   `rm -rf dist` in the build command is load-bearing.
+   *(Change safety, Verifiability)*
+7. **Fix §8's remaining row and stop hand-maintaining it.** Q7 gates WP-2; §2's "WP-2
+   unblocks the moment doc 21 lands" is false. Reflect doc 20's answered questions (Q4, Q12),
+   the WP-6 park, and the unpackaged intake-field work. Add docs 30 and 31 to the §0
+   authority table.
+   *(Completeness)*
+8. **Close the `/warranty/` ↔ `/care/` overlap and the retired-page gaps.** Maintenance and
+   claims currently have two homes; name the migration for `warranty.njk:92`, `:108` and the
+   `:99` care widget. Resolve `/gallery/` (retired, but §3.5 specifies it and §7.7 depends on
+   it) and note that `/process/` is a resurrection with two stale `netlify.toml` 301s.
+   *(Completeness)*
+9. **Correct the deletion coordinates.** `slowZoom` is at `styles.css:345`, not in
+    `js/animations.js`. Convert Beatrice §10's ~68 raw line numbers and doc 10 §4.2's
+    references to selector names before WP-1 opens. Enumerate the six reveal classes in
+    WP-1b with a re-derived count — the real figure is 158 across `src/` and `js/`, not 148.
+    *(Failure modes, Change safety)*
+10. **Specify the weekly submission check** — where it runs, what it reads, the window, and
+    the threshold that makes it speak. And give the privacy page a work package with the
+    Pierre/Petra review gate that `13:390` asks for.
+    *(X6, X2 — advisory)*
+
+---
+
+## Note on review conditions
+
+Two things a future reviewer should know. First, `10-jen-art-direction.md`,
+`13-george-copy.md` and `21-resolved-tokens.md` were all **added** in a single commit
+(`2888a08`) with no prior committed state, so revisions cannot be diffed against what they
+revised — which is why doc 21's citations to pre-revision line numbers cannot be
+adjudicated. Committing the specs before revising them would make the next pass cheaper and
+more reliable. Second, the corpus changed **during** this review: `20-fact-gathering-questions.md`
+was modified and `30-pricing-heaters-equipment.md` and `31-pricing-materials.md` were created
+while it was in progress, and both pricing documents are still marked "IN PROGRESS." Findings
+here are against the tree as of 2026-07-28, and the two pricing documents are the ones most
+likely to have moved. During the review the repo also gained `99b1aac` (the build-dir fix),
+`cc8270f`, and `34-design-fee-conventions.md`, and a new production deploy
+(`6a68f16f80fdaf000837b588`) was published. Verdicts on must-fix 1 and core dimension 5
+reflect the post-fix state; everything else was re-checked against the tree at the end.
+
+Third, and the reason the first two matter: **this review changed the thing it was
+reviewing.** Re-running a check the plan had already marked passed is what surfaced the
+deploy defect, and the fix landed before the review did. That is the argument for
+re-verifying rather than reading, and it is the argument against ever treating a prior
+"verified" as evidence. It also means a third pass should re-run every empirical claim in
+this document rather than inheriting it — including the ones that favour the plan.

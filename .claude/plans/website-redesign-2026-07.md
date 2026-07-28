@@ -67,7 +67,7 @@ false**, and §6 of that same document said so in two places. Corrected:
 | **WP-0b** Configurator | Q4 (reply-time), Q8 (auto-reply), Q11 (add-on price) |
 | **WP-1a** Type + fonts | Doc 21 |
 | **WP-1b** Colour, radius, spacing, motion | Doc 21 |
-| **WP-2** Composition | Doc 21; **not** the mark (moved to WP-2a) |
+| **WP-2** Composition | Doc 21; **Q7** (per-model prices appear in the `/saunas/` ledger rows); **not** the mark (moved to WP-2a) |
 | **WP-2a** Mark | Q10 (badge sign-off) + Saul's asset production |
 | **WP-3** Copy | Q4, Q5, Q7, Q12 + source-verification gate |
 | **WP-4** New pages | Q1, Q3, Q5, Q6, Q9 + Jen's `/commercial/` `/care/` spec |
@@ -241,9 +241,22 @@ implementable template.
 The previous revision had none. The words rollback, staging, and preview appeared
 zero times across the plan and all eight specs.
 
-**What exists, confirmed today:** Netlify retains restorable deploys for this site.
-Six were listed, back to 2026-05-14. `6a531f5506b87600082b2a1a` (2026-07-12) is the
-last state before any of today's changes.
+**What exists, confirmed today:** Netlify retains restorable deploys for this site,
+back to 2026-05-14.
+
+**Restore floor — do not go below it.** The obvious restore point,
+`6a531f5506b87600082b2a1a` (2026-07-12), is the last state before today's changes
+— and restoring it would **re-open the cross-project data leak**, republish the
+function source and the database schema, and revert the CSP so analytics stops
+recording again. Every deploy created before `6a68f16f80fdaf000837b588`
+(2026-07-28 18:14, commit `cc8270f`) carries at least one of those defects.
+
+**The restore floor is `6a68f16f80fdaf000837b588`.** Roll back to it or later,
+never past it. If a rollback below the floor is ever genuinely needed, the leak
+fix must be re-applied in the same operation, not afterwards.
+
+This is why a rollback story needs a floor and not just a mechanism: "put it
+back" is only safe if "back" is a state you would still ship.
 
 **The workflow, per work package:**
 1. One WP = one commit on `main` with a stated revert SHA.
@@ -300,18 +313,24 @@ is `20-fact-gathering-questions.md`; these are the ones that block work.
 | Q4 | Reply-time promise for the quote success panel | **WP-0b**, WP-3 |
 | Q5 | Warranty terms per component + certification body name (§B of doc 20) | WP-3, WP-4 |
 | Q6 | Which commercial clients may be named / photographed | WP-4 |
-| Q7 | Smaller calls: schema address, fire-ban scope, headcount phrasing, blog unlink, per-model prices on `/saunas/`, interim testimonials | WP-2, WP-3 |
+| Q7 | Smaller calls: schema address, fire-ban scope, headcount phrasing, blog unlink, per-model prices on `/saunas/`, interim testimonials | **WP-2**, WP-3 |
+| Q13 | **Design deposit** — adopt David's recommendation (doc 34)? $750 residential / $2,500 commercial, called a "design deposit", credited against the first 30% payment, non-refundable, two revision rounds included, further revisions $95/hr. Free call and free Sea-to-Sky site visit stay free. Changes `/process/`, `/contact/`, the FAQ and the quote template. | WP-3, WP-4 |
+| Q14 | **Formspree plan tier** — does it include auto-response? Gates whether the quote confirmation may claim an email is coming (doc 33 §4). | **WP-0b** |
 | Q8 | Formspree auto-reply — enable? (recommended) | **WP-0b** |
 | Q9 | Laser cut file — does a real one exist? | WP-4 |
 | Q10 | Badge removal from nav — sign-off | **WP-2a** |
-| **Q11** | **Revive 9kW add-on price** — `01 §5` flags it unreconciled with `models.json` and supplier cost. WP-0b is the package that makes the configurator email quote totals **for the first time in the site's history**. The first real quote would be computed from a number the audit already flagged as wrong. | **WP-0b** |
+| **Q11** | **Add-on prices — RESEARCHED, needs Lee's sign-off only.** See docs 30 and 31. Findings: **Revive 9kW** heater is $1,850 but the working stack (contactor $275–350 + touchpad $300 + rocks $200–350) is $2,625–2,850, so the +$2,000 add-on runs 16–27% incremental → **charge $2,750**. **Kuuma Banya** landed cost is now ~$6,150–6,700 against a $3,000 list, losing ~$3,000 a sale → **freeze holds**, route wood-fired to the Harvia Pro 20 ($1,910). **Extra window** is a tiering error, not a pricing error — one price covers a small lite ($720–900 cost) and a full-size lite ($1,650–1,900) → split the line. **15kW Apex** sells $1,000 below supplier retail. **Catalogue defect:** the "9kW Apex" does not exist — Homecraft's Apex line is 10/12/15/18kW, and the recorded cost matches the Revive. | **WP-0b** |
 | **Q12** | **Tax treatment** — whether PST applies to a custom sauna build turns on goods vs improvement-to-real-property. Get it from Jon before any tax line publishes. | WP-3 |
 
 **Price source of truth.** Prices are currently hardcoded in `saunas.njk:214–274`,
 duplicated across nine meta descriptions, and add-ons live separately in
-`modals/sauna.njk`. Before WP-2/WP-3 add further price surfaces, model and add-on
-prices move into `src/_data/models.json` and every occurrence renders from it,
-meta descriptions included.
+`modals/sauna.njk`. **Note:** `models.json` does *not* exist in this repo — it
+lives at `~/marvin/content/reference/operations/models.json`, and `js/data.js` is
+the website's own copy. Earlier drafts cited it as though it were local; it is not.
+Before WP-2/WP-3 add further price surfaces, model and add-on prices move into
+`src/_data/models.json` **in this repo**, seeded from the marvin file plus the
+corrections in Q11, and every occurrence renders from it, meta descriptions
+included. Two copies of a price is how the current drift happened.
 
 ---
 
