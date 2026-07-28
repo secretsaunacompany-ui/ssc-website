@@ -1,7 +1,14 @@
 # Netlify Configuration for Analytics
 
 [build]
-  command = "npx @11ty/eleventy"
+  # `rm -rf dist` is load-bearing, not tidiness. Eleventy does not clean its own
+  # output directory, and Netlify restores a cached publish dir between builds.
+  # Without this, a file deleted from the repo keeps being served forever: the
+  # build writes fresh output over the stale copy and never removes it. That is
+  # exactly how analytics-dashboard-netlify.html and supabase-schema.sql came
+  # back from the dead on 2026-07-28 after being deleted, verified 404, and then
+  # silently resurrected by the next git-triggered build.
+  command = "rm -rf dist && npx @11ty/eleventy"
   publish = "dist"
   # Functions directory
   functions = "netlify/functions"
