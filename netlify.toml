@@ -62,7 +62,14 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     # SECURITY: Content Security Policy - restricts what resources can be loaded
     # Adjust 'script-src' and 'style-src' domains as needed for your CDNs
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://res.cloudinary.com https://*.basemaps.cartocdn.com data:; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://*.supabase.co https://unpkg.com https://formspree.io https://cdn.jsdelivr.net https://script.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formspree.io"
+    # ssc-ops.netlify.app is Lee's own Netlify property and the origin of the
+    # centralized analytics tracker loaded in src/_includes/scripts.njk. Without
+    # it in script-src AND connect-src the tracker neither loads nor posts, which
+    # is why this site recorded no analytics at all until 2026-07-28. Granting it
+    # script execution here is a deliberate supply-chain call: it is first-party
+    # infrastructure serving five sites, and self-hosting would fork a working
+    # centralized tracker five ways. Revisit if that site gains contributors.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://ssc-ops.netlify.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://res.cloudinary.com https://*.basemaps.cartocdn.com data:; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://*.supabase.co https://unpkg.com https://formspree.io https://cdn.jsdelivr.net https://script.google.com https://ssc-ops.netlify.app; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formspree.io"
     # SECURITY: Permissions Policy - restricts browser features
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
 
