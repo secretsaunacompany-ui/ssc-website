@@ -1,0 +1,16 @@
+{
+  "widths": [1440, 390],
+
+  "maxLayoutShiftPx": 8,
+  "maxChangedPct": 0.5,
+
+  "expectedToChange": [],
+
+  "_notes": {
+    "widths": "Capture widths in CSS pixels. 1440 = desktop, 390 = iPhone-class mobile.",
+    "maxLayoutShiftPx": "Budget from the redesign acceptance criterion: nothing may move more than this on a page that is not expected to change.",
+    "maxChangedPct": "Percentage of the page that may look different before it is treated as a regression. Cosmetic anti-aliasing noise sits well under 0.5%.",
+    "expectedToChange": "Routes the spec explicitly says will change, e.g. \"/about/\" or \"/\". Listed routes are still measured and reported, but do not fail the run. Use the exact route as printed in the report.",
+    "expectedToChangeShape": "Either a plain route string, or { \"route\": \"/about/\", \"reason\": \"new hero type scale\" }."
+  }
+}
