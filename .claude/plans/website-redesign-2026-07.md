@@ -1,6 +1,7 @@
-# SSC Website Redesign — Implementation Plan (rev. 2)
+# SSC Website Redesign — Implementation Plan (rev. 3)
 
-**Created:** 2026-07-28 · **Revised:** 2026-07-28 after critic FAIL
+**Created:** 2026-07-28 · **Revised:** 2026-07-28, twice — after critic rev.1 FAIL
+(11 must-fixes) and critic rev.2 NOT-CLEARED (four blockers).
 **Repo:** `/home/leesalo/Projects/ssc-website` (Eleventy, Netlify, live at secretsaunacompany.ca)
 **Critic review:** `.claude/plans/website-redesign-2026-07-critic.md` — 8 FAIL / 7 CONCERN / 1 PASS.
 This revision addresses all 11 must-fixes; the mapping is in §9.
@@ -158,7 +159,7 @@ WP-0b is built — which recovers most of the alternative's value at no cost.
 | Grey ramp to three honest tokens; retire the lying `--color-charcoal` (`#c0c0c0`); fix `#666` contrast | 21, 03 |
 | Radius collapse; delete frosted-glass cards; nav blur the one exception | 10 §4 |
 | Motion: delete `HeroIntroAnimation`, four parallax variants, `slowZoom`; six reveal classes collapse to one `.reveal` | 10 §5 |
-| **Grep-clean gate:** no deleted class name survives anywhere in `src/` — 148 usages exist across the six classes | critic §6 |
+| **Grep-clean gate:** no deleted class name survives anywhere in `src/`, `js/` or `styles.css` — **158** usages across the six reveal classes (fade-in 80, slide-up 35, scale-in 16, gallery-item--reveal 17, slide-left 5, slide-right 5), plus 11 stylesheet selectors = 169 total. The 148 figure that circulated earlier counted markup attributes only and would have left dead CSS behind. Per-class breakdown and page concentration: doc 21 §6.7 | critic §6, doc 21 §6.7 |
 | Undefined `var(--color-bg)` fix | 03 |
 | `stylelint` config banning raw `font-size` / `border-radius` literals outside `:root` | critic §10 |
 
@@ -277,7 +278,7 @@ a rebuild.
 |---|---|
 | WP-0a | Curl every deleted path → 404. Site, booking-admin, tracking, Monitor unaffected. **Done and verified.** |
 | WP-0b | A real quote request arrives in the inbox. Razor pass on the form path. |
-| WP-1a/1b | **Screenshot-diff gate.** Build `main`, capture every page at 1440 and 390, build the branch, diff. Playwright is already in the toolchain. Budget: no shift >8px on any page except those the spec names as changing (enumerate before starting). Plus grep-clean for deleted classes, and Lighthouse before/after on font loading. |
+| WP-1a/1b | **Screenshot-diff gate — the harness now exists** (`0099bcf`): `npm run visual-diff -- --baseline main --candidate <branch>`. Builds both refs, captures 19 pages at 1440 and 390, gates on a structural layout-shift metric (luminance-edge row signatures, so a recolour scores ~0 shift while a 4px move scores 4px) plus changed-pixel percentage. Proven: `main` vs `main` = exactly zero changed pixels; a deliberate 4px regression caught on the right page at both widths, exit 1. Budget: no shift >8px outside the `expectedToChange` allowlist, **enumerate the expected pages before starting**. See `scripts/README.md`. **Known limits, from its author:** a bare sub-8px shift passes the shift gate on its own (4 < 8 — the 4px proof failed on pixel percentage instead), so lower `maxLayoutShiftPx` if that matters; interactive states (open FAQ, modals, lightbox, map) are uncovered — every capture is first-load, scrolled to top; residual noise floor is 15 pixels from Chromium decode variance. Plus grep-clean for deleted classes, and Lighthouse before/after on font loading. |
 | WP-2/2a | Jen Stage-3 review against `10 §3`, page by page. |
 | WP-3 | Source-verification gate (§3) + brand-critic pass. |
 | WP-4/5/6 | Jen review; no invented facts. |
