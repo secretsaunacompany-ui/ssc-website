@@ -60,13 +60,19 @@ module.exports = function(eleventyConfig) {
       console.log('[minify] CSS: styles.css minified');
     }
   });
-  eleventyConfig.addPassthroughCopy("netlify");
-  eleventyConfig.addPassthroughCopy("analytics-tracker-netlify.js");
-  eleventyConfig.addPassthroughCopy("analytics-dashboard-netlify.js");
-  eleventyConfig.addPassthroughCopy("analytics-dashboard-netlify.html");
+  // NOTE: do not passthrough-copy "netlify" — Netlify deploys functions from the
+  // repo path declared in netlify.toml (`functions = "netlify/functions"`), so
+  // copying the directory into the publish dir only served function *source*
+  // (advisor prompts, admin auth shape, Supabase wiring) as static files.
+  // Same reasoning retires supabase-schema.sql: publishing the schema helps
+  // nobody but an attacker.
+  //
+  // The analytics tracker/dashboard passthroughs are gone with the legacy
+  // analytics stack they served. Live tracking is the centralized tracker at
+  // ssc-ops.netlify.app (see src/_includes/scripts.njk), and the dashboard is
+  // ops.secretsaunacompany.ca via the /analytics redirect in netlify.toml.
   eleventyConfig.addPassthroughCopy("booking-ops.html");
   eleventyConfig.addPassthroughCopy("booking-ops.js");
-  eleventyConfig.addPassthroughCopy("supabase-schema.sql");
   eleventyConfig.addPassthroughCopy({ "src/robots.txt": "robots.txt" });
 
   // Auto-add responsive srcset to Cloudinary images
