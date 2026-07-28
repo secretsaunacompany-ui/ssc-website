@@ -1,5 +1,33 @@
 # Fact-Gathering — Process & Warranty
 
+## Answers received
+
+**Tax treatment (was blocking Q12 / WP-3).** **PST applies to custom sauna
+builds.** *(per Lee, 2026-07-28.)* So the published figure is GST 5% + PST 7%,
+which matches what the Adam Pospisil quote already used. George's copy may now
+carry a tax line; the `[NEEDS LEE]` placeholders on tax come out.
+
+**Reply time (was blocking Q4 / WP-0b + WP-3).** Normal is **within a day**;
+a bad week is **three**. *(per Lee, 2026-07-28.)* Published promise uses the
+bad-week number so it holds on the worst week, not the best: "we'll come back
+within three business days, usually the next day." George's five pre-submission
+placeholders can now fill; `thank-you.njk`'s existing post-submission line is
+unaffected.
+
+**Intake fields (new work, arising from A2).** The current form asks nine
+questions and requires two. It does **not** ask location or access, which are
+the two facts that most change a quote — on-site build runs ~1.5x and crane
+placement needs an operator assessment. Every serious lead this month hit it
+(Natalie: crane vs on-site; Ian Penn: Whistler; Adam: trailer-mounted). Lee
+wants the right level of interrogation researched rather than guessed, and the
+Formspree interface refined alongside the questions. Assigned to Wim.
+
+**Case studies (Q1, Q2 — deferred, not answered).** Lee is contacting Clarke,
+Emmanuel and Mountain Life directly to agree a curated package with each before
+anything publishes. WP-6 stays parked until those land. The permission gate in
+`builds.json` means an un-permissioned build cannot render regardless.
+
+
 **Purpose:** every answer below becomes published copy. Nothing here may be
 invented, inferred, or filled in from a competitor's site. Where the answer is
 "it depends" or "we haven't decided," that is a valid answer and the copy will
