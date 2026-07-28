@@ -242,6 +242,18 @@ async function getRealTimeVisitors() {
   return uniqueSessions.size;
 }
 
+// Auth: this endpoint reads the shared analytics store, which carries rows from
+// every property that posts to /track — not just this site. CORS restricts
+// browsers only; a direct request ignores it entirely, so the read path needs a
+// real check. Same header/secret as booking-admin.js. Fails closed: no secret
+// configured means nobody is authorized.
+function isAuthorized(event) {
+  const token = event.headers['x-admin-token'] || event.headers['X-Admin-Token'];
+  const expected = process.env.OPS_ADMIN_TOKEN;
+  if (!expected) return false;
+  return token && token === expected;
+}
+
 // Main handler
 exports.handler = async (event, context) => {
   // SECURITY: Restrict CORS to your domain only
@@ -255,7 +267,7 @@ exports.handler = async (event, context) => {
 
   const headers = buildCorsHeaders(event, {
     allowedOrigins,
-    allowHeaders: 'Content-Type, Authorization',
+    allowHeaders: 'Content-Type, Authorization, X-Admin-Token',
     allowMethods: 'GET, OPTIONS',
     allowCredentials: true
   });
@@ -266,6 +278,10 @@ exports.handler = async (event, context) => {
 
   if (event.httpMethod !== 'GET') {
     return jsonResponse(405, headers, { error: 'Method not allowed' });
+  }
+
+  if (!isAuthorized(event)) {
+    return jsonResponse(401, headers, { error: 'Unauthorized' });
   }
 
   try {

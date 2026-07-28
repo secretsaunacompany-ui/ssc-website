@@ -50,7 +50,12 @@ function formatDuration(seconds) {
 async function fetchData(action, params = {}) {
     try {
         const queryString = new URLSearchParams({ ...params, action }).toString();
-        const response = await fetch(`${API_ENDPOINT}?${queryString}`);
+        const response = await fetch(`${API_ENDPOINT}?${queryString}`, {
+            headers: withAdminHeaders()
+        });
+        if (response.status === 401) {
+            throw new Error('Not signed in. Unlock the ops session to view analytics.');
+        }
         if (!response.ok) throw new Error('Network response was not ok');
         return await response.json();
     } catch (error) {
