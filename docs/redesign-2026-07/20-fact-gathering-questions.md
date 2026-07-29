@@ -7,6 +7,36 @@ builds.** *(per Lee, 2026-07-28.)* So the published figure is GST 5% + PST 7%,
 which matches what the Adam Pospisil quote already used. George's copy may now
 carry a tax line; the `[NEEDS LEE]` placeholders on tax come out.
 
+**Configurator pricing basis (was Q11 / critic blocker 2).** *(per Lee, 2026-07-28.)*
+
+- **Basis: incremental, plus margin.** A heater upgrade is priced on the delta
+  (upgrade cost minus the standard unit not being fitted), then margin on top.
+  House target 45% GM stress-tested; 40% is the floor.
+- **Kuuma is cut** from the configurator. It was live at +$3,000 against a
+  ~$6,150–6,700 landed cost — roughly a $3,000 loss per sale, on the site today.
+- **Wood-fired is replaced by IKI stoves** — Lee said "eekie stoves, which are
+  more readily available for pricing." **Brand reading flagged for confirmation**
+  (IKI, Lithuanian, most likely; HUUM the alternative). Priced with proper margin.
+- **Extra window: two tiers.** Lee accepts thinner margin here but the tiers must
+  price the extra *labour* a larger opening costs, not just the glass. Note his
+  correction to the premise: in practice full pricing is discussed with clients
+  and the configurator number is rarely what closes, so the line has not actually
+  been losing money.
+- **SC heater path fixed** — the `+$2,000` slot sells a 15kW Apex on SC and a
+  Revive 9kW elsewhere. Priced separately from the real 15kW cost.
+- **Everything else delegated**, with a standing instruction: **bias upward.**
+  Lee: *"I would rather that these numbers stay higher so that people aren't
+  shocked by the increased cost of upgrades."* Underpricing is what stopped them
+  building.
+
+**Changing rooms — NOT accepted yet, derivation requested.** Lee is not
+convinced by the cost basis behind $3,500 → $8,500 (3') and $4,500 → $10,500–11,000
+(4'): *"I'm interested to see where these numbers are coming from... I'm not
+exactly sure that the costs described here are totally accurate."* A line-item
+takeoff he can argue with is being produced — quantities from geometry, labour by
+task, the 2.5 hr/sqft formula reconciled against an itemised estimate, and the
+uncaptured question of whether a changing room forces a larger trailer.
+
 **Formspree autoresponse (was Q14, wrongly gating WP-0b).** Resolved by
 investigation rather than by asking. Findings: autoresponse is **available on
 Formspree's Professional and Business plans only**, configured in the dashboard

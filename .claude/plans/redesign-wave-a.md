@@ -18,10 +18,12 @@ and is out of scope here — not deferred vaguely, but named and excluded:
 WP-3 copy (process/warranty facts, design deposit, five small calls), WP-4 new
 pages, WP-6 case studies (parked while Lee agrees packages with the three clients).
 
-**Out of scope, blocked on the plan:** WP-0b configurator. The critic's blocker 2
-stands — twelve of fifteen priced lines are unreconciled and the costing basis is
-a decision, not a lookup. Wave A ships the two quote-integrity fixes that need no
-pricing decision (§3) and leaves the rest.
+**Now IN scope — WP-0b, the configurator.** Lee's call (2026-07-28): *"Given the
+importance of accurate quotes, I think we should be including the configurator
+rebuild in this relay."* The critic's blocker 2 was that the costing basis was a
+decision nobody had taken and twelve of fifteen priced lines were unreconciled.
+**The basis is now decided** (incremental plus margin, bias upward) and the price
+sheet is in production as `35-configurator-price-sheet.md`. See §3a.
 
 **In scope:** two pre-flight fixes, the harness repair, two quote-integrity
 corrections, the measurement remainder, the type/font system, the colour and
@@ -123,6 +125,72 @@ inside a bundle. Research priced a heat-rated controller around $550.
 
 **Verify:** with WiFi selected individually alongside the other four components,
 the total must exceed the package price by exactly $1,000 on all five models.
+
+---
+
+## 3a. WP-0b — The configurator
+
+The package this whole programme exists for. The button has never once delivered
+a submission in the site's history.
+
+**Authority:** `14-wim-journey-funnel.md` §1 for the flow,
+`35-configurator-price-sheet.md` for every number, `33-intake-form-design.md` §6
+for the Step 2 field set.
+
+### The flow
+
+Two-step modal — configure, then send — with a real `<form>` posting to the
+existing Formspree endpoint from inside the modal. **No navigation until success.**
+
+- **`localStorage`, not `sessionStorage`.** A 7-day window is incoherent against
+  per-tab storage that dies on tab close.
+- **Step 2 carries five fields**, not three: name, email, notes, **location** and
+  **site access**. A configuration without a location is still an unscopeable lead
+  — this is Wim's own self-override in doc 33 §6.
+- `_gotcha` honeypot and a dynamic `_subject` so the inbox is triageable and the
+  configurator stream is countable separately from contact-form traffic.
+- **Six states**, all specified: configure, send, sending, success, failure,
+  `/contact/` fallback. Plus the four the review added — client-side validation
+  failure, double-submit, offline, and modal closed mid-step-2.
+- Failure keeps the form mounted with values intact and offers a `mailto:`
+  fallback carrying the configuration. The config must always have a second exit.
+- `role="dialog"`, `aria-modal`, focus trap, focus restore. A flow that leads to
+  money is keyboard-complete or it is not done.
+- **Success copy branches on a `site.json` flag** and never claims a confirmation
+  email unless Formspree autoresponse is actually enabled. True either way; not
+  gated on the answer.
+- Reply-time promise reads **"within three business days, usually the next day"**
+  — the bad-week number, so it holds on the worst week rather than the best.
+
+### The prices
+
+Every line from `35-configurator-price-sheet.md`. Load-bearing changes:
+
+- **Kuuma removed.** Live at +$3,000 against ~$6,150–6,700 landed. This is a
+  ~$3,000-per-sale loss quoting today, and "the freeze holds" described an
+  internal state the website disagreed with.
+- **Wood-fired replaced** by the IKI line, priced with margin.
+- **WiFi controller added at $2,000**, individually selectable — which makes the
+  Premium Package's "Save $1,000" true instead of backwards by $2,000.
+- **SC heater path priced separately** from the 15kW Apex's real cost. One
+  `+$2,000` slot currently sells two different heaters and only one was ever priced.
+- **Bench group fix** (§3) so bench choice stops vanishing from every quote.
+- **Catalogue string fix:** `js/data.js:84` advertises a "Homecraft 9kW Apex" that
+  the manufacturer does not make — the Apex line is 10/12/15/18kW. It renders
+  publicly in the modal spec grid and the compare table.
+
+### Still open at time of writing
+
+**Changing rooms.** Lee has not accepted $8,500 / $10,500–11,000 and asked for the
+derivation. If the itemised takeoff lands before this package starts, the numbers
+go in; if not, **the changing-room lines ship at current prices and are flagged**,
+rather than holding the whole package. They are the only unresolved lines.
+
+### Verify
+
+A real quote request arrives in the inbox from the modal, carrying every selected
+option including the $0-value bench choice, with location and access attached.
+`quote_submit_success` moves off zero.
 
 ---
 
