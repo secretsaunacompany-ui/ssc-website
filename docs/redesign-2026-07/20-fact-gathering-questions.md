@@ -7,6 +7,41 @@ builds.** *(per Lee, 2026-07-28.)* So the published figure is GST 5% + PST 7%,
 which matches what the Adam Pospisil quote already used. George's copy may now
 carry a tax line; the `[NEEDS LEE]` placeholders on tax come out.
 
+**Formspree autoresponse (was Q14, wrongly gating WP-0b).** Resolved by
+investigation rather than by asking. Findings: autoresponse is **available on
+Formspree's Professional and Business plans only**, configured in the dashboard
+(Workflow → Add New → Auto Response), not in code — which is why auditing the
+form could only answer half. It requires a field named exactly `email`;
+`contact.njk:28` already has one, so no markup change is needed. The code
+currently sends only `_next` and `_subject`, and no `_replyto`.
+
+**The real fix is that this should never have gated the package.** The modal
+success panel is written so it holds either way — one conditional line, driven by
+a flag in `src/_data/site.json`, claiming a confirmation email only when
+autoresponse is actually enabled. Wim's rule stands (`14 §1`: do not claim a
+confirmation email unless it exists); it is now satisfied by design instead of by
+waiting. **Q14 comes off the critical path.** Lee can flip the flag whenever he
+checks the tier; if it is Free, nothing is broken and nothing is promised.
+
+**Build duration (was A13, a live contradiction).** **"As little as 8-12 weeks"**
+from deposit, and where a build lands in that range depends on the model and the
+level of customization. *(per Lee, 2026-07-28.)* The FAQ's "4-6 weeks" was simply
+wrong and is **fixed** in `src/_data/faq.json` — both `answer` and `schemaAnswer`,
+the latter feeding Google rich results. Swept: no 4-6 week claim survives anywhere
+in `src/` or `js/`. All future copy uses the 8-12 framing.
+
+**WiFi controller (was the "Save $1,000" defect).** **Add it as a $2,000
+individually-selectable upgrade line.** *(per Lee, 2026-07-28.)* This makes the
+Premium Finish Package's savings claim true rather than backwards: the individually
+selectable basket becomes $8,000 against a $7,000 package. Research priced a
+genuine heat-rated controller around $550, so this is a strong-margin line. Ted
+adds the option to `src/_includes/modals/sauna.njk` and the modal total logic.
+
+**Nav mark (was Q10, blocking WP-2a).** **Remove the logo from the nav; it becomes
+a maker's mark.** *(per Lee, 2026-07-28.)* Saul's spec proceeds: 22px wordmark in
+the nav, badge relocated to the footer as a maker's seal at 72px. WP-2a unblocks,
+including the asset redraw from `~/marvin/content/assets/logo-original.pdf`.
+
 **Reply time (was blocking Q4 / WP-0b + WP-3).** Normal is **within a day**;
 a bad week is **three**. *(per Lee, 2026-07-28.)* Published promise uses the
 bad-week number so it holds on the worst week, not the best: "we'll come back
