@@ -1,6 +1,6 @@
 ---
 status: active
-current: "Redesign 2026-07 — WP-A cleared to build (pre-flight, harness repair, quote-integrity fixes, type/font system, colour+motion, mark). Plan: .claude/plans/redesign-wave-a.md"
+current: "Redesign 2026-07 — Wave A ready to relay. Pre-flight, harness repair, configurator rebuild, quote-integrity fixes, type/fonts, colour+motion, mark. Plan: .claude/plans/redesign-wave-a.md — start at docs/redesign-2026-07/HANDOFF.md"
 next: "Lee's outstanding answers unblock WP-2 (per-model prices), WP-3 (copy), WP-4 (process + warranty facts). See docs/redesign-2026-07/20-fact-gathering-questions.md"
 testing: "npm run visual-diff -- --baseline main --candidate <branch> (harness repair pending — see plan §2)"
 pinned: false
@@ -43,6 +43,8 @@ them rather than restating them.
 | `31-pricing-materials.md` | Material + fabrication pricing, sourced |
 | `33-intake-form-design.md` | Contact form field set, evidence, Formspree capabilities |
 | `34-design-fee-conventions.md` | Design-deposit conventions + draft copy |
+| `35-configurator-price-sheet.md` | **Every configurator price, resolved.** One convention, 19 lines, arithmetic shown |
+| `HANDOFF.md` | **Start here on a cold pickup** |
 
 **Plans and reviews** in `.claude/plans/`:
 - `redesign-wave-a.md` — the relay-ready plan for everything not blocked on Lee
