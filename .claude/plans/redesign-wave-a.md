@@ -329,6 +329,14 @@ premium option (row 14b). Load-bearing highlights:
   — which needs no input from Lee to be accurate (critic X4.4: a $1,500 audio
   upgrade on a hot-room product cannot ship silent on where the speakers go). Lee's
   actual practice sentence replaces it when he supplies it (docked, doc 35 §5B.2).
+- **`pricesVersion` bump, same commit, enforced** *(from WP-0b-i, 2026-07-30)*:
+  `js/data.js` exports `pricesVersion = 1`, stamped into every saved
+  configuration; the restore path recomputes and shows a "prices have been
+  updated" note when stale. This commit bumps it to 2 **and adds the fixture
+  that ties the stamp to the price values** (hash the price table into the test;
+  a price change without a version bump goes red) — nothing currently enforces
+  the bump, and a repricing that forgets it lets week-old saved totals restore
+  silently as fresh.
 - **`models.json` — a schema extension, not a value copy** *(critic 8.1)*: the
   file cannot represent what doc 35 creates — one `heater_apex` entry cannot hold
   the S2–S8/SC split, and there is no bench, deck-tier, speaker-tier, window-tier
@@ -431,7 +439,10 @@ Governed by doc 21 for tokens and `10-jen-art-direction.md` §4–5 for the syst
 - Section rhythm tokens and container tiers.
 - Grey ramp to three honest tokens. Retire `--color-charcoal` — the name says
   charcoal, the value is `#c0c0c0`, a light silver. 14 call sites, all `color:`
-  declarations, enumerated in doc 21 §6.1.
+  declarations, enumerated in doc 21 §6.1. **Named must-fix in this package
+  (from WP-0b-i, 2026-07-30): `.quote-btn` renders ~1.1:1 contrast
+  (`--color-charcoal` on `--color-warm-wood`) and it is now the SEND button on
+  the money flow — it must not survive the colour pass.**
 - Define `--color-bg`. The stylesheet consumes it twice and never defines it — a
   live bug matching audit finding P0-3. Reconcile with `booking-ops.html`'s own
   definition in the same edit, so the token isn't defined twice differently.
