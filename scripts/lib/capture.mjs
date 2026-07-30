@@ -108,10 +108,41 @@ const DETERMINISM_CSS = `
     overscroll-behavior: auto !important;
     touch-action: auto !important;
   }
-  /* Parallax: SSC.initHeroParallax writes an inline translateY to these on
-     every scroll event, so the background image lands wherever scrolling
-     stopped. Pin it to its untransformed position. A stylesheet !important
-     beats the inline non-important style the script writes. */
+  /* Parallax: SSC.initHeroParallax writes a scroll-position-dependent inline
+     style on every scroll event, so each target lands wherever scrolling
+     stopped. Pin them to their untransformed positions. A stylesheet
+     !important beats the inline non-important style the script writes.
+
+     ALL of the handler's layout-affecting targets are pinned here, not just
+     the one that was noticed first. The handler (js/animations.js,
+     initHeroParallax) writes five inline styles per scroll frame:
+
+       .hero-image      style.top       = -(scrollY * 0.6)px
+       .hero-content    style.opacity                          (reduced-motion guarded)
+       .hero-overlay__bg style.transform = translateY(±40px)
+       .page-hero       style.opacity                          (reduced-motion guarded)
+       .full-width-image style.transform = translateY(±50px)
+
+     The two opacity writes are already inert because the context launches with
+     reducedMotion: 'reduce' and the handler guards them. The three geometric
+     ones are not, and only .hero-overlay__bg was pinned originally. That left
+     a 100px swing on .full-width-image and a 0.6*scrollY swing on .hero-image
+     free to land anywhere, which is precisely the intermittent "large
+     localised shift on a page nobody touched" this harness exists to not
+     report: measured as a 60px phantom shift on /saunas/ @1440 that appeared
+     in one run and not the next, from identical builds.
+
+     If a new parallax target is added to that handler, it belongs in this
+     list. A scroll-dependent inline style that is not pinned here is a flake
+     waiting to be blamed on a content change. */
+  .hero-image {
+    top: 0 !important;
+    will-change: auto !important;
+  }
+  .full-width-image {
+    transform: none !important;
+    will-change: auto !important;
+  }
   .hero-overlay__bg {
     transform: none !important;
     will-change: auto !important;
