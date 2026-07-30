@@ -199,11 +199,25 @@ existing Formspree endpoint from inside the modal. **No navigation until success
   note — a saved total never silently disagrees with its own line items, and a
   price deploy never resurrects a pre-deploy total. Two tabs share one key by
   design; last write wins, stated.
-- **Retention (X2, gating):** cleared on successful submit; expires at 7 days; a
-  visible "start over" clears it on demand. The key holds a physical address and
-  site-access notes in plaintext — that is why the rule is explicit. Step 2 carries
-  a privacy-policy link beside the submit, and the privacy page goes in front of
-  Petra before this package's production deploy — not parked with WP-4.
+- **Retention & privacy (X2, gating — Petra pre-check folded 2026-07-30):**
+  cleared on successful submit; expires at 7 days; a visible "start over" clears
+  it on demand, with the one-line notice **"your progress is saved on this device
+  for 7 days"** beside it. The key holds a physical address and site-access notes
+  in plaintext — that is why the rule is explicit. Petra's corrections, same
+  commit: (1) the governing statute is **BC PIPA (SBC 2003 c.63)**, not PIPEDA —
+  privacy language builds against PIPA ss.6-9/34/35, PIPEDA covers only the
+  cross-border flow; (2) **the US transfer is disclosed at the point of send** —
+  one line near the Step 2 submit ("sent via our US form processor — see privacy
+  policy") so consent is informed, per OIPC BC guidance on foreign storage;
+  (3) **server-side retention gets a number**: Formspree submission auto-delete
+  set to 90 days (confirm the plan tier supports it — if not, a documented manual
+  purge cadence), inbox practice stated on the privacy page. Step 2 carries a
+  privacy-policy link beside the submit. **Pre-deploy checks:** privacy page in
+  front of Petra (must-haves: the five fields + purpose, Formspree named with US
+  location, both retention stories, access/correction contact with the 30-day
+  PIPA response duty, OIPC BC complaint route) and the Formspree DPA/terms
+  sufficiency check (Pierre owns the wording call). The email field is collected
+  for quoting only — it joins no mailing list without separate CASL consent.
 - **Serialisation contract: composed blob.** The form posts one human-readable
   `configuration` field composed from the live summary, plus name / email / notes /
   location / access as named fields, plus `_subject` and `_gotcha`. **Not**
