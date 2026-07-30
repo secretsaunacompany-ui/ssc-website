@@ -199,6 +199,49 @@
             if (heading) heading.hidden = step !== 'configure';
         }
 
+        /** The elements that make up a step, for animating it in or out. */
+        panelsFor(step) {
+            const ids = step === 'configure'
+                ? ['configureHeading', 'configureStep', 'configureActions']
+                : (step === 'send' ? ['sendStep'] : ['successStep']);
+            return ids.map((id) => document.getElementById(id)).filter(Boolean);
+        }
+
+        /**
+         * Move between steps with the specified choreography: the outgoing
+         * panel fades out over 250ms, the incoming one fades in over 250ms with
+         * a 100ms overlap. Under `prefers-reduced-motion` it is an instant swap,
+         * because motion is the visitor's setting to refuse and the flow must
+         * not be slower for taking them at their word.
+         *
+         * `after` runs once the incoming panel is actually rendered -- focus
+         * cannot be moved into an element that is still hidden.
+         */
+        transitionTo(step, after) {
+            const done = () => { if (typeof after === 'function') after(); };
+            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const outgoing = this.panelsFor(this.step).filter((el) => !el.hidden);
+
+            const arrive = () => {
+                this.setStep(step);
+                if (!reduced) {
+                    this.panelsFor(step).forEach((el) => {
+                        el.classList.add('quote-step--entering');
+                        window.setTimeout(() => el.classList.remove('quote-step--entering'), 250);
+                    });
+                }
+                done();
+            };
+
+            if (reduced || !outgoing.length) { arrive(); return; }
+
+            outgoing.forEach((el) => el.classList.add('quote-step--leaving'));
+            window.setTimeout(() => {
+                outgoing.forEach((el) => el.classList.remove('quote-step--leaving'));
+                arrive();
+            }, 150);
+        }
+
         updateSpecs() {
             setText('modalTitle', currentModel.name);
             setText('specSize', currentModel.size);
@@ -587,18 +630,19 @@
             set('quoteTotal', config.total);
 
             this.clearErrors();
-            this.setStep('send');
-
-            const first = document.getElementById('quoteName');
-            if (first) first.focus();
+            this.transitionTo('send', () => {
+                const first = document.getElementById('quoteName');
+                if (first) first.focus();
+            });
         }
 
         /** Step 2 -> Step 1, with every input exactly as it was left. */
         goBack() {
             this.clearErrors();
-            this.setStep('configure');
-            const btn = document.querySelector('[data-action="request-quote"]');
-            if (btn) btn.focus();
+            this.transitionTo('configure', () => {
+                const btn = document.querySelector('[data-action="request-quote"]');
+                if (btn) btn.focus();
+            });
         }
 
         /**
@@ -827,12 +871,13 @@
             const form = document.getElementById('quoteForm');
             if (form) form.reset();
 
-            this.setStep('success');
-            const heading = document.querySelector('.quote-success-heading');
-            if (heading) {
-                heading.setAttribute('tabindex', '-1');
-                heading.focus();
-            }
+            this.transitionTo('success', () => {
+                const heading = document.querySelector('.quote-success-heading');
+                if (heading) {
+                    heading.setAttribute('tabindex', '-1');
+                    heading.focus();
+                }
+            });
 
             // Compact payload only. The tracker's endpoint SILENTLY replaces
             // any eventData over 5,000 characters with {} and still returns

@@ -296,6 +296,35 @@ async function runStates(base, browser) {
     await page.close();
   }
 
+  // --- the step transition, both ways ---------------------------------
+  {
+    const page = await newPage(browser);
+    await openModal(page, base);
+    await page.click('[data-action="request-quote"]');
+    await page.waitForSelector('#sendStep', { state: 'visible' });
+    check('motion: the incoming panel is animated in, not snapped in',
+      await page.evaluate(() => {
+        const el = document.getElementById('sendStep');
+        return el.classList.contains('quote-step--entering')
+          || getComputedStyle(el).animationName === 'quoteStepIn';
+      }), 'the step change had no choreography at default motion settings');
+    await page.close();
+
+    // Reduced motion is a refusal, and it must be honoured without making the
+    // flow slower for the people who asked.
+    const still = await browser.newPage();
+    await still.route('**ssc-ops.netlify.app/**', (route) => route.abort());
+    await still.emulateMedia({ reducedMotion: 'reduce' });
+    await openModal(still, base);
+    await still.click('[data-action="request-quote"]');
+    check('motion: under prefers-reduced-motion the swap is instant',
+      await still.evaluate(() => {
+        const el = document.getElementById('sendStep');
+        return !el.hidden && getComputedStyle(el).animationName === 'none';
+      }), 'a keyframe ran for a visitor who asked for stillness');
+    await still.close();
+  }
+
   // --- validation failure ---------------------------------------------
   {
     const page = await newPage(browser);

@@ -1259,6 +1259,39 @@ textarea {
    Configurator Step 2 -- send, success, failure
    ============================================ */
 
+/* Step choreography: the outgoing panel fades out over 250ms, the incoming one
+   fades in over 250ms with a 100ms overlap. The visitor has to see one surface
+   become another rather than one page replace a different one -- the whole
+   point of asking in place is that nothing feels like a departure.
+
+   Applied by JS only during a step change, and skipped entirely under
+   prefers-reduced-motion, so no keyframe ever runs for a visitor who asked for
+   stillness. The media query below is belt to those braces. */
+@keyframes quoteStepIn {
+    from { opacity: 0; transform: translateX(12px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes quoteStepOut {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 0; transform: translateX(-12px); }
+}
+
+.quote-step--entering {
+    animation: quoteStepIn 250ms ease both;
+}
+
+.quote-step--leaving {
+    animation: quoteStepOut 250ms ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .quote-step--entering,
+    .quote-step--leaving {
+        animation: none;
+    }
+}
+
 /* A text button that reads as a link. Real <button>s, because they act on the
    page rather than going anywhere, and a link that does not navigate is a lie
    to anyone driving by keyboard or screen reader. */
