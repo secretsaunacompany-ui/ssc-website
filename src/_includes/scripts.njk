@@ -1,18 +1,18 @@
     <!-- External JavaScript - Modular Architecture -->
     <!-- Load order matters: data & utils first, then components, then init last -->
-    <script src="/js/data.js?v=20260226" defer></script>
-    <script src="/js/utils.js?v=20260226" defer></script>
-    <script src="/js/animations.js?v=20260415" defer></script>
-    <script src="/js/navigation.js?v=20260226" defer></script>
-    <script src="/js/gallery.js?v=20260226" defer></script>
-    <script src="/js/modal.js?v=20260226" defer></script>
-    <script src="/js/compare.js?v=20260320" defer></script>
-    <script src="/js/map.js?v=20260226" defer></script>
-    <script src="/js/forms.js?v=20260226" defer></script>
+    <script src="{{ '/js/data.js' | assetUrl }}" defer></script>
+    <script src="{{ '/js/utils.js' | assetUrl }}" defer></script>
+    <script src="{{ '/js/animations.js' | assetUrl }}" defer></script>
+    <script src="{{ '/js/navigation.js' | assetUrl }}" defer></script>
+    <script src="{{ '/js/gallery.js' | assetUrl }}" defer></script>
+    <script src="{{ '/js/modal.js' | assetUrl }}" defer></script>
+    <script src="{{ '/js/compare.js' | assetUrl }}" defer></script>
+    <script src="{{ '/js/map.js' | assetUrl }}" defer></script>
+    <script src="{{ '/js/forms.js' | assetUrl }}" defer></script>
 {% if site.features.advisor %}
-    <script src="/js/advisor.js?v=20260303" defer></script>
+    <script src="{{ '/js/advisor.js' | assetUrl }}" defer></script>
 {% endif %}
-    <script src="/js/init.js?v=20260303" defer></script>
+    <script src="{{ '/js/init.js' | assetUrl }}" defer></script>
 
     <!-- Analytics Tracker - Centralized via ssc-ops.netlify.app -->
     <script src="https://ssc-ops.netlify.app/tracker.js"

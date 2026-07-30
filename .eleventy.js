@@ -1,6 +1,49 @@
 module.exports = function(eleventyConfig) {
   eleventyConfig.addFilter("currentYear", () => new Date().getFullYear());
 
+  // Content-hashed asset URLs (P-A).
+  //
+  // styles.css and js/* are served with `max-age=31536000, immutable`
+  // (netlify.toml). Before this, the cache key was a hand-typed `?v=YYYYMMDD`
+  // stamp, and several were already stale by months — a returning visitor kept
+  // the old asset for up to a year. The stamp is now derived from the file's
+  // own bytes, so it cannot go stale and cannot be forgotten in a commit.
+  //
+  // Fails CLOSED: a missing or unreadable asset throws and the build stops.
+  // Emitting an unstamped URL would silently reintroduce the year-cache bug.
+  const crypto = require('crypto');
+  const nodeFs = require('fs');
+  const nodePath = require('path');
+  const assetHashCache = new Map();
+
+  eleventyConfig.addFilter("assetUrl", (urlPath) => {
+    if (typeof urlPath !== 'string' || urlPath.length === 0) {
+      throw new Error(`assetUrl: expected a non-empty path, got ${JSON.stringify(urlPath)}`);
+    }
+    if (urlPath.includes('?') || urlPath.includes('#')) {
+      throw new Error(`assetUrl: path must not carry a query or fragment: ${urlPath}`);
+    }
+    if (assetHashCache.has(urlPath)) return assetHashCache.get(urlPath);
+
+    // Source files live at the repo root (both are addPassthroughCopy targets),
+    // so the request path maps one-to-one onto a path relative to __dirname.
+    const rel = urlPath.replace(/^\/+/, '');
+    const source = nodePath.resolve(__dirname, rel);
+    if (!source.startsWith(nodePath.resolve(__dirname) + nodePath.sep)) {
+      throw new Error(`assetUrl: path escapes the repo root: ${urlPath}`);
+    }
+    let bytes;
+    try {
+      bytes = nodeFs.readFileSync(source);
+    } catch (err) {
+      throw new Error(`assetUrl: cannot read asset for ${urlPath} (${source}): ${err.message}`);
+    }
+    const hash = crypto.createHash('sha256').update(bytes).digest('hex').slice(0, 12);
+    const stamped = `${urlPath}?v=${hash}`;
+    assetHashCache.set(urlPath, stamped);
+    return stamped;
+  });
+
   // Date formatting filter for blog posts and sitemap
   eleventyConfig.addFilter("date", (dateObj, format) => {
     if (!dateObj) return '';
