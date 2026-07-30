@@ -103,6 +103,12 @@ const DETERMINISM_CSS = `
     transform: none !important;
     pointer-events: auto !important;
   }
+  /* Second layer for the interior-page hero, matching .hero-content's two-layer
+     protection: today only the reducedMotion guard stops its opacity write; if
+     that emulation ever changes, this pin keeps it deterministic. */
+  .page-hero {
+    opacity: 1 !important;
+  }
   body.page-home.hero-locked {
     overflow: auto !important;
     overscroll-behavior: auto !important;

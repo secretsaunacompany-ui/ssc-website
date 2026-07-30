@@ -205,6 +205,13 @@ not check whether the design is any good, and it does not click anything —
 every capture is the page as it first loads, scrolled to the top. Interactive
 states (open FAQ answers, opened modals, the lightbox) are not covered.
 
+**Pinned motion is invisible.** Determinism is achieved by pinning every
+scroll/time-dependent style (parallax offsets, the hero video's frame, reveal
+transforms) to one settled state — which means a change to **parallax
+magnitude**, video content, or reveal choreography reads as "no visual change"
+no matter how large it is. If a batch deliberately retunes motion, it must be
+reviewed by eye; this harness will pass it silently.
+
 ---
 
 ## For developers: how determinism is achieved
@@ -397,11 +404,11 @@ for (const [,u,s] of fs.readFileSync('dist/index.html','utf8')
 > the next rebuild, with a fresh stamp. **If a dev-server page ever seems to be
 > ignoring a CSS/JS edit, do NOT shrug and restart the server — that symptom
 > means the `eleventy.before` cache-clear in `.eleventy.js` has regressed.**
-> This is the only live detector for that regression: the unit suite cannot
-> observe cross-build behaviour, and the stamp-vs-served check below stays green
-> even in the broken state (both sides serve the same stale buffer). Treat stale
-> dev CSS as a build bug, always. (A programmatic two-build fixture is queued in
-> the lazy-image micro-batch to make this machine-checked.)
+> The machine check for that regression is `npm run build-cache:test` — it
+> drives two builds through Eleventy's programmatic API and goes red if the
+> cache-clear is removed (the stamp-vs-served check below stays green even in
+> the broken state, since both sides serve the same stale buffer — it is
+> necessary but not sufficient). Treat stale dev CSS as a build bug, always.
 
 ### Dependencies
 

@@ -68,7 +68,9 @@ const CSS_MARKER = 'ssc-cache-fixture-marker';
 const JS_MARKER = 'sscCacheFixtureMarker';
 
 /** Directories never copied into the scratch site. */
-const SKIP = new Set(['node_modules', '.git', 'dist', '_site', '.visual-diff', '.probe', 'tmp']);
+// .env excluded to match build-ref.mjs's WORKING_COPY_EXCLUDE — secrets never
+// travel into scratch copies, even 0700 ones that get removed in finally.
+const SKIP = new Set(['node_modules', '.git', 'dist', '_site', '.visual-diff', '.probe', 'tmp', '.env']);
 
 let failures = 0;
 let passes = 0;
@@ -104,7 +106,11 @@ function scratchSite() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ssc-build-cache-'));
   fs.cpSync(REPO_ROOT, dir, {
     recursive: true,
-    filter: (src) => !SKIP.has(path.basename(src)) || path.dirname(src) !== REPO_ROOT,
+    filter: (src) => {
+      const base = path.basename(src);
+      if (base.startsWith('.env')) return false; // .env, .env.local, ... — never copy secrets
+      return !SKIP.has(base) || path.dirname(src) !== REPO_ROOT;
+    },
   });
   // Symlinked rather than copied: it is large, and resolving to the same
   // installed Eleventy is the point.
