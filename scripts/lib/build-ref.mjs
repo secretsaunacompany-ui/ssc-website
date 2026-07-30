@@ -2,10 +2,15 @@
  * Build the site at a given git ref into an isolated output directory.
  *
  * Two modes:
- *   ref === 'WORKING'  -> build the current working tree (uncommitted edits
- *                         included), in place, then snapshot dist/.
+ *   ref === 'WORKING'  -> copy the current working tree (uncommitted edits
+ *                         included) into a temp dir, build THERE, snapshot dist/.
  *   any other ref      -> `git worktree add --detach` a clean checkout of that
  *                         ref into a temp dir, build there, snapshot dist/.
+ *
+ * WORKING deliberately does NOT build in place. The build command starts with
+ * `rm -rf dist`, and running that against the live working tree means a
+ * measurement tool destroying the developer's own build output as a side
+ * effect. Neither mode now writes anything inside the repo.
  *
  * The build command is always `rm -rf dist && <eleventy>`. The clean is
  * load-bearing per netlify.toml: Eleventy does not remove stale output, so a
@@ -34,6 +39,51 @@ function runBuild(dir) {
 }
 
 /**
+ * Directory names at the repo root that are never copied into a WORKING build.
+ * Build artefacts, VCS metadata, the harness's own scratch space, and secrets.
+ */
+const WORKING_COPY_EXCLUDE = new Set([
+  'node_modules', '.git', 'dist', '_site', '.visual-diff', '.netlify',
+  '.cache', 'tmp', '.env',
+]);
+
+/**
+ * Copy the live working tree (including uncommitted edits) into `dest`, minus
+ * build artefacts and secrets, and symlink node_modules the same way the
+ * git-worktree path does.
+ */
+function materializeWorkingTree(dest) {
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(REPO_ROOT, { withFileTypes: true })) {
+    if (WORKING_COPY_EXCLUDE.has(entry.name)) continue;
+    if (entry.name.startsWith('.env')) continue;
+    fs.cpSync(path.join(REPO_ROOT, entry.name), path.join(dest, entry.name), {
+      recursive: true,
+      dereference: false,
+      verbatimSymlinks: true,
+    });
+  }
+  fs.symlinkSync(path.join(REPO_ROOT, 'node_modules'), path.join(dest, 'node_modules'), 'dir');
+}
+
+/**
+ * Resolve a ref to a short sha, so two refs naming the same commit can be
+ * detected before an expensive self-comparison is run.
+ * @returns {string} short sha, or 'working-tree' for WORKING.
+ */
+export function resolveRef(ref) {
+  if (ref === 'WORKING') {
+    try { return `${git(['rev-parse', '--short', 'HEAD'])}+dirty`; }
+    catch { return 'working-tree'; }
+  }
+  try {
+    return git(['rev-parse', '--short', ref]);
+  } catch (err) {
+    throw new Error(`Not a git ref: ${ref}`);
+  }
+}
+
+/**
  * @param {string} ref  git ref, or the literal 'WORKING'
  * @param {string} outDir  where the built dist/ should end up
  * @returns {{ ref: string, sha: string, outDir: string }}
@@ -43,16 +93,19 @@ export function buildRef(ref, outDir) {
   fs.mkdirSync(path.dirname(outDir), { recursive: true });
 
   if (ref === 'WORKING') {
-    runBuild(REPO_ROOT);
-    fs.cpSync(path.join(REPO_ROOT, 'dist'), outDir, { recursive: true });
-    let sha = 'working-tree';
+    const sha = resolveRef('WORKING');
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ssc-visual-diff-working-'));
     try {
-      sha = `${git(['rev-parse', '--short', 'HEAD'])}+dirty`;
-    } catch { /* detached / no HEAD is fine */ }
+      materializeWorkingTree(tmp);
+      runBuild(tmp);
+      fs.cpSync(path.join(tmp, 'dist'), outDir, { recursive: true });
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
     return { ref, sha, outDir };
   }
 
-  const sha = git(['rev-parse', '--short', ref]);
+  const sha = resolveRef(ref);
   const wt = fs.mkdtempSync(path.join(os.tmpdir(), 'ssc-visual-diff-'));
   try {
     git(['worktree', 'add', '--detach', '--quiet', wt, ref]);

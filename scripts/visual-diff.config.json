@@ -1,16 +1,24 @@
 {
   "widths": [1440, 390],
 
-  "maxLayoutShiftPx": 8,
+  "maxLayoutShiftPx": 4,
+  "minShiftCoverage": 0.95,
   "maxChangedPct": 0.5,
 
   "expectedToChange": [],
 
+  "expectedRedirects": {
+    "/gallery/": "/saunas/",
+    "/process/": "/about/"
+  },
+
   "_notes": {
-    "widths": "Capture widths in CSS pixels. 1440 = desktop, 390 = iPhone-class mobile.",
-    "maxLayoutShiftPx": "Budget from the redesign acceptance criterion: nothing may move more than this on a page that is not expected to change.",
+    "authority": "These are the ONLY budgets. lib/gate.mjs reads them and defaults nothing; no threshold is written down anywhere else in the harness. If a budget and a fixture in visual-diff.test.mjs disagree, the fixture wins and the budget is renegotiated in the plan, never tuned here to make a run pass.",
+    "widths": "Capture widths in CSS pixels. 1440 = desktop, 390 = iPhone-class mobile. An empty list is a hard error: a run that captures nothing cannot pass.",
+    "maxLayoutShiftPx": "Budget from the redesign acceptance criterion. Gated against layoutShiftMaxPx -- the MAXIMUM observed row displacement, not the p99. A 6px sitewide button move touches few enough rows that a percentile hides it, and hiding it is exactly the defect this harness was repaired for.",
+    "minShiftCoverage": "Fraction of structured baseline rows that must be found again in the candidate. This is what catches the two failures the pixel and p99 metrics are blind to: content that moved further than diff.mjs's 240px search window, and a page whose content changed outright. Both report a shift of zero; both drop coverage to near zero.",
     "maxChangedPct": "Percentage of the page that may look different before it is treated as a regression. Cosmetic anti-aliasing noise sits well under 0.5%.",
-    "expectedToChange": "Routes the spec explicitly says will change, e.g. \"/about/\" or \"/\". Listed routes are still measured and reported, but do not fail the run. Use the exact route as printed in the report.",
-    "expectedToChangeShape": "Either a plain route string, or { \"route\": \"/about/\", \"reason\": \"new hero type scale\" }."
+    "expectedToChange": "Per-metric waivers, not a blanket pass. Shape: { \"route\": \"/about/\", \"reason\": \"new hero type scale\", \"waive\": [\"changedPct\"] }. Waivable: changedPct, heightDelta, structural. NEVER waivable: layoutShiftMaxPx, shiftCoverage -- a config that tries is a hard error. A page may waive changedPct and remain shift-gated; that is the whole point of the restructure. Bare route strings are rejected so an old-shape config cannot silently keep its old blanket-waiver meaning.",
+    "expectedRedirects": "Client-side redirects the capture is expected to observe, as route -> settled destination. A redirect that is not declared, points somewhere else, or stops happening fails the run. Without this the harness screenshots the destination page under the source route's name and reports it as unchanged. /gallery/ and /process/ genuinely redirect today (verified 2026-07-30)."
   }
 }

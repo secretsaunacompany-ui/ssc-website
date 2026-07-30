@@ -22,11 +22,28 @@
  *     byte for byte. Real fonts and real image dimensions are preserved, which
  *     matters because a type-scale refactor is exactly what this gates.
  *
+ *     KNOWN BUG, not fixed here: the cache keys on URL alone and stores one
+ *     whole body per URL, ignoring the request's `Range` header and replaying
+ *     the recorded status (a `206 Partial Content` would be replayed as a 206
+ *     carrying the full body). Harmless for images and fonts, which are fetched
+ *     whole. It matters only for ranged media — which is why the video is
+ *     stubbed outright (3b) rather than cached. Filed rather than fixed so the
+ *     determinism claim does not quietly depend on it.
+ *
  *  3. THE CLOCK. Any client-side `new Date()` / `Date.now()` is pinned to a
  *     fixed epoch before any page script runs, and `Math.random` is replaced
  *     with a seeded PRNG. No time-of-day or randomised branch was found in the
  *     current site (see scripts/README.md), so this is insurance rather than a
  *     fix, and it costs nothing.
+ *
+ *  3b. VIDEO. The homepage carries an autoplaying looping `<video>`. Which
+ *     frame is on screen when the shutter fires depends on decode timing, so
+ *     the element is STUBBED: its media request is aborted and the element
+ *     renders as a flat block inside its own fixed 70vh box. Determinism here
+ *     is by construction — it does not depend on the asset replay cache
+ *     behaving itself for a streamed, range-requested media file. (The cache's
+ *     handling of ranged media responses is a real bug, but it is a site/harness
+ *     bug on its own merits and is NOT what this determinism claim rests on.)
  *
  *  4. LIVE ENDPOINTS. The analytics tracker, Supabase, and Formspree are
  *     aborted outright. Beyond determinism this is a correctness point: 19
@@ -53,6 +70,9 @@ const BLOCKED_HOSTS = new Set([
   'unpkg.com',
   'cdn.jsdelivr.net',
 ]);
+
+/** Requests treated as video and stubbed rather than fetched or replayed. */
+const VIDEO_URL = /\/video\/upload\/|\.(?:mp4|webm|m4v|mov|ogv)(?:[?#]|$)/i;
 
 /** Frozen epoch: 2026-01-01T12:00:00Z. Arbitrary, but fixed forever. */
 const FROZEN_EPOCH = 1767268800000;
@@ -96,6 +116,16 @@ const DETERMINISM_CSS = `
     transform: none !important;
     will-change: auto !important;
   }
+  /* Video is stubbed (see header note 3b): its media request is aborted, so it
+     paints as a flat block. Its box is CSS-sized (.video--fullwidth is
+     width:100%/height:70vh) and therefore layout-stable without the media. */
+  video {
+    background-color: #0c0c0c !important;
+    object-fit: cover !important;
+  }
+  video::-webkit-media-controls, video::-webkit-media-controls-enclosure {
+    display: none !important;
+  }
 `;
 
 const INIT_SCRIPT = `(() => {
@@ -133,6 +163,10 @@ async function installRouting(context, cacheDir, stats) {
     const url = route.request().url();
     let host;
     try { host = new URL(url).hostname; } catch { return route.continue(); }
+
+    // Video is stubbed before any host rule, including the cached-host rule:
+    // determinism must not depend on the replay cache handling ranged media.
+    if (VIDEO_URL.test(url)) { stats.videoStubbed += 1; return route.abort(); }
 
     if (host === '127.0.0.1' || host === 'localhost') return route.continue();
 
@@ -186,7 +220,11 @@ async function installRouting(context, cacheDir, stats) {
  */
 export async function captureAll({ baseUrl, routes, widths, outDir, cacheDir, log }) {
   fs.mkdirSync(outDir, { recursive: true });
-  const stats = { blocked: 0, cacheHits: 0, cacheMisses: 0, fetchFailures: 0, unknownHosts: new Set(), redirects: {} };
+  const stats = {
+    blocked: 0, cacheHits: 0, cacheMisses: 0, fetchFailures: 0,
+    videoStubbed: 0, videoElements: 0, brokenImages: [],
+    unknownHosts: new Set(), redirects: {},
+  };
 
   const browser = await chromium.launch();
   try {
@@ -232,6 +270,26 @@ export async function captureAll({ baseUrl, routes, widths, outDir, cacheDir, lo
           }
         }
 
+        // Stub every video element: halt playback and clear any media source so
+        // no decoded frame can reach the raster. With the request aborted above
+        // this is belt-and-braces, but it also covers an inline/data source that
+        // never hits the network at all.
+        stats.videoElements += await page.evaluate(() => {
+          const videos = Array.from(document.querySelectorAll('video'));
+          // Deliberately not wrapped in try/catch: if a video cannot be
+          // stubbed, the capture is nondeterministic and the run must crash
+          // rather than quietly photograph whichever frame happened to decode.
+          for (const v of videos) {
+            v.pause();
+            v.removeAttribute('autoplay');
+            v.removeAttribute('poster');
+            v.querySelectorAll('source').forEach((s) => s.remove());
+            v.removeAttribute('src');
+            v.load();
+          }
+          return videos.length;
+        });
+
         // Scroll the full page once so `loading="lazy"` images request, and any
         // IntersectionObserver work settles, then return to the top.
         await page.evaluate(async () => {
@@ -246,13 +304,48 @@ export async function captureAll({ baseUrl, routes, widths, outDir, cacheDir, lo
         // Wait for fonts and for every image to be decoded, so nothing pops in
         // between the screenshot command and the raster.
         await page.evaluate(() => document.fonts.ready);
-        await page.evaluate(async () => {
-          await Promise.all(
-            Array.from(document.images)
-              .filter((img) => !img.complete)
-              .map((img) => new Promise((r) => { img.onload = img.onerror = r; }))
-          );
-        });
+
+        // Wait for every image to finish loading, by POLLING rather than by
+        // attaching load handlers.
+        //
+        // The handler version had a race that could hang the run forever: an
+        // image that finished between the `!complete` filter and the handler
+        // attach had already fired its event, so the promise never settled.
+        // waitForFunction re-evaluates the condition instead, so it cannot miss
+        // an edge, and it is bounded — a stuck image fails the run loudly
+        // rather than being photographed half-loaded.
+        //
+        // This matters more than it looks. Several pages carry `loading="lazy"`
+        // images with NO width/height attributes, so nothing reserves their
+        // space: if one is still undecoded when the shutter fires, everything
+        // below it sits at a different offset, and the run reports a large
+        // localised layout shift on a page nobody touched.
+        await page.waitForFunction(
+          () => Array.from(document.images).every((img) => img.complete),
+          null,
+          { timeout: 30000 });
+
+        // A broken image collapses to zero height and silently changes the
+        // layout of everything beneath it, which would read as a real
+        // regression. Surface it instead of photographing it.
+        //
+        // "Broken" means HAS a source and still failed to load. An `<img>` with
+        // no source at all is a deliberate placeholder the page fills in later
+        // — the sitewide lightbox `<img id="lightboxImage">` is one — and
+        // flagging those made every single run fail on all 19 pages, which is a
+        // gate that teaches you to ignore it.
+        const brokenImages = await page.evaluate(() => Array.from(document.images)
+          .filter((img) => {
+            const src = img.currentSrc || img.getAttribute('src') || '';
+            return src !== '' && img.naturalWidth === 0;
+          })
+          .map((img) => img.currentSrc || img.getAttribute('src')));
+        if (brokenImages.length > 0) {
+          stats.brokenImages.push(
+            `${route} @${width}: ${brokenImages.length} image(s) failed to load `
+            + `(${brokenImages.slice(0, 3).join(', ')}${brokenImages.length > 3 ? ', …' : ''})`);
+        }
+
         await page.waitForTimeout(150);
 
         const file = path.join(outDir, `${route.replace(/^\/+|\/+$/g, '').replace(/[^a-zA-Z0-9._-]+/g, '_') || 'home'}@${width}.png`);

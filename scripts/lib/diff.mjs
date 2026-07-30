@@ -110,6 +110,13 @@ export function layoutShift(basePng, candPng) {
     p99: percentile(sorted, 99),
     max: sorted.length ? sorted[sorted.length - 1] : 0,
     matchedRows: offsets.length,
+    structuredRows: candidateRows,
+    // `coverage` is only meaningful when the baseline had structure to match
+    // against. A page of flat colour produces candidateRows === 0, and a
+    // coverage of 0 there means "unmeasurable", not "everything moved". The
+    // caller must distinguish the two, so say which it is rather than
+    // collapsing both onto the number zero.
+    measurable: candidateRows > 0,
     coverage: candidateRows ? offsets.length / candidateRows : 0,
   };
 }
@@ -145,6 +152,9 @@ export function comparePair(baselineFile, candidateFile, diffPath, shouldWriteDi
     layoutShiftPx: shift.p99,
     layoutShiftMaxPx: shift.max,
     shiftCoverage: shift.coverage,
+    shiftMeasurable: shift.measurable,
+    shiftStructuredRows: shift.structuredRows,
+    shiftMatchedRows: shift.matchedRows,
     diffImage: null,
   };
 

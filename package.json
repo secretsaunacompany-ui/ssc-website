@@ -7,7 +7,8 @@
     "dev": "npx @11ty/eleventy --serve",
     "build": "rm -rf dist && npx @11ty/eleventy",
     "dev:netlify": "netlify dev",
-    "visual-diff": "node scripts/visual-diff.mjs"
+    "visual-diff": "node scripts/visual-diff.mjs",
+    "visual-diff:test": "node scripts/visual-diff.test.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

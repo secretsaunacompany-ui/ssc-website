@@ -74,12 +74,59 @@ When a redesign *intends* to change the homepage, list it in
 ]
 ```
 
-Listed pages are still measured and still appear in the report, marked
-`EXPECTED`. They just don't fail the run. Use the route exactly as the report
-prints it, including the trailing slash.
+Every entry needs a `route`, a `reason`, and a **`waive` list naming exactly
+which metrics it excuses**. A bare route string is rejected.
 
-The same file holds the budget (`maxLayoutShiftPx`, default 8) and the capture
-widths (1440 and 390).
+Waivable: `changedPct`, `heightDelta`, `structural` (a page appearing or
+disappearing). **Never waivable: `layoutShiftMaxPx` and `shiftCoverage`** — a
+config that tries to waive either is a hard error. `expectedToChange` exists so
+a deliberate restyle does not bury real regressions in "the colour changed"
+noise; it must not be able to switch off the measurement the acceptance
+criterion is actually written against. So a page can waive `changedPct` and
+stay shift-gated, and not the other way round.
+
+Listed pages are still measured and still appear in the report, marked
+`EXPECTED`. Use the route exactly as the report prints it, trailing slash and
+all.
+
+The same file holds the budgets and the capture widths, and it is the **only**
+place any of them are written down — `lib/gate.mjs` reads it and defaults
+nothing, so a missing budget is an error rather than a silent fallback.
+
+| Setting | Value | Gates |
+|---|---|---|
+| `maxLayoutShiftPx` | 4 | `layoutShiftMaxPx` — the **maximum** row displacement, not the p99 |
+| `minShiftCoverage` | 0.95 | `shiftCoverage` — how much of the baseline was found again |
+| `maxChangedPct` | 0.5 | `changedPct` |
+| `widths` | 1440, 390 | an empty list is a hard error |
+
+`expectedRedirects` declares the client-side redirects the capture is expected
+to see (`/gallery/` -> `/saunas/` and `/process/` -> `/about/` today). A
+redirect that is undeclared, points somewhere new, or stops happening fails the
+run. Without it, those two routes screenshot a *different page* under their own
+name and get reported as unchanged.
+
+### Testing the harness itself
+
+```bash
+npm run visual-diff:test
+```
+
+The harness is a fixture certifying a whole-stylesheet migration: if it is
+wrong, every "no visual change" claim resting on it is wrong too. So it has
+tests, and each one is a defect it actually shipped with.
+
+| Fixture | Asserts |
+|---|---|
+| F1 | a 6px sitewide button move **fails** (and cannot be waived away) |
+| F2 | a self-comparison **errors**, before any build runs |
+| F3 | a page whose content changed entirely **registers**, via the coverage gate |
+| C | an unchanged page **passes**, byte-identically (control) |
+
+Plus the config-validation cases covering the fail-open paths.
+
+**If a fixture and a budget disagree, the fixture is right.** Renegotiate the
+budget in the plan; never edit a fixture to make a run go green.
 
 ### What it does not do
 
@@ -93,7 +140,7 @@ states (open FAQ answers, opened modals, the lightbox) are not covered.
 ## For developers: how determinism is achieved
 
 Two runs of an unchanged site must produce byte-identical screenshots, or the
-tool is noise. Five things on this site would otherwise drift, and each is
+tool is noise. Six things on this site would otherwise drift, and each is
 handled in `scripts/lib/capture.mjs`:
 
 1. **Scroll-reveal animation.** `js/animations.js` adds `.visible` via an
@@ -132,7 +179,17 @@ handled in `scripts/lib/capture.mjs`:
    time-dependent code rather than a fix for existing drift, and it costs
    nothing to keep.
 
-5. **Live endpoints.** The analytics tracker at `ssc-ops.netlify.app`, plus
+5. **The hero video.** The homepage carries an autoplaying, looping `<video>`.
+   Which frame is on screen when the shutter fires depends on decode timing, so
+   the element is **stubbed**: its media request is aborted before any host rule
+   applies, and the element paints as a flat block inside its own CSS-fixed
+   `70vh` box, so nothing moves. Determinism here is by construction. It
+   deliberately does *not* rest on the asset replay cache handling a ranged
+   media response correctly — the cache stores one whole body per URL and
+   ignores `Range`, which is a real bug, but it is a separate bug on its own
+   merits and this claim does not lean on it.
+
+6. **Live endpoints.** The analytics tracker at `ssc-ops.netlify.app`, plus
    Formspree, Supabase, and the CDN script hosts, are aborted. Beyond
    determinism this is a correctness point: one run is 76 page loads, and the
    site owner's analytics should not be polluted by his own test harness. Any
@@ -153,6 +210,29 @@ recorded here rather than rounded away: if a future run's noise floor climbs
 toward the threshold, the harness is degrading and should be fixed, not
 re-thresholded.
 
+**One observed flake, and what was done about it (2026-07-30).** A `main` vs
+`WORKING` run reported `/about/` @1440 at 1.427% changed with a 139px maximum
+shift, on a pair of builds whose HTML differed only in `?v=` cache stamps. It
+did not reproduce: capturing the same two `dist/` directories four times
+afterwards gave zero changed pixels every time, in both directions. The cause is
+structural rather than mysterious — several pages carry `loading="lazy"` images
+with **no `width`/`height` attributes**, so nothing reserves their space, and a
+page photographed before one of them decodes puts everything below it at a
+different offset. The settle step has been made race-free and bounded (polling
+via `waitForFunction` instead of attaching load handlers, which could also hang
+the run forever if an image completed between the check and the attach), and a
+failed image is now surfaced as a run failure instead of being photographed as a
+collapsed box.
+
+Recorded rather than smoothed over, because the honest status is *mitigated, not
+proven eliminated*: the flake was seen once and never reproduced, so the fix is
+reasoned from the mechanism rather than demonstrated against a reliable
+repro. **If `/about/` or any other image-heavy page reports a large shift on a
+change that cannot explain it, suspect this before believing the number.** The
+real fix belongs in the site: give those images explicit dimensions or an
+`aspect-ratio`, which would also remove genuine layout shift for actual
+visitors.
+
 ### How "layout shift" is measured
 
 Pixel-difference counting cannot distinguish "the page turned a different
@@ -163,22 +243,37 @@ signature survives a recolour — the edges stay put — but travels with the ro
 when layout moves. Matching baseline rows to candidate rows by signature yields
 a distribution of vertical displacements.
 
-The reported number is the 99th percentile, not the maximum: on a page with
-repeating texture, one coincidental row match would otherwise produce a false
-failure. The maximum is kept in `.visual-diff/report.json` as
-`layoutShiftMaxPx` for anyone who wants it.
+Two numbers come out of that, and **both are gated**:
 
-A run fails a page when *any* of these exceed budget: layout shift, absolute
-height change, or changed-pixel percentage. Pages appearing or disappearing
-between builds are reported separately as structural changes, since no pixel
-comparison can see them.
+- **`layoutShiftMaxPx`** — the largest displacement observed. The p99 is still
+  reported alongside it (as `layoutShiftPx`) because a coincidental row match on
+  repeating texture can spike the maximum, but the *gate* reads the maximum: a
+  percentile discards the worst rows, and the worst rows are the regression.
+- **`shiftCoverage`** — the fraction of structured baseline rows found again in
+  the candidate. This is what catches the two failures the other metrics are
+  blind to. Row matching only searches +/-240px, so anything that moved further
+  than that simply fails to match and reports a shift of *zero*; a page whose
+  content was replaced outright does the same. Both collapse coverage instead.
+
+A page whose shift cannot be measured at all (no structured rows) **fails**. No
+evidence of change is not evidence of no change.
+
+A run fails a page when any gated metric is over budget, and fails the *run*
+when the measurement itself is untrustworthy: a failed asset fetch, an
+unrecognised host, an undeclared redirect, a missing screenshot, or zero
+page/width pairs compared. Each of those used to be a warning or a silent
+`continue`, and each of them let a run report PASS while measuring nothing.
+Pages appearing or disappearing between builds are reported separately as
+structural changes, since no pixel comparison can see them.
 
 ### Layout
 
 ```
 scripts/
   visual-diff.mjs           CLI + orchestration
-  visual-diff.config.json   budget, widths, expected-to-change allowlist
+  visual-diff.test.mjs      the harness's own fixtures
+  visual-diff.config.json   budgets, widths, per-metric waivers, expected redirects
+  lib/gate.mjs              config validation + the single pass/fail decision
   lib/build-ref.mjs         git worktree checkout + Eleventy build + page enumeration
   lib/server.mjs            dependency-free static server (Eleventy pretty URLs)
   lib/capture.mjs           the determinism layer + screenshots
@@ -194,6 +289,13 @@ Pages are enumerated from the built `dist/` directory, never from a hardcoded
 list, so new pages are picked up automatically. The build command is always
 `rm -rf dist && eleventy`, matching `netlify.toml`; the clean is load-bearing
 and must not be removed.
+
+**Both refs build in a temp directory, including `WORKING`.** `WORKING` used to
+build in place, which meant a measurement tool running `rm -rf dist` against the
+developer's live working tree as a side effect. It now copies the working tree
+(uncommitted edits included, minus build artefacts and `.env`) to a temp dir and
+builds there. Nothing the harness does writes inside the repo except
+`.visual-diff/`.
 
 ### Dependencies
 
