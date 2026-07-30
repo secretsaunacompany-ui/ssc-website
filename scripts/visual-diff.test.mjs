@@ -562,6 +562,88 @@ async function main() {
     }
   }
 
+  process.stdout.write('\nP — per-page budget overrides raise a budget, never disable a metric\n');
+  {
+    const base = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+    const NOW = Date.parse('2026-08-01T12:00:00Z');
+    const cfg = (pageOverrides, now = NOW) =>
+      loadConfig('test.json', () => JSON.stringify({ ...base, pageOverrides }), now);
+    const throwsWith = (name, pageOverrides, mustMention, now = NOW) =>
+      expectThrows(name, () => cfg(pageOverrides, now), mustMention);
+
+    const LIVE = {
+      page: '/about/', metric: 'maxLayoutShiftPx', value: 24,
+      reason: 'new hero type scale moves the fold ~20px, approved in design review',
+      expires: '2026-09-30',
+    };
+    // A page that legitimately moved 20px: over the global 4px budget, under a
+    // raised 24px one.
+    const MOVED_20PX = {
+      layoutShiftPx: 20, layoutShiftMaxPx: 20, shiftCoverage: 1, shiftMeasurable: true,
+      heightDeltaPx: 0, changedPct: 0,
+    };
+
+    check('P1 without an override, a 20px shift fails',
+      evaluatePair(cfg([]), '/about/', MOVED_20PX).status === 'FAIL',
+      'control: the global 4px budget must reject a 20px shift');
+    check('P1 an override admits a page that would otherwise fail',
+      evaluatePair(cfg([LIVE]), '/about/', MOVED_20PX).status === 'PASS',
+      `expected PASS under a 24px override, got `
+      + `${JSON.stringify(evaluatePair(cfg([LIVE]), '/about/', MOVED_20PX))}`);
+
+    check('P2 an override touches only the page it names',
+      evaluatePair(cfg([LIVE]), '/faq/', MOVED_20PX).status === 'FAIL',
+      'a raised budget on /about/ must leave every other page on the global budget');
+    check('P2 an override touches only the metric it names',
+      evaluatePair(cfg([LIVE]), '/about/', {
+        ...MOVED_20PX, layoutShiftMaxPx: 0, layoutShiftPx: 0, shiftCoverage: 0.5,
+      }).status === 'FAIL',
+      'raising the shift budget must not also relax the coverage floor');
+    check('P2 an override cannot rescue an unmeasurable page',
+      evaluatePair(cfg([LIVE]), '/about/', {
+        layoutShiftPx: 0, layoutShiftMaxPx: 0, shiftCoverage: 0, shiftMeasurable: false,
+        heightDeltaPx: 0, changedPct: 0,
+      }).status === 'FAIL',
+      'an override moves a threshold; it cannot excuse a page nothing is known about');
+    check('P2 a page still fails once it exceeds even its raised budget',
+      evaluatePair(cfg([LIVE]), '/about/', { ...MOVED_20PX, layoutShiftMaxPx: 25 }).status === 'FAIL',
+      'the raised budget is still a budget');
+
+    throwsWith('P3 an expired override fails the run',
+      [{ ...LIVE, expires: '2026-07-01' }], 'expired');
+    check('P3 an override is valid through the whole of its expiry day',
+      cfg([{ ...LIVE, expires: '2026-08-01' }], Date.parse('2026-08-01T12:00:00Z'))
+        .overrides.size === 1,
+      'an override expiring today must still be in force today');
+    throwsWith('P3 an override with no expiry is rejected',
+      [{ page: '/a/', metric: 'maxLayoutShiftPx', value: 24, reason: 'r' }], 'expires');
+    throwsWith('P3 a malformed expiry is rejected',
+      [{ ...LIVE, expires: 'next tuesday' }], 'YYYY-MM-DD');
+
+    throwsWith('P4 a value below the global budget is rejected',
+      [{ ...LIVE, value: 2 }], 'does not raise');
+    throwsWith('P4 a value equal to the global budget is rejected',
+      [{ ...LIVE, value: base.maxLayoutShiftPx }], 'does not raise');
+    throwsWith('P4 a zero value is rejected — an override cannot disable a metric',
+      [{ ...LIVE, value: 0 }], 'does not raise');
+
+    throwsWith('P5 an unknown metric is rejected',
+      [{ ...LIVE, metric: 'vibes' }], 'unknown metric');
+    throwsWith('P5 waiving-by-override is not a thing',
+      [{ ...LIVE, metric: 'shiftMeasurable' }], 'unknown metric');
+    throwsWith('P5 a missing reason is rejected',
+      [{ page: '/a/', metric: 'maxChangedPct', value: 40, expires: '2026-09-30' }], 'reason');
+    throwsWith('P5 an empty reason is rejected', [{ ...LIVE, reason: '   ' }], 'reason');
+    throwsWith('P5 a missing page is rejected',
+      [{ metric: 'maxLayoutShiftPx', value: 24, reason: 'r', expires: '2026-09-30' }], 'page');
+    throwsWith('P5 a duplicate page/metric pair is rejected', [LIVE, LIVE], 'duplicate');
+    throwsWith('P5 a non-array pageOverrides is rejected', { page: '/a/' }, 'must be an array');
+
+    check('P6 the shipped config declares no overrides',
+      loadConfig(CONFIG_FILE, fs.readFileSync).overrides.size === 0,
+      'Batch 1 changes no rendered output, so it must need no raised budgets');
+  }
+
   process.stdout.write(`\n${passes} passed, ${failures} failed\n`);
   return failures === 0 ? 0 : 1;
 }
