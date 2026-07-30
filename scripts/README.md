@@ -51,7 +51,7 @@ Four numbers, and they mean different things:
   colour, this will be large everywhere, and that is not a problem by itself.
 - **Shift** — how far things *moved*. This is the one that matters. Text
   jumping down the page is what breaks a layout; a slightly different shade of
-  brown is not. The budget is 8 pixels.
+  brown is not. The budget is 4 pixels.
 - **Height** — the page got taller or shorter by this much.
 - **Status** — `PASS` (within budget), `FAIL` (over budget, and nobody said it
   should change), or `EXPECTED` (over budget, but it is on the approved list).
@@ -106,6 +106,39 @@ redirect that is undeclared, points somewhere new, or stops happening fails the
 run. Without it, those two routes screenshot a *different page* under their own
 name and get reported as unchanged.
 
+> **Read redirected rows with care.** `gallery@1440.png` and `process@1440.png`
+> contain the pixels of their redirect *destination* — `/saunas/` and `/about/`
+> respectively — because the capture follows the redirect before photographing.
+> A green row for `/gallery/` therefore says nothing whatever about the
+> `/gallery/` stub page itself; it is a second, redundant photograph of
+> `/saunas/`. The stub pages are unmeasured. `expectedRedirects` exists to stop
+> that being *silent*, not to fix it.
+
+#### Per-page overrides
+
+The global budgets above are unwaivable and are not to be lowered to make a run
+pass. When a page legitimately moves — a new type scale shifting the fold by
+20px, say — it may carry a `pageOverrides` entry that **raises one named budget
+on that one page**:
+
+```json
+{ "page": "/about/", "metric": "maxLayoutShiftPx", "value": 24,
+  "reason": "new hero type scale moves the fold ~20px, approved in design review",
+  "expires": "2026-09-30" }
+```
+
+An override can only ever raise a budget. It cannot disable a metric, cannot
+lower a budget, cannot affect another page or another metric, and cannot rescue
+a page whose shift could not be measured at all. A missing reason, a missing or
+malformed expiry, an unknown metric, or a value at or below the global budget
+is a hard config error.
+
+**An expired override fails the run.** It does not lapse quietly back to the
+global budget — either the change it was written for has landed and the entry
+should be deleted, or it has not and somebody needs to say so with a new date.
+Every override in force is written into `report.json`, so a green run always
+carries the list of budgets that were raised to make it green, with reasons.
+
 ### Testing the harness itself
 
 ```bash
@@ -121,9 +154,18 @@ tests, and each one is a defect it actually shipped with.
 | F1 | a 6px sitewide button move **fails** (and cannot be waived away) |
 | F2 | a self-comparison **errors**, before any build runs |
 | F3 | a page whose content changed entirely **registers**, via the coverage gate |
+| F4 | `WORKING` on a *clean* tree resolves to a bare sha, so the self-comparison guard can fire; two ref names for one commit are refused |
 | C | an unchanged page **passes**, byte-identically (control) |
+| B | a broken image is reported; a source-less placeholder is not |
+| O1–O3 | the orchestration layer: a missing screenshot becomes a run failure, run failures reach the failure count, the redirect comparison works in all three directions |
+| O4 | the redirect gate is actually *called* — a real end-to-end CLI run with no declared redirects must fail and say which route |
+| P | per-page overrides raise a budget, only on the page and metric named, never below the global, never past the expiry |
 
-Plus the config-validation cases covering the fail-open paths.
+Plus the config-validation cases covering the fail-open paths. 72 assertions.
+
+O4 is the slow one: it builds two refs and captures a pass, because it is the
+only way to prove the redirect check is *wired in* rather than merely correct.
+Deleting the one line that calls it leaves every other fixture green.
 
 **If a fixture and a budget disagree, the fixture is right.** Renegotiate the
 budget in the plan; never edit a fixture to make a run go green.
@@ -272,7 +314,8 @@ structural changes, since no pixel comparison can see them.
 scripts/
   visual-diff.mjs           CLI + orchestration
   visual-diff.test.mjs      the harness's own fixtures
-  visual-diff.config.json   budgets, widths, per-metric waivers, expected redirects
+  visual-diff.config.json   budgets, widths, per-metric waivers, per-page
+                            overrides, expected redirects
   lib/gate.mjs              config validation + the single pass/fail decision
   lib/build-ref.mjs         git worktree checkout + Eleventy build + page enumeration
   lib/server.mjs            dependency-free static server (Eleventy pretty URLs)
@@ -296,6 +339,37 @@ developer's live working tree as a side effect. It now copies the working tree
 (uncommitted edits included, minus build artefacts and `.env`) to a temp dir and
 builds there. Nothing the harness does writes inside the repo except
 `.visual-diff/`.
+
+### Asset cache keys, and one caveat about `--serve`
+
+`styles.css` and `js/*` are served `immutable` for a year, so their URLs carry a
+content hash from the `assetUrl` filter in `.eleventy.js` rather than a
+hand-typed `?v=` stamp. The hash covers the **minified** bytes — the ones
+actually published — because the build minifies those files after Eleventy
+writes them, and hashing the pre-minified source would let a minifier upgrade
+change what visitors receive without changing the cache key. Minification
+happens once, inside the filter; the post-build hook writes that same buffer.
+
+To check a build's stamps against its own output:
+
+```bash
+npm run build && node -e "
+const fs=require('fs'),c=require('crypto'),p=require('path');
+for (const [,u,s] of fs.readFileSync('dist/index.html','utf8')
+    .matchAll(/[\"'](\/(?:styles\.css|js\/[\w.-]+))\?v=([0-9a-f]{12})/g)) {
+  const h=c.createHash('sha256').update(fs.readFileSync(p.join('dist',u.slice(1))))
+    .digest('hex').slice(0,12);
+  console.log((h===s?'OK   ':'DRIFT')+' '+u+' '+s+' '+h);
+}"
+```
+
+> **The filter memoises per Eleventy process.** Under `npx @11ty/eleventy
+> --serve` (`npm run dev`), editing `styles.css` re-renders the templates but
+> reuses the cached hash, so the dev server can serve a stale stamp until it is
+> restarted. This affects local development only: `npm run build` and the
+> Netlify build are fresh processes that start with an empty cache, and the
+> visual-diff harness builds each ref in its own process too. If a dev-server
+> page seems to be ignoring a CSS edit, restart the server.
 
 ### Dependencies
 
