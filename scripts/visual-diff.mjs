@@ -382,8 +382,18 @@ async function main() {
 // Run only when invoked as the CLI. The fixtures import comparePairs and
 // tallyFailures from this file to test the real orchestration layer, and an
 // unguarded top-level main() would launch a full two-ref build on import.
-const invokedDirectly = process.argv[1]
-  && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+//
+// Both sides go through realpath. `path.resolve` alone compared the literal
+// invocation path against the module's own resolved URL, so invoking through a
+// symlinked checkout — `node /symlinked/path/scripts/visual-diff.mjs` — made
+// the two disagree and the CLI exited 0 having done nothing at all. A gate that
+// silently succeeds when it did not run is worse than one that crashes, and
+// exit 0 with no output is exactly what a CI step reads as "passed".
+const invokedDirectly = (() => {
+  if (!process.argv[1]) return false;
+  const real = (p) => { try { return fs.realpathSync(p); } catch { return path.resolve(p); } };
+  return real(process.argv[1]) === real(fileURLToPath(import.meta.url));
+})();
 
 if (invokedDirectly) {
   main().then(

@@ -118,7 +118,7 @@ name and get reported as unchanged.
 
 The global budgets above are unwaivable and are not to be lowered to make a run
 pass. When a page legitimately moves — a new type scale shifting the fold by
-20px, say — it may carry a `pageOverrides` entry that **raises one named budget
+20px, say — it may carry a `pageOverrides` entry that moves **one named budget
 on that one page**:
 
 ```json
@@ -127,11 +127,32 @@ on that one page**:
   "expires": "2026-09-30" }
 ```
 
-An override can only ever raise a budget. It cannot disable a metric, cannot
-lower a budget, cannot affect another page or another metric, and cannot rescue
-a page whose shift could not be measured at all. A missing reason, a missing or
-malformed expiry, an unknown metric, or a value at or below the global budget
-is a hard config error.
+**Which way an override may move depends on what kind of budget it is**, and
+getting this backwards makes overrides useless:
+
+| Metric | Kind | Legal direction | Bounds |
+|---|---|---|---|
+| `maxLayoutShiftPx` | ceiling | raise only | at most 100× the global |
+| `maxChangedPct` | ceiling | raise only | at most 100× the global |
+| `minShiftCoverage` | **floor** | **lower only** | `[0.75, 1)` |
+
+`minShiftCoverage` is a *minimum* — the fraction of the baseline that must be
+found again in the candidate. Raising it tightens the gate; the direction that
+makes a deliberate restyle shippable is **down**. Treating it as raise-only left
+6 of 19 pages in a real 6px restyle run failing on coverage with no legal
+override available, which defeated the entire point of having overrides.
+
+The bounds are there so an override stays a decision rather than an off switch:
+100× a 4px budget is a loud, reviewable 400px, while `999999` is the metric
+switched off with extra steps; and a coverage floor below 0.75 means a quarter
+of the page's rows could not be matched at all, which wants a human
+conversation, not a config line.
+
+An override cannot disable a metric, cannot move in the wrong direction, cannot
+affect another page or another metric, and cannot rescue a page whose shift
+could not be measured at all. A missing reason, a missing or malformed expiry,
+an expiry **more than 90 days out**, an unknown metric, a wrong-direction value,
+or an out-of-bounds value is a hard config error.
 
 **An expired override fails the run.** It does not lapse quietly back to the
 global budget — either the change it was written for has landed and the entry
@@ -159,9 +180,16 @@ tests, and each one is a defect it actually shipped with.
 | B | a broken image is reported; a source-less placeholder is not |
 | O1–O3 | the orchestration layer: a missing screenshot becomes a run failure, run failures reach the failure count, the redirect comparison works in all three directions |
 | O4 | the redirect gate is actually *called* — a real end-to-end CLI run with no declared redirects must fail and say which route |
-| P | per-page overrides raise a budget, only on the page and metric named, never below the global, never past the expiry |
+| P | per-page overrides move one budget the way its type allows — ceilings up (capped at 100×), the coverage floor down (bounded to `[0.75, 1)`) — only on the page and metric named, never past a 90-day expiry |
 
-Plus the config-validation cases covering the fail-open paths. 72 assertions.
+| F5 | invoking the CLI through a **symlinked** path still runs it, rather than exiting 0 in silence |
+
+Plus the config-validation cases covering the fail-open paths. 91 assertions.
+
+**The suite needs an ambient git repository.** O4 and F4e shell out to the real
+CLI against real refs (`HEAD`, `HEAD~1`), so from a `git archive` export or any
+copy without `.git/` they fail with `fatal: not a git repository`. That is a
+missing prerequisite, not a harness defect — run the tests from a clone.
 
 O4 is the slow one: it builds two refs and captures a pass, because it is the
 only way to prove the redirect check is *wired in* rather than merely correct.

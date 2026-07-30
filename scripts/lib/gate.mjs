@@ -38,6 +38,40 @@ export const UNWAIVABLE = Object.freeze(['layoutShiftMaxPx', 'shiftCoverage']);
 export const OVERRIDABLE = Object.freeze(['maxLayoutShiftPx', 'minShiftCoverage', 'maxChangedPct']);
 
 /**
+ * Which way an override is allowed to move each budget, and how far.
+ *
+ * Direction follows the metric's TYPE, not a blanket "raise" rule. The first
+ * version applied raise-only to everything, which was right for the two
+ * ceilings and exactly backwards for the floor: `minShiftCoverage` is a
+ * MINIMUM, so raising it tightens the gate and the shippable direction —
+ * lowering it — was rejected outright. A real 6px restyle run had 6 of 19 pages
+ * failing on coverage with no legal override available, so overrides did not
+ * actually make a deliberate restyle shippable, which was their whole purpose.
+ *
+ *   ceiling  raise only, capped at 100x the global. Loud is fine; infinite is
+ *            not. A `value: 999999` override is not a considered decision, it
+ *            is switching the metric off with extra steps.
+ *   floor    lower only, bounded to [0.75, 1). Below 0.75 a quarter of the
+ *            page's rows could not be matched at all, and that is a
+ *            conversation with a human, not a config line.
+ */
+export const BUDGET_KIND = Object.freeze({
+  maxLayoutShiftPx: 'ceiling',
+  maxChangedPct: 'ceiling',
+  minShiftCoverage: 'floor',
+});
+
+/** Absolute bounds for the floor metric, independent of the global budget. */
+export const COVERAGE_OVERRIDE_MIN = 0.75;
+export const COVERAGE_OVERRIDE_MAX = 1;
+
+/** A ceiling override may not exceed this multiple of its global budget. */
+export const CEILING_OVERRIDE_MAX_MULTIPLE = 100;
+
+/** An override may not be dated further than this many days out, at load time. */
+export const MAX_OVERRIDE_DAYS = 90;
+
+/**
  * Map key for one page/metric pair. A printable separator: nothing ever parses the
  * key back apart, and a NUL byte in the source made git treat this whole
  * module as a binary file, which is no way to review a security-shaped gate.
@@ -189,13 +223,40 @@ function parsePageOverrides(file, rawOverrides, budget, now) {
     if (typeof o.value !== 'number' || !Number.isFinite(o.value)) {
       throw new Error(`${file}: ${where} needs a numeric "value".`);
     }
-    // Raise only. A value at or below the global budget either does nothing or
-    // tightens the gate in a place nobody would look for it.
-    if (o.value <= budget[o.metric]) {
-      throw new Error(
-        `${file}: ${where} sets ${o.metric} to ${o.value}, which does not raise the `
-        + `global budget of ${budget[o.metric]}. An override may only RAISE a budget `
-        + `for a stated reason; the global budgets are not negotiable here.`);
+    // Direction and bounds, by metric type. See BUDGET_KIND.
+    const global = budget[o.metric];
+    if (BUDGET_KIND[o.metric] === 'ceiling') {
+      if (o.value <= global) {
+        throw new Error(
+          `${file}: ${where} sets ${o.metric} to ${o.value}, which does not raise the `
+          + `global budget of ${global}. ${o.metric} is a ceiling: an override may only `
+          + `RAISE it, for a stated reason. The global budgets are not negotiable here.`);
+      }
+      const cap = global * CEILING_OVERRIDE_MAX_MULTIPLE;
+      if (o.value > cap) {
+        throw new Error(
+          `${file}: ${where} sets ${o.metric} to ${o.value}, more than `
+          + `${CEILING_OVERRIDE_MAX_MULTIPLE}x the global budget of ${global} (cap ${cap}). `
+          + `An override that large is not a raised budget, it is the metric switched off `
+          + `with extra steps. If the page really moves that much, say so in the plan.`);
+      }
+    } else {
+      // Floor. Lowering is the shippable direction; raising it here would only
+      // tighten the gate somewhere nobody would think to look.
+      if (o.value >= global) {
+        throw new Error(
+          `${file}: ${where} sets ${o.metric} to ${o.value}, which does not lower the `
+          + `global budget of ${global}. ${o.metric} is a FLOOR — the fraction of the `
+          + `baseline that must be found again — so the direction that makes a `
+          + `deliberate restyle shippable is DOWN. Raising it only tightens the gate.`);
+      }
+      if (o.value < COVERAGE_OVERRIDE_MIN || o.value >= COVERAGE_OVERRIDE_MAX) {
+        throw new Error(
+          `${file}: ${where} sets ${o.metric} to ${o.value}, outside the permitted `
+          + `[${COVERAGE_OVERRIDE_MIN}, ${COVERAGE_OVERRIDE_MAX}) range. Below `
+          + `${COVERAGE_OVERRIDE_MIN}, a quarter of the page's rows could not be matched `
+          + `at all — that needs a human conversation, not a config line.`);
+      }
     }
     if (typeof o.reason !== 'string' || !o.reason.trim()) {
       throw new Error(
@@ -211,6 +272,17 @@ function parsePageOverrides(file, rawOverrides, budget, now) {
     const deadline = Date.parse(`${o.expires}T23:59:59Z`);
     if (Number.isNaN(deadline)) {
       throw new Error(`${file}: ${where} has an unparseable "expires" date ${o.expires}.`);
+    }
+    // An expiry far enough out is a permanent hole wearing a date. 90 days is
+    // the plan's number: long enough for a batch to land, short enough that
+    // somebody has to look at it again.
+    const horizon = now + (MAX_OVERRIDE_DAYS * 24 * 60 * 60 * 1000);
+    if (deadline > horizon) {
+      throw new Error(
+        `${file}: ${where} expires on ${o.expires}, more than ${MAX_OVERRIDE_DAYS} days out. `
+        + `Nobody will revisit an expiry that distant. Pick a date inside `
+        + `${MAX_OVERRIDE_DAYS} days; if the change genuinely needs longer, renew it `
+        + `deliberately and say why.`);
     }
     if (deadline < now) {
       throw new Error(

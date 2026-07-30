@@ -503,6 +503,39 @@ async function main() {
       'the sha-equality guard must fire before the expensive work');
   }
 
+  process.stdout.write('\nF5 — the CLI must still RUN when invoked through a symlink\n');
+  {
+    // The invokedDirectly guard compared the literal argv path against the
+    // module's resolved URL, so `node /symlinked/path/scripts/visual-diff.mjs`
+    // matched nothing, main() never ran, and the process exited 0 having done
+    // nothing. Exit 0 with no output is what CI reads as "the gate passed" --
+    // the worst possible failure mode for a gate.
+    const link = path.join(os.tmpdir(), `ssc-vd-link-${process.pid}`);
+    fs.rmSync(link, { force: true });
+    fs.symlinkSync(REPO_ROOT, link, 'dir');
+    let code = 0;
+    let out = '';
+    try {
+      out = execFileSync(process.execPath,
+        [path.join(link, 'scripts', 'visual-diff.mjs'), '-b', 'HEAD', '-c', 'HEAD'],
+        { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    } catch (err) {
+      code = err.status;
+      out = `${err.stdout || ''}${err.stderr || ''}`;
+    } finally {
+      fs.rmSync(link, { force: true });
+    }
+    // Invoked through the symlink with a self-comparison, it must refuse loudly
+    // -- exactly as it does through the real path. What it must never do is
+    // exit 0 in silence.
+    check('F5 a symlinked invocation actually runs',
+      !(code === 0 && out.trim() === ''),
+      'exit 0 with no output means main() never ran: the guard failed open');
+    check('F5 a symlinked invocation reaches the same refusal',
+      code !== 0 && /itself|self-comparison|proves nothing/i.test(out),
+      `expected the self-comparison refusal, got exit ${code}: ${out.slice(0, 400)}`);
+  }
+
   process.stdout.write('\nConfig validation — the four fail-open paths, closed\n');
   {
     const base = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
@@ -562,7 +595,7 @@ async function main() {
     }
   }
 
-  process.stdout.write('\nP — per-page budget overrides raise a budget, never disable a metric\n');
+  process.stdout.write('\nP — per-page overrides move ONE budget, the way its TYPE allows, never off\n');
   {
     const base = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
     const NOW = Date.parse('2026-08-01T12:00:00Z');
@@ -620,12 +653,70 @@ async function main() {
     throwsWith('P3 a malformed expiry is rejected',
       [{ ...LIVE, expires: 'next tuesday' }], 'YYYY-MM-DD');
 
-    throwsWith('P4 a value below the global budget is rejected',
+    throwsWith('P3 an expiry more than 90 days out is rejected',
+      [{ ...LIVE, expires: '2027-06-30' }], '90 days');
+    check('P3 an expiry just inside 90 days is accepted',
+      cfg([{ ...LIVE, expires: '2026-10-29' }]).overrides.size === 1,
+      'a date inside the horizon must be allowed');
+
+    // --- ceilings: raise only, capped ---
+    throwsWith('P4 a ceiling value below the global budget is rejected',
       [{ ...LIVE, value: 2 }], 'does not raise');
-    throwsWith('P4 a value equal to the global budget is rejected',
+    throwsWith('P4 a ceiling value equal to the global budget is rejected',
       [{ ...LIVE, value: base.maxLayoutShiftPx }], 'does not raise');
     throwsWith('P4 a zero value is rejected — an override cannot disable a metric',
       [{ ...LIVE, value: 0 }], 'does not raise');
+    throwsWith('P4 an absurd ceiling value is rejected (metric off with extra steps)',
+      [{ ...LIVE, value: 999999 }], '100x');
+    throwsWith('P4 Infinity is rejected', [{ ...LIVE, value: Infinity }], 'numeric');
+    check('P4 a ceiling at exactly 100x the global is the last legal value',
+      cfg([{ ...LIVE, value: base.maxLayoutShiftPx * 100 }]).overrides.size === 1,
+      'the cap is inclusive; one step past it is not');
+    throwsWith('P4 one step past 100x is rejected',
+      [{ ...LIVE, value: base.maxLayoutShiftPx * 100 + 1 }], '100x');
+    throwsWith('P4 the other ceiling behaves the same way',
+      [{ ...LIVE, metric: 'maxChangedPct', value: base.maxChangedPct * 100 + 1 }], '100x');
+
+    // --- the floor: LOWER only, bounded ---
+    // minShiftCoverage is a minimum, so raising it tightens the gate and the
+    // shippable direction is down. Raise-only treatment made 6 of 19 pages in a
+    // real 6px restyle run unshippable with no legal override available.
+    const COVER = {
+      page: '/about/', metric: 'minShiftCoverage', value: 0.88,
+      reason: 'hero rebuild replaces the top third of the page, approved in design review',
+      expires: '2026-09-30',
+    };
+    const COVERAGE_DROPPED = {
+      layoutShiftPx: 0, layoutShiftMaxPx: 0, shiftCoverage: 0.9, shiftMeasurable: true,
+      heightDeltaPx: 0, changedPct: 0,
+    };
+    check('P7 without an override, coverage 0.90 fails the 0.95 floor',
+      evaluatePair(cfg([]), '/about/', COVERAGE_DROPPED).status === 'FAIL',
+      'control: the global floor must reject it');
+    check('P7 LOWERING the floor admits the page — the shippable direction',
+      evaluatePair(cfg([COVER]), '/about/', COVERAGE_DROPPED).status === 'PASS',
+      `expected PASS under a 0.88 floor, got `
+      + `${JSON.stringify(evaluatePair(cfg([COVER]), '/about/', COVERAGE_DROPPED))}`);
+    check('P7 a page still fails below even its lowered floor',
+      evaluatePair(cfg([COVER]), '/about/', { ...COVERAGE_DROPPED, shiftCoverage: 0.8 })
+        .status === 'FAIL',
+      'the lowered floor is still a floor');
+    check('P7 a lowered floor touches only the page it names',
+      evaluatePair(cfg([COVER]), '/faq/', COVERAGE_DROPPED).status === 'FAIL',
+      'every other page stays on the global floor');
+    throwsWith('P7 RAISING the floor is rejected — wrong direction',
+      [{ ...COVER, value: 0.99 }], 'does not lower');
+    throwsWith('P7 a floor equal to the global is rejected',
+      [{ ...COVER, value: base.minShiftCoverage }], 'does not lower');
+    throwsWith('P7 a floor below 0.75 is rejected',
+      [{ ...COVER, value: 0.5 }], '[0.75');
+    check('P7 exactly 0.75 is the last legal floor',
+      cfg([{ ...COVER, value: 0.75 }]).overrides.size === 1,
+      'the lower bound is inclusive');
+    throwsWith('P7 a nonsense floor above 1 is rejected',
+      [{ ...COVER, value: 5 }], 'does not lower');
+    throwsWith('P7 a floor of exactly 1 is rejected',
+      [{ ...COVER, value: 1 }], 'does not lower');
 
     throwsWith('P5 an unknown metric is rejected',
       [{ ...LIVE, metric: 'vibes' }], 'unknown metric');
