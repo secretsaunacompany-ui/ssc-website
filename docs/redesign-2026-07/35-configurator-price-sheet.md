@@ -40,28 +40,33 @@ Every priced option in `src/_includes/modals/sauna.njk`, plus the two per-model 
 | 3 | Wood-fired, S4 (Mini-IKI) | Kuuma +$3,000 — **CUT** | $5,040 → $5,340 | bsaunas.com 2026-07-28 (stove $4,320) + chimney/stones/freight, §3 | **+$9,800** | 48.6% / 45.5% | Kuuma lost ~$3,000/sale; Mini-IKI fits the S4's 343 cu ft, domestic supply, published CAD price. |
 | 4 | Wood-fired, S6/S8 (Original-IKI) | Kuuma +$3,000 — **CUT** | $5,610 → $5,939 | bsaunas.com 2026-07-28 (stove $4,640) + chimney/stones/freight, §3 | **+$10,800** | 48.1% / 45.0% | Original-IKI rated 353–882 cu ft covers S6/S8 rooms; Mini tops out at 423. |
 | 5 | Wood-fired, SC (Original-IKI) | Kuuma +$3,000 — **CUT** | $4,245 → $4,505 | bsaunas.com 2026-07-28 + Revive-stack credit, §3 | **+$8,200** | 48.2% / 45.1% | SC's bigger included heater means a bigger credit; quote-time adjusts down if the client was taking the Pro 20 standard. |
-| 6 | 3' changing room | +$3,500 | $5,743 → $6,324 | Itemised takeoff §2 (master-materials Feb 2026, saunadoor.ca Jul 2026) | **+$11,000** | 47.8% / 42.5% | Every method tested says $3,500 is a ~$2,200 gift per sale. Full arguable takeoff in §2. |
-| 7 | 4' changing room | +$4,500 | $6,433 → $7,085 | Itemised takeoff §2 | **+$12,500** | 48.5% / 43.3% | Same takeoff, 28 sqft geometry. |
-| 8 | 2' front deck | +$2,000 | $584 → $649 | master-materials Feb 2026 unit prices (frame, cedar decking, 6 h) | **Keep $2,000** | 70.8% / 67.6% | High margin verified; convention floor is $1,200 — price holds per rule 4. |
-| 9 | 3' front deck | +$3,000 | $779 → $866 | Same basis, 8 h | **Keep $3,000** | 74.0% / 71.1% | Same. |
+| 6 | 3' changing room | +$3,500 | $5,708 → $6,287 | Itemised takeoff §2 (master-materials Feb 2026, saunadoor.ca Jul 2026; accent-wall correction per Lee 2026-07-29) | **+$11,000** | 48.1% / 42.8% | Every method tested says $3,500 is a ~$2,200 gift per sale. Full arguable takeoff in §2. |
+| 7 | 4' changing room | +$4,500 | $6,448 → $7,100 | Itemised takeoff §2 | **+$12,500** | 48.4% / 43.2% | Same takeoff, 28 sqft geometry. |
+| 8 | 2' front deck — **open platform** | +$2,000 | $584 → $649 | master-materials Feb 2026 unit prices (frame, cedar decking, 6 h) | **Keep $2,000** | 70.8% / 67.6% | High margin verified; convention floor is $1,200 — price holds per rule 4. Label must say platform — see 8b. |
+| 8b | 2' **semi-enclosed** deck (two finished side walls + roof over deck) | not offered — sold inside the $2,000 line | $2,025 → $2,246 | Itemised takeoff §2B (per Lee 2026-07-29: semi-enclosed is what buyers expect from "front deck") | **NEW +$4,100** | 50.6% / 45.2% | At $2,000 this build is **below cost** (−12% stressed). Two-tier split per Lee: platform stays cheap and honest, the real product gets a real price. |
+| 9 | 3' front deck — **open platform** | +$3,000 | $779 → $866 | Same basis, 8 h | **Keep $3,000** | 74.0% / 71.1% | Same as 8. |
+| 9b | 3' **semi-enclosed** deck | not offered — same defect as 8b | $2,571 → $2,850 | Itemised takeoff §2B | **NEW +$5,200** | 50.6% / 45.2% | At $3,000: 5.0% stressed GM — fails every floor. |
 | 10 | Standing seam exterior | +$2,500 flat | $1,600–2,100 (overhaul); market materials $8–18/sqft say higher | pricing-overhaul-reference Jul 2026; barrierboss.ca 2026 band | **Per-model: S2/S4 $3,000 · S6 $3,500 · S8/SC $4,000** | 47.5–60% at overhaul cost | Audit's "scale by area" adopted at top of its $2,900–4,000 band. Supplier still "TBD" — softest input in the sheet, §7.8. |
 | 11 | Cedar exterior | +$2,500 flat | $1,200–1,600 (overhaul, full basis); delta-basis ~$815–1,200 | pricing-overhaul-reference Jul 2026; Northwood Feb 2026 | **S2/S4 $2,500 · S6/S8/SC $3,000** | 36–53% / 47–60% | Overhaul's own rec (small/large split). Fine on small units under both cost readings. |
 | 12 | Interior upgrade — clear cedar / thermowood (per-model) | S2 $1,000 · S4 $1,500 · S6 $2,500 · S8 $3,500 · SC $4,500 | Thermowood delta stressed: $1,104 / $1,362 / $1,619 / $1,876 / $2,006 | POCO/Lunawood catalogue + Mar 2026 Fraser quote (holds, doc 31); knotty WRC $3.90/sqft Northwood Feb 2026 | **S2 $2,200 · S4 $2,600 · S6 $3,000 · S8 $3,500 · SC $5,000** | 49.8 / 47.6 / 46.0 / 46.4 / 59.9% (stressed) | S2 at $1,000 was **negative on every sale** (cost ~$1,104 stressed). Delta = ($9.21 − $3.90)/sqft × net area × 1.1 waste. Clear cedar priced at parity — verification flag §7.7. |
 | 13 | Lighting package | +$1,500 | $1,093 → $1,172 | simplysecured.ca 2026-07-28 (105°C IP67 cove kit $455–600 + dimmer) + 4 h install | **+$2,000** | 45.4% / 41.4% | $1,500 was priced on a $45 Amazon strip that is not heat-rated. Compliant-kit basis at 45% stressed. |
-| 14 | Bluetooth speakers | +$1,000 | $360 → $396 | master-materials Feb 2026 ($160–180 pair+amp, market-corroborated doc 30) + 3 h | **Keep $1,000** | 64.0% / 60.4% | Holds comfortably. |
+| 14 | Bluetooth speakers — **standard set** | +$1,000 | $360 → $396 | master-materials Feb 2026 ($160–180 pair+amp, market-corroborated doc 30) + 3 h | **Keep $1,000** | 64.0% / 60.4% | Holds comfortably. Two-tier split per Lee 2026-07-29; label honestly as the standard set. |
+| 14b | Bluetooth speakers — **premium set** (Polk Atrium 5 pair + Fosi BT30D Pro 2.1 amp, all-weather) | not offered | $764 → $820 | polkaudio.com/en-ca + fosiaudio.com 2026-07-29 (Atrium 5 C$399/pair MSRP; BT30D Pro US$109.99 ×1.41 = $155) + $30 wire/mounts + 3 h | **NEW +$1,500** | 49.1% / 45.3% | Answers "what speaker is it" with a name. MSRP-costed → margins are floors. Derivation §5B; Atrium 4/$1,300 alternate recorded there. Package keeps the standard set — item 18 unchanged. |
 | 15 | WiFi controller (new line, per Lee) | +$2,000 | $1,020 → $1,083 | homecraftsaunas.com 2026-07-28 (WiFi touchpad $550 + contactor $350) + 2 h | **Confirm $2,000** | 49.0% / 45.9% | Holds at the full-stack cost including the contactor doc 30 flagged. No double-collect with the Revive line (§4 note). |
 | 16 | Additional window — standard (~6 sqft) | +$1,500 | $753 → $815 | Begbie Feb 2026 ($48/sqft top of band + crating share) + 4 h | **Keep $1,500** | 49.8% / 45.7% | Clears 45% stressed once crating is shared with the base window's order (§5). |
 | 17 | Additional window — full-size (~23 sqft, Clarke-class) | not offered (sold inside the $1,500 line — the zero-margin defect) | $1,884 → $2,026 | Begbie Feb 2026 ($1,104 glass) + header framing + 8 h | **NEW +$3,700** | 49.1% / 45.2% | The tiering fix. Labour delta (8 h vs 4 h) and header framing shown in §5, per Lee's condition. |
 | 18 | Premium Finish Package (per-model) | $7,000 / $7,500 / $8,500 / $9,500 / $10,500 | Sum of component costs, stressed: $5,435 / $5,693 / $5,950 / $6,207 / $6,337 (worst-case cedar cost) | Component lines above | **$9,200 / $9,600 / $10,500 / $11,000 / $12,500** | 40.9 / 40.7 / 43.3 / 43.6 / 49.3% (stressed, worst case) | À la carte now sums to $9,700–13,000; package = à la carte − $500. **"Save $1,000" becomes "Save $500"** — the current claim is −$1,000 (critic N5); $500 is the largest saving that keeps every model above the 40% floor. |
 | 19 | Kuuma Banya | +$3,000 | ~$6,150–6,700 landed (doc 30 §4) | lamppakuuma.com 2026-07-28 | **CUT** | −105% to −123% | Lee's decision. Every sale lost ~$2,700–3,300. Closes P6. |
 
-**Package saving recomputation (item 18, shown):** à la carte = interior upgrade + cedar exterior + WiFi $2,000 + lighting $2,000 + speakers $1,000 → S2 $9,700 · S4 $10,100 · S6 $11,000 · S8 $11,500 · SC $13,000. The saving claim must be true against the *cheapest* qualifying combination (cedar, not standing seam), so package = that sum − $500. A $1,000 saving would put the S2/S4 packages at 37.4–37.5% stressed GM in the worst cedar-cost case — under the floor — which is why the saving is $500, not $1,000. With standing seam chosen instead, the customer's real saving is $1,000–1,500 and the claim only gets truer.
+**Package saving recomputation (item 18, shown):** à la carte = interior upgrade + cedar exterior + WiFi $2,000 + lighting $2,000 + speakers $1,000 → S2 $9,700 · S4 $10,100 · S6 $11,000 · S8 $11,500 · SC $13,000. The saving claim must be true against the *cheapest* qualifying combination (cedar, not standing seam), so package = that sum − $500. A $1,000 saving would put the S2/S4 packages at 37.4–37.5% stressed GM in the worst cedar-cost case — under the floor — which is why the saving is $500, not $1,000. With standing seam chosen instead, the customer's real saving is $1,000–1,500 and the claim only gets truer. Speakers went two-tier 2026-07-29 (§5B): the package carries the **standard** $1,000 set, so nothing in this recomputation moves; a buyer upgrading to the Polk tier pays the $500 delta on top of the package.
 
 ---
 
 ## 2. Changing rooms — the itemised takeoff
 
 Lee's question: where do $8,500 and $10,500–11,000 come from, and are the costs real? Answer below, line by line, quantities from geometry, labour by task. **The honest number is not lower than $8,500 — it is higher.** The audit's recommended prices, not just its current ones, fail Lee's own 40% floor once the takeoff is itemised.
+
+**Correction folded in (per Lee, 2026-07-29):** the house standard always puts a T&G accent face on the entrance wall — the base build's end wall is never metal. Three consequences: the partition's changing-room face already carries finished T&G paid for in the base price (no recladding charge), the old −$115 "metal not fitted" credit was crediting metal that was never planned (removed), and the new exterior end wall — now the unit's entrance wall — is clad in T&G, not metal. By geometric coincidence the T&G quantity is unchanged: the 32 sqft dropped at the partition reappears as the entrance wall's accent face. Net cost effect −$35 (3') / +$15 (4'); recommended prices unchanged.
 
 ### 2.1 What a changing room actually adds (geometry, not a formula)
 
@@ -70,11 +75,12 @@ A changing room extends the box by 3' or 4' at the entry end, full 7' width, 7' 
 - **Floor + roof extension:** 21 sqft (3') / 28 sqft (4').
 - **Two side-wall segments:** 2 × (3'×7') = 42 sqft (3') / 56 sqft (4').
 - **One new exterior end wall:** 7'×7' = 49 sqft, carrying a new exterior door.
-- **The partition is NOT new framing.** The sauna's original end wall (with its glass door) already exists in the base build — it simply becomes the partition. What IS new on it: its outer face was exterior metal and is now interior space, so it gets cladding instead of panels — the takeoff charges the T&G and credits the metal not fitted.
+- **The partition is NOT new framing — and not new cladding either.** The sauna's original end wall (with its glass door) already exists in the base build and simply becomes the partition. Its outer face already carries the base build's T&G accent treatment (house standard: the entrance wall is always the accent wall, never metal — per Lee, 2026-07-29), so the add-on charges nothing for it and credits nothing.
+- **The accent wall migrates to the new entrance wall.** The changing room's new exterior end wall becomes the unit's entrance wall, so it gets the exterior T&G accent face, not metal. Metal panels cover only the two new side-wall segments.
 - **One new door** (the exterior door into the changing room). The sauna glass door is the base build's door, unchanged. Priced as a bought-in Tesli tempered unit at $650 (saunadoor.ca, Jul 2026) rather than $500 materials + 8–16 h in-house build — doc 31 §2's own finding that buying beats building.
 - Bench seat, hooks, one light and switch, fasteners.
 
-Interior cladding area, 3' room: sides 42 + end wall (49 − 17 door) + partition face (49 − 17 door) + ceiling 21 = **127 sqft**. 4' room: 56 + 32 + 32 + 28 = **148 sqft**.
+T&G area, 3' room — interior: sides 42 + end wall (49 − 17 door) + ceiling 21 = 95 sqft; exterior accent on the new entrance wall: 32 sqft; **total 127 sqft** (the partition face charges nothing — its accent T&G is in the base price). 4' room: interior 56 + 32 + 28 = 116 + exterior 32 = **148 sqft**.
 
 ### 2.2 Materials takeoff — 3' room (3' × 7' × 7', 21 sqft)
 
@@ -93,10 +99,10 @@ Unit prices are the same supplier-sourced set as `pricing-first-principles.md` �
 | 9 | Rain-screen strapping | 9 pcs @ $3.50 | $32 |
 | 10 | Insulation R14 (net wall 74 + ceiling 21 = 95 sqft × 0.9 bay factor) | 2 bags @ $62.50 | $125 |
 | 11 | Vapour barrier + tape (poly grade — not sauna foil; this is not a hot room) | part roll | $40 |
-| 12 | Interior 1x6 knotty WRC T&G (127 sqft → 305 LF × 1.10 ÷ 8') | 42 pcs @ $13 | $546 |
+| 12 | 1x6 knotty WRC T&G — interior 95 sqft + entrance-wall accent 32 sqft = 127 sqft → 305 LF × 1.10 ÷ 8' | 42 pcs @ $13 | $546 |
 | 13 | Interior trim 1x4 cedar | 6 pcs @ $7 | $42 |
-| 14 | Metal wall panels (13 LF new wall ÷ 3' panel) | 5 @ $50 | $250 |
-| 15 | **Credit — metal not fitted on the partition's former exterior face** | −2.3 panels | **−$115** |
+| 14 | Metal wall panels — side walls only, 6 LF (entrance wall is the T&G accent wall) | 2 @ $50 | $100 |
+| 15 | Credit removed — the base build never planned metal on this wall (accent-wall standard, per Lee 2026-07-29) | — | $0 |
 | 16 | Exterior trim (J-track, corners, drip) | flat | $60 |
 | 17 | Roofing — 1 panel $50 + membrane share $30 + flashing $30 | | $110 |
 | 18 | Fascia + stain share | | $60 |
@@ -105,7 +111,7 @@ Unit prices are the same supplier-sourced set as `pricing-first-principles.md` �
 | 21 | Bench seat, hooks, robe rail | | $150 |
 | 22 | Electrical — light, switch, wiring extension | | $75 |
 | 23 | Fasteners, foam, sealant | | $150 |
-| | **3' materials total** | | **$2,803** |
+| | **3' materials total** | | **$2,768** |
 
 ### 2.3 Materials takeoff — 4' room (4' × 7' × 7', 28 sqft)
 
@@ -122,10 +128,10 @@ Unit prices are the same supplier-sourced set as `pricing-first-principles.md` �
 | 9 | Rain-screen strapping | 11 pcs | $39 |
 | 10 | Insulation R14 (net 116 sqft × 0.9) | 2 bags | $125 |
 | 11 | Vapour barrier + tape | | $45 |
-| 12 | Interior 1x6 WRC T&G (148 sqft → 355 LF × 1.10 ÷ 8') | 49 pcs @ $13 | $637 |
+| 12 | 1x6 WRC T&G — interior 116 sqft + entrance-wall accent 32 sqft = 148 sqft → 355 LF × 1.10 ÷ 8' | 49 pcs @ $13 | $637 |
 | 13 | Interior trim 1x4 | 7 pcs | $49 |
-| 14 | Metal wall panels (15 LF ÷ 3') | 5 @ $50 | $250 |
-| 15 | **Credit — partition face metal not fitted** | | **−$115** |
+| 14 | Metal wall panels — side walls only, 8 LF | 3 @ $50 | $150 |
+| 15 | Credit removed — accent-wall standard (see §2.2) | — | $0 |
 | 16 | Exterior trim | flat | $65 |
 | 17 | Roofing — 2 panels $100 + membrane $35 + flashing $35 | | $170 |
 | 18 | Fascia + stain share | | $70 |
@@ -134,7 +140,7 @@ Unit prices are the same supplier-sourced set as `pricing-first-principles.md` �
 | 21 | Bench, hooks, rail | | $175 |
 | 22 | Electrical | | $75 |
 | 23 | Fasteners, foam, sealant | | $175 |
-| | **4' materials total** | | **$3,133** |
+| | **4' materials total** | | **$3,148** |
 
 ### 2.4 Labour — by task at $60/hr, not by square foot
 
@@ -146,7 +152,7 @@ Unit prices are the same supplier-sourced set as `pricing-first-principles.md` �
 | Wall sheathing, Tyvek, strapping | 4 | 5 |
 | Insulation + vapour barrier | 3 | 3 |
 | Interior T&G + trim (127/148 sqft, finish grade) | 12 | 13 |
-| Exterior metal, trim, fascia, stain | 5 | 6 |
+| Exterior cladding (metal sides + T&G accent entrance wall), trim, fascia, stain | 5 | 6 |
 | Exterior door install (bought-in unit — no build hours) | 3 | 3 |
 | Bench, hooks, finishing, QC | 4 | 4 |
 | Electrical (light, switch, feed) | 2 | 2 |
@@ -166,23 +172,23 @@ The reconciliation: **per-square-foot formulas mis-scale small additions.** Roug
 
 | | 3' room | 4' room |
 |---|---|---|
-| Materials | $2,803 | $3,133 |
+| Materials | $2,768 | $3,148 |
 | Labour (49 h / 55 h @ $60) | $2,940 | $3,300 |
-| **Direct cost** | **$5,743** | **$6,433** |
-| Stress cost (mat ×1.05, hrs ×1.15) | **$6,324** | **$7,085** |
-| Current price → GM nominal / stressed | $3,500 → **−64% / −81%** | $4,500 → **−43% / −57%** |
-| Audit's proposed $8,500 / $10,500 → GM | 32.4% / 25.6% — **fails the 40% floor** | 38.7% / 32.5% — **fails the floor** |
-| 40% floor (stressed) | $10,540 | $11,808 |
-| Strict convention, 45% stressed | $11,498 | $12,882 |
-| **Recommended** | **$11,000** (47.8% nom / 42.5% stressed) | **$12,500** (48.5% / 43.3%) |
+| **Direct cost** | **$5,708** | **$6,448** |
+| Stress cost (mat ×1.05, hrs ×1.15) | **$6,287** | **$7,100** |
+| Current price → GM nominal / stressed | $3,500 → **−63% / −80%** | $4,500 → **−43% / −58%** |
+| Audit's proposed $8,500 / $10,500 → GM | 32.8% / 26.0% — **fails the 40% floor** | 38.6% / 32.4% — **fails the floor** |
+| 40% floor (stressed) | $10,478 | $11,833 |
+| Strict convention, 45% stressed | $11,431 | $12,909 |
+| **Recommended** | **$11,000** (48.1% nom / 42.8% stressed) | **$12,500** (48.4% / 43.2%) |
 
-**Answer to Lee's question directly:** the audit's cost range ($4,700–5,900 for the 3') was real — this independent takeoff lands at $5,743, inside-to-above it. The costs were, if anything, slightly *understated*: the audit's model omitted the bought-in door premium, the partition-face recladding, the electrical, and real hardware lines. Three methods now agree within ~15% (audit inheritance, doc 31's $/LF marginal model, this takeoff). What was wrong was the *price* derived from them: $8,500 was 45% GM on the friendliest labour scenario un-stressed, which is not the house convention. At the convention, the 3' room is an $11,000–11,500 item.
+**Answer to Lee's question directly:** the audit's cost range ($4,700–5,900 for the 3') was real — this independent takeoff lands at $5,708 (post accent-wall correction), inside-to-above it. The costs were, if anything, slightly *understated*: the audit's model omitted the bought-in door premium, the electrical, and real hardware lines. Three methods now agree within ~15% (audit inheritance, doc 31's $/LF marginal model, this takeoff). What was wrong was the *price* derived from them: $8,500 was 45% GM on the friendliest labour scenario un-stressed, which is not the house convention. At the convention, the 3' room is an $11,000–11,400 item.
 
 If $11,000/$12,500 kills demand, the correct lever is **spec reduction, not price reduction**: an uninsulated, single-wall-interior version drops roughly $525 of materials and ~11 h, landing near $9,000 at the same convention. That is a different product, priced honestly — available as a second tier if Lee wants it.
 
 ### 2.7 The trailer question — yes, a changing room can pull a larger chassis
 
-Box length = model length + changing room. Trailer deck must cover the box. New-trailer BC pricing, doc 31 §1.6 (Jul 2026): 7×14 $5,790 (Southland/Nanaimo Trailers) · 7×16 $7,995 (Big Tex, BC dealers) · 7×18 $8,490.
+Box length = model length + changing room **+ deck** — the length add-ons stack (an S6 + 3' changing room + 2' deck is a 14' box). Trailer deck must cover the box. New-trailer BC pricing, doc 31 §1.6 (Jul 2026): 7×14 $5,790 (Southland/Nanaimo Trailers) · 7×16 $7,995 (Big Tex, BC dealers) · 7×18 $8,490.
 
 | Build | Box length | Deck required | Chassis cost step |
 |---|---|---|---|
@@ -194,7 +200,73 @@ Box length = model length + changing room. Trailer deck must cover the box. New-
 | SC + 3' | 15'+ | 16' | +$2,205 |
 | SC + 4' | 16'+ | **18'** | **+$2,700 vs 14' basis** |
 
-**Rule:** the changing-room add-on price never absorbs chassis growth. On trailer builds, the trailer line item is quoted by **final box length** (and GVWR re-checked) at quote time — this is exactly why the trailer is a separate line in the pricing model. Skid builds are unaffected. This was the uncaptured cost the audit flagged; it is now captured as a quoting rule, not buried in the add-on.
+**Rule:** no length add-on — changing room **or deck** — ever absorbs chassis growth. A front deck adds its depth to box length exactly as a changing room does (S8 + 3' deck → 16' chassis, +$2,205), and the two stack. On trailer builds, the trailer line item is quoted by **final box length** (and GVWR re-checked) at quote time — this is exactly why the trailer is a separate line in the pricing model. Skid builds are unaffected. This was the uncaptured cost the audit flagged; it is now captured as a quoting rule, not buried in the add-on.
+
+---
+
+## 2B. Semi-enclosed decks — the itemised takeoff (added 2026-07-29)
+
+Follow-up to the changing-room correction. The deck rows were the sheet's fattest margins (70%+), but they were costed as a bare platform — frame, cedar decking, 6/8 h; the overhaul reference never audited decks at all. **SSC's actual front-deck build is usually semi-enclosed: two framed side walls with the roof carried over the deck, and that is what buyers should expect when they choose the option (per Lee, 2026-07-29).** Costed at that spec, the 2' deck at $2,000 sells below cost and the 3' at $3,000 barely clears it. Resolution (Lee's call, same date): **two tiers** — the open platform keeps a label-honest $2,000/$3,000, and the semi-enclosed build becomes its own priced option (decision-table rows 8b/9b).
+
+### 2B.1 What the semi-enclosure adds
+
+- Two framed side walls, deck-depth × full 7' height: 2 × 14 = 28 sqft (2') / 2 × 21 = 42 sqft (3').
+- Roof extension over the deck (14 / 21 sqft), tied into the existing shed roof.
+- Cladding per the house standard (§2 correction): metal on the outer faces — side walls are never the accent wall — and finish-grade 1x6 WRC T&G on the deck-facing inner faces (per Lee, 2026-07-29).
+- Open front. No door, no insulation, no vapour barrier, no electrical — which is why it runs roughly half the cost of a changing room of the same depth.
+- Chassis: a deck adds its depth to box length exactly as a changing room does, and they stack — §2.7's rule is generalised accordingly.
+
+### 2B.2 Materials — added scope only (the platform is rows 8/9's existing basis: $224 + 6 h / $299 + 8 h)
+
+Same unit-price set as §2.2 (master-materials Feb 2026).
+
+| # | Line item | 2' | 3' |
+|---|---|---|---|
+| 1 | Wall framing 2x4 (54 / 64 LF × 1.10 waste) | $40 | $45 |
+| 2 | Wall sheathing ½" ply (28 / 42 sqft gross) | $42 | $84 |
+| 3 | Tyvek WRB share | $15 | $20 |
+| 4 | Rain-screen strapping | $11 | $14 |
+| 5 | Metal panels — outer faces only (accent-wall standard) | $100 | $100 |
+| 6 | Inner-face 1x6 WRC T&G (28 / 42 sqft, finish grade) | $117 | $182 |
+| 7 | Roof framing 2x6 (3 rafter extensions) | $20 | $20 |
+| 8 | Roof sheathing | $21 | $42 |
+| 9 | Roofing — panel + membrane + flashing shares | $95 | $105 |
+| 10 | Fascia + stain share | $40 | $45 |
+| 11 | Exterior trim (J-track, corners, drip) | $40 | $45 |
+| 12 | Fasteners, sealant | $60 | $70 |
+| | **Added materials** | **$601** | **$772** |
+| | Platform basis (rows 8/9) | $224 | $299 |
+| | **Materials total** | **$825** | **$1,071** |
+
+### 2B.3 Labour — by task at $60/hr
+
+| Task | 2' (h) | 3' (h) |
+|---|---|---|
+| Platform (inherited rows 8/9 basis) | 6 | 8 |
+| Wall framing, sheathing, wrap, strapping | 4 | 5 |
+| Exterior metal + trim | 2 | 2 |
+| Inner-face T&G, finish grade | 3 | 4 |
+| Roof framing, sheathing, membrane, metal, tie-in to existing roof | 4 | 5 |
+| Stain, finishing, QC | 1 | 1 |
+| **Total** | **20 h = $1,200** | **25 h = $1,500** |
+
+The same fixed-task floor as §2.5 applies: roof tie-in, metal/trim, and finishing barely move between 2' and 3' — which is why the 3' is not 50% more labour than the 2'.
+
+### 2B.4 Rollup and price grid
+
+| | 2' semi-enclosed | 3' semi-enclosed |
+|---|---|---|
+| Materials | $825 | $1,071 |
+| Labour (20 h / 25 h @ $60) | $1,200 | $1,500 |
+| **Direct cost** | **$2,025** | **$2,571** |
+| Stress cost (mat ×1.05, hrs ×1.15) | **$2,246** | **$2,850** |
+| Old single-line price → GM nominal / stressed | $2,000 → **−1.3% / −12.3%** | $3,000 → 14.3% / **5.0%** |
+| 40% floor (stressed) | $3,743 | $4,750 |
+| **Recommended (÷0.55, rounded up)** | **+$4,100** (50.6% nom / 45.2% stressed) | **+$5,200** (50.6% / 45.2%) |
+
+Sensitivity, recorded not offered: a walls-only variant (no roof extension) lands at ~$1,800 / $2,300 stressed → $3,300 / $4,200 at convention. Per Lee the roof is part of the semi-enclosed spec; the figure exists only so a quote-time custom variant has a floor.
+
+**The class, named:** this is the third instance of the same defect — the cost model describing a leaner product than the one that leaves the shop (changing room: metal-credit/partition assumptions; full-size window: sold inside the small-window line; deck: semi-enclosed built, platform priced). Any future add-on line gets costed against the **as-built spec**, not the minimum spec.
 
 ---
 
@@ -325,6 +397,29 @@ Small tier stays $1,500 — with the crating share corrected it clears 45% stres
 
 ---
 
+## 5B. Speaker tiers — the premium set (added 2026-07-29)
+
+Lee's prompt: clients have questioned what speaker the $1,000 line actually buys, and the honest answer was a generic Amazon pair ($160–180, master-materials). Could a genuinely sophisticated set fit the existing price? **No — every name-brand option fails the 40% floor at $1,000** (best case 32.9% stressed). Resolution (per Lee, 2026-07-29): **two tiers** — the standard set keeps $1,000 with an honest label, and a premium set becomes its own option. The package carries the standard set, so item 18's math is untouched.
+
+### 5B.1 The options costed (all-weather rated; 3 h install, $30 wire/mount share)
+
+Sources: polkaudio.com/en-ca MSRP per pair, checked 2026-07-29 (Atrium 4 C$299 · Atrium 5 C$399 · Atrium 6 C$499); fosiaudio.com 2026-07-29 (BT20A Pro US$79.99 → C$113 · BT30D Pro 2.1-ch US$109.99 → C$155, both at the 1.41 doc-30 rate). MSRP-costed — Atrium 4 runs ~C$200 street on Amazon.ca, so every margin below is a floor.
+
+| Set | Materials | Direct | Stressed | GM at $1,000 (stressed) | Convention price | GM there (nom / stressed) |
+|---|---|---|---|---|---|---|
+| Standard (current Amazon pair + amp) | $180 | $360 | $396 | 60.4% — holds | — | — |
+| Polk Atrium 4 + Fosi BT20A Pro | $442 | $622 | $671 | 32.9% — fails floor | $1,300 | 52.2% / 48.4% |
+| **Polk Atrium 5 + Fosi BT30D Pro (2.1-ch) — CHOSEN** | $584 | $764 | $820 | 18.0% | **+$1,500** | 49.1% / 45.3% |
+| Polk Atrium 6 + BT30D Pro | $684 | $864 | $925 | 7.5% | $1,700 | 49.2% / 45.6% |
+
+**Chosen tier: Atrium 5 + BT30D Pro at +$1,500** — in a good/better menu a $500 gap with visibly bigger hardware (5" drivers, sub-capable amp) is a real choice; the Atrium 4 variant at $1,300 is recorded here as the smaller-step alternate if Lee prefers it. Atrium 6/$1,700 rejected: the acoustic step over the 5 doesn't justify a third audio tier.
+
+### 5B.2 Honesty constraint for the site copy
+
+"All-weather" covers rain, humidity, and temperature swings — **no outdoor speaker is rated for hot-room ceiling temperatures.** The premium tier's site copy must state the actual mounting practice (speakers live outside the peak-heat zone). The install-practice fact is Lee's to state [DOCKED]; the wording is George's.
+
+---
+
 ## 6. What changes in code
 
 Line numbers verified against the working tree 2026-07-28. Changes 1–3 are pure value edits; 4–6 need the small per-model machinery that `interiorUpgrade` already uses.
@@ -339,7 +434,7 @@ Line numbers verified against the working tree 2026-07-28. Changes 1–3 are pur
 | 6 | `sauna.njk:62–66` | Kuuma Banya, `value="3000"`, `+$3,000` | **Kuuma removed** (P6). Replace with the IKI option: default markup `value="10800"`, label `Original-IKI (Wood-fired)`, `+$10,800`; `js/modal.js:184–192` (the existing per-model wood enable/disable block) additionally sets value, label and price text from `woodFired`/`woodFiredLabel`. S2 stays hidden (`electricOnly`). |
 | 7 | `sauna.njk:77` | `value="3500"` / `+$3,500` | `value="11000"` / `+$11,000` |
 | 8 | `sauna.njk:82` | `value="4500"` / `+$4,500` | `value="12500"` / `+$12,500` |
-| 9 | `sauna.njk:96, :101` (decks) | 2000 / 3000 | **No change.** |
+| 9 | `sauna.njk:88–105` (deck group) | two options, `value="2000"` / `value="3000"`, labels "2' Front deck" / "3' Front deck" | Relabel the existing options **"2' open deck platform"** / **"3' open deck platform"** (values unchanged) and ADD two options: **"2' semi-enclosed deck — two finished side walls, covered roof"** `value="4100"` and **"3' semi-enclosed deck"** `value="5200"`, both `data-addon="deck"` in the same radio group. The current label sells the semi-enclosed expectation at the platform price — the deck version of the window tiering defect. Takeoff §2B; final label copy is George's (register, not prices). |
 | 10 | `sauna.njk:115` (standing seam) | `value="2500"` | `value="exteriorStandingSeam"`, price span gets an id, `modal.js` resolves per model (mirror the `interiorUpgrade` pattern) |
 | 11 | `sauna.njk:120` (cedar exterior) | `value="2500"` | `value="exteriorCedar"`, same pattern |
 | 12 | `sauna.njk:136, :141` | `+$1,500` default price text | `+$2,600` (modal's default model is S4) |
@@ -347,13 +442,13 @@ Line numbers verified against the working tree 2026-07-28. Changes 1–3 are pur
 | 14 | `sauna.njk:170` | `+$7,500` default | `+$9,600` |
 | 15 | `sauna.njk:177` (single window checkbox) | one checkbox `value="1500"` | **Two** checkboxes: `value="1500"` "Additional window (standard size)" and `value="3700"` "Additional full-size window (~23 sq ft)" with distinct `data-addon` keys; quote serializer must carry both |
 | 16 | `sauna.njk:182` (lighting) | `value="1500"` / `+$1,500` | `value="2000"` / `+$2,000` |
-| 17 | `sauna.njk:187` (speakers) | 1000 | **No change.** |
+| 17 | `sauna.njk:187` (speakers) | single option, `value="1000"` | Relabel the existing option as the **standard set** and ADD a premium option: **"Premium audio — Polk Atrium 5 all-weather pair + 2.1 Bluetooth amp"** `value="1500"`, same `data-addon` group (radio, like decks). Final label copy is George's; mounting-practice line per §5B.2. |
 | 18 | `sauna.njk` — new option after speakers | — | WiFi controller checkbox: `value="2000"`, `data-addon="wifi"`, "WiFi heater controller", `+$2,000`. This brings `js/modal.js:317`'s currently-dead wifi selector alive and makes the Premium package's WiFi line individually purchasable for the first time — the root of the false-saving claim. |
 | 19 | Adjacent one-liner (critic P10, same files) | both bench radios `value="0"` (`sauna.njk:148, :153`); `modal.js:356` filters `value !== '0'` so **neither bench choice ever reaches the quote** | give U-shaped a distinct token and pass the bench group through the serializer — **scoped to the bench group only**; the other six `value="0"` radios are genuine "included" defaults whose suppression is correct |
 
 Two implementation notes for Ted, from the critic's gating findings: any change to `js/` or `styles.css` must bump the `?v=` cache stamps in `head.njk`/`scripts.njk` in the same commit (N1 — CSS/JS are cached a year, `immutable`), and `~/marvin/content/reference/operations/models.json` must be updated with the same values in the same pass or the two-system drift this whole exercise exists to end starts again (P9).
 
-**Out of scope of this sheet:** the five base model prices ($22,500–57,000). They are the pricing-overhaul's base-price work stream, not configurator lines; nothing here touches them.
+**Out of scope of this sheet:** the five base model prices ($22,500–57,000). They are the pricing-overhaul's base-price work stream, not configurator lines; nothing here touches them. One carry-over for that stream (per Lee, 2026-07-29): every base build includes a T&G accent face on the entrance wall — base-model materials takeoffs must clad three walls in metal and one in T&G, never four in metal.
 
 ---
 
@@ -368,18 +463,21 @@ Two implementation notes for Ted, from the critic's gating findings: any change 
 7. **Clear cedar 1x6 T&G price.** No published Canadian price exists (doc 31 §5.1); priced at thermowood parity. If Northwood/Fisher quote at the 3× knotty end (~$11.70/sqft), the S8 clear-cedar line drops to ~21% GM at $3,500 — one phone call **before** the interior-upgrade prices publish, or split clear cedar from thermowood pricing when the quote lands.
 8. **The metal panel supplier and cost** — still "TBD" in master-materials, still the softest input in the model. The standing-seam recs ride the top of the overhaul's $2,900–4,000 band; requote the line when the supplier is confirmed. (Published market materials at $8–18/sqft would say even $4,000 is thin on an S8 — a reason to treat these prices as floors, not to delay shipping them.)
 9. **Begbie glass** — Feb 2026 invoice basis, no public price list. Re-quote before the window tiers publish; no market evidence of movement.
-10. **Every labour delta** (2 h controls, 8 h chimney, 4 h/8 h window installs, and the changing-room task table). No external benchmark for custom mobile sauna labour exists — doc 31 searched and found nothing citable. These are named estimates, arguable line by line in §2.4, and the two-tracked-builds action from the pricing overhaul is still the only thing that settles the rate.
+10. **Every labour delta** (2 h controls, 8 h chimney, 4 h/8 h window installs, and the changing-room and semi-enclosed-deck task tables). No external benchmark for custom mobile sauna labour exists — doc 31 searched and found nothing citable. These are named estimates, arguable line by line in §2.4 and §2B.3, and the two-tracked-builds action from the pricing overhaul is still the only thing that settles the rate.
 11. **Chimney kit at $700** (Home Depot, master-materials Feb 2026) — reconfirm the SKU at order time; the IKI 4"→6" adapter price is unpublished (small).
+12. **Polk/Fosi buy route and price.** The premium audio tier (§5B) is costed at manufacturer MSRP; Atrium 5 street pricing runs materially lower (Atrium 4 ~C$200 vs C$299 MSRP on Amazon.ca), so the 45.3% stressed GM is a floor. Confirm the buy route (Amazon.ca vs a distributor) at first order; and Lee states the mounting practice for the site copy (§5B.2, DOCKED).
 
 ## 8. Sources
 
 **Live checks this pass (2026-07-28):** homecraftsaunas.com/product/7-5-kw-h-series-heater/ ($1,175, live) · bsaunas.com/iki-wood-burning-sauna-stoves/ (full IKI wood lineup, CAD) · bsaunas.com/product/original-iki-wood-burning-sauna-stove/ ($4,640, 353–882 cu ft, 485 lb stones) · bsaunas.com/product/mini-iki-wood-burning-sauna-stove/ ($4,320, 176–423 cu ft, 264 lb stones).
 
+**Live checks 2026-07-29 (speaker tiers, §5B):** polkaudio.com/en-ca/product/outdoor-speakers/atrium-4/112577.html (Atrium 4 C$299/pair · Atrium 5 C$399/pair · Atrium 6 C$499/pair, MSRP) · fosiaudio.com/products/fosi-audio-bt30d-pro-bluetooth-5-0-2-1-channel-540w-power-amplifier (BT30D Pro US$109.99; BT20A Pro US$79.99 shown as comparison) · USD→CAD at the doc-30 rate 1.41.
+
 **Doc 30** (`30-pricing-heaters-equipment.md`, 2026-07-28): Revive 9kW $1,850 · Apex 10/12/15/18 $2,400/$2,800/$3,000/$3,300 · no 9kW Apex · WiFi touchpad $550, contactors $275/$350, touchpad $300, stones $50/box · Harvia Pro 20 $1,909.95 (sauna.ca, in stock) · Kuuma landed $6,140–6,704+ · lighting kit simplysecured.ca ~$455–600 · speakers market $42–155.
 
 **Doc 31** (`31-pricing-materials.md`, 2026-07-28): labour $60/hr verified (Job Bank Nov 2025, Markoni 2026) · thermowood $9.21/sqft holds (POCO Jan 2025 + Fraser Mar 2026) · Begbie $37–48/sqft + $300 crating (invoices Feb 2026) · Tesli doors $350–800 (saunadoor.ca) · trailers 7×14 $5,790 / 7×16 $7,995 / 7×18 $8,490 (Nanaimo Trailers / Big Tex BC, Jul 2026) · metal panel band flag.
 
-**Internal:** `pricing-first-principles.md` (2026-07-27) — unit prices, geometry method, stress convention · `pricing-overhaul-reference.md` (2026-07-21) — 45%/40% convention, add-on audit, changing-room cost ranges · master-materials.md (Feb 2026) — all lumber/insulation/VB/hardware unit prices · critic rev. 3 (2026-07-28) — P1–P10, N1, N5 · Lee's decisions, per Lee 2026-07-28.
+**Internal:** `pricing-first-principles.md` (2026-07-27, session scratchpad — not retained; unit prices, geometry method, and stress convention carried into §2 and doc 31) · `pricing-overhaul-reference.md` (2026-07-21) — 45%/40% convention, add-on audit, changing-room cost ranges · master-materials.md (Feb 2026) — all lumber/insulation/VB/hardware unit prices · critic rev. 3 (2026-07-28) — P1–P10, N1, N5 · Lee's decisions, per Lee 2026-07-28 · accent-wall standard (entrance wall = T&G accent, included in base price; never metal), per Lee 2026-07-29 · semi-enclosed deck standard (two side walls + roof carried over the deck, T&G inner faces; product split into open-platform and semi-enclosed tiers), per Lee 2026-07-29.
 
 
 

@@ -1,6 +1,7 @@
 # Redesign Wave A — everything not blocked on Lee
 
 **Created:** 2026-07-28
+**Updated:** 2026-07-29 — changing-room takeoff landed and survived Lee's accent-wall correction (prices unchanged); decks split two-tier (open platform + semi-enclosed); speakers split two-tier (standard + Polk premium). All in `35-configurator-price-sheet.md` (§2, §2B, §5B, decision rows 6/7/8–9b/14–14b).
 **Repo:** `/home/leesalo/Projects/ssc-website` (Eleventy, Netlify, live at secretsaunacompany.ca)
 **Parent plan:** `.claude/plans/website-redesign-2026-07.md` (rev. 3)
 **Clearance:** `.claude/plans/website-redesign-2026-07-critic-rev3.md` — partial clearance granted
@@ -178,19 +179,34 @@ Every line from `35-configurator-price-sheet.md`. Load-bearing changes:
 - **Catalogue string fix:** `js/data.js:84` advertises a "Homecraft 9kW Apex" that
   the manufacturer does not make — the Apex line is 10/12/15/18kW. It renders
   publicly in the modal spec grid and the compare table.
-
-### Still open at time of writing
-
-**Changing rooms.** Lee has not accepted $8,500 / $10,500–11,000 and asked for the
-derivation. If the itemised takeoff lands before this package starts, the numbers
-go in; if not, **the changing-room lines ship at current prices and are flagged**,
-rather than holding the whole package. They are the only unresolved lines.
+- **Changing rooms priced** *(resolved 2026-07-29)*: 3' **+$11,000** / 4' **+$12,500**,
+  from the doc 35 §2 itemised takeoff. Lee asked for the derivation, then corrected
+  an input (the accent-wall standard: entrance wall is always T&G, never metal);
+  the correction was folded and moved cost by −$35/+$15 — prices held. These were
+  the last unresolved lines; there are none now.
+- **Decks split two-tier** *(per Lee, 2026-07-29 — doc 35 §2B, rows 8/8b/9/9b)*:
+  existing options relabelled **"open deck platform"** at unchanged $2,000/$3,000,
+  plus two NEW options — **semi-enclosed deck** (two finished side walls + roof
+  over deck) at **+$4,100** (2') / **+$5,200** (3'). The semi-enclosed build is what
+  buyers expect from "front deck" and was selling below cost at the platform price.
+- **Speakers split two-tier** *(per Lee, 2026-07-29 — doc 35 §5B, rows 14/14b)*:
+  existing option relabelled as the **standard set** at $1,000, plus a NEW
+  **premium set** — Polk Atrium 5 pair + Fosi BT30D Pro 2.1 amp — at **+$1,500**.
+  Premium sits outside the Premium Finish Package (package carries the standard
+  set; item-18 math untouched). Site copy for the premium tier must state the
+  mounting practice — the fact is docked on Lee (§5B.2); ship a placeholder-free
+  functional label without the mounting claim until he supplies it.
+- **`models.json` parity in the same pass** *(critic P9)*: every value changed in
+  `sauna.njk`/`js/data.js` lands in `~/marvin/content/reference/operations/models.json`
+  in the same commit, or the two-system drift this programme exists to end restarts.
 
 ### Verify
 
 A real quote request arrives in the inbox from the modal, carrying every selected
 option including the $0-value bench choice, with location and access attached.
-`quote_submit_success` moves off zero.
+`quote_submit_success` moves off zero. The new deck and speaker radio options
+serialize into the summary and the request payload (the bench-group lesson,
+applied to the options being born rather than re-learned after).
 
 ---
 
@@ -331,6 +347,7 @@ Per package:
 - [ ] `prefers-reduced-motion` honoured in CSS **and** JS
 - [ ] AA contrast at every size actually used, on both ground and elevated surfaces
 - [ ] Keyboard-complete on every interactive surface touched
+- [ ] `models.json` updated in the same pass as any price/option change *(P9)*
 - [ ] One commit, revert SHA stated
 
 Programme-level: `quote_submit_success` moves off zero. It has never been anything
