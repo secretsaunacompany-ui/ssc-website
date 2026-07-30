@@ -424,19 +424,25 @@ Governed by doc 21 for tokens and `10-jen-art-direction.md` §4–5 for the syst
 
 Lee's decision: **remove the badge from the nav; it becomes a maker's mark.**
 
-Per `12-saul-visual-photography.md` §5 and `10-jen-art-direction.md` §9:
+**Scope corrected per Lee, 2026-07-30: no redesign, no redraw.** Lee's own files
+are canonical — `~/Downloads/FINAL LOGO TEXT2.0.svg` (+ `...white.svg` variant)
+for the wordmark and `~/Downloads/FINAL LOGO3.0SQBC2025white.svg` for the badge.
+Both wordmark files verified true vector (26 paths, no embedded rasters, text
+outlined) — better source than anything in the repo.
 
-1. Redraw from `~/marvin/content/assets/logo-original.pdf`. The existing
-   `logo.svg` there is Inkscape output with embedded base64 PNG masks — a raster
-   wearing SVG clothing.
-2. Wordmark SVG at 22px for the nav, `currentColor`.
-3. Badge to the footer as a maker's seal at 72px.
-4. Monogram — 2–3 direction exploration — for mobile nav and favicon.
-5. Favicon set.
-6. Assets land in `src/assets/brand/`.
-
-A PNG-at-2x stopgap is sanctioned for the nav if the SVG redraw runs long. **None
-for the favicon.**
+1. **Prepare, don't draw:** copy sources into `src/assets/brand/` with
+   provenance; produce web-ready versions by viewBox crop to content bounds +
+   metadata strip + lossless optimize — never altering path geometry, verified
+   by pixel-diff against the source render.
+2. Wordmark at 22px for the nav — `currentColor` only if the mark is
+   single-color; otherwise the dark/white variant pair serves the themes.
+3. Badge to the footer as the maker's seal at 72px. Its 7 live `<text>` elements
+   convert to outlines only if the exact fonts are present and the rasters
+   pixel-match; otherwise ship unconverted and flag the portability risk.
+4. ~~Monogram exploration~~ **cancelled per Lee.** Favicon derives mechanically
+   from the existing badge's central emblem — proposed to Lee, ships only on his
+   approval.
+5. Assets land in `src/assets/brand/` with a provenance README.
 
 Runs parallel to WP-1; blocks nothing in it.
 
