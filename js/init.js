@@ -48,6 +48,21 @@
         }
     });
 
+    // Keyboard activation for elements that behave as buttons but are not one.
+    //
+    // The model cards are divs carrying data-action="open-modal" -- they were
+    // reachable by mouse only, which made the configurator, and therefore the
+    // entire quote funnel, keyboard-inaccessible from its very first step. They
+    // now carry role="button" and tabindex="0"; this is the other half of that
+    // contract, since a div does not synthesise a click from Enter or Space.
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+        const target = e.target.closest('[data-action][role="button"]');
+        if (!target || target.tagName === 'BUTTON' || target.tagName === 'A') return;
+        e.preventDefault();
+        target.click();
+    });
+
     // Change actions (radio/checkbox elements)
     document.addEventListener('change', (e) => {
         const target = e.target.closest('[data-action]');
