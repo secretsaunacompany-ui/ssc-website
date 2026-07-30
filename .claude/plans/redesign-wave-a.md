@@ -104,7 +104,7 @@ a budget the fixtures don't confirm is renegotiated in the plan, not in the
 harness. `expectedToChange` restructures to **per-metric waivers** (a page may
 waive `changedPct` and remain shift-gated) — a restructure, not a flag flip.
 Four fail-open paths close and fail loud: `widths: []` errors, `fetchFailures > 0`
-fails, the missing-PNG `continue` (`diff.mjs:174`) fails, discarded redirects fail.
+fails, the missing-PNG `continue` (`visual-diff.mjs:174`) fails, discarded redirects fail.
 `WORKING` mode builds to a temp dir — never `rm -rf` against the live working tree.
 
 **Hero video, resolved one way:** harness capture **stubs the video element**, so
@@ -135,8 +135,9 @@ Scope the fix to the bench group specifically, so the six legitimate
 
 The Premium Finish Package advertises *"Save $1,000 vs selecting individually."*
 It bundles a WiFi controller that cannot be bought individually, so the basket a
-customer can actually assemble is $6,000 against a $7,000 package — **the claim is
-wrong by $2,000 in direction, on every model, live now.**
+customer can actually assemble is `interiorUpgrade + $5,000` against a package at
+`interiorUpgrade + $6,000` — **the claim is wrong by $2,000 in direction, on every
+model, live now** (the gap is model-invariant; per-model absolutes vary).
 
 Add WiFi as an individually-selectable $2,000 option in
 `src/_includes/modals/sauna.njk` and the modal total logic. The assemblable basket
@@ -246,8 +247,10 @@ premium option (row 14b). Load-bearing highlights:
   ~$3,000-per-sale loss quoting today, and "the freeze holds" described an
   internal state the website disagreed with.
 - **Wood-fired replaced** by the IKI line, priced with margin.
-- **WiFi controller added at $2,000**, individually selectable — which makes the
-  Premium Package's "Save $1,000" true instead of backwards by $2,000.
+- **WiFi controller** — already added by WP-0c, where it makes the current
+  "Save $1,000" claim true at current prices. In *this* commit's world the honest
+  saving is **"Save $500"** (change 13) — the copy and the prices that make it
+  true ship together here, never a commit apart.
 - **SC heater path priced separately** from the 15kW Apex's real cost. One
   `+$2,000` slot currently sells two different heaters and only one was ever priced.
 - **Bench group fix** (§3) so bench choice stops vanishing from every quote.
@@ -432,8 +435,8 @@ P-A ─┐
 P-B ─┼─► WP-0c ─► WP-0b-i ─► WP-0a ─► WP-1a ─► WP-1b ─► [prod gate] ─► production
 P-C ─┘   (quote)   (funnel)   (events)  (type)   (colour)
                       │                              ▲
-                      └─► WP-0b-ii (repricing) ──────┤  ← gated on Lee's transition
-                                                     │     + discounting answers
+                      └─► WP-0b-ii (repricing) ──────┤  ← un-gated 2026-07-30
+                                                     │    (Lee's answers in §3a-ii)
     §2 harness repair ───────────────────────────────┘
     WP-2a mark ── parallel, independent ─────────────┘
 ```

@@ -351,3 +351,76 @@ None of this requires re-planning. The must-fixes below are mostly paragraphs an
 ---
 
 *Reviewed against the working tree at `4e11c9c`. Unverified: Netlify deploy id `6a68f16f80fdaf000837b588` (no API access this pass); its associated commit `cc8270f` exists.*
+
+---
+
+# Addendum — fold verification (2026-07-30)
+
+**Reviewed at:** `b4125e8` (fold commit `77c66e9` + Lee's answers commit `b4125e8`).
+**Method:** every claimed fold checked against the artifact, not against the claim. Rev.3's lesson applied to this pass: a fix that exactly matches the words of the request has probably not been generalised, so each item was checked for *siblings of the thing quoted*, not just the quoted line.
+
+## Verdict per must-fix
+
+| # | Verdict | Evidence |
+|---|---|---|
+| 1 | **PARTIAL** | Verify criterion re-anchored in **both** places (§3 `:150–157`, §3a Verify `:326`), change 13 named (`:241`), same-commit rule stated twice. But `:250` — *inside WP-0b-ii's own highlight list* — still reads *"makes the Premium Package's "Save $1,000" true"*, nine lines below `:241`'s "Save $500". Residue, not mechanism. See below. |
+| 2 | **FOLDED** | 0b-i/0b-ii split throughout §3a, §8 diagram (`:432`, `:435`), §9 rollback, §10 DoD, and the Verify block. Diagram carries both nodes. |
+| 3 | **FOLDED** | `:301–313`. Real answers, not placeholders: honour issued quotes, 30-day validity going forward, new prices for unquoted conversations; firm prices, no discounting. |
+| 4 | **FOLDED** | `:234–243` makes doc 35 §6's nineteen-row table the enumeration explicitly ("this list is highlights only, and treating it as the enumeration is how ten changes went missing"). All **eight** substantive omissions named. |
+| 5 | **FOLDED** | `:449–451` — `sauna.njk`, `js/modal.js`, `js/data.js` under the single-owner rule, sequential 0c → 0b-i → 0b-ii. |
+| 6 | **FOLDED** | `:190–194`. `js/navigation.js:72–79` named with the mechanism spelled out; all three doc 14 §1:47–49 rules carried (delete-on-read removed, key survives to submit, attached-config banner). No conflict with the #11 retention rule — both say "cleared on successful submit". |
+| 7 | **FOLDED** | `:254–264` — five-file sweep named, Thermowood token added; `:328` grep-proof ("zero '9kW Apex' and zero duplicate `value=` within any radio group"). The grep is achievable: exterior and interior both get distinct tokens, bench gets one in WP-0c. |
+| 8 | **FOLDED** | `:206–213`. Composed blob + named contact fields, rationale stated (nameless checkboxes + live collisions). Correct: the blob is composed from label text, so collisions cannot corrupt it. `_subject` resolved to doc 33's string. |
+| 9 | **PARTIAL** | `:99–112` carries everything: 4px / 0.95 budgets, fixtures calibrate (6px must fail, self-comparison must error), per-metric waivers named as a restructure, all four fail-closed paths, hero video stubbed, `WORKING` to temp dir. **One wrong pointer:** `:107` cites the missing-PNG `continue` at **`diff.mjs:174`**; it is at **`visual-diff.mjs:174`**, and `scripts/lib/diff.mjs` is only 156 lines, so the cited line cannot exist. |
+| 10 | **FOLDED** | Doc 21 `:194` **N6** (`_subject`, doc 33 wins, reasoning given) and `:195` **N7** (five-field override recorded). Both dated, both cite the finding. |
+| 11 | **FOLDED** | `:201–205`. Clear on success, 7-day expiry, "start over" on demand, privacy link at Step 2, Petra before production — and the plaintext-address rationale kept, so the rule survives future editing. |
+| 12 | **FOLDED** | `:292–299` carries IKI freight/stones/**stock**, the P3 watch, and §7.7 clear-cedar parity. `$550` → `$1,020` corrected at `:147–148` with "one component, not the basis". |
+| 13 | **FOLDED** | `:284–290` reframed as a schema extension with the specific gaps named (heater split, bench, deck/speaker/window tiers, dead `index.html` `_source`), "budgeted as real work, not a copy step". DoD `:490` updated to match. |
+| 14 | **FOLDED** (re-staled — see below) | HANDOFF's stale changing-room block replaced with the resolution; split and critic pointer added. |
+| 15 | **FOLDED** | `:61–67` P-C, in the diagram at `:433`. |
+| 16 | **FOLDED** | `:343–351`. Host (MARVIN local cron, Monday 08:00, market-watch pattern), source, channel (Telegram via /notify), thresholds (zero or >50% WoW drop), and the no-baseline caveat with its reason. |
+| 17 | **FOLDED** | Doc 21 `:205` E3 CLOSED with Lee's number. Doc 13's three operative markers released — `:335`, `:432`, `:436` — each cross-referenced to E3. Thank-you page line correctly left untouched. |
+| 18 | **FOLDED** | `:195–200`. `priceSheetVersion` stamp, recompute-on-stale with a visible note, last-writer-wins stated. |
+| 19 | **FOLDED** | `:373–375` reworded ("three count corrections **plus T2, the `booking-ops.html` scope defect**… calling all four 'count corrections' is how it would have been skipped"). `--color-bg` reconciliation at `:388–389`. |
+| 20 | **FOLDED** | Verify `:319–321` and DoD `:491`. |
+| 21 | **FOLDED** | `:279–283`, the minimal true line verbatim, with Lee's sentence to replace it when supplied. |
+| 22 | **PARTIAL** | Correct model-invariant formulation added at `:142–146` (`interiorUpgrade + $5,000` → `+ $7,000` vs package `+ $6,000`), including an explicit note that prior absolutes were the S2 row. But `:136–139` still asserts *"the basket a customer can actually assemble is $6,000 against a $7,000 package… on every model"* — the fix was added above the defect rather than replacing it. |
+| 23 | **FOLDED** | `:310–313`. Retired by decision. |
+
+**Tally: 20 FOLDED, 3 PARTIAL, 0 NOT FOLDED.**
+
+## New defect introduced after the fold — stale gate annotation in three places
+
+`b4125e8` un-gated WP-0b-ii (Lee answered) but touched **only** `redesign-wave-a.md`. Three assertions of the retired gate survive:
+
+- Plan `:435` — the §8 diagram still annotates WP-0b-ii *"← gated on Lee's transition + discounting answers"*, contradicting `:301` ("**WP-0b-ii is un-gated**") and `:443` in the same file.
+- `HANDOFF.md:61` — *"once Lee's price-transition and discounting answers are in."*
+- `HANDOFF.md:115` — *"**gated on Lee's price-transition and discounting answers**."*
+
+This is the **same class as must-fix #14**, recurring one commit later: the derived index and the diagram are older than the prose they summarise. Not dangerous — the failure direction is a package held back, not a wrong price shipped — but it is the transmission-failure class this review named, and HANDOFF is what a cold pickup reads first.
+
+## Residue check on the three PARTIALs
+
+**#1 is the only one with money in it.** The mechanism that would have certified a false claim is fixed: neither verify criterion names a dollar figure, and both anchor to `sauna.njk:161` at the prices live in that commit. What survives is a prose bullet inside WP-0b-ii asserting the "$1,000" claim becomes true — in the very commit that changes it to $500. An implementer following §3a-ii's own instruction (the nineteen-row table is the enumeration; the list is highlights) ships change 13 correctly. One who reads the highlights as the spec sees two answers nine lines apart. Delete the clause or scope it to WP-0c, where it is true.
+
+**#9 and #22 are citation and prose hygiene**, not mechanism: a pointer to a line that cannot exist, and a corrected figure sitting below the uncorrected one it replaced.
+
+## Cross-check against doc 35 — no new contradictions
+
+Doc 35 is unchanged since `4e11c9c` (not in either commit's diffstat). Re-checked the plan's new assertions against it: the eight named omissions match rows 2/3/5/10/11/13/15/16; "Save $500" matches row 18 and change 13; the softness paragraph matches §7.4/§7.5/§7.6, §4.2 and §7.7; the Thermowood token is consistent with §7.7's split warning; the mounting line is consistent with §5B.2's constraint without pre-empting Lee's docked sentence. Lee's transition answer does not disturb any margin in the sheet. **No fold introduced a contradiction with doc 35.** The three residues are all intra-plan.
+
+One honest note on #3/#23: "firm prices, none" retires the 73%-of-list realized-price problem **by decision, not by evidence**. That is the right way to resolve it and it is Lee's call to make — but it converts a modelling risk into an execution risk. If discounting recurs in practice, lines priced at the 40% floor go under it and nothing in the instrumentation would show it. Worth a look at realized-vs-list after the first quarter of quotes; not a gate condition.
+
+## Gate call
+
+**CLEARED.**
+
+All five gating FAILs from rev.4 are closed against the artifact: Completeness (3.1–3.6 all folded), Change safety (transition answered, version stamp, price-rollback rule, HANDOFF resynced), Data integrity (models.json reframed, five-file sweep, endpoint collapsed at `:185–186`, doc 21 N6/N7/E3), Verifiability (both verify criteria re-anchored, budgets numeric, four paths closed, hero video resolved one way), and X4 (criterion fixed, change 13 named, transition answered, mounting line shipped). The gating conditionals X2 and X3 are addressed substantively rather than acknowledged.
+
+The three PARTIALs and the stale gate annotation are prose and citation residue with no mechanism behind them — none can put a wrong price in front of a customer, because every gate that would certify one now anchors to the live artifact rather than a number. **Fix all four before the relay opens** (four one-line edits), but they do not hold the gate.
+
+**Corrections required before relay open:**
+1. Plan `:250` — delete or re-scope the "Save $1,000 becomes true" clause; it sits inside the commit that makes it $500.
+2. Plan `:107` — `diff.mjs:174` → `visual-diff.mjs:174`.
+3. Plan `:136–139` — replace the `$6,000`/`$7,000` absolutes with the `interiorUpgrade + $5,000` / `+ $6,000` form already used at `:142–146`.
+4. Plan `:435` and `HANDOFF.md:61,:115` — drop the retired "gated on Lee's answers" annotation.

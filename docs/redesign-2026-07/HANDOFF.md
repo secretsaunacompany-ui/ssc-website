@@ -57,8 +57,10 @@ Do not redo any of this. All verified in production.
    beyond 240px and passes a 6px sitewide button move. Mostly a matter of gating
    two numbers it already computes.
 3. Then WP-0c, WP-0b-i (funnel), WP-0a, WP-1a, WP-1b, WP-2a as sequenced in plan
-   §8 — with WP-0b-ii (repricing) landing any time after 0b-i once Lee's
-   price-transition and discounting answers are in. It blocks nothing else.
+   §8 — with WP-0b-ii (repricing) landing any time after 0b-i. Its gate was
+   released 2026-07-30: Lee answered both pricing-policy questions (honour issued
+   quotes + 30-day validity; firm prices, no discounting) — recorded in plan
+   §3a-ii. It blocks nothing else.
 
 **Consider re-running the critic on Wave A first.** It has not been reviewed since
 the configurator and the price sheet were folded in. Offered to Lee; not yet done.
@@ -112,8 +114,8 @@ keeps $2,000/$3,000, semi-enclosed NEW $4,100/$5,200) and speakers split two-tie
 as written and the must-fixes were folded the same day. The load-bearing changes:
 WP-0b is **two commits** — 0b-i funnel rebuild (no prices, no Lee input) and
 0b-ii repricing (all nineteen doc 35 §6 changes + "Save $500" copy + the
-models.json schema extension, **gated on Lee's price-transition and discounting
-answers**). Never verify the package saving against a hardcoded dollar figure —
+models.json schema extension — its Lee-gate was **released 2026-07-30**: honour
+issued quotes + 30-day validity going forward; firm prices, no discounting). Never verify the package saving against a hardcoded dollar figure —
 the criterion is "delta equals the saving stated at `sauna.njk:161`, at the
 prices live in that commit."
 
