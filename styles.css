@@ -1256,6 +1256,131 @@ textarea {
 }
 
 /* ============================================
+   Configurator Step 2 -- send, success, failure
+   ============================================ */
+
+/* A text button that reads as a link. Real <button>s, because they act on the
+   page rather than going anywhere, and a link that does not navigate is a lie
+   to anyone driving by keyboard or screen reader. */
+.quote-link-btn {
+    display: inline;
+    width: auto;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-warm-wood);
+    font-family: inherit;
+    font-size: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.quote-link-btn:hover {
+    color: var(--color-warm-wood-hover);
+}
+
+.quote-storage-note {
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-white-alpha-08);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.quote-storage-note__text {
+    margin-left: var(--spacing-xs);
+}
+
+.quote-stale-note {
+    margin: var(--spacing-sm) 0 0;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-left: 3px solid var(--color-warm-wood);
+    background: var(--color-warm-wood-alpha-10);
+    font-size: 0.85rem;
+    color: var(--color-text-subtle);
+}
+
+.quote-send-heading {
+    margin-top: var(--spacing-lg);
+}
+
+.quote-send-intro {
+    margin-bottom: var(--spacing-md);
+    font-size: 0.9rem;
+}
+
+#quoteForm .form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+/* 16px floor: anything smaller and iOS zooms the whole modal on focus, which
+   scrolls the price summary off screen at the moment of commitment. */
+#quoteForm input,
+#quoteForm select,
+#quoteForm textarea {
+    font-size: 1rem;
+}
+
+.quote-notes {
+    min-height: 5rem;
+}
+
+.form-error {
+    margin: var(--spacing-xs) 0 0;
+    font-size: 0.85rem;
+    color: var(--color-warm-wood-hover);
+}
+
+.form-helper {
+    margin: var(--spacing-xs) 0 0;
+    font-size: 0.85rem;
+    color: var(--color-text-subtle);
+}
+
+.quote-error {
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-left: 3px solid var(--color-warm-wood);
+    background: var(--color-warm-wood-alpha-10);
+}
+
+.quote-error__message {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--color-off-white);
+}
+
+.quote-error__mailto {
+    display: inline-block;
+    margin-top: var(--spacing-xs);
+    font-size: 0.9rem;
+    color: var(--color-warm-wood);
+}
+
+.quote-privacy-note {
+    margin-top: var(--spacing-sm);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+.quote-success-heading {
+    margin-top: var(--spacing-lg);
+}
+
+.quote-success-body {
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-text-feature);
+}
+
+.quote-success-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+    margin-top: var(--spacing-lg);
+}
+
+/* ============================================
    Map Filter Buttons
    ============================================ */
 .map-filter-btn {

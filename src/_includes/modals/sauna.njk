@@ -1,5 +1,13 @@
     <!-- Sauna Model Modal -->
-    <div id="saunaModal" class="modal-overlay">
+    {#
+      Two steps, one surface. Step 1 (configure) and Step 2 (send) are both
+      inside this dialog and the Step 1 inputs are HIDDEN, never unmounted, when
+      Step 2 is showing -- "Change something" has to return to exactly the
+      configuration the visitor left, and the price summary has to stay visible
+      across the transition. Nothing here navigates: the form posts from inside
+      the modal and success is rendered in place.
+    #}
+    <div id="saunaModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true" data-contact-email="{{ site.email }}">
         <div class="modal-content">
             <button class="modal-close" data-action="close-modal" aria-label="Close modal">&times;</button>
 
@@ -45,8 +53,9 @@
                 </div>
 
                 <div class="modal-addons">
-                    <h3>Customize Your Sauna</h3>
+                    <h3 id="configureHeading">Customize Your Sauna</h3>
 
+                    <div id="configureStep">
                     <div class="addon-category">
                         <h4>Heater Upgrade</h4>
                         <label class="addon-option">
@@ -194,7 +203,12 @@
                             <span class="addon-price">+$2,000</span>
                         </label>
                     </div>
+                    </div><!-- /#configureStep -->
 
+                    {# The summary stays mounted and visible in BOTH steps. The
+                       visitor must see their configuration survive the
+                       transition; a recap that is re-rendered from stored text
+                       is a different artifact and reads as one. #}
                     <div class="price-summary">
                         <div class="price-row base">
                             <span>Base Price</span>
@@ -205,8 +219,115 @@
                             <span>Estimated Total</span>
                             <span id="summaryTotal">$29,000</span>
                         </div>
-                        <button class="quote-btn" data-action="request-quote">Request Quote for This Configuration</button>
-                        <p class="contact-note">Final pricing confirmed after consultation. Custom requests welcome.</p>
+
+                        {# Shown by modal.js only when a saved configuration was
+                           restored from a superseded price sheet. #}
+                        <p id="quoteStaleNote" class="quote-stale-note" role="status" hidden>Prices have been updated since you saved this, so the total above has been recalculated.</p>
+
+                        <div id="configureActions">
+                            <button type="button" class="quote-btn" data-action="request-quote">Request This Quote</button>
+                            <p class="contact-note">Goes straight to us with your model, options, and total. We'll reply with a formal quote within three business days, usually the next day.</p>
+                            <p class="contact-note">Final pricing is confirmed after consultation. Custom requests welcome.</p>
+                        </div>
+
+                        <div class="quote-storage-note">
+                            <button type="button" class="quote-link-btn" data-action="quote-start-over">Start over</button>
+                            <span class="quote-storage-note__text">Your progress is saved on this device for 7 days.</span>
+                        </div>
+                    </div>
+
+                    {# Step 2. Posts to the same endpoint every other form on the
+                       site posts to -- site.forms.endpoint, defined once. #}
+                    <div id="sendStep" hidden>
+                        <h3 class="quote-send-heading">Send this configuration</h3>
+                        <p class="quote-send-intro">
+                            <button type="button" class="quote-link-btn" data-action="quote-back">Change something</button>
+                        </p>
+
+                        <form id="quoteForm" method="POST" action="{{ site.forms.endpoint }}" data-action="quote-submit" novalidate>
+                            {# Honeypot. Formspree silently discards any submission
+                               that fills this in. Not display:none via CSS class so
+                               it cannot be lost to a stylesheet refactor. #}
+                            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">
+
+                            {# Composed by modal.js at send time from the LIVE
+                               summary: one human-readable blob rather than
+                               per-option fields. Three checkboxes carry no name
+                               attribute and two radio groups still collide on
+                               value, so per-option naming would drop or merge
+                               real choices. A blob is immune to both. #}
+                            <input type="hidden" name="configuration" id="quoteConfiguration" value="">
+                            <input type="hidden" name="model" id="quoteModel" value="">
+                            <input type="hidden" name="estimated_total" id="quoteTotal" value="">
+                            {# _subject is the legacy alias that demonstrably still
+                               works; subject is the documented spelling. Both are
+                               sent with the same value so the inbox stays
+                               triageable whichever one Formspree honours. #}
+                            <input type="hidden" name="_subject" id="quoteSubject" value="">
+                            <input type="hidden" name="subject" id="quoteSubjectAlt" value="">
+
+                            <div class="form-group">
+                                <label for="quoteName">Name</label>
+                                <input type="text" id="quoteName" name="name" required autocomplete="name" aria-describedby="quoteNameError">
+                                <p class="form-error" id="quoteNameError" hidden>We need a name to address you by.</p>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="quoteEmail">Email</label>
+                                <input type="email" id="quoteEmail" name="email" required autocomplete="email" aria-describedby="quoteEmailError">
+                                <p class="form-error" id="quoteEmailError" hidden>This one's required, so we know where to send the reply.</p>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="quoteLocation">Where would the sauna go? (city or area)</label>
+                                <input type="text" id="quoteLocation" name="location" required autocomplete="address-level2" autocapitalize="words" placeholder="e.g. Squamish, North Vancouver, Whistler" aria-describedby="quoteLocationError">
+                                <p class="form-error" id="quoteLocationError" hidden>We need to know where it's going to quote it, and city or area is plenty.</p>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="quoteAccess">Getting it in place (optional)</label>
+                                <select id="quoteAccess" name="site_access">
+                                    <option value="">Select one</option>
+                                    <option value="easy">Easy access — a truck can get close</option>
+                                    <option value="tight">Tight — stairs, slope, gate, or narrow path</option>
+                                    <option value="crane">Would likely need a crane or lift</option>
+                                    <option value="trailer">It's going on a trailer — mobile</option>
+                                    <option value="on-site">No access for a finished unit — might need building on site</option>
+                                    <option value="not-sure">Not sure — help me figure it out</option>
+                                </select>
+                                <p class="form-helper" id="quoteAccessHelper" aria-live="polite" hidden></p>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="quoteNotes">Anything about your site we should know? (optional)</label>
+                                <textarea id="quoteNotes" name="notes" rows="3" class="quote-notes"></textarea>
+                            </div>
+
+                            {# Failure, offline and rate-limit states all render
+                               here. aria-live so a keyboard or screen-reader user
+                               learns the send failed without hunting for it. #}
+                            <div class="quote-error" id="quoteError" role="alert" aria-live="assertive" hidden></div>
+
+                            <button type="submit" class="quote-btn" id="quoteSubmit">Send Quote Request</button>
+
+                            <p class="quote-privacy-note">
+                                Sent via our US form processor. See our <a href="/privacy/">privacy policy</a>.
+                            </p>
+                        </form>
+                    </div>
+
+                    {# Step 3. Rendered in place: nothing navigates on success
+                       either. #}
+                    <div id="successStep" hidden>
+                        <h3 class="quote-success-heading">Configuration sent</h3>
+                        <p class="quote-success-body">We've got it, and a formal quote will follow within three business days, usually the next day.</p>
+{% if site.forms.formspreeAutoresponse %}
+                        <p class="quote-success-body">A copy is on its way to your inbox.</p>
+{% endif %}
+                        <p class="quote-success-actions">
+                            <a href="/about/">See how the process works</a>
+                            <button type="button" class="quote-link-btn" data-action="close-modal">Close</button>
+                        </p>
                     </div>
                 </div>
             </div>

@@ -30,6 +30,12 @@
             case 'request-quote':
                 if (SSC.modalManager) SSC.modalManager.requestQuote();
                 break;
+            case 'quote-back':
+                if (SSC.modalManager) SSC.modalManager.goBack();
+                break;
+            case 'quote-start-over':
+                if (SSC.modalManager) SSC.modalManager.startOver();
+                break;
             case 'close-lightbox':
                 if (SSC.galleryLightbox) SSC.galleryLightbox.close();
                 break;
@@ -67,6 +73,13 @@
             case 'contact-submit':
                 e.preventDefault();
                 SSC.handleSubmit(e);
+                break;
+            // Deliberately NOT routed through handleSubmit: that one navigates
+            // to /contact/thank-you/ on success, which is exactly what the
+            // configurator must never do.
+            case 'quote-submit':
+                e.preventDefault();
+                if (SSC.modalManager) SSC.modalManager.submitQuote(e);
                 break;
             case 'booking-submit':
                 e.preventDefault();

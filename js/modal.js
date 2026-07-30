@@ -18,12 +18,33 @@
     let currentModelId = null;
     let currentImageIndex = 0;
 
+    /**
+     * Elements that can hold focus, for the focus trap. `:not([hidden])` is not
+     * enough on its own -- an input inside a hidden ANCESTOR is still not
+     * hidden itself -- so offsetParent is checked at trap time.
+     */
+    const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    /** Helper microcopy per site-access answer (doc 33 §3). */
+    const ACCESS_HELPERS = {
+        tight: 'No problem, tricky sites are normal for us. Anything you can tell us about the spot in the notes below helps.',
+        crane: 'No problem, tricky sites are normal for us. Anything you can tell us about the spot in the notes below helps.',
+        'on-site': 'No problem, tricky sites are normal for us. Anything you can tell us about the spot in the notes below helps.',
+        trailer: 'Mobile builds travel well. Mention where it would live and how far it will roam.'
+    };
+
     // ============================================
     // Modal Manager
     // ============================================
     class ModalManager {
         constructor() {
             this.modal = document.getElementById('saunaModal');
+            /** 'configure' | 'send' | 'success' */
+            this.step = 'configure';
+            /** Guards the double-submit state: true from submit until settled. */
+            this.submitting = false;
+            /** What had focus before the modal opened, so it can be given back. */
+            this.lastFocused = null;
             this.initEventListeners();
         }
 
@@ -37,12 +58,32 @@
                 });
             }
 
-            // Close on escape key
+            // Close on escape key, and trap Tab inside the dialog while it is
+            // open. A flow that leads to money is keyboard-complete or it is
+            // not done -- and an untrapped dialog drops the visitor into the
+            // page behind it mid-quote.
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     this.close();
+                    return;
+                }
+                if (e.key === 'Tab' && this.isOpen()) {
+                    this.trapFocus(e);
                 }
             });
+
+            // Site-access helper line. Progressive disclosure at its cheapest:
+            // the form gets smarter without getting longer.
+            const access = document.getElementById('quoteAccess');
+            if (access) {
+                access.addEventListener('change', () => {
+                    const helper = document.getElementById('quoteAccessHelper');
+                    if (!helper) return;
+                    const text = ACCESS_HELPERS[access.value];
+                    helper.textContent = text || '';
+                    helper.hidden = !text;
+                });
+            }
 
             // Delegation for dynamic thumbnail clicks
             if (this.modal) {
@@ -73,20 +114,89 @@
             currentModelId = modelId;
             if (!currentModel) return;
 
+            this.lastFocused = document.activeElement;
+
             this.updateSpecs();
             this.updateImages();
             this.updatePrices();
             this.resetForm();
             this.handleHeaterOptions();
+            // Restore before the first total is computed, so the visitor never
+            // sees the default price flash to their saved one.
+            this.restoreSaved(modelId);
             this.calculateTotal();
+            this.setStep('configure');
 
             this.modal.classList.add('active');
+            this.modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
+
+            const close = this.modal.querySelector('.modal-close');
+            if (close) close.focus();
         }
 
         close() {
+            if (!this.isOpen()) return;
             this.modal.classList.remove('active');
+            this.modal.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = '';
+
+            // Closing mid-step-2 loses nothing: the configuration was written
+            // to storage on ENTERING step 2, not on success. Reopening the same
+            // model restores it. Only the success panel is transient -- it has
+            // already done its job and would be a lie on the next open.
+            if (this.step === 'success') this.setStep('configure');
+
+            if (this.lastFocused && typeof this.lastFocused.focus === 'function') {
+                this.lastFocused.focus();
+            }
+            this.lastFocused = null;
+        }
+
+        isOpen() {
+            return !!this.modal && this.modal.classList.contains('active');
+        }
+
+        /**
+         * Keep Tab inside the dialog. Only elements that are actually rendered
+         * count -- step 2's fields must not be reachable from step 1.
+         */
+        trapFocus(event) {
+            const focusable = [...this.modal.querySelectorAll(FOCUSABLE)]
+                .filter((el) => el.offsetParent !== null || el === document.activeElement);
+            if (!focusable.length) return;
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            const active = document.activeElement;
+
+            if (event.shiftKey && (active === first || !this.modal.contains(active))) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && active === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        }
+
+        /**
+         * The one place step visibility changes. Three panels, mutually
+         * exclusive; the price summary belongs to none of them and is always
+         * visible.
+         */
+        setStep(step) {
+            this.step = step;
+            const show = (id, visible) => {
+                const el = document.getElementById(id);
+                if (el) el.hidden = !visible;
+            };
+            show('configureStep', step === 'configure');
+            show('configureActions', step === 'configure');
+            show('sendStep', step === 'send');
+            show('successStep', step === 'success');
+
+            const heading = document.getElementById('configureHeading');
+            if (heading) heading.hidden = step !== 'configure';
         }
 
         updateSpecs() {
@@ -356,47 +466,386 @@
             this.calculateTotal();
         }
 
-        requestQuote() {
-            if (!currentModel) return;
+        /**
+         * Compose the quote as one human-readable blob plus the machine-ish
+         * bits, read from the LIVE summary the visitor is looking at.
+         *
+         * Every checked radio is included, including the $0 ones. "No changing
+         * room" and "L-shaped benches" are choices the visitor made and Lee has
+         * to quote against; the previous version skipped anything valued '0'
+         * and silently dropped them.
+         */
+        buildConfiguration() {
+            const lines = [];
+            const selections = [];
+            const inputs = [...document.querySelectorAll('.modal-addons input')];
 
-            // Build configuration summary
-            let config = `${currentModel.name}\n`;
-            config += `Base Price: ${formatCurrency(currentModel.basePrice)}\n\n`;
-            config += 'Selected Options:\n';
+            inputs.forEach((input, index) => {
+                if (!input.checked) return;
+                if (input.type !== 'radio' && input.type !== 'checkbox') return;
 
-            document.querySelectorAll('.modal-addons input[type="radio"]:checked').forEach((input) => {
-                const value = input.value;
-                if (value !== '0') {
-                    const addonOption = input.closest('.addon-option');
-                    const label = addonOption ? addonOption.querySelector('.addon-label') : null;
-                    const price = addonOption ? addonOption.querySelector('.addon-price') : null;
-                    if (label && price) {
-                        config += `\u2022 ${label.textContent} ${price.textContent}\n`;
-                    }
-                }
-            });
-
-            document.querySelectorAll('.modal-addons input[type="checkbox"]:checked').forEach((input) => {
                 const addonOption = input.closest('.addon-option');
-                const label = addonOption ? addonOption.querySelector('.addon-label') : null;
-                const price = addonOption ? addonOption.querySelector('.addon-price') : null;
-                if (label && price) {
-                    config += `\u2022 ${label.textContent} ${price.textContent}\n`;
-                }
+                if (!addonOption) return;
+                const labelEl = addonOption.querySelector('.addon-label');
+                const priceEl = addonOption.querySelector('.addon-price');
+                if (!labelEl) return;
+
+                const label = labelEl.textContent.trim();
+                const priceText = priceEl ? priceEl.textContent.trim() : '';
+                lines.push(`\u2022 ${label}${priceText ? ` ${priceText}` : ''}`);
+                selections.push({
+                    i: index,
+                    addon: input.dataset.addon || '',
+                    value: input.value,
+                    label: label
+                });
             });
 
             const summaryTotalEl = document.getElementById('summaryTotal');
-            const total = summaryTotalEl ? summaryTotalEl.textContent : '';
-            config += `\nEstimated Total: ${total}`;
+            const total = summaryTotalEl ? summaryTotalEl.textContent.trim() : '';
 
-            // Close modal and navigate to contact with config data
-            this.close();
-            window.SSC.quoteStore.save({
+            const summary = [
+                currentModel.name,
+                `Base Price: ${formatCurrency(currentModel.basePrice)}`,
+                '',
+                'Selected Options:',
+                ...lines,
+                '',
+                `Estimated Total: ${total}`
+            ].join('\n');
+
+            return {
                 modelId: currentModelId,
                 modelName: currentModel.name,
-                summary: config
+                total: total,
+                selections: selections,
+                summary: summary
+            };
+        }
+
+        /**
+         * Re-apply a saved configuration for this model, if there is one.
+         *
+         * The stored TOTAL is never replayed. Selections are re-checked on the
+         * live form and calculateTotal() recomputes from live prices, so a
+         * saved number can never disagree with the line items beside it. When
+         * the record predates the current price sheet -- or when an option it
+         * names no longer exists -- the visitor is told the total was
+         * recalculated rather than being left to notice.
+         */
+        restoreSaved(modelId) {
+            const note = document.getElementById('quoteStaleNote');
+            if (note) note.hidden = true;
+
+            const stored = window.SSC.quoteStore.read();
+            if (!stored || stored.data.modelId !== modelId) return;
+            if (!Array.isArray(stored.data.selections)) return;
+
+            const inputs = [...document.querySelectorAll('.modal-addons input')];
+            let missed = 0;
+
+            stored.data.selections.forEach((sel) => {
+                // Index first, then verify it is still the same option. The
+                // markup can move under a record that is up to a week old, and
+                // checking the wrong box is worse than checking none.
+                let input = inputs[sel.i];
+                const matches = (el) => el
+                    && (el.dataset.addon || '') === sel.addon
+                    && (el.closest('.addon-option')?.querySelector('.addon-label')?.textContent.trim() === sel.label);
+
+                if (!matches(input)) {
+                    input = inputs.find(matches);
+                }
+                if (!input) { missed += 1; return; }
+                input.checked = true;
             });
-            window.location.href = '/contact/';
+
+            // Premium package disables the options it contains; re-apply that
+            // rule after restoring, or a restored basket can show both.
+            this.handlePremiumPackageChange();
+
+            if (note && (stored.stale || missed > 0)) note.hidden = false;
+        }
+
+        /**
+         * Step 1 -> Step 2. Transitions in place. Nothing navigates, nothing
+         * submits, and the configuration is written to storage HERE, not on
+         * success -- so closing the modal mid-step-2 loses nothing.
+         */
+        requestQuote() {
+            if (!currentModel) return;
+
+            const config = this.buildConfiguration();
+            window.SSC.quoteStore.save(config);
+
+            const set = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.value = value;
+            };
+            set('quoteConfiguration', config.summary);
+            set('quoteModel', config.modelName);
+            set('quoteTotal', config.total);
+
+            this.clearErrors();
+            this.setStep('send');
+
+            const first = document.getElementById('quoteName');
+            if (first) first.focus();
+        }
+
+        /** Step 2 -> Step 1, with every input exactly as it was left. */
+        goBack() {
+            this.clearErrors();
+            this.setStep('configure');
+            const btn = document.querySelector('[data-action="request-quote"]');
+            if (btn) btn.focus();
+        }
+
+        /**
+         * Explicit start over: the visitor's own eraser. Clears the saved
+         * record and returns the configurator to defaults. One of exactly three
+         * things that removes the stored key -- the others are a confirmed
+         * submit and the 7-day expiry.
+         */
+        startOver() {
+            window.SSC.quoteStore.clear();
+            const form = document.getElementById('quoteForm');
+            if (form) form.reset();
+            this.clearErrors();
+            const note = document.getElementById('quoteStaleNote');
+            if (note) note.hidden = true;
+            const helper = document.getElementById('quoteAccessHelper');
+            if (helper) { helper.hidden = true; helper.textContent = ''; }
+
+            if (currentModel) {
+                this.resetForm();
+                this.handleHeaterOptions();
+                this.calculateTotal();
+            }
+            this.setStep('configure');
+            const btn = document.querySelector('[data-action="request-quote"]');
+            if (btn) btn.focus();
+        }
+
+        clearErrors() {
+            const box = document.getElementById('quoteError');
+            if (box) { box.hidden = true; box.innerHTML = ''; }
+            ['quoteNameError', 'quoteEmailError', 'quoteLocationError'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.hidden = true;
+            });
+            ['quoteName', 'quoteEmail', 'quoteLocation'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.removeAttribute('aria-invalid');
+            });
+        }
+
+        /**
+         * Client-side validation. The form carries `novalidate` so the errors
+         * are ours: the browser's bubble is unstyleable, disappears on the next
+         * keystroke, and reads badly to a screen reader.
+         *
+         * @returns {boolean} true when the form may be sent
+         */
+        validate() {
+            this.clearErrors();
+            const checks = [
+                ['quoteName', 'quoteNameError', (v) => v.trim().length > 0],
+                ['quoteEmail', 'quoteEmailError', (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())],
+                ['quoteLocation', 'quoteLocationError', (v) => v.trim().length > 0]
+            ];
+
+            let firstBad = null;
+            checks.forEach(([fieldId, errorId, ok]) => {
+                const field = document.getElementById(fieldId);
+                if (!field || ok(field.value)) return;
+                const error = document.getElementById(errorId);
+                if (error) error.hidden = false;
+                field.setAttribute('aria-invalid', 'true');
+                if (!firstBad) firstBad = field;
+            });
+
+            if (firstBad) {
+                firstBad.focus();
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * Render a failure. The form STAYS MOUNTED with every value intact and
+         * the configuration is offered a second exit by email -- a quote that
+         * only has one way out is a quote that gets lost when that way breaks.
+         */
+        showFailure(message, options) {
+            const box = document.getElementById('quoteError');
+            if (!box) return;
+            box.innerHTML = '';
+
+            const line = document.createElement('p');
+            line.className = 'quote-error__message';
+            line.textContent = message;
+            box.appendChild(line);
+
+            if (!options || options.mailto !== false) {
+                const config = this.buildConfiguration();
+                const link = document.createElement('a');
+                const address = (this.modal.dataset.contactEmail || '').trim();
+                link.href = `mailto:${address}`
+                    + `?subject=${encodeURIComponent(`Quote Request \u2014 ${config.modelName} \u2014 ${config.total}`)}`
+                    + `&body=${encodeURIComponent(config.summary)}`;
+                link.className = 'quote-error__mailto';
+                link.textContent = `Email it to us instead`;
+                box.appendChild(link);
+            }
+
+            box.hidden = false;
+        }
+
+        /**
+         * Step 2 submit. The whole state machine lives here.
+         *
+         * What it does NOT do, deliberately: navigate. The success body carries
+         * a `next` URL and the old contact handler followed one; following it
+         * here would throw away the modal, the recap and the visitor's place in
+         * the flow at the exact moment they finally succeeded.
+         */
+        submitQuote(event) {
+            event.preventDefault();
+            const form = document.getElementById('quoteForm');
+            if (!form || !currentModel) return;
+
+            // Double-submit. Formspree's own guidance is to disable the button
+            // until the response returns; the flag is belt to that braces,
+            // because a keyboard Enter can outrun a disabled attribute.
+            if (this.submitting) return;
+
+            if (!this.validate()) return;
+
+            // Offline is not a failure, it is a wait. Firing the fetch anyway
+            // would produce a generic network error and teach the visitor
+            // nothing they can act on.
+            if (navigator.onLine === false) {
+                this.showFailure('You are offline right now. Your configuration is saved, so reconnect and send it again.', { mailto: false });
+                return;
+            }
+
+            const endpoint = form.getAttribute('action');
+            if (!endpoint) {
+                console.error('SSC: quote form has no action; expected site.forms.endpoint');
+                this.showFailure('That didn\'t send. Your configuration is still here; try again, or email it to us.');
+                return;
+            }
+
+            // Recompose from the live summary at send time rather than trusting
+            // what step 1 stashed: the visitor may have gone back and changed
+            // something.
+            const config = this.buildConfiguration();
+            const location = (document.getElementById('quoteLocation') || {}).value || '';
+            const subject = `Configurator Quote \u2014 ${config.modelName} \u2014 ${config.total} \u2014 ${location.trim()}`;
+            const set = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.value = value;
+            };
+            set('quoteConfiguration', config.summary);
+            set('quoteModel', config.modelName);
+            set('quoteTotal', config.total);
+            set('quoteSubject', subject);
+            set('quoteSubjectAlt', subject);
+
+            const submitBtn = document.getElementById('quoteSubmit');
+            const originalLabel = submitBtn ? submitBtn.textContent : '';
+            this.submitting = true;
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Sending\u2026';
+            }
+            this.clearErrors();
+
+            const settle = () => {
+                this.submitting = false;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalLabel;
+                }
+            };
+
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    // The only thing that switches Formspree out of
+                    // redirect-mode and into JSON. Without it the browser is
+                    // handed a 302 and the modal is gone.
+                    'Accept': 'application/json'
+                },
+                body: new URLSearchParams(new FormData(form)).toString()
+            })
+                .then((response) => {
+                    // 429 is invisible in the body: Formspree publishes no
+                    // rate-limit error code, and its own client never reads
+                    // the status. Only response.status can tell us.
+                    if (response.status === 429) {
+                        settle();
+                        this.showFailure('We are getting a lot of requests right now. Give it a minute and send it again, or email it to us.');
+                        return null;
+                    }
+                    return response.json().catch(() => ({}));
+                })
+                .then((body) => {
+                    if (body === null) return;
+
+                    // Success is discriminated by the body carrying a string
+                    // `next`, which is what Formspree's own client checks.
+                    // Status is not sufficient on its own.
+                    const ok = body && typeof body.next === 'string';
+                    if (!ok) {
+                        settle();
+                        const detail = Array.isArray(body && body.errors)
+                            ? body.errors.map((e) => e.message).filter(Boolean).join(' ')
+                            : (body && typeof body.error === 'string' ? body.error : '');
+                        this.showFailure(detail
+                            ? `That didn't send: ${detail} Your configuration is still here.`
+                            : 'That didn\'t send. Your configuration is still here; try again, or email it to us.');
+                        return;
+                    }
+
+                    settle();
+                    this.onSubmitSuccess(config);
+                })
+                .catch(() => {
+                    settle();
+                    this.showFailure('That didn\'t send. Your configuration is still here; try again, or email it to us.');
+                });
+        }
+
+        onSubmitSuccess(config) {
+            // The one place the stored key is cleared by a send. Not on entering
+            // step 2, not on failure -- only when Lee actually has it.
+            window.SSC.quoteStore.clear();
+
+            const form = document.getElementById('quoteForm');
+            if (form) form.reset();
+
+            this.setStep('success');
+            const heading = document.querySelector('.quote-success-heading');
+            if (heading) {
+                heading.setAttribute('tabindex', '-1');
+                heading.focus();
+            }
+
+            // Compact payload only. The tracker's endpoint SILENTLY replaces
+            // any eventData over 5,000 characters with {} and still returns
+            // 200, so sending the configuration blob here would look like
+            // healthy traffic carrying nothing.
+            const tracker = window.analyticsTracker;
+            if (tracker && typeof tracker.trackEvent === 'function') {
+                tracker.trackEvent('quote_submit_success', {
+                    model: config.modelId,
+                    total: config.total,
+                    options: config.selections.length
+                });
+            }
         }
     }
 
