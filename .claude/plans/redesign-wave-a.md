@@ -123,6 +123,16 @@ reason with an expiry date. Overrides are diff-visible, fixture-tested, and
 reviewed like code. The silent-blanket-waiver class stays dead; deliberate
 restyles become shippable under review instead of un-shippable or re-run-until-green.
 
+*Refined post-re-review (2026-07-30, Razor W-C/W-D, orchestrator-ratified):*
+override direction follows the metric's TYPE — ceiling metrics
+(`maxLayoutShiftPx`, `maxChangedPct`) may be **raised**, capped at 100× the
+global (loud is fine, infinite is not); the floor metric (`minShiftCoverage`)
+may be **lowered** — that is the shippable direction — bounded to [0.75, 1)
+(below 0.75, a quarter of the page's rows can't be matched and that needs a
+human conversation, not a config line). `expires` is mandatory and at most
+90 days out at commit time. Same reason + expiry + report.json visibility for
+every direction.
+
 **Lazy-image dimensions (pulled forward, 2026-07-30 — Razor W4):** the `/about/`
 flake's root cause (`loading="lazy"` images with no `width`/`height`) is real
 visitor CLS and a standing flake source for every later batch. It becomes its own
