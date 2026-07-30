@@ -12,6 +12,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { buildRef, enumeratePages, routeSlug, resolveRef } from './lib/build-ref.mjs';
 import { startServer } from './lib/server.mjs';
 import { captureAll } from './lib/capture.mjs';
@@ -54,7 +55,7 @@ Exits 0 if every page is within budget, 1 if any page is not.
 const loadConfig = (file) => loadGateConfig(file, fs.readFileSync);
 
 /** Compare the observed redirect map against the declared one, both ways. */
-function redirectFailures(name, observed, declared) {
+export function redirectFailures(name, observed, declared) {
   const out = [];
   for (const [route, dest] of Object.entries(observed)) {
     if (!(route in declared)) {
@@ -122,6 +123,83 @@ async function captureBuild(name, ref, config) {
   } finally {
     await server.close();
   }
+}
+
+/**
+ * Compare every shared route at every configured width.
+ *
+ * Extracted from main() so the fixtures can drive the REAL loop — the same
+ * function the CLI calls — instead of a lookalike. Without a seam here the
+ * whole orchestration layer was untestable, and three separate mutations to it
+ * (deleting the run-failure tally, reverting the missing-screenshot handling to
+ * `continue`, deleting the redirect gate call) left the suite fully green.
+ *
+ * @returns {{ pages: object[], comparedPairs: number, runFailures: string[] }}
+ */
+export function comparePairs({ config, sharedRoutes, baselineShotDir, candidateShotDir, diffDir }) {
+  const pages = [];
+  const runFailures = [];
+  let comparedPairs = 0;
+
+  for (const route of sharedRoutes) {
+    const entry = config.allow.get(route) || null;
+    for (const width of config.widths) {
+      const name = `${routeSlug(route)}@${width}.png`;
+      const a = path.join(baselineShotDir, name);
+      const b = path.join(candidateShotDir, name);
+
+      // A missing screenshot used to `continue`, silently dropping the page
+      // from the run while still reporting PASS at the end. If a page could not
+      // be photographed, nothing is known about it.
+      const missing = [];
+      if (!fs.existsSync(a)) missing.push(`baseline ${name}`);
+      if (!fs.existsSync(b)) missing.push(`candidate ${name}`);
+      if (missing.length > 0) {
+        runFailures.push(`${route} @${width}: screenshot missing (${missing.join(', ')}). `
+          + `The page was never compared, so it cannot be reported as unchanged.`);
+        continue;
+      }
+
+      const result = comparePair(a, b, path.join(diffDir, name),
+        (r) => overBudget(config, route, r));
+      const verdict = evaluatePair(config, route, result);
+      comparedPairs += 1;
+
+      pages.push({
+        route,
+        width,
+        status: verdict.status,
+        reasons: verdict.reasons,
+        waivedReasons: verdict.waivedReasons,
+        expectedReason: entry ? entry.reason : null,
+        ...result,
+      });
+    }
+  }
+
+  // Comparing nothing at all is not a pass. This closes the `widths: []` class
+  // of failure at the far end too, whatever produced it.
+  if (comparedPairs === 0) {
+    runFailures.push(`No page/width pair was compared. A run that measures nothing `
+      + `cannot report PASS. (${sharedRoutes.length} shared route(s), `
+      + `${config.widths.length} width(s).)`);
+  }
+
+  return { pages, comparedPairs, runFailures };
+}
+
+/**
+ * The single place a run's failure count is computed.
+ *
+ * All three buckets count. Run failures in particular: they are the ones that
+ * say the MEASUREMENT is untrustworthy (a failed asset fetch, an undeclared
+ * redirect, a screenshot that does not exist), and dropping them from the tally
+ * turns every such run into a green one that proves nothing.
+ */
+export function tallyFailures({ pages, structural, runFailures }) {
+  return pages.filter((p) => p.status === 'FAIL').length
+    + structural.length
+    + runFailures.length;
 }
 
 function writeHtmlReport(file, report) {
@@ -214,58 +292,17 @@ async function main() {
   const removed = baseline.routes.filter((r) => !candSet.has(r));
   const shared = baseline.routes.filter((r) => candSet.has(r));
 
-  const pages = [];
-  let failCount = 0;
+  const { pages, comparedPairs, runFailures: pairFailures } = comparePairs({
+    config,
+    sharedRoutes: shared,
+    baselineShotDir: baseline.shotDir,
+    candidateShotDir: candidate.shotDir,
+    diffDir,
+  });
 
   // Run-level failures: things that make the measurement itself untrustworthy,
   // as opposed to a page that legitimately moved.
-  const runFailures = [...baseline.failures, ...candidate.failures];
-
-  let comparedPairs = 0;
-  for (const route of shared) {
-    const entry = config.allow.get(route) || null;
-    for (const width of config.widths) {
-      const name = `${routeSlug(route)}@${width}.png`;
-      const a = path.join(baseline.shotDir, name);
-      const b = path.join(candidate.shotDir, name);
-
-      // A missing screenshot used to `continue`, silently dropping the page
-      // from the run while still reporting PASS at the end. If a page could not
-      // be photographed, nothing is known about it.
-      const missing = [];
-      if (!fs.existsSync(a)) missing.push(`baseline ${name}`);
-      if (!fs.existsSync(b)) missing.push(`candidate ${name}`);
-      if (missing.length > 0) {
-        runFailures.push(`${route} @${width}: screenshot missing (${missing.join(', ')}). `
-          + `The page was never compared, so it cannot be reported as unchanged.`);
-        continue;
-      }
-
-      const result = comparePair(a, b, path.join(diffDir, name),
-        (r) => overBudget(config, route, r));
-      const verdict = evaluatePair(config, route, result);
-      comparedPairs += 1;
-      if (verdict.status === 'FAIL') failCount += 1;
-
-      pages.push({
-        route,
-        width,
-        status: verdict.status,
-        reasons: verdict.reasons,
-        waivedReasons: verdict.waivedReasons,
-        expectedReason: entry ? entry.reason : null,
-        ...result,
-      });
-    }
-  }
-
-  // Comparing nothing at all is not a pass. This closes the `widths: []` class
-  // of failure at the far end too, whatever produced it.
-  if (comparedPairs === 0) {
-    runFailures.push(`No page/width pair was compared. A run that measures nothing `
-      + `cannot report PASS. (${shared.length} shared route(s), `
-      + `${config.widths.length} width(s).)`);
-  }
+  const runFailures = [...baseline.failures, ...candidate.failures, ...pairFailures];
 
   // A page appearing or disappearing is a structural change the pixel diff
   // cannot see, so it is reported separately and fails unless the route
@@ -275,10 +312,10 @@ async function main() {
     return Boolean(e && e.waive.has('structural'));
   };
   const structural = [];
-  for (const r of added) if (!structuralWaived(r)) { structural.push(`page added: ${r}`); failCount += 1; }
-  for (const r of removed) if (!structuralWaived(r)) { structural.push(`page removed: ${r}`); failCount += 1; }
+  for (const r of added) if (!structuralWaived(r)) structural.push(`page added: ${r}`);
+  for (const r of removed) if (!structuralWaived(r)) structural.push(`page removed: ${r}`);
 
-  failCount += runFailures.length;
+  const failCount = tallyFailures({ pages, structural, runFailures });
 
   const report = {
     generatedAt: new Date().toISOString(),
@@ -339,7 +376,15 @@ async function main() {
   return 0;
 }
 
-main().then(
-  (code) => process.exit(code),
-  (err) => { console.error(`\nvisual-diff failed: ${err.stack || err.message}`); process.exit(2); }
-);
+// Run only when invoked as the CLI. The fixtures import comparePairs and
+// tallyFailures from this file to test the real orchestration layer, and an
+// unguarded top-level main() would launch a full two-ref build on import.
+const invokedDirectly = process.argv[1]
+  && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (invokedDirectly) {
+  main().then(
+    (code) => process.exit(code),
+    (err) => { console.error(`\nvisual-diff failed: ${err.stack || err.message}`); process.exit(2); }
+  );
+}

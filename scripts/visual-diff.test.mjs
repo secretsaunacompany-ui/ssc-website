@@ -38,6 +38,8 @@ import { startServer } from './lib/server.mjs';
 import { captureAll } from './lib/capture.mjs';
 import { comparePair } from './lib/diff.mjs';
 import { loadConfig, evaluatePair } from './lib/gate.mjs';
+import { resolveRef } from './lib/build-ref.mjs';
+import { comparePairs, tallyFailures, redirectFailures } from './visual-diff.mjs';
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const CONFIG_FILE = path.join(REPO_ROOT, 'scripts', 'visual-diff.config.json');
@@ -289,8 +291,216 @@ async function main() {
         placeholder.brokenImages.length === 0,
         `expected no reports, got ${JSON.stringify(placeholder.brokenImages)}`);
     }
+    process.stdout.write('\nO — the orchestration layer (visual-diff.mjs itself)\n');
+    {
+      // Everything above tests lib/. The layer that decides what gets compared
+      // and what the exit code is had NO coverage at all: three separate
+      // mutations to it (delete the run-failure tally, revert the
+      // missing-screenshot branch to `continue`, delete the redirect gate call)
+      // each left the whole suite green. These fixtures drive the real exported
+      // functions from visual-diff.mjs, not lookalikes.
+
+      // --- O1: a missing screenshot must become a run failure, not a skip.
+      // Two routes, one candidate PNG deleted. Reverting the branch to
+      // `continue` leaves one compared pair and an empty runFailures list.
+      const shotDirs = {};
+      for (const side of ['baseline', 'candidate']) {
+        const site = path.join(tmp, 'o1', side, 'site');
+        fs.mkdirSync(path.join(site, 'b'), { recursive: true });
+        fs.writeFileSync(path.join(site, 'index.html'), PAGE_BASE);
+        fs.writeFileSync(path.join(site, 'b', 'index.html'), PAGE_BASE);
+        const shots = path.join(tmp, 'o1', side, 'shots');
+        const server = await startServer(site);
+        try {
+          await captureAll({
+            baseUrl: server.url,
+            routes: ['/', '/b/'],
+            widths: [WIDTH],
+            outDir: shots,
+            cacheDir: path.join(tmp, 'asset-cache'),
+            log: () => {},
+          });
+        } finally {
+          await server.close();
+        }
+        shotDirs[side] = shots;
+      }
+      // The page that could not be photographed.
+      fs.rmSync(path.join(shotDirs.candidate, `b@${WIDTH}.png`));
+
+      const oneWidth = loadConfig('test.json', () => JSON.stringify({
+        ...JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')), widths: [WIDTH],
+      }));
+      fs.mkdirSync(path.join(tmp, 'o1', 'diffs'), { recursive: true });
+      const out = comparePairs({
+        config: oneWidth,
+        sharedRoutes: ['/', '/b/'],
+        baselineShotDir: shotDirs.baseline,
+        candidateShotDir: shotDirs.candidate,
+        diffDir: path.join(tmp, 'o1', 'diffs'),
+      });
+
+      check('O1 a missing screenshot raises a run failure',
+        out.runFailures.some((f) => f.includes('screenshot missing') && f.includes(`b@${WIDTH}.png`)),
+        `expected a "screenshot missing" run failure naming b@${WIDTH}.png, `
+        + `got ${JSON.stringify(out.runFailures)}`);
+      check('O1 the unphotographed page is not reported as compared',
+        out.comparedPairs === 1 && out.pages.length === 1 && out.pages[0].route === '/',
+        `expected exactly the photographed route to be compared, got `
+        + `comparedPairs=${out.comparedPairs} pages=${JSON.stringify(out.pages.map((p) => p.route))}`);
+      check('O1 the page that WAS photographed still passes',
+        out.pages[0] && out.pages[0].status === 'PASS',
+        `the control half of this fixture must stay green, got `
+        + `${out.pages[0] && out.pages[0].status}`);
+    }
+
+    // --- O2: run failures must reach the failure count.
+    // Deleting `failCount += runFailures.length` makes a run whose MEASUREMENT
+    // is untrustworthy exit 0.
+    {
+      const clean = [{ route: '/', status: 'PASS' }, { route: '/b/', status: 'PASS' }];
+      check('O2 run failures alone make a run fail',
+        tallyFailures({ pages: clean, structural: [], runFailures: ['a', 'b'] }) === 2,
+        `a run with two run failures and no failing page must count 2, got `
+        + `${tallyFailures({ pages: clean, structural: [], runFailures: ['a', 'b'] })}`);
+      check('O2 structural changes alone make a run fail',
+        tallyFailures({ pages: clean, structural: ['page removed: /x/'], runFailures: [] }) === 1,
+        'a removed page with no failing pixel comparison must still count');
+      check('O2 failing pages are counted',
+        tallyFailures({
+          pages: [...clean, { route: '/c/', status: 'FAIL' }],
+          structural: [], runFailures: [],
+        }) === 1,
+        'a FAIL page must count');
+      check('O2 a wholly clean run counts zero',
+        tallyFailures({ pages: clean, structural: [], runFailures: [] }) === 0,
+        'control: the tally is not just always-nonzero');
+    }
+
+    // --- O3: the redirect comparison itself, both directions.
+    {
+      check('O3 an undeclared redirect is a failure',
+        redirectFailures('baseline', { '/gallery/': '/saunas/' }, {}).length === 1,
+        'a route that redirected somewhere nobody declared must be reported');
+      check('O3 a redirect to the wrong place is a failure',
+        redirectFailures('baseline', { '/gallery/': '/elsewhere/' }, { '/gallery/': '/saunas/' })
+          .length === 1,
+        'a declared redirect that changed target must be reported');
+      check('O3 a redirect that stopped happening is a failure',
+        redirectFailures('baseline', {}, { '/gallery/': '/saunas/' }).length === 1,
+        'a declaration with no matching observation must be reported');
+      check('O3 a matching redirect is silent',
+        redirectFailures('baseline', { '/gallery/': '/saunas/' }, { '/gallery/': '/saunas/' })
+          .length === 0,
+        'control: a correctly declared redirect must not fail the run');
+    }
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
+  }
+
+  process.stdout.write('\nO4 — the redirect gate is actually WIRED IN (real CLI run)\n');
+  {
+    // O3 tests the comparison function. This tests that main() still CALLS it:
+    // deleting the `redirectFailures(...)` line from captureBuild leaves O3
+    // green. So run the real CLI, end to end, against two real commits, with a
+    // config that declares no redirects at all — the site genuinely redirects
+    // /gallery/ and /process/, so a wired-in gate must fail the run and say so.
+    //
+    // This is the slow fixture (two Eleventy builds + a capture pass). It is
+    // narrowed to one width, and it is the only way to prove the wiring.
+    const cfgFile = path.join(os.tmpdir(), `ssc-vd-redirect-${process.pid}.json`);
+    const base = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+    fs.writeFileSync(cfgFile, JSON.stringify({ ...base, widths: [1440], expectedRedirects: {} }));
+    let code = 0;
+    let out = '';
+    try {
+      out = execFileSync(process.execPath,
+        [path.join(REPO_ROOT, 'scripts', 'visual-diff.mjs'),
+          '-b', 'HEAD~1', '-c', 'HEAD', '--config', cfgFile],
+        { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    } catch (err) {
+      code = err.status;
+      out = `${err.stdout || ''}${err.stderr || ''}`;
+    } finally {
+      fs.rmSync(cfgFile, { force: true });
+    }
+    check('O4 an undeclared redirect fails the real run',
+      code !== 0, `expected a non-zero exit, got ${code}. output tail: ${out.slice(-600)}`);
+    check('O4 the run says which route redirected undeclared',
+      /is not declared in "expectedRedirects"/.test(out) && /\/gallery\/|\/process\//.test(out),
+      `the redirect gate did not fire. output tail: ${out.slice(-800)}`);
+  }
+
+  process.stdout.write('\nF4 — WORKING on a CLEAN tree must not disguise a self-comparison\n');
+  {
+    // The defect: resolveRef('WORKING') appended "+dirty" unconditionally, so
+    // WORKING could never string-match any real sha and the sha-equality guard
+    // in main() was unreachable. On a clean checkout of main, the DEFAULT
+    // invocation `-b main -c WORKING` built the same commit twice, compared it
+    // with itself, and reported "PASS, 19 pairs" having measured nothing.
+    //
+    // Two halves, tested separately because the live repo is dirty during any
+    // test run and so cannot itself supply the clean case:
+    //   F4a  WORKING on a clean tree resolves to a BARE sha (scratch repo)
+    //   F4b  two ref names resolving to one sha are refused (real CLI)
+    // Together those are the bug: F4a restores the collision, F4b acts on it.
+    const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'ssc-vd-cleanrepo-'));
+    try {
+      const g = (...a) => execFileSync('git', a, { cwd: scratch, encoding: 'utf8', stdio: 'pipe' });
+      g('init', '--quiet');
+      g('config', 'user.email', 'fixture@example.com');
+      g('config', 'user.name', 'fixture');
+      fs.writeFileSync(path.join(scratch, 'a.txt'), 'one\n');
+      g('add', '-A');
+      g('commit', '--quiet', '-m', 'first');
+      const head = g('rev-parse', '--short', 'HEAD').trim();
+
+      check('F4a a clean tree resolves WORKING to the bare HEAD sha',
+        resolveRef('WORKING', scratch) === head,
+        `expected ${head}, got ${resolveRef('WORKING', scratch)}. An unconditional `
+        + `"+dirty" suffix here is what made the self-comparison guard unreachable.`);
+
+      // A tracked edit.
+      fs.writeFileSync(path.join(scratch, 'a.txt'), 'two\n');
+      check('F4b a modified tracked file marks WORKING dirty',
+        resolveRef('WORKING', scratch) === `${head}+dirty`,
+        `expected ${head}+dirty, got ${resolveRef('WORKING', scratch)}`);
+
+      // ...and back to clean, then an UNTRACKED file. materializeWorkingTree
+      // copies untracked files into the build, so they genuinely make WORKING a
+      // different build from HEAD and must count as dirty.
+      g('checkout', '--quiet', '--', 'a.txt');
+      check('F4c a clean tree is clean again after the edit is reverted',
+        resolveRef('WORKING', scratch) === head,
+        `expected ${head}, got ${resolveRef('WORKING', scratch)}`);
+      fs.writeFileSync(path.join(scratch, 'untracked.txt'), 'new\n');
+      check('F4d an untracked file marks WORKING dirty',
+        resolveRef('WORKING', scratch) === `${head}+dirty`,
+        `expected ${head}+dirty, got ${resolveRef('WORKING', scratch)}. Untracked files `
+        + `are copied into a WORKING build, so they change what is measured.`);
+    } finally {
+      fs.rmSync(scratch, { recursive: true, force: true });
+    }
+
+    // F4e: two DIFFERENT ref names resolving to ONE sha must be refused. This
+    // is the guard that F4a re-arms; the string-equality check above it in
+    // main() does not catch this shape.
+    let code = 0;
+    let out = '';
+    try {
+      out = execFileSync(process.execPath,
+        [path.join(REPO_ROOT, 'scripts', 'visual-diff.mjs'), '-b', 'HEAD', '-c', 'HEAD~0'],
+        { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    } catch (err) {
+      code = err.status;
+      out = `${err.stdout || ''}${err.stderr || ''}`;
+    }
+    check('F4e two ref names for one commit are refused',
+      code !== 0 && /both resolve to|proves nothing/i.test(out),
+      `expected a refusal naming the collision, got exit ${code}: ${out.slice(0, 500)}`);
+    check('F4e the refusal comes before any build',
+      !/Building baseline/.test(out),
+      'the sha-equality guard must fire before the expensive work');
   }
 
   process.stdout.write('\nConfig validation — the four fail-open paths, closed\n');

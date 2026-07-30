@@ -41,6 +41,17 @@ function runBuild(dir) {
 /**
  * Directory names at the repo root that are never copied into a WORKING build.
  * Build artefacts, VCS metadata, the harness's own scratch space, and secrets.
+ *
+ * RISK, stated rather than discovered later: this is a DENYLIST, so it fails
+ * open. Anything new at the repo root is copied by default. Two consequences —
+ * a new build-artefact directory silently inflates every WORKING build until
+ * someone adds it here, and a new secrets file that is not named `.env*` gets
+ * copied into a world-readable temp directory. (The `.env` entry plus the
+ * `startsWith('.env')` guard in materializeWorkingTree cover today's secrets;
+ * they do not cover a future `credentials.json`.) An allowlist would fail
+ * closed but would need updating for every legitimate new top-level input,
+ * which is the more frequent event by far. Kept as a denylist deliberately;
+ * revisit if a non-`.env` secret ever lands at the repo root.
  */
 const WORKING_COPY_EXCLUDE = new Set([
   'node_modules', '.git', 'dist', '_site', '.visual-diff', '.netlify',
@@ -69,15 +80,37 @@ function materializeWorkingTree(dest) {
 /**
  * Resolve a ref to a short sha, so two refs naming the same commit can be
  * detected before an expensive self-comparison is run.
- * @returns {string} short sha, or 'working-tree' for WORKING.
+ *
+ * WORKING resolves to HEAD's sha, with a `+dirty` suffix ONLY when the working
+ * tree actually differs from HEAD. The suffix used to be unconditional, which
+ * made `baselineSha === candidateSha` unreachable for WORKING and so disarmed
+ * the self-comparison guard entirely: on a clean tree the default invocation
+ * (`-b main -c WORKING` with main checked out) built the same commit twice,
+ * measured nothing, and reported PASS. Suffixing only when dirty lets the
+ * equality guard in visual-diff.mjs fire on exactly that case.
+ *
+ * `git status --porcelain` is the right dirtiness test rather than a
+ * tracked-files-only diff: materializeWorkingTree copies untracked files into
+ * the build too, so an untracked file genuinely makes WORKING a different build
+ * from HEAD.
+ *
+ * `cwd` exists so the fixtures can exercise both the clean and the dirty case
+ * against a real scratch repository. The live repo is dirty whenever anyone is
+ * working in it, so the clean-tree branch — the one that was broken — is
+ * otherwise untestable. Production callers always use the default.
+ *
+ * @returns {string} short sha, `<sha>+dirty`, or 'working-tree' outside a repo.
  */
-export function resolveRef(ref) {
+export function resolveRef(ref, cwd = REPO_ROOT) {
   if (ref === 'WORKING') {
-    try { return `${git(['rev-parse', '--short', 'HEAD'])}+dirty`; }
-    catch { return 'working-tree'; }
+    try {
+      const head = git(['rev-parse', '--short', 'HEAD'], cwd);
+      const dirty = git(['status', '--porcelain'], cwd) !== '';
+      return dirty ? `${head}+dirty` : head;
+    } catch { return 'working-tree'; }
   }
   try {
-    return git(['rev-parse', '--short', ref]);
+    return git(['rev-parse', '--short', ref], cwd);
   } catch (err) {
     throw new Error(`Not a git ref: ${ref}`);
   }
