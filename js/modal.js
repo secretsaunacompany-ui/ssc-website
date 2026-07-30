@@ -211,7 +211,10 @@
         resetForm() {
             // Reset radio buttons to default
             document.querySelectorAll('.modal-addons input[type="radio"]').forEach((input) => {
-                if (input.value === '0' || input.value === 'included') {
+                // Zero-valued radios are the "none / included" defaults for their group.
+                // Groups whose options are all non-priced (e.g. bench) mark their default
+                // explicitly with data-default so they still reset correctly.
+                if (input.value === '0' || input.value === 'included' || input.hasAttribute('data-default')) {
                     input.checked = true;
                 }
                 // Re-enable all inputs
