@@ -298,12 +298,19 @@ re-verified but watch-listed — if the line dies, base-model cost rises $775.
 Clear cedar is priced at thermowood parity on an unverified assumption (§7.7) and
 may split — which is exactly why Thermowood gets its own token above.
 
-**Gated on Lee (asked 2026-07-30):** the price-transition policy — effective
-date, whether quotes already issued are honoured, quote-validity going forward
-(eight lines rise between +33% and +260%; his call, not the implementer's) — and
-the discounting question: doc 31 records realized price historically at ~73% of
-list, and every margin in doc 35 assumes list is what customers pay. WP-0b-ii
-does not merge until both are answered.
+**Answered by Lee (2026-07-30) — WP-0b-ii is un-gated:**
+
+- **Transition: honour issued quotes.** New prices are effective immediately for
+  new inquiries. Any written quote already issued is honoured for its stated
+  validity, or 30 days from issue where unstated. Every quote going forward
+  carries a **30-day validity line** — a quoting-practice rule that also flows to
+  the quote templates outside this wave. In-flight conversations without a
+  written quote get the new prices.
+- **Discounting: firm prices, none.** The sheet's 40–45% floors are real prices,
+  not opening positions — matching Lee's "bias upward" ruling and the lesson that
+  underpricing is what stopped the builds. The historical ~73%-of-list realized
+  price (doc 31 / rev3 Assumption 3) is retired as a practice, not built into the
+  sheet. The configurator quotes what SSC charges.
 
 ### Verify
 
