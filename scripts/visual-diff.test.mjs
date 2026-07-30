@@ -639,6 +639,21 @@ async function main() {
     throwsWith('P5 a duplicate page/metric pair is rejected', [LIVE, LIVE], 'duplicate');
     throwsWith('P5 a non-array pageOverrides is rejected', { page: '/a/' }, 'must be an array');
 
+    check('P6 an override keeps its reason and expiry for the report',
+      (() => {
+        const [o] = [...cfg([LIVE]).overrides.values()];
+        return o && o.page === '/about/' && o.metric === 'maxLayoutShiftPx'
+          && o.value === 24 && o.reason === LIVE.reason && o.expires === '2026-09-30';
+      })(),
+      'report.json must be able to say which budget was raised, why, and until when, '
+      + 'without reconstructing it from the map key');
+    check('P6 two metrics on one page coexist',
+      cfg([LIVE, { ...LIVE, metric: 'maxChangedPct', value: 40 }]).overrides.size === 2,
+      'the key must distinguish metrics, not just pages');
+    check('P6 one metric on two pages coexist',
+      cfg([LIVE, { ...LIVE, page: '/faq/' }]).overrides.size === 2,
+      'the key must distinguish pages, not just metrics');
+
     check('P6 the shipped config declares no overrides',
       loadConfig(CONFIG_FILE, fs.readFileSync).overrides.size === 0,
       'Batch 1 changes no rendered output, so it must need no raised budgets');

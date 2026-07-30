@@ -330,11 +330,8 @@ async function main() {
       route, reason: e.reason, waive: [...e.waive],
     })),
     // Overrides are recorded in the report so a green run always carries the
-    // list of budgets that were raised to make it green.
-    pageOverrides: [...config.overrides.entries()].map(([key, value]) => {
-      const sep = key.lastIndexOf(' ');
-      return { page: key.slice(0, sep), metric: key.slice(sep + 1), value };
-    }),
+    // list of budgets that were raised to make it green, with the reasons.
+    pageOverrides: [...config.overrides.values()],
     expectedRedirects: config.expectedRedirects,
     comparedPairs,
     runFailures,
