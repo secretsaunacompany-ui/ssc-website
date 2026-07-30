@@ -317,7 +317,7 @@
             const conflictingAddons = [
                 'input[name="interior"]',           // Clear cedar interior
                 'input[name="exterior"]',           // Cedar exterior
-                'input[name="wifi"]',               // WiFi controller (if it exists)
+                'input[data-addon="wifi"]',         // WiFi controller
                 'input[data-addon="lighting"]',     // Lighting package
                 'input[data-addon="speakers"]'      // Bluetooth speakers
             ];
