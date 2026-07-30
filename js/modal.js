@@ -197,6 +197,12 @@
 
             const heading = document.getElementById('configureHeading');
             if (heading) heading.hidden = step !== 'configure';
+
+            // Once the quote is sent the record has been cleared, so the
+            // retention notice would be claiming a thing that is no longer
+            // true, next to an eraser with nothing left to erase.
+            const storageNote = document.querySelector('.quote-storage-note');
+            if (storageNote) storageNote.hidden = step === 'success';
         }
 
         /** The elements that make up a step, for animating it in or out. */

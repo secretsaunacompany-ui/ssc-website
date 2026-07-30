@@ -416,6 +416,9 @@ async function runStates(base, browser) {
       'focus was left behind on the submitted form');
     check('success: the saved record is cleared, and only here',
       await readStore(page) === null, 'the stored configuration outlived a successful submit');
+    check('success: the retention notice goes with the record it describes',
+      !(await page.isVisible('.quote-storage-note')),
+      'the page still promises 7 days of saved progress after clearing it');
 
     const body = new URLSearchParams(page.__posts[0].body);
     check('success: the request declares Accept: application/json',
