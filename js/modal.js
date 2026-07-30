@@ -214,7 +214,9 @@
                 // Zero-valued radios are the "none / included" defaults for their group.
                 // Groups whose options are all non-priced (e.g. bench) mark their default
                 // explicitly with data-default so they still reset correctly.
-                if (input.value === '0' || input.value === 'included' || input.hasAttribute('data-default')) {
+                // handlePremiumPackageChange applies the same two-clause test -- keep them
+                // in step, or the two paths disagree about what "default" means.
+                if (input.value === '0' || input.hasAttribute('data-default')) {
                     input.checked = true;
                 }
                 // Re-enable all inputs
@@ -267,6 +269,13 @@
                 } else if (value === 'premiumFinishPrice') {
                     value = currentModel.premiumFinishPrice;
                 } else {
+                    // Named tokens that are NOT per-model price keys land here and are
+                    // deliberately non-numeric: benchL / benchU exist only to be
+                    // distinguishable in the quote serializer, and both must cost $0.
+                    // Note the trap in the `|| 0` -- it swallows NaN silently. If a bench
+                    // tier is ever priced, it needs a numeric value or a resolver branch
+                    // above; editing only the price SPAN would ship a $0 upsell, which is
+                    // the mirror image of the bug the tokens were introduced to fix.
                     value = parseInt(value) || 0;
                 }
 
@@ -332,7 +341,8 @@
                         // Reset to default/included value
                         if (input.type === 'checkbox') {
                             input.checked = false;
-                        } else if (input.type === 'radio' && (input.value === '0' || input.value === 'included')) {
+                        // Same default test as resetForm -- see the comment there.
+                        } else if (input.type === 'radio' && (input.value === '0' || input.hasAttribute('data-default'))) {
                             input.checked = true;
                         }
                     } else {

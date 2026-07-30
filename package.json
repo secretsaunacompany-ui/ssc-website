@@ -9,7 +9,8 @@
     "dev:netlify": "netlify dev",
     "visual-diff": "node scripts/visual-diff.mjs",
     "visual-diff:test": "node scripts/visual-diff.test.mjs",
-    "build-cache:test": "node scripts/build-cache.test.mjs"
+    "build-cache:test": "node scripts/build-cache.test.mjs",
+    "package-claim:test": "node scripts/package-claim.test.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
