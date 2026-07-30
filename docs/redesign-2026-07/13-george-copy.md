@@ -332,7 +332,7 @@ Sub (replaces "no obligation, no pressure", which is pressure's business card):
 
 Form: keep the entire structure and all labels; it's the best microcopy on the site. Two changes:
 - Submit button: keep **`Get My Quote`**. Rationale: the sitewide CTA that *leads here* is "Get a Quote"; the button that *submits* may stay first-person because it describes the reader's own action. This is the one sanctioned variant.
-- Contact info block: keep Email; "Based in" value stays **Squamish, British Columbia** [src: contact.njk:107]. No phone number anywhere [src: brief — phone decision row]. **[NEEDS LEE: reply-time. Wim's flag stands — "expect a reply within X business days, Lee must supply X, do not invent." No response-time line publishes anywhere pre-submission until Lee gives the number. The thank-you page's existing post-submission line (thank-you.njk:5) is untouched and stays where it is.]**
+- Contact info block: keep Email; "Based in" value stays **Squamish, British Columbia** [src: contact.njk:107]. No phone number anywhere [src: brief — phone decision row]. **[RESOLVED 2026-07-30: reply-time answered — "within three business days, usually the next day" (per Lee 2026-07-28, doc 20 D46; doc 21 E3 closed). The thank-you page's existing post-submission line (thank-you.njk:5) is untouched and stays where it is.]**
 
 ### Warranty — `src/_includes/pages/warranty.njk`
 No copy changes to the body; strongest trust page on the site. Naming fix, all instances enumerated (my previous "everywhere else is already correct" was wrong — it's correct in exactly one place):
@@ -429,11 +429,11 @@ Keep every existing label; they're right. Additions:
 ### Configurator modal (`_includes/modals/sauna.njk`)
 The modal is being rebuilt to submit directly [src: brief — configurator decision row]. The button promises exactly what it does:
 - Button (replaces "Request Quote for This Configuration"): **`Send This Configuration`**
-- Helper line under the button: *Goes straight to us with your model, options, and total. We'll reply with a formal quote.* **[NEEDS LEE: reply-time — no "typically within one business day" or any timing promise here until Lee supplies it. Wim flagged this twice.]**
+- Helper line under the button: *Goes straight to us with your model, options, and total. We'll reply with a formal quote within three business days, usually the next day.* **[RESOLVED 2026-07-30: reply-time per Lee 2026-07-28, doc 21 E3 closed.]**
 - Keep the honest disclaimer: *Final pricing is confirmed after consultation. Custom requests welcome.* [src: existing modal copy]
 - Direct submission needs identity fields. Labels: **Name** / **Email**, plus one optional: **Anything about your site we should know? (optional)**
 - Running total label: **Your configuration**, with the sum captioned *Estimated total, before tax*. **[NEEDS LEE / JON: no GST/PST percentages here or anywhere until the tax treatment is confirmed — see §0a item 1. "Before tax" alone is safe and stays.]**
-- **Success (in-modal):** *Configuration sent. We've got it, and a formal quote will follow.* **[NEEDS LEE: same reply-time hold.]**
+- **Success (in-modal):** *Configuration sent. We've got it, and a formal quote will follow within three business days — usually the next day.* **[RESOLVED 2026-07-30: reply-time per Lee 2026-07-28, doc 21 E3 closed.]**
 - **Failure:** *That didn't send. Your configuration is still here; try again, or email us at secretsaunacompany@gmail.com.*
 - Addon "none" rows keep the "—" price placeholder in the price column; it reads cleaner than "$0". *(Display glyph in a table cell, not prose; the no-em-dash rule governs copy.)*
 - **Price integrity note (from the critic, core dim 8):** no configurator total ships until the Revive 9kW add-on price is reconciled with `models.json` and supplier cost. That's Ted/Lee territory, but this copy explicitly must not lend confidence to an unreconciled number.

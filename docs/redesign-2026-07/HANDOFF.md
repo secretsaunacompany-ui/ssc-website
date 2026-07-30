@@ -56,7 +56,9 @@ Do not redo any of this. All verified in production.
 2. **The harness repair** (plan §2). It currently reports zero shift for any shift
    beyond 240px and passes a 6px sitewide button move. Mostly a matter of gating
    two numbers it already computes.
-3. Then WP-0c, WP-0b, WP-0a, WP-1a, WP-1b, WP-2a as sequenced in plan §8.
+3. Then WP-0c, WP-0b-i (funnel), WP-0a, WP-1a, WP-1b, WP-2a as sequenced in plan
+   §8 — with WP-0b-ii (repricing) landing any time after 0b-i once Lee's
+   price-transition and discounting answers are in. It blocks nothing else.
 
 **Consider re-running the critic on Wave A first.** It has not been reviewed since
 the configurator and the price sheet were folded in. Offered to Lee; not yet done.
@@ -98,11 +100,22 @@ received so far. A formatted version was published for him to work through.
 | WP-4 new pages | Same, plus which commercial clients may be named |
 | WP-6 case studies | **Parked by Lee's choice** — he is agreeing curated packages directly with Clarke, Emmanuel and Mountain Life before anything publishes |
 
-**One line inside Wave A is unresolved:** changing-room pricing. Lee asked for the
-derivation, got it, and it came back *higher* than the figure he was already
-sceptical of — $11,000 (3') and $12,500 (4'). He has not yet responded. If he
-does not accept before WP-0b runs, those two lines ship at current prices and
-flagged; everything else proceeds.
+**Changing-room pricing: RESOLVED (2026-07-29).** Lee got the derivation, engaged
+with it, and corrected an input (the accent-wall standard — entrance wall is
+always T&G, never metal); the correction was folded and moved cost by only
+−$35/+$15, so the prices held at **$11,000 (3') / $12,500 (4')**. Doc 35 §2 is
+authoritative. Also folded 2026-07-29: decks split two-tier (§2B — open platform
+keeps $2,000/$3,000, semi-enclosed NEW $4,100/$5,200) and speakers split two-tier
+(§5B — standard $1,000, Polk premium NEW $1,500).
+
+**Critic rev.4 (2026-07-30, `redesign-wave-a-critic.md`):** Wave A was NOT CLEARED
+as written and the must-fixes were folded the same day. The load-bearing changes:
+WP-0b is **two commits** — 0b-i funnel rebuild (no prices, no Lee input) and
+0b-ii repricing (all nineteen doc 35 §6 changes + "Save $500" copy + the
+models.json schema extension, **gated on Lee's price-transition and discounting
+answers**). Never verify the package saving against a hardcoded dollar figure —
+the criterion is "delta equals the saving stated at `sauna.njk:161`, at the
+prices live in that commit."
 
 ---
 

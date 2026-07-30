@@ -58,6 +58,14 @@ stale. Minimum fix: bump every `?v=` in the same commit as any change to those f
 **Either way, this becomes a line in the definition of done for every package that
 touches `styles.css` or `js/*`.**
 
+### P-C — Reproducible builds *(critic X8)*
+
+`package-lock.json` is gitignored and untracked while `@11ty/eleventy` floats on
+`^2.0.0` — the build tool is the least-pinned thing in a programme whose deploy
+story rests on reproducible builds, and Wave A adds three dev dependencies and a
+font pipeline on top. Un-ignore and commit the lockfile; pin Eleventy exact. Two
+lines, same cheap-now-expensive-later profile as P-A and P-B. Before WP-1a.
+
 ### P-B — Build cleanliness *(critic N2)*
 
 `netlify.toml` already runs `rm -rf dist && npx @11ty/eleventy` — that was fixed
@@ -88,9 +96,20 @@ changed entirely, and passes a 6px sitewide button move at both widths.
 | Zero-comparison runs **fail** | Comparing a ref to itself should be an error, not a pass. |
 | Three fixture tests | The harness has no tests of its own. It is a fixture certifying a whole-stylesheet migration; the rubric's "testing the tests" clause applies to it directly. |
 
-**Also:** the "zero changed pixels" determinism result holds partly because a cache
-bug stops the hero video rendering in either build. Fix or document — a determinism
-claim resting on a second bug is not a determinism claim.
+**Budgets — stated, not vibes** *(critic 9.2)*: on any page not in
+`expectedToChange`, the gate fails at `layoutShiftMaxPx` > **4px** or
+`shiftCoverage` < **0.95**. The three fixture tests calibrate the budgets — the
+6px sitewide button move **must fail** and the self-comparison **must error**;
+a budget the fixtures don't confirm is renegotiated in the plan, not in the
+harness. `expectedToChange` restructures to **per-metric waivers** (a page may
+waive `changedPct` and remain shift-gated) — a restructure, not a flag flip.
+Four fail-open paths close and fail loud: `widths: []` errors, `fetchFailures > 0`
+fails, the missing-PNG `continue` (`diff.mjs:174`) fails, discarded redirects fail.
+`WORKING` mode builds to a temp dir — never `rm -rf` against the live working tree.
+
+**Hero video, resolved one way:** harness capture **stubs the video element**, so
+determinism holds by construction; the underlying cache bug is filed as a site bug
+and fixed on its own merits — the determinism claim no longer leans on it.
 
 **If the repair is declined**, say so explicitly and substitute a named page-by-page
 human review at both widths — and then stop describing the harness as an acceptance
@@ -120,16 +139,26 @@ customer can actually assemble is $6,000 against a $7,000 package — **the clai
 wrong by $2,000 in direction, on every model, live now.**
 
 Add WiFi as an individually-selectable $2,000 option in
-`src/_includes/modals/sauna.njk` and the modal total logic. The basket becomes
-$8,000, the claim becomes true, and a high-margin line stops being given away
-inside a bundle. Research priced a heat-rated controller around $550.
+`src/_includes/modals/sauna.njk` and the modal total logic. The assemblable basket
+rises from `interiorUpgrade + $5,000` to `interiorUpgrade + $7,000` against a
+package at `interiorUpgrade + $6,000` — the "Save $1,000" claim becomes true on
+every model (the gap is model-invariant; dollar absolutes quoted previously were
+the S2 row only), and a high-margin line stops being given away inside a bundle.
+The full controller stack costs $1,020 direct ($550 heat-rated touchpad + $350
+contactor + 2 h) — doc 35 row 15; $550 is one component, not the basis.
 
-**Verify:** with WiFi selected individually alongside the other four components,
-the total must exceed the package price by exactly $1,000 on all five models.
+**Verify:** with WiFi selected individually alongside the other four package
+components, the basket-minus-package delta must equal **the saving stated at
+`sauna.njk:161`**, on all five models, at whatever prices are live in that commit.
+Never a hardcoded dollar figure: at current prices the stated saving is $1,000 and
+this makes it true; when WP-0b-ii lands doc 35 change 13, the stated saving becomes
+**"Save $500"** and the copy ships in the same commit as the prices that make it
+true (§3a). A verify criterion that names a number certifies the wrong world the
+moment the other world deploys — that is critic rev.4's central finding, folded.
 
 ---
 
-## 3a. WP-0b — The configurator
+## 3a. WP-0b — The configurator — TWO commits (critic rev.4, inversion)
 
 The package this whole programme exists for. The button has never once delivered
 a submission in the site's history.
@@ -138,13 +167,50 @@ a submission in the site's history.
 `35-configurator-price-sheet.md` for every number, `33-intake-form-design.md` §6
 for the Step 2 field set.
 
-### The flow
+**The split.** WP-0b is two commits with different risk profiles, different revert
+consequences, and different approvals:
+
+- **WP-0b-i — funnel rebuild.** The form, states, a11y, fallback, storage, events.
+  **Zero price changes.** Needs no decision from Lee. Reverting it restores a
+  broken funnel but never moves a price.
+- **WP-0b-ii — repricing.** All nineteen doc 35 §6 changes as one commit, including
+  the savings copy. **Gated on Lee's price-transition and discounting answers.**
+  Reverting it is a deliberate price flip — `git revert` of this one commit only,
+  never a deploy-restore that drags the funnel out with it.
+
+### WP-0b-i — the flow
 
 Two-step modal — configure, then send — with a real `<form>` posting to the
 existing Formspree endpoint from inside the modal. **No navigation until success.**
+(The endpoint is defined once — `contact.njk:18` and the hardcoded fallback in
+`js/forms.js:16` collapse to one source before this form becomes a third copy.)
 
 - **`localStorage`, not `sessionStorage`.** A 7-day window is incoherent against
   per-tab storage that dies on tab close.
+- **`js/navigation.js:72–79` moves with the storage.** It reads
+  `sessionStorage.getItem('ssc_quote_config')` and deletes on read; switching the
+  modal to `localStorage` without it silently kills the `/contact/` fallback state.
+  Carry doc 14 §1:47–49 in full: delete-on-read removed, the key survives until
+  successful submit, `/contact/` shows a visible attached-config banner.
+- **One key, last writer wins, version-stamped.** The stored config carries a
+  `priceSheetVersion`. On restore with a stale stamp, totals recompute from the
+  stored selections against live prices with a visible "prices have been updated"
+  note — a saved total never silently disagrees with its own line items, and a
+  price deploy never resurrects a pre-deploy total. Two tabs share one key by
+  design; last write wins, stated.
+- **Retention (X2, gating):** cleared on successful submit; expires at 7 days; a
+  visible "start over" clears it on demand. The key holds a physical address and
+  site-access notes in plaintext — that is why the rule is explicit. Step 2 carries
+  a privacy-policy link beside the submit, and the privacy page goes in front of
+  Petra before this package's production deploy — not parked with WP-4.
+- **Serialisation contract: composed blob.** The form posts one human-readable
+  `configuration` field composed from the live summary, plus name / email / notes /
+  location / access as named fields, plus `_subject` and `_gotcha`. **Not**
+  per-option named fields — three checkboxes carry no `name` attribute today and
+  two radio groups still collide on `value` until 0b-ii; a composed blob is immune
+  to both failure modes. `_subject` is doc 33 §6's string —
+  `Configurator Quote — {Model} — ${Total} — {location}` — arbitrated into doc 21
+  (2026-07-30); doc 14's variant loses.
 - **Step 2 carries five fields**, not three: name, email, notes, **location** and
   **site access**. A configuration without a location is still an unscopeable lead
   — this is Wim's own self-override in doc 33 §6.
@@ -163,9 +229,18 @@ existing Formspree endpoint from inside the modal. **No navigation until success
 - Reply-time promise reads **"within three business days, usually the next day"**
   — the bad-week number, so it holds on the worst week rather than the best.
 
-### The prices
+### WP-0b-ii — the repricing
 
-Every line from `35-configurator-price-sheet.md`. Load-bearing changes:
+**The enumeration is doc 35 §6's nineteen-change table, not this section.** The
+commit is verified against that table **row by row, all nineteen** — this list is
+highlights only, and treating it as the enumeration is how ten changes went
+missing before critic rev.4 caught it. Among the nineteen: the S2–S8 electric
+heater rises $2,000 → **$3,500** (not just the SC split), `interiorUpgrade` and
+`premiumFinishPrice` reprice per-model, both exteriors go per-model, a **new
+$3,700 full-size window tier** is born, lighting rises to $2,000, the savings
+copy becomes **"Save $500"** (change 13 — same commit as the prices), the deck
+group gains its two semi-enclosed options (rows 8b/9b) and the speaker group its
+premium option (row 14b). Load-bearing highlights:
 
 - **Kuuma removed.** Live at +$3,000 against ~$6,150–6,700 landed. This is a
   ~$3,000-per-sale loss quoting today, and "the freeze holds" described an
@@ -176,9 +251,17 @@ Every line from `35-configurator-price-sheet.md`. Load-bearing changes:
 - **SC heater path priced separately** from the 15kW Apex's real cost. One
   `+$2,000` slot currently sells two different heaters and only one was ever priced.
 - **Bench group fix** (§3) so bench choice stops vanishing from every quote.
-- **Catalogue string fix:** `js/data.js:84` advertises a "Homecraft 9kW Apex" that
-  the manufacturer does not make — the Apex line is 10/12/15/18kW. It renders
-  publicly in the modal spec grid and the compare table.
+- **Catalogue string fix — swept, not spot-fixed:** "Homecraft 9kW Apex" names a
+  heater the manufacturer does not make (the Apex line is 10/12/15/18kW), and the
+  string lives in **five files**, not the one previously named — sweep every
+  occurrence (`js/data.js` plus the four the critic enumerated in finding 8.2),
+  then grep-prove zero survivors. The literalism class, closed rather than sampled.
+- **Value-collision sweep completed:** three radio groups collide today — bench
+  (both `value="0"`, fixed in WP-0c), exterior (both `value="2500"`, fixed by the
+  per-model split), and **interior — Clear Cedar and Thermowood both carry
+  `value="interiorUpgrade"`** (`sauna.njk:134,:139`), which nothing fixed.
+  Thermowood gets its own token in this commit. Doc 35 §7.7 says clear-cedar
+  parity may split later; one shared token cannot carry two prices.
 - **Changing rooms priced** *(resolved 2026-07-29)*: 3' **+$11,000** / 4' **+$12,500**,
   from the doc 35 §2 itemised takeoff. Lee asked for the derivation, then corrected
   an input (the accent-wall standard: entrance wall is always T&G, never metal);
@@ -193,20 +276,50 @@ Every line from `35-configurator-price-sheet.md`. Load-bearing changes:
   existing option relabelled as the **standard set** at $1,000, plus a NEW
   **premium set** — Polk Atrium 5 pair + Fosi BT30D Pro 2.1 amp — at **+$1,500**.
   Premium sits outside the Premium Finish Package (package carries the standard
-  set; item-18 math untouched). Site copy for the premium tier must state the
-  mounting practice — the fact is docked on Lee (§5B.2); ship a placeholder-free
-  functional label without the mounting claim until he supplies it.
-- **`models.json` parity in the same pass** *(critic P9)*: every value changed in
-  `sauna.njk`/`js/data.js` lands in `~/marvin/content/reference/operations/models.json`
-  in the same commit, or the two-system drift this programme exists to end restarts.
+  set; item-18 math untouched). The tier ships with the minimal true mounting line
+  — **"mounted outside the peak-heat zone; placement confirmed at consultation"**
+  — which needs no input from Lee to be accurate (critic X4.4: a $1,500 audio
+  upgrade on a hot-room product cannot ship silent on where the speakers go). Lee's
+  actual practice sentence replaces it when he supplies it (docked, doc 35 §5B.2).
+- **`models.json` — a schema extension, not a value copy** *(critic 8.1)*: the
+  file cannot represent what doc 35 creates — one `heater_apex` entry cannot hold
+  the S2–S8/SC split, and there is no bench, deck-tier, speaker-tier, window-tier
+  or per-model wood-fired structure at all (its `_source` still cites an
+  `index.html` that died in the Eleventy migration). This commit designs the
+  extended structure and lands it with the same values, same pass — P9's intent,
+  achievable form. Budgeted as real work, not a copy step.
+
+**What is still soft (carried from doc 35 §7 — the plan does not strip the
+uncertainty):** IKI freight is a $500 *allowance* against quote-only reality
+(±$300 moves the wood-fired price ±$570); IKI stones are proxied at Homecraft's
+$50/box; **IKI stock at B Saunas is unconfirmed** — one call (1-705-727-0404)
+before the first wood-fired quote goes out. The H-Series credit (P3) is
+re-verified but watch-listed — if the line dies, base-model cost rises $775.
+Clear cedar is priced at thermowood parity on an unverified assumption (§7.7) and
+may split — which is exactly why Thermowood gets its own token above.
+
+**Gated on Lee (asked 2026-07-30):** the price-transition policy — effective
+date, whether quotes already issued are honoured, quote-validity going forward
+(eight lines rise between +33% and +260%; his call, not the implementer's) — and
+the discounting question: doc 31 records realized price historically at ~73% of
+list, and every margin in doc 35 assumes list is what customers pay. WP-0b-ii
+does not merge until both are answered.
 
 ### Verify
 
-A real quote request arrives in the inbox from the modal, carrying every selected
-option including the $0-value bench choice, with location and access attached.
-`quote_submit_success` moves off zero. The new deck and speaker radio options
-serialize into the summary and the request payload (the bench-group lesson,
-applied to the options being born rather than re-learned after).
+**WP-0b-i:** a real quote request arrives in the inbox from the modal, carrying
+every selected option including the $0-value bench choice, with location and
+access attached, **verified from a browser profile that visited the site before
+the deploy** (critic 9.4 — a fresh-context test is a false green while returning
+visitors keep the year-cached bundle; P-A is the fix and this is its proof).
+`quote_submit_success` moves off zero. The `/contact/` fallback fires with the
+config attached after a forced submit failure.
+
+**WP-0b-ii:** every one of doc 35 §6's nineteen rows checked off against the
+diff; the package/basket delta equals the saving stated at `sauna.njk:161` on all
+five models; the new deck and speaker options serialize into the summary and the
+composed payload; grep proves zero "9kW Apex" and zero duplicate `value=` within
+any radio group; `models.json` round-trips the same numbers the site renders.
 
 ---
 
@@ -220,10 +333,15 @@ is no historical funnel data for this site at all.
   history and is the success criterion for the whole programme.
 - **Count the configurator stream separately** via `_subject` *(critic N4)*, so a
   configurator submission is distinguishable from a contact-form one.
-- **Weekly submission check** — submissions this week against last, surfaced to Lee
-  in plain English. It is the only instrument on this stack that would catch a
-  silent revenue-channel outage; a regression in `js/forms.js` would otherwise be
-  invisible until the inbox went quiet.
+- **Weekly submission check — specified** *(critic X6: "surfaced in plain English"
+  is an outcome, not a design)*: a MARVIN local cron (weekly, Monday 08:00, the
+  market-watch pattern) reads the analytics store for `quote_submit_success` and
+  the configurator-stream count (by the doc-33 `_subject`), and pushes a
+  plain-English Telegram note via /notify when this week is zero or drops >50%
+  week-over-week. It is the only instrument on this stack that would catch a
+  silent revenue-channel outage. **No baseline exists before 2026-07-28** — the
+  first two weeks report raw counts with no comparison, and say so in the message,
+  so a quiet first fortnight is not read as a regression.
 
 ---
 
@@ -245,7 +363,9 @@ Governed by `11-beatrice-typography.md`, with shared values from doc 21.
 - Beatrice corrects her malformed step→role table before implementation begins.
 
 **Cleared to implement and deploy to a draft URL.** Production gated on §1, §2, and
-doc 21's T1–T4 count corrections.
+doc 21's T1–T4 (three count corrections **plus T2, the `booking-ops.html` scope
+defect** — it lives outside `src/` and must be inside every sweep; calling all four
+"count corrections" is how it would have been skipped).
 
 ---
 
@@ -258,7 +378,8 @@ Governed by doc 21 for tokens and `10-jen-art-direction.md` §4–5 for the syst
   charcoal, the value is `#c0c0c0`, a light silver. 14 call sites, all `color:`
   declarations, enumerated in doc 21 §6.1.
 - Define `--color-bg`. The stylesheet consumes it twice and never defines it — a
-  live bug matching audit finding P0-3.
+  live bug matching audit finding P0-3. Reconcile with `booking-ops.html`'s own
+  definition in the same edit, so the token isn't defined twice differently.
 - Radius collapse. Delete frosted-glass cards; the nav blur is the one sanctioned
   exception.
 - Motion: delete `HeroIntroAnimation`, four parallax variants, `slowZoom`. Six
@@ -301,20 +422,26 @@ Runs parallel to WP-1; blocks nothing in it.
 
 ```
 P-A ─┐
-P-B ─┴─► WP-0c ─► WP-0a ─► WP-1a ─► WP-1b ─► [prod gate] ─► production
-         (quote)   (events)  (type)   (colour)
-                                          ▲
-    §2 harness repair ────────────────────┘
-    WP-2a mark ── parallel, independent ──┘
+P-B ─┼─► WP-0c ─► WP-0b-i ─► WP-0a ─► WP-1a ─► WP-1b ─► [prod gate] ─► production
+P-C ─┘   (quote)   (funnel)   (events)  (type)   (colour)
+                      │                              ▲
+                      └─► WP-0b-ii (repricing) ──────┤  ← gated on Lee's transition
+                                                     │     + discounting answers
+    §2 harness repair ───────────────────────────────┘
+    WP-2a mark ── parallel, independent ─────────────┘
 ```
 
 Each package is one commit on `main` with a stated revert SHA. Draft deploy,
 review on the draft URL, then production. Nothing merges to production before
-§1 and §2 are done.
+§1 and §2 are done. WP-0b-ii may land any time after WP-0b-i once Lee's answers
+arrive — it does not block WP-0a/1a/1b.
 
 **Owner for shared files:** `netlify.toml` and `styles.css` are touched by several
 packages. One owner, sequential merges, no parallel edits. WP-1a edits the CSP
 (removing Google origins); nothing else may touch it in the same window.
+**`src/_includes/modals/sauna.njk`, `js/modal.js` and `js/data.js`** are touched
+by WP-0c, WP-0b-i and WP-0b-ii — same single-owner rule, strictly sequential
+merges in that order (critic 3.2).
 
 ---
 
@@ -329,6 +456,12 @@ floor is ever genuinely needed, the leak fix is re-applied in the same operation
 
 Mechanism: `netlify api restoreSiteDeploy` with a deploy id — instant, no rebuild.
 Code rollback is `git revert <sha>` then redeploy.
+
+**Price rollbacks are `git revert`, never deploy-restore** *(critic 7.3)*. Once
+WP-0b-ii has landed, restoring any earlier deploy is an uncontrolled price flip —
+Kuuma's ~$3,000-per-sale loss returns and every corrected price reverts with it.
+If the repricing must come back out, revert the 0b-ii commit alone: prices and the
+savings copy move together, and the funnel stays up.
 
 **For Lee, in plain English:** if something looks wrong, say "put it back." The
 orchestrator runs it. You never touch a command, and recovery is seconds.
@@ -347,7 +480,8 @@ Per package:
 - [ ] `prefers-reduced-motion` honoured in CSS **and** JS
 - [ ] AA contrast at every size actually used, on both ground and elevated surfaces
 - [ ] Keyboard-complete on every interactive surface touched
-- [ ] `models.json` updated in the same pass as any price/option change *(P9)*
+- [ ] `models.json` updated in the same pass as any price/option change *(P9 — via the 0b-ii schema extension, never a bare value copy)*
+- [ ] WP-0b-i only: acceptance verified from a browser profile that visited the site **before** the deploy *(critic 9.4)*
 - [ ] One commit, revert SHA stated
 
 Programme-level: `quote_submit_success` moves off zero. It has never been anything
