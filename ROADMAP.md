@@ -1,7 +1,12 @@
 ---
 status: active
-current: "Redesign 2026-07 — Wave A ready to relay. Pre-flight, harness repair, configurator rebuild, quote-integrity fixes, type/fonts, colour+motion, mark. Plan: .claude/plans/redesign-wave-a.md — start at docs/redesign-2026-07/HANDOFF.md"
-next: "Lee's outstanding answers unblock WP-2 (per-model prices), WP-3 (copy), WP-4 (process + warranty facts). See docs/redesign-2026-07/20-fact-gathering-questions.md"
+current: "Redesign 2026-07 — Wave A RELAY IN FLIGHT (2026-07-30, relay/redesign-wave-a + relay/redesign-wave-a-mark). Critic rev.4 cleared after fold-verification; pricing policy set (honour issued quotes + 30-day validity; firm prices, no discounting). Batch 1 (pre-flight P-A/B/C + harness repair) implemented, in Razor review. Mark assets prepared from Lee's own files (no redesign) — nav-size + favicon decisions docked on Lee. Plan: .claude/plans/redesign-wave-a.md"
+next: "Relay batches: WP-0c quote integrity → WP-0b-i funnel → WP-0a events → WP-1a type → WP-1b colour → WP-0b-ii repricing. Lee's outstanding answers unblock WP-2 (per-model prices), WP-3 (copy), WP-4 (process + warranty facts). See docs/redesign-2026-07/20-fact-gathering-questions.md"
+deferred:
+  - "npm-audit remediation: 70 pre-existing vulnerabilities surfaced when the lockfile was committed (7 critical, 35 high; 1 high in the production tree — ws via @supabase/supabase-js). Needs its own plan; npm audit fix --force on a live site is not a relay side-quest. Recorded 2026-07-30, Wave A batch 1."
+  - "Site CLS: lazy images without width/height/aspect-ratio (/about/ and elsewhere) — real cumulative layout shift for visitors, found during harness repair. Candidate WP-1b line. Recorded 2026-07-30."
+  - "Media cache keys on URL alone, ignores Range header — ranged media replays wrong (hero video). Site bug documented in scripts/lib/capture.mjs. Recorded 2026-07-30."
+  - "Badge SVG mask rendering verified in Chrome only — one Safari look owed before the footer seal ships. Recorded 2026-07-30."
 testing: "npm run visual-diff -- --baseline main --candidate <branch> (harness repair pending — see plan §2)"
 pinned: false
 shipped:
