@@ -279,7 +279,8 @@ function parsePageOverrides(file, rawOverrides, budget, now) {
     const horizon = now + (MAX_OVERRIDE_DAYS * 24 * 60 * 60 * 1000);
     if (deadline > horizon) {
       throw new Error(
-        `${file}: ${where} expires on ${o.expires}, more than ${MAX_OVERRIDE_DAYS} days out. `
+        `${file}: ${where} expires on ${o.expires}, past the ${MAX_OVERRIDE_DAYS}-day horizon `
+        + `(measured from the current moment, so the practical boundary is ~${MAX_OVERRIDE_DAYS - 1} days). `
         + `Nobody will revisit an expiry that distant. Pick a date inside `
         + `${MAX_OVERRIDE_DAYS} days; if the change genuinely needs longer, renew it `
         + `deliberately and say why.`);

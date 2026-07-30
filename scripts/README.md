@@ -391,13 +391,17 @@ for (const [,u,s] of fs.readFileSync('dist/index.html','utf8')
 }"
 ```
 
-> **The filter memoises per Eleventy process.** Under `npx @11ty/eleventy
-> --serve` (`npm run dev`), editing `styles.css` re-renders the templates but
-> reuses the cached hash, so the dev server can serve a stale stamp until it is
-> restarted. This affects local development only: `npm run build` and the
-> Netlify build are fresh processes that start with an empty cache, and the
-> visual-diff harness builds each ref in its own process too. If a dev-server
-> page seems to be ignoring a CSS edit, restart the server.
+> **The asset cache is cleared at the start of every build** (an
+> `eleventy.before` hook), so under `npx @11ty/eleventy --serve` (`npm run dev`)
+> an edit to `styles.css` or any `js/*` file MUST appear in the served output on
+> the next rebuild, with a fresh stamp. **If a dev-server page ever seems to be
+> ignoring a CSS/JS edit, do NOT shrug and restart the server — that symptom
+> means the `eleventy.before` cache-clear in `.eleventy.js` has regressed.**
+> This is the only live detector for that regression: the unit suite cannot
+> observe cross-build behaviour, and the stamp-vs-served check below stays green
+> even in the broken state (both sides serve the same stale buffer). Treat stale
+> dev CSS as a build bug, always. (A programmatic two-build fixture is queued in
+> the lazy-image micro-batch to make this machine-checked.)
 
 ### Dependencies
 
