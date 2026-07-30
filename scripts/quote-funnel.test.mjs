@@ -684,6 +684,14 @@ async function runStates(base, browser) {
     check('a11y: Tab is trapped inside the dialog',
       !escaped, 'focus escaped to the page behind the modal mid-quote');
 
+    // The honeypot is an <input>, so a naive focusable query includes it and
+    // Shift+Tab can wrap straight onto a field the visitor must never fill.
+    await page.evaluate(() => document.querySelector('.modal-close').focus());
+    await page.keyboard.press('Shift+Tab');
+    check('a11y: the honeypot is never a focus target',
+      await page.evaluate(() => document.activeElement.name !== '_gotcha'),
+      'wrapping backwards landed on the honeypot, which discards the submission if filled');
+
     // Reach step 2 and complete it without touching the mouse.
     await page.evaluate(() => document.querySelector('[data-action="request-quote"]').focus());
     await page.keyboard.press('Enter');

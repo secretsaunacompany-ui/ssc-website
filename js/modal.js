@@ -163,6 +163,10 @@
          */
         trapFocus(event) {
             const focusable = [...this.modal.querySelectorAll(FOCUSABLE)]
+                // tabIndex < 0 catches what the selector cannot: the honeypot is
+                // an `input` with tabindex="-1", so it matches `input:not([disabled])`
+                // and would otherwise become a wrap target for Shift+Tab.
+                .filter((el) => el.tabIndex >= 0)
                 .filter((el) => el.offsetParent !== null || el === document.activeElement);
             if (!focusable.length) return;
 
