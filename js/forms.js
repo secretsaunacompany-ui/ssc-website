@@ -13,7 +13,17 @@
         const form = event.target;
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn ? submitBtn.textContent : null;
-        const formEndpoint = form.getAttribute('action') || 'https://formspree.io/f/mdaaejwp';
+        // The endpoint has exactly ONE definition: `site.forms.endpoint` in
+        // src/_data/site.json, rendered into each form's `action`. This used to
+        // carry a hardcoded fallback copy of the URL, which meant a template
+        // could lose its action and nothing would ever say so. A form with no
+        // action is a bug in the template, so it fails loudly here instead of
+        // being silently rescued by a literal that can drift.
+        const formEndpoint = form.getAttribute('action');
+        if (!formEndpoint) {
+            console.error('SSC: form has no action attribute; expected site.forms.endpoint', form);
+            return;
+        }
 
         if (submitBtn) {
             submitBtn.textContent = 'Sending...';

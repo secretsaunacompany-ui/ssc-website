@@ -15,7 +15,11 @@
             </div>
 {% endif %}
 
-            <form class="contact-form contact-form--styled" method="POST" action="https://formspree.io/f/mdaaejwp" data-action="contact-submit">
+            {# Endpoint comes from src/_data/site.json (site.forms.endpoint) -- the single
+               definition for every form on the site. It used to be written out here AND
+               hardcoded as a fallback in js/forms.js; the configurator form would have
+               made it three copies. Never paste the literal back in. #}
+            <form class="contact-form contact-form--styled" method="POST" action="{{ site.forms.endpoint }}" data-action="contact-submit">
                 <input type="hidden" name="_next" value="https://www.secretsaunacompany.ca/contact/thank-you/">
                 <input type="hidden" name="_subject" value="New Sauna Inquiry from Website">
                 <div class="form-group">

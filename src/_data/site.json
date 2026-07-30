@@ -1,7 +1,12 @@
 {
   "title": "Secret Sauna Company | Handcrafted Finnish Saunas in British Columbia",
   "url": "https://secretsaunacompany.ca",
+  "email": "secretsaunacompany@gmail.com",
   "features": {
     "advisor": false
+  },
+  "forms": {
+    "endpoint": "https://formspree.io/f/mdaaejwp",
+    "formspreeAutoresponse": false
   }
 }
