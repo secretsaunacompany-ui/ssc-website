@@ -865,6 +865,30 @@ nav .container {
     margin: var(--spacing-xl) auto;
 }
 
+/* Injected by navigation.js only when a saved configurator quote exists, so it
+   is absent from every first paint. A configuration pasted silently into a
+   textarea reads as nothing having happened; this says it out loud. */
+.quote-attached-banner {
+    max-width: 600px;
+    margin: var(--spacing-xl) auto calc(-1 * var(--spacing-md));
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-left: 3px solid var(--color-warm-wood);
+    background: var(--color-warm-wood-alpha-10);
+    border-radius: var(--radius-sm);
+}
+
+.quote-attached-banner__title {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--color-off-white);
+}
+
+.quote-attached-banner__note {
+    margin: var(--spacing-xs) 0 0;
+    font-size: 0.85rem;
+    color: var(--color-text-subtle);
+}
+
 .form-group {
     margin-bottom: var(--spacing-lg);
 }

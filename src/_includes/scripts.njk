@@ -2,6 +2,10 @@
     <!-- Load order matters: data & utils first, then components, then init last -->
     <script src="{{ '/js/data.js' | assetUrl }}" defer></script>
     <script src="{{ '/js/utils.js' | assetUrl }}" defer></script>
+    {# quote-store reads SSC.pricesVersion from data.js and is read by both
+       navigation.js (the /contact/ fallback) and modal.js -- it must load after
+       data.js and before either of them. #}
+    <script src="{{ '/js/quote-store.js' | assetUrl }}" defer></script>
     <script src="{{ '/js/animations.js' | assetUrl }}" defer></script>
     <script src="{{ '/js/navigation.js' | assetUrl }}" defer></script>
     <script src="{{ '/js/gallery.js' | assetUrl }}" defer></script>

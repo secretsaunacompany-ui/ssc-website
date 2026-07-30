@@ -391,7 +391,11 @@
 
             // Close modal and navigate to contact with config data
             this.close();
-            sessionStorage.setItem('ssc_quote_config', config);
+            window.SSC.quoteStore.save({
+                modelId: currentModelId,
+                modelName: currentModel.name,
+                summary: config
+            });
             window.location.href = '/contact/';
         }
     }

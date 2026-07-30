@@ -5,6 +5,21 @@
 (function() {
     'use strict';
 
+    /**
+     * Price-sheet version.
+     *
+     * Bump this in the SAME commit as any change to a price -- `basePrice`,
+     * `interiorUpgrade`, `premiumFinishPrice` here, or any option value in
+     * `_includes/modals/sauna.njk`. WP-0b-ii (the repricing) is the next bump.
+     *
+     * It exists so a quote configuration saved on a visitor's device before a
+     * price change can be recognised as belonging to the old world. A stale
+     * record is not thrown away: its selections are re-applied and the total is
+     * recomputed from live prices, with a visible note. Without the stamp, a
+     * week-old saved total would silently contradict its own line items.
+     */
+    const pricesVersion = 1;
+
     // ============================================
     // Sauna Model Data
     // ============================================
@@ -186,6 +201,7 @@
     // Export to global scope
     // ============================================
     window.SSC = window.SSC || {};
+    window.SSC.pricesVersion = pricesVersion;
     window.SSC.saunaModels = saunaModels;
     window.SSC.commercialLocations = commercialLocations;
     window.SSC.edmontonLocation = edmontonLocation;
