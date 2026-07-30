@@ -111,6 +111,27 @@ fails, the missing-PNG `continue` (`visual-diff.mjs:174`) fails, discarded redir
 determinism holds by construction; the underlying cache bug is filed as a site bug
 and fixed on its own merits — the determinism claim no longer leans on it.
 
+**Per-page overrides (orchestrator reconciliation, 2026-07-30, post-Razor batch 1
+— his W5):** the budgets paragraph scoped shift gates to pages *not* expected to
+change while also making them unwaivable — which leaves a page whose type scale
+legitimately moves content 20px with no path to a green run, and the only
+remaining lever (lowering the global budgets) is forbidden by the config's own
+authority note. Reconciliation: global budgets stay unwaivable and untouchable; a
+page may carry an explicit `pageOverrides` entry — `{page, metric, value, reason,
+expires}` — that **raises a named budget, never disables a metric**, for a stated
+reason with an expiry date. Overrides are diff-visible, fixture-tested, and
+reviewed like code. The silent-blanket-waiver class stays dead; deliberate
+restyles become shippable under review instead of un-shippable or re-run-until-green.
+
+**Lazy-image dimensions (pulled forward, 2026-07-30 — Razor W4):** the `/about/`
+flake's root cause (`loading="lazy"` images with no `width`/`height`) is real
+visitor CLS and a standing flake source for every later batch. It becomes its own
+micro-batch immediately after Batch 1 closes — a deliberate rendered-output
+change, made under the repaired harness's own eyes with `pageOverrides` entries
+carrying its expected shifts, reviewed normally. Not folded into Batch 1 (whose
+contract is zero rendered change) and not left to WP-1b (too late to stop the
+flakes in between).
+
 **If the repair is declined**, say so explicitly and substitute a named page-by-page
 human review at both widths — and then stop describing the harness as an acceptance
 gate anywhere in the plan.
