@@ -1,7 +1,19 @@
-    <div id="locations" class="page page--has-bg">
-        <!-- Fixed Background Image -->
-        <div class="page-bg--fixed page-bg--opacity-15" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768616089/PXL_20250907_221307193_dtioaf.jpg');"></div>
+    {# F2, scoped to THIS page by orchestrator ruling (2026-07-31), on Jen's
+       written record: the fixed wood-plank layer showing through the
+       --elevated location cards was her named objection, and her section 2.3
+       rule is that atmosphere must not leak into the surfaces that carry
+       information. The layer is deleted here and only here.
 
+       The SITEWIDE fixed-background question is Wave B's, with the mechanism
+       corrected on record: this layer's opacity does NOT vary with scroll --
+       measured constant at 0.15 across five scroll positions, transform none,
+       and no JS touches it. It is a fixed-attachment layer, not a fifth
+       parallax variant. Sixteen other pages still carry one.
+
+       `page--has-bg` goes with the div rather than being left behind: it exists
+       to establish the stacking context that layer needed, and a class asserting
+       a background on a page that has none is the next reader's wrong turn. #}
+    <div id="locations" class="page">
         <section class="page-hero">
             <h1>Where to Find Us</h1>
             <p>Experience our saunas across British Columbia and beyond</p>
