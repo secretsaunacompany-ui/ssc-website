@@ -126,6 +126,10 @@ const DETERMINISM_CSS = `
        .hero-image      style.top       = -(scrollY * 0.6)px
        .hero-content    style.opacity                          (reduced-motion guarded)
        .hero-overlay__bg style.transform = translateY(±40px)
+ *     INERT since WP-1b (2026-07-31) deleted the parallax: nothing writes these
+ *     transforms any more, so these pins currently pin nothing. KEPT ON PURPOSE
+ *     -- they are the guard if scroll-driven motion ever returns, and a pin that
+ *     costs nothing is cheaper than rediscovering why it was needed.
        .page-hero       style.opacity                          (reduced-motion guarded)
        .full-width-image style.transform = translateY(±50px)
 

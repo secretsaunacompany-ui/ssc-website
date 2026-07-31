@@ -29,7 +29,7 @@ import { startServer } from './lib/server.mjs';
 import { installRouting } from './lib/capture.mjs';
 import {
   extractFingerprint, diffTokens, describeToken, loadWhitelist, applyWhitelist,
-  checkWhitelistSpecificity,
+  checkWhitelistSpecificity, partitionByScope, applyRenameMap, staleRenames,
 } from './lib/dom-fingerprint.mjs';
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
@@ -184,8 +184,26 @@ async function main() {
   // it claims to describe. This runs against the real fingerprints, so it is a
   // load-time check in the only sense that matters: before a single verdict is
   // issued on the strength of that entry.
+  // Scope first: only entries written for THIS comparison may consume anything.
+  const scoped = partitionByScope(config.whitelist, baseline.built.sha, candidate.built.sha);
+  const renames = scoped.active.filter((e) => e.op === 'rename');
+  const nodeEntries = scoped.active.filter((e) => e.op !== 'rename');
+
+  // Declared renames are applied to the BASELINE's vocabulary before anything is
+  // compared, so a global rename reads as the declared structure change it is
+  // rather than as 158 undeclared attribute deltas. Everything the map does not
+  // explain survives into the comparison unchanged.
+  const renameUse = new Map();
+  if (renames.length > 0) {
+    for (const [key, tokens] of baseline.prints) {
+      const { tokens: rewritten, used } = applyRenameMap(tokens, renames);
+      baseline.prints.set(key, rewritten);
+      for (const [k, n] of used) renameUse.set(k, (renameUse.get(k) || 0) + n);
+    }
+  }
+
   runFailures.push(...checkWhitelistSpecificity(
-    config.whitelist, baseline.prints, candidate.prints));
+    nodeEntries, baseline.prints, candidate.prints));
 
   // The stated boundary, enforced rather than assumed. This certificate covers
   // delivered markup; if the two builds ship different client JS then script-
@@ -231,7 +249,7 @@ async function main() {
       }
       comparisons += 1;
       const { ops, bulk } = diffTokens(a, b);
-      const { failures, consumed } = applyWhitelist(ops, config.whitelist);
+      const { failures, consumed } = applyWhitelist(ops, nodeEntries);
       for (const [idx, n] of consumed) totalConsumed.set(idx, (totalConsumed.get(idx) || 0) + n);
       pages.push({
         route,
@@ -240,7 +258,7 @@ async function main() {
         candidateTokens: b.length,
         bulk,
         whitelisted: [...consumed.entries()].map(([idx, n]) => ({
-          entry: config.whitelist[idx].contains, count: n,
+          entry: nodeEntries[idx].contains, count: n,
         })),
         failures: failures.map((f) => ({ op: f.op, describe: describeToken(f.token) })),
         status: failures.length === 0 ? 'PASS' : 'FAIL',
@@ -289,12 +307,13 @@ async function main() {
     }
   }
 
-  const staleWhitelist = config.whitelist
+  const staleWhitelist = nodeEntries
     .map((e, idx) => ({ e, idx, got: totalConsumed.get(idx) || 0 }))
     .filter(({ got }) => got === 0)
-    .map(({ e }) => `whitelist entry never matched anywhere: ${e.op} <${e.tag.toLowerCase()}> `
+    .concat(staleRenames(renames, renameUse).map((m) => ({ msg: m })))
+    .map((x) => (x.msg ? x.msg : `whitelist entry never matched anywhere: ${e.op} <${e.tag.toLowerCase()}> `
       + `containing ${JSON.stringify(e.contains)} (${e.reason}). A declaration that did not `
-      + `happen is a hole someone forgot to close — remove it, or find out why it stopped.`);
+      + `happen is a hole someone forgot to close — remove it, or find out why it stopped.`));
 
   const failedPages = pages.filter((p) => p.status === 'FAIL');
   const failCount = failedPages.length + runFailures.length + staleWhitelist.length;
@@ -304,7 +323,15 @@ async function main() {
     baseline: { ref: args.baseline, sha: baseline.built.sha, pages: baseline.routes.length },
     candidate: { ref: args.candidate, sha: candidate.built.sha, pages: candidate.routes.length },
     widths: config.widths,
-    whitelist: config.whitelist.map((e, idx) => ({
+    inertWhitelist: scoped.inert.map((e) => ({
+      op: e.op, range: e.range, reason: e.reason,
+      note: 'not applicable to this comparison; inert, not consuming anything',
+    })),
+    renames: renames.map((r) => ({
+      from: r.from, to: r.to, tokensRewritten: renameUse.get(r.from) || 0,
+      reason: r.reason, commit: r.commit,
+    })),
+    whitelist: nodeEntries.map((e, idx) => ({
       op: e.op, tag: e.tag, contains: e.contains, declared: e.count,
       consumedAcrossRun: totalConsumed.get(idx) || 0, reason: e.reason, commit: e.commit,
     })),
@@ -335,6 +362,16 @@ async function main() {
   for (const f of runFailures) log(`  RUN FAILURE: ${f}`);
 
   log('');
+  if (scoped.inert.length > 0) {
+    log(`  ${scoped.inert.length} whitelist entry(ies) out of scope for this comparison `
+      + `(inert, consuming nothing).`);
+  }
+  if (renames.length > 0) {
+    log('  Declared class renames applied to the baseline:');
+    for (const r of renames) {
+      log(`    ${r.from} -> ${r.to}: ${renameUse.get(r.from) || 0} token(s) rewritten`);
+    }
+  }
   log('  Whitelist consumption:');
   for (const w of report.whitelist) {
     log(`    ${w.consumedAcrossRun} consumed (declared ${w.declared}/page) — ${w.op} `

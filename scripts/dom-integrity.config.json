@@ -10,7 +10,8 @@
       "contains": "fonts.googleapis.com/css",
       "count": 1,
       "reason": "WP-1a self-hosts both typefaces, so the Google Fonts stylesheet link is deleted. This is the ONE deletion the type batch was specified to make.",
-      "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours"
+      "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours",
+      "range": "4dc8716..7b4974f"
     },
     {
       "op": "removed",
@@ -18,7 +19,8 @@
       "contains": "href=\"https://fonts.googleapis.com\" rel=\"preconnect\"",
       "count": 1,
       "reason": "The Google Fonts preconnect. Identified by its exact href+rel rather than the bare word \"preconnect\", which also matches the Cloudinary hint that must survive.",
-      "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours"
+      "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours",
+      "range": "4dc8716..7b4974f"
     },
     {
       "op": "removed",
@@ -26,7 +28,8 @@
       "contains": "href=\"https://fonts.gstatic.com\" rel=\"preconnect\"",
       "count": 1,
       "reason": "The gstatic preconnect, the second half of the Google font handshake. Split from its sibling so each entry names exactly one node.",
-      "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours"
+      "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours",
+      "range": "4dc8716..7b4974f"
     },
     {
       "op": "added",
@@ -34,7 +37,56 @@
       "contains": "as=\"font\"",
       "count": 2,
       "reason": "Two self-hosted font preloads for the above-the-fold pair (Cormorant Garamond regular, Outfit variable). Declared per the mandate as a per-commit-documented addition; the italic face is deliberately NOT preloaded, so a third preload appearing is an undeclared change and fails. Identified by as=\"font\" rather than the bare word \"preload\", which also matches the hero image preload on pages that have one.",
-      "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours"
+      "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours",
+      "range": "4dc8716..7b4974f"
+    },
+    {
+      "op": "rename",
+      "from": "fade-in",
+      "to": "reveal",
+      "range": "198c0bb..c208508",
+      "reason": "WP-1b collapses six reveal classes into one `reveal` token across 158 markup sites. A global rename is declared structure change; no substring-and-count entry can express it, and every entry it would need is the lazy kind the specificity check exists to reject.",
+      "commit": "c208508 relay batch WP-1b (156c073 colour, shape, spacing, motion)"
+    },
+    {
+      "op": "rename",
+      "from": "slide-up",
+      "to": "reveal",
+      "range": "198c0bb..c208508",
+      "reason": "WP-1b collapses six reveal classes into one `reveal` token across 158 markup sites. A global rename is declared structure change; no substring-and-count entry can express it, and every entry it would need is the lazy kind the specificity check exists to reject.",
+      "commit": "c208508 relay batch WP-1b (156c073 colour, shape, spacing, motion)"
+    },
+    {
+      "op": "rename",
+      "from": "slide-left",
+      "to": "reveal",
+      "range": "198c0bb..c208508",
+      "reason": "WP-1b collapses six reveal classes into one `reveal` token across 158 markup sites. A global rename is declared structure change; no substring-and-count entry can express it, and every entry it would need is the lazy kind the specificity check exists to reject.",
+      "commit": "c208508 relay batch WP-1b (156c073 colour, shape, spacing, motion)"
+    },
+    {
+      "op": "rename",
+      "from": "slide-right",
+      "to": "reveal",
+      "range": "198c0bb..c208508",
+      "reason": "WP-1b collapses six reveal classes into one `reveal` token across 158 markup sites. A global rename is declared structure change; no substring-and-count entry can express it, and every entry it would need is the lazy kind the specificity check exists to reject.",
+      "commit": "c208508 relay batch WP-1b (156c073 colour, shape, spacing, motion)"
+    },
+    {
+      "op": "rename",
+      "from": "scale-in",
+      "to": "reveal",
+      "range": "198c0bb..c208508",
+      "reason": "WP-1b collapses six reveal classes into one `reveal` token across 158 markup sites. A global rename is declared structure change; no substring-and-count entry can express it, and every entry it would need is the lazy kind the specificity check exists to reject.",
+      "commit": "c208508 relay batch WP-1b (156c073 colour, shape, spacing, motion)"
+    },
+    {
+      "op": "rename",
+      "from": "gallery-item--reveal",
+      "to": "reveal",
+      "range": "198c0bb..c208508",
+      "reason": "WP-1b collapses six reveal classes into one `reveal` token across 158 markup sites. A global rename is declared structure change; no substring-and-count entry can express it, and every entry it would need is the lazy kind the specificity check exists to reject.",
+      "commit": "c208508 relay batch WP-1b (156c073 colour, shape, spacing, motion)"
     }
   ],
   "_notes": {
@@ -43,7 +95,9 @@
     "volatile": "Two URL segments are normalized before comparison and nothing else: the ?v= content-hash cache stamp (P-A -- it changes whenever styles.css or a js/ file changes, which is exactly what a restyle does) and the hash segment of /fonts/<name>.<hash>.woff2 (the family name is KEPT, so substituting a different typeface still fails). Whether the bytes behind a font name are the right typeface is the fonts suite's question; it asserts computed faces against a real browser. Every other attribute compares raw.",
     "text": "Text is whitespace-normalized (rendering collapses whitespace anyway) and otherwise compared EXACTLY. A reworded sentence, a changed price or a dropped word is a failure. That is the instrument's purpose, not a limitation of it.",
     "specificity": "Every entry's \"contains\" must identify the node, not a family of nodes: the run refuses to start if an entry matches more nodes in the relevant build than it declares. A count is a budget, not an identity -- an entry held in check by its count alone consumes the first n matching changes rather than the ones it was written for, and starts absorbing a different node the moment the intended one stops changing. This is why the two Google preconnects are two entries keyed on their exact hrefs rather than one entry matching the word \"preconnect\" (which also matches the Cloudinary hint that must survive), and why the font preloads key on as=\"font\" rather than \"preload\" (which also matches the hero image preload).",
-    "wp1b": "WP-1b (156c073, 0cca59e) is NOT certified by this instrument, and its FAIL is recorded rather than overridden -- the same call WP-1a made when pixel geometry turned out to be the wrong instrument for a font swap. The reason: WP-1b collapses six reveal classes into one across 158 markup sites plus five class-utility renames. This whitelist identifies nodes by an attribute SUBSTRING with a per-page count, and its specificity check deliberately refuses any entry matching more nodes than it declares. A class rename touching 158 nodes cannot be exact-keyed that way -- every honest entry would be the lazy, count-held kind the specificity rule exists to reject, and writing them would be forcing the instrument rather than using it. The certificate used instead, reproducible from the two refs: build both, normalise ONLY the declared class-token renames and the two volatile URL segments, then compare. Result across all 19 pages -- visible text byte-identical; image, anchor and heading counts identical; residual structural delta exactly 3 elements per page on 16 pages (the hero-intro <style>, the <noscript>, and its inner <style>), plus 5 <img> nodes losing an inline border-radius style and booking-ops.html's :root --color-bg value. Four declared changes, nothing else. What this instrument CANNOT vouch for either way is stated by its own run-failure line: client JavaScript differs between the builds, by design -- HeroIntroAnimation and four parallax variants were deleted. Razor reviews those deletions directly.",
-    "staleness": "These four entries are the WP-1a declaration (commit 1877955 vs its parent) and they are the FIXTURE DATA for scripts/dom-integrity.test.mjs -- A1, A3, W8 and two mutation-battery properties (D-m6, D-m7) lose their coverage entirely without them. WP-1b tried removing them as stale and the suite caught it, which is the fixture-wins rule working. Consequence, stated so nobody rediscovers it as a bug: run this instrument against any baseline at or after 1877955 and all four report STALE WHITELIST, because the changes they declare are present on BOTH sides of that comparison. The entries are not wrong and the staleness check is not wrong -- the whitelist is per-COMPARISON while the file is per-repo, and the `commit` field records which comparison an entry belongs to without anything reading it. Resolving that is a harness change, not a batch change; flagged, not attempted here."
+    "wp1b": "WP-1b's SIX reveal-class renames are declared here. Its four structural change classes are deliberately NOT declared as entries: the run below shows the residual is wider than those four (further class-vocabulary changes: bg-grey, grid-3--mt-*, section--mt-8, section--warm-glow, heading--mb-2, link--charcoal, text--*). Widening the map to make the run green would be forcing the instrument -- the residual is a finding for the WP-1b review, which is the outcome the plan specifies.",
+    "staleness": "These four entries are the WP-1a declaration (commit 1877955 vs its parent) and they are the FIXTURE DATA for scripts/dom-integrity.test.mjs -- A1, A3, W8 and two mutation-battery properties (D-m6, D-m7) lose their coverage entirely without them. WP-1b tried removing them as stale and the suite caught it, which is the fixture-wins rule working. Consequence, stated so nobody rediscovers it as a bug: run this instrument against any baseline at or after 1877955 and all four report STALE WHITELIST, because the changes they declare are present on BOTH sides of that comparison. The entries are not wrong and the staleness check is not wrong -- the whitelist is per-COMPARISON while the file is per-repo, and the `commit` field records which comparison an entry belongs to without anything reading it. Resolving that is a harness change, not a batch change; flagged, not attempted here.",
+    "scope": "Every entry declares the comparison it belongs to as \"range\": \"<baselineSha>..<candidateSha>\". The file is per-repo but each entry describes ONE batch's change, so without a scope an old batch's declarations sit here forever, reading stale against every later baseline while still being load-bearing. Out-of-scope entries are INERT for a run -- reported so they can be pruned, never consuming a diff they were not written for.",
+    "renameMap": "An \"op\": \"rename\" entry declares an old->new CLASS TOKEN pair, applied to the BASELINE's vocabulary before anything is compared. Whole tokens only, never substrings, so renaming `fade-in` cannot touch `fade-in-late`. Everything the map does not explain survives into the comparison and still fails: a rename plus a smuggled extra class fails naming the smuggled token. A rename whose `from` never appears is flagged stale, so dead declarations cannot accumulate."
   }
 }

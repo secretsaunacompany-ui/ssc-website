@@ -213,6 +213,41 @@ export function loadWhitelist(file, raw) {
     if (!e || typeof e !== 'object' || Array.isArray(e)) {
       throw new Error(`${file}: ${where} must be an object.`);
     }
+    // SCOPE. Every entry declares the comparison it belongs to. The whitelist
+    // file is per-repo but each entry describes ONE batch's change, so without
+    // a scope WP-1a's declarations sit in the file forever, reading as stale
+    // against every later baseline while still being load-bearing. Scoped, an
+    // entry that does not belong to this comparison is inert and reported,
+    // never silently consuming somebody else's diff.
+    if (typeof e.range !== 'string' || !/^[0-9a-f]{7,40}\.\.[0-9a-f]{7,40}$/.test(e.range)) {
+      throw new Error(`${file}: ${where} needs a "range" of "<baselineSha>..<candidateSha>" `
+        + `naming the comparison it applies to. An unscoped entry is load-bearing forever.`);
+    }
+    if (typeof e.reason !== 'string' || !e.reason.trim()) {
+      throw new Error(`${file}: ${where} needs a "reason".`);
+    }
+    if (typeof e.commit !== 'string' || !e.commit.trim()) {
+      throw new Error(`${file}: ${where} needs a "commit".`);
+    }
+    // RENAME entries declare an old->new CLASS TOKEN pair rather than a node.
+    // A 158-node global rename is declared structure change, and no
+    // substring-and-count entry can express it: every entry it would need is
+    // exactly the lazy kind the specificity check exists to reject. So the
+    // rename is applied during normalization instead, and what remains after
+    // it is compared as strictly as ever.
+    if (e.op === 'rename') {
+      const cls = /^[A-Za-z_][A-Za-z0-9_-]*$/;
+      if (typeof e.from !== 'string' || !cls.test(e.from)) {
+        throw new Error(`${file}: ${where} needs a "from" class token.`);
+      }
+      if (typeof e.to !== 'string' || !cls.test(e.to)) {
+        throw new Error(`${file}: ${where} needs a "to" class token.`);
+      }
+      if (e.from === e.to) {
+        throw new Error(`${file}: ${where} renames "${e.from}" to itself.`);
+      }
+      return { ...e };
+    }
     if (e.op !== 'removed' && e.op !== 'added') {
       throw new Error(`${file}: ${where} needs "op" of "removed" or "added", got `
         + `${JSON.stringify(e.op)}.`);
@@ -227,13 +262,6 @@ export function loadWhitelist(file, raw) {
     if (!Number.isInteger(e.count) || e.count < 1) {
       throw new Error(`${file}: ${where} needs an integer "count" >= 1. The count is what `
         + `stops a second, unexpected instance of the same change slipping through.`);
-    }
-    if (typeof e.reason !== 'string' || !e.reason.trim()) {
-      throw new Error(`${file}: ${where} needs a "reason".`);
-    }
-    if (typeof e.commit !== 'string' || !e.commit.trim()) {
-      throw new Error(`${file}: ${where} needs a "commit" — the change that made this `
-        + `deletion or addition legitimate, so a reviewer can check it.`);
     }
     return { ...e, contains: e.contains };
   });
@@ -272,6 +300,7 @@ export function loadWhitelist(file, raw) {
 export function checkWhitelistSpecificity(whitelist, baselinePrints, candidatePrints) {
   const problems = [];
   whitelist.forEach((e, idx) => {
+    if (e.op === 'rename' || typeof e.contains !== 'string') return;
     const prints = e.op === 'removed' ? baselinePrints : candidatePrints;
     let worstKey = null;
     let worstCount = 0;
@@ -325,4 +354,64 @@ export function applyWhitelist(ops, whitelist) {
     consumed.set(matchedIdx, (consumed.get(matchedIdx) || 0) + 1);
   }
   return { failures, consumed };
+}
+
+/**
+ * Split a whitelist into the entries that apply to THIS comparison and those
+ * that do not. Non-applicable entries are inert: reported so they can be
+ * pruned, never consuming a diff they were not written for.
+ */
+export function partitionByScope(whitelist, baselineSha, candidateSha) {
+  const want = `${baselineSha}..${candidateSha}`;
+  const applies = (e) => {
+    const [b, c] = e.range.split('..');
+    return want.startsWith(`${b}..`) || b === baselineSha
+      ? (candidateSha.startsWith(c) || c.startsWith(candidateSha))
+        && (baselineSha.startsWith(b) || b.startsWith(baselineSha))
+      : false;
+  };
+  const active = whitelist.filter(applies);
+  const inert = whitelist.filter((e) => !applies(e));
+  return { active, inert };
+}
+
+/**
+ * Rewrite declared class tokens in a token stream, in place of the baseline's
+ * old vocabulary, so a declared global rename compares clean while every other
+ * attribute difference survives untouched.
+ *
+ * Only whole class TOKENS are rewritten — never substrings — so renaming
+ * `fade-in` cannot silently alter `fade-in-late`. Anything left over after the
+ * rewrite is a real difference and still fails, which is what keeps this from
+ * being a blanket attribute waiver.
+ *
+ * @returns {{tokens: object[], used: Map<string, number>}}
+ */
+export function applyRenameMap(tokens, renames) {
+  const map = new Map(renames.map((r) => [r.from, r.to]));
+  const used = new Map();
+  if (map.size === 0) return { tokens, used };
+  const out = tokens.map((t) => {
+    if (t.kind !== 'element' || !t.attrs.includes('class=')) return t;
+    const attrs = t.attrs.replace(/class="([^"]*)"/, (whole, value) => {
+      let touched = false;
+      const rewritten = value.split(/\s+/).map((tok) => {
+        if (!map.has(tok)) return tok;
+        touched = true;
+        used.set(tok, (used.get(tok) || 0) + 1);
+        return map.get(tok);
+      }).join(' ');
+      return touched ? `class="${rewritten}"` : whole;
+    });
+    return attrs === t.attrs ? t : { ...t, attrs };
+  });
+  return { tokens: out, used };
+}
+
+/** Rename entries whose `from` never appeared: dead declarations, flagged. */
+export function staleRenames(renames, used) {
+  return renames.filter((r) => !used.has(r.from)).map((r) =>
+    `rename entry "${r.from}" -> "${r.to}" never matched a class token anywhere `
+    + `(${r.reason}). A rename that did not happen is a dead declaration; remove it, or `
+    + `find out why the class stopped appearing.`);
 }

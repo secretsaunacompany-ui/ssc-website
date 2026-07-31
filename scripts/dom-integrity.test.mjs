@@ -24,7 +24,7 @@ import { chromium } from 'playwright';
 import { startServer } from './lib/server.mjs';
 import {
   extractFingerprint, diffTokens, describeToken, loadWhitelist, applyWhitelist,
-  checkWhitelistSpecificity,
+  checkWhitelistSpecificity, applyRenameMap, staleRenames, partitionByScope,
 } from './lib/dom-fingerprint.mjs';
 import * as realFingerprint from './lib/dom-fingerprint.mjs';
 
@@ -196,6 +196,24 @@ const MUTATIONS = [
     edits: { 'dom-fingerprint.mjs': [
       '      if (!op.token.attrs.includes(e.contains)) continue;', ''] },
     probe: (m, f, wl) => m.applyWhitelist(f.unrelatedLinkDeletion, wl).failures.length,
+  },
+  {
+    name: 'D-m10 rename normalization disabled',
+    proves: 'a declared rename is actually applied, not just declared',
+    edits: { 'dom-fingerprint.mjs': [
+      '  if (map.size === 0) return { tokens, used };',
+      '  return { tokens, used };'] },
+    probe: (m, f) => m.diffTokens(
+      m.applyRenameMap(f.base, f.renames).tokens, f.renamedPage).ops.length,
+  },
+  {
+    name: 'D-m11 rename drops class tokens it does not know',
+    proves: 'a smuggled extra class is not absorbed by the rename',
+    edits: { 'dom-fingerprint.mjs': [
+      '        if (!map.has(tok)) return tok;',
+      "        if (!map.has(tok)) return '';"] },
+    probe: (m, f) => m.diffTokens(
+      m.applyRenameMap(f.basePlus, f.renames).tokens, f.renamedPlus).ops.length,
   },
   {
     name: 'D-m9  ancestry path dropped from tokenKey',
@@ -400,7 +418,8 @@ async function main() {
     process.stdout.write('\nW — whitelist validation\n');
     {
       const bad = (patch) => () => loadWhitelist('t.json', { whitelist: [patch] });
-      const ok = { op: 'removed', tag: 'LINK', contains: 'x', count: 1, reason: 'r', commit: 'c' };
+      const ok = { op: 'removed', tag: 'LINK', contains: 'x', count: 1, reason: 'r',
+        commit: 'c', range: 'aaaaaaa..bbbbbbb' };
       expectThrows('W1 a bad op is rejected', bad({ ...ok, op: 'changed' }), 'removed');
       expectThrows('W2 a missing tag is rejected', bad({ ...ok, tag: '' }), 'tag');
       expectThrows('W3 a missing "contains" is rejected', bad({ ...ok, contains: '' }), 'contains');
@@ -409,8 +428,20 @@ async function main() {
       expectThrows('W6 a missing commit is rejected', bad({ ...ok, commit: '' }), 'commit');
       expectThrows('W7 a non-array whitelist is rejected',
         () => loadWhitelist('t.json', { whitelist: {} }), 'must be an array');
-      check('W8 the shipped whitelist loads', realWhitelist().length === 4,
-        `expected 4 declared entries, got ${realWhitelist().length}`);
+      check('W8 the shipped whitelist loads and every entry is scoped',
+        realWhitelist().length > 0 && realWhitelist().every((e) => /\.\./.test(e.range || '')),
+        `every entry needs a range naming the comparison it belongs to; got `
+        + `${JSON.stringify(realWhitelist().filter((e) => !e.range).map((e) => e.op))}`);
+      check('W9 an unscoped entry is rejected',
+        (() => { try {
+          loadWhitelist('t.json', { whitelist: [{ op: 'removed', tag: 'LINK', contains: 'x',
+            count: 1, reason: 'r', commit: 'c' }] });
+          return false;
+        } catch (e) { return /range/.test(e.message); } })(),
+        'an entry with no scope is load-bearing forever');
+      check('W10 out-of-scope entries are inert, not consuming',
+        partitionByScope(realWhitelist(), 'deadbee', 'f00dcaf').active.length === 0,
+        'a comparison nobody wrote an entry for must consume nothing');
 
       // N: an entry too lazy to identify its node is refused before any verdict
       // rests on it. `contains: "rel"` matches every <link> on the page.
@@ -418,7 +449,7 @@ async function main() {
       const empty = new Map([['/@1440', []]]);
       const lazy = loadWhitelist('t.json', { whitelist: [{
         op: 'removed', tag: 'LINK', contains: 'rel', count: 1,
-        reason: 'lazy on purpose', commit: 'fixture',
+        reason: 'lazy on purpose', commit: 'fixture', range: 'aaaaaaa..bbbbbbb',
       }] });
       const lazyProblems = checkWhitelistSpecificity(lazy, prints, empty);
       check('N1 a lazy "contains" is rejected',
@@ -433,13 +464,56 @@ async function main() {
       check('N3 a specific "contains" is accepted',
         checkWhitelistSpecificity(loadWhitelist('t.json', { whitelist: [{
           op: 'removed', tag: 'LINK', contains: 'fonts.googleapis.com/css', count: 1,
-          reason: 'r', commit: 'c',
+          reason: 'r', commit: 'c', range: 'aaaaaaa..bbbbbbb',
         }] }), prints, empty).length === 0,
         'an entry that names exactly one node must pass');
       check('N4 the SHIPPED whitelist is specific enough',
-        checkWhitelistSpecificity(realWhitelist(), prints, empty)
+        checkWhitelistSpecificity(realWhitelist().filter((e) => e.op !== 'rename'), prints, empty)
           .filter((x) => x.includes('LINK') || x.includes('link')).length === 0,
         'the config we ship must satisfy the check it enforces');
+    }
+
+    process.stdout.write('\nX — declared class renames\n');
+    {
+      const RENAMES = [{ op: 'rename', from: 'card', to: 'tile',
+        range: 'aaaaaaa..bbbbbbb', reason: 'fixture', commit: 'fixture' }];
+      const renamed = await fp(PAGE().replace(/class="card"/g, 'class="tile"'), 'renamed');
+      const { tokens: normalized, used } = applyRenameMap(before, RENAMES);
+      check('X1 a declared rename compares clean',
+        diffTokens(normalized, renamed).ops.length === 0,
+        `a declared old->new class token must not read as a diff. got `
+        + `${JSON.stringify(diffTokens(normalized, renamed).ops.map((o) => describeToken(o.token)))}`);
+      check('X2 the rename reports how many tokens it rewrote',
+        used.get('card') === 3, `expected 3 rewrites, got ${used.get('card')}`);
+
+      // An UNDECLARED class change on the same page must still fail.
+      const alsoChanged = await fp(PAGE().replace(/class="card"/g, 'class="tile"')
+        .replace('class="site-header"', 'class="site-header is-compact"'), 'renamed-plus');
+      check('X3 an undeclared class change alongside a declared rename still fails',
+        diffTokens(normalized, alsoChanged).ops.length > 0,
+        'the map explains one vocabulary change, not every attribute delta');
+
+      // A rename PLUS a smuggled extra class must fail NAMING the smuggled token.
+      const smuggled = await fp(PAGE().replace(/class="card"/g, 'class="tile promoted"'), 'smuggled');
+      const sm = diffTokens(normalized, smuggled).ops;
+      check('X4 a rename plus a smuggled extra class fails',
+        sm.length > 0, 'whole-token rewriting must not absorb an added sibling token');
+      check('X5 the failure names the smuggled token',
+        sm.some((o) => describeToken(o.token).includes('promoted')),
+        `expected "promoted" named, got ${JSON.stringify(sm.map((o) => describeToken(o.token)))}`);
+
+      check('X6 renaming is whole-token, never substring',
+        (() => {
+          const t = [{ kind: 'element', path: 'p', tag: 'DIV', attrs: 'class="card-wide"' }];
+          return applyRenameMap(t, RENAMES).tokens[0].attrs === 'class="card-wide"';
+        })(),
+        'renaming `card` must not touch `card-wide`');
+
+      check('X7 a rename whose class never occurs is flagged stale',
+        staleRenames([{ from: 'ghost', to: 'x', reason: 'never happens' }], new Map()).length === 1,
+        'dead declarations must not accumulate');
+      check('X8 a rename that did occur is not flagged',
+        staleRenames(RENAMES, used).length === 0, 'control');
     }
 
     process.stdout.write('\nM — mutation battery (runnable)\n');
@@ -450,6 +524,16 @@ async function main() {
         reworded: await fp(PAGE({ bodyCopy: 'Hand-built saunas for the Sea to Sky region.' }), 'm-reword'),
         reordered: await fp(PAGE({ reordered: true }), 'm-reorder'),
         reparented: await fp(PAGE({ reparent: true }), 'm-reparent'),
+        renames: [{ op: 'rename', from: 'card', to: 'tile', range: 'a..b',
+          reason: 'fixture', commit: 'fixture' }],
+        renamedPage: await fp(PAGE().replace(/class="card"/g, 'class="tile"'), 'm-renamed'),
+        smuggledPage: await fp(PAGE().replace(/class="card"/g, 'class="tile promoted"'), 'm-smug'),
+        // A node carrying BOTH a renamed token and an untouched sibling token.
+        // Without one, a mutation that drops unknown tokens has nothing to drop
+        // on the very nodes the rename touches, and reports itself detected
+        // while proving nothing.
+        basePlus: await fp(PAGE().replace(/class="card"/g, 'class="card featured"'), 'm-bp'),
+        renamedPlus: await fp(PAGE().replace(/class="card"/g, 'class="tile featured"'), 'm-rp'),
         attrChanged: await fp(PAGE().replace('class="card" data-index="1"', 'class="card feature" data-index="1"'), 'm-attr'),
         queryChanged: await fp(PAGE().replace('/js/init.js?v=abc123def456', '/js/init.js?debug=1'), 'm-query'),
         fontA: await fp(PAGE({ preloads: '<link rel="preload" href="/fonts/outfit-var.55112282293d.woff2" as="font">' }), 'm-fa'),
