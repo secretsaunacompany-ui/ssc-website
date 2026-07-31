@@ -671,8 +671,11 @@ nav .container {
    the site, on every homepage visit; `height: 160%` existed only to give the
    parallax rig somewhere to travel; and `will-change: top` pinned a full-screen
    compositor layer for a scroll handler that wrote `top` every frame. All three
-   are gone with the parallax that motivated them. The only infinite animation
-   left on the site is the 1px scroll cue. */
+   are gone with the parallax that motivated them. One infinite animation remains
+   anywhere on the site -- .advisor__loading's 1.2s dot pulse, which reports that
+   a request is in flight and is therefore information, not atmosphere. Jen's 1px
+   breathing scroll cue (10 §5.3) is not built: the cue element is WP-2
+   composition, and the load-in choreography leaves its --i:2 slot open for it. */
 .hero-image {
     position: absolute;
     top: 0;
