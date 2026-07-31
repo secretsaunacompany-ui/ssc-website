@@ -617,7 +617,16 @@
             // rule after restoring, or a restored basket can show both.
             this.handlePremiumPackageChange();
 
-            if (note && (stored.stale || missed > 0)) note.hidden = false;
+            // Two different things can invalidate a restored total, and saying
+            // "prices" when an option vanished would be a small lie in the one
+            // place the visitor is being asked to trust a number. A stale price
+            // sheet is the superset, so it wins when both are true.
+            if (note && (stored.stale || missed > 0)) {
+                note.textContent = stored.stale
+                    ? 'Prices have been updated since you saved this, so the total above has been recalculated.'
+                    : 'Some of the options you had picked have changed since you saved this, so the total above has been recalculated.';
+                note.hidden = false;
+            }
         }
 
         /**

@@ -832,6 +832,149 @@ const MUTATIONS = [
     },
   },
   {
+    name: 'M6 restore signature guard',
+    proves: 'a restore that checks options the visitor never chose is detected',
+    /**
+     * The only genuinely risky mechanism on this branch, and the one nothing
+     * was watching: restore keys on the option's POSITION among the addon
+     * inputs, then verifies the thing it landed on is still the same option by
+     * data-addon plus label, falling back to a search when it is not.
+     *
+     * Strip that verification and every one of the other assertions stays
+     * green -- while a returning visitor's quote silently fills with options
+     * they never chose, priced accordingly, arriving in the inbox looking
+     * completely legitimate. That is the worst failure in the package, and
+     * WP-0b-ii is the batch that moves the exact markup the guard exists to
+     * survive.
+     *
+     * Two markup changes are exercised, because they fail differently:
+     *
+     *   REMOVED   every later index shifts by one, so a naive restore checks
+     *             its NEIGHBOUR -- a wrong option, silently
+     *   RELABELLED the index still resolves but to something else entirely
+     *
+     * WHY THE RECORD IS TRANSPLANTED
+     *
+     * The record is produced by the real UI on the unmutated site, then written
+     * into the mutated site's storage before the modal opens. It has to be: the
+     * two builds are served on different ports, and localStorage is scoped per
+     * origin. In the field this is the same origin and the same device seeing a
+     * new deploy, which is exactly the situation being reproduced. The record
+     * itself is never hand-written.
+     */
+    custom: async (browser, baselineBase) => {
+      // 1. Save a real record through the real UI, on unmutated markup.
+      const author = await newPage(browser);
+      await openModal(author, baselineBase);
+      await pick(author, 'Kuuma Banya (Wood-fired)');
+      await pick(author, 'Built-in Bluetooth speakers');
+      await author.click('[data-action="request-quote"]');
+      const record = await readStore(author);
+      await author.close();
+      if (!record || !record.selections.some((s) => s.label === 'Built-in Bluetooth speakers')) {
+        throw new Error('M6 could not author a record through the UI; the fixture is broken, '
+          + 'not the code under test.');
+      }
+
+      // The wood heater block, whose removal shifts every later index by one.
+      const WOOD_HEATER_BLOCK = `                        <label class="addon-option" id="heaterWoodUpgrade">
+                            <input type="radio" name="heater" value="3000" data-addon="heater">
+                            <span class="addon-label">Kuuma Banya (Wood-fired)</span>
+                            <span class="addon-price">+$3,000</span>
+                        </label>
+`;
+      const removeOption = (dir) => mutate(
+        path.join(dir, 'src', '_includes', 'modals', 'sauna.njk'), WOOD_HEATER_BLOCK, '');
+      const relabelOption = (dir) => mutate(
+        path.join(dir, 'src', '_includes', 'modals', 'sauna.njk'),
+        '<span class="addon-label">Built-in Bluetooth speakers</span>',
+        '<span class="addon-label">Built-in Bluetooth speakers (Polk)</span>');
+      // Razor's mutation, verbatim in effect: the signature check and its
+      // fallback search, gone. `matches` stays defined so nothing else breaks
+      // and the removal is the only difference.
+      const stripGuard = (dir) => mutate(path.join(dir, 'js', 'modal.js'),
+        `                if (!matches(input)) {
+                    input = inputs.find(matches);
+                }`,
+        `                if (false) {
+                    input = inputs.find(matches);
+                }`);
+
+      /** Open the modal on a rebuilt site with the authored record in place. */
+      const restoreOn = async (site) => {
+        const page = await newPage(browser);
+        await page.goto(`${site.base}/saunas/`, { waitUntil: 'networkidle' });
+        await page.evaluate(([k, r]) => localStorage.setItem(k, JSON.stringify(r)), [STORAGE_KEY, record]);
+        await openModal(page, site.base);
+        const state = await page.evaluate((savedLabels) => {
+          const options = [...document.querySelectorAll('.modal-addons .addon-option')];
+          const labelOf = (o) => o.querySelector('.addon-label').textContent.trim();
+          const checked = options.filter((o) => o.querySelector('input').checked).map(labelOf);
+          // Anything checked that the visitor neither chose nor got as their
+          // group's untouched default is an option put there by the restore.
+          // Naming a specific wrong neighbour would only catch one arrangement
+          // of the markup; this catches any of them, which is the point when
+          // the next batch is the one that rearranges it.
+          const unexpected = options.filter((o) => {
+            const input = o.querySelector('input');
+            if (!input.checked) return false;
+            if (savedLabels.includes(labelOf(o))) return false;
+            return !(input.value === '0' || input.hasAttribute('data-default'));
+          }).map(labelOf);
+          const note = document.getElementById('quoteStaleNote');
+          return { checked, unexpected, noteShown: !note.hidden, noteText: note.textContent };
+        }, record.selections.map((s) => s.label));
+        await page.close();
+        return state;
+      };
+
+      const sites = [];
+      try {
+        // 2a. The option was REMOVED between the save and the return visit.
+        const removed = await bootSite(removeOption);
+        sites.push(removed);
+        const afterRemoval = await restoreOn(removed);
+        check('M6a removed option: the visitor is told something changed',
+          afterRemoval.noteShown && /options you had picked have changed/i.test(afterRemoval.noteText),
+          `note state was ${JSON.stringify(afterRemoval)}`);
+        check('M6a removed option: nothing the visitor never chose is checked',
+          afterRemoval.unexpected.length === 0,
+          `the restore put options in the quote that were never chosen: `
+          + `${JSON.stringify(afterRemoval.unexpected)}`);
+        check('M6a removed option: the rest of the configuration still comes back',
+          afterRemoval.checked.includes('Built-in Bluetooth speakers'),
+          `speakers did not survive the index shift: ${JSON.stringify(afterRemoval.checked)}`);
+
+        // 2b. The option was RELABELLED -- the index resolves, to the wrong thing.
+        const relabelled = await bootSite(relabelOption);
+        sites.push(relabelled);
+        const afterRelabel = await restoreOn(relabelled);
+        check('M6b relabelled option: the visitor is told something changed',
+          afterRelabel.noteShown, `note state was ${JSON.stringify(afterRelabel)}`);
+        check('M6b relabelled option: nothing the visitor never chose is checked',
+          afterRelabel.unexpected.length === 0
+          && !afterRelabel.checked.includes('Built-in Bluetooth speakers (Polk)'),
+          `a renamed option was restored as though it were the saved one: `
+          + `${JSON.stringify(afterRelabel)}`);
+        check('M6b relabelled option: unaffected selections still come back',
+          afterRelabel.checked.includes('Kuuma Banya (Wood-fired)'),
+          `the heater choice was lost: ${JSON.stringify(afterRelabel.checked)}`);
+
+        // 3. Now strip the guard and confirm the above becomes observably wrong.
+        const stripped = await bootSite((dir) => { removeOption(dir); stripGuard(dir); });
+        sites.push(stripped);
+        const afterStrip = await restoreOn(stripped);
+        // Detected if a wrong option got checked, or the visitor was told nothing.
+        return afterStrip.unexpected.length > 0 || !afterStrip.noteShown;
+      } finally {
+        for (const s of sites) {
+          s.server.close();
+          fs.rmSync(s.dir, { recursive: true, force: true });
+        }
+      }
+    },
+  },
+  {
     name: 'M5 rate-limit branch',
     proves: 'a 429 collapsing back into a generic failure is detected',
     apply: (dir) => mutate(path.join(dir, 'js', 'modal.js'),
@@ -868,11 +1011,20 @@ const MUTATIONS = [
 
     process.stdout.write('\nB. mutations -- each of these MUST be detectable\n\n');
     for (const m of MUTATIONS) {
-      // eslint-disable-next-line no-await-in-loop
-      const site = await bootSite(m.apply);
-      sites.push(site);
-      // eslint-disable-next-line no-await-in-loop
-      const detected = await m.run(site.base, browser);
+      let detected;
+      if (m.custom) {
+        // Mutations that need more than one build, or a record authored on one
+        // build and restored on another, own their own sites and clean up
+        // after themselves.
+        // eslint-disable-next-line no-await-in-loop
+        detected = await m.custom(browser, baseline.base);
+      } else {
+        // eslint-disable-next-line no-await-in-loop
+        const site = await bootSite(m.apply);
+        sites.push(site);
+        // eslint-disable-next-line no-await-in-loop
+        detected = await m.run(site.base, browser);
+      }
       check(`${m.name}: ${m.proves}`, detected,
         'the mutation was applied and the suite did not notice. The corresponding '
         + 'assertion in scenario A is decoration -- fix it rather than deleting this.');
