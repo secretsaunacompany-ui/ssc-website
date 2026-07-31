@@ -1,19 +1,162 @@
 {
-  "widths": [1440, 390],
-
+  "widths": [
+    1440,
+    390
+  ],
   "maxLayoutShiftPx": 4,
   "minShiftCoverage": 0.95,
   "maxChangedPct": 0.5,
-
-  "expectedToChange": [],
-
+  "expectedToChange": [
+    {
+      "route": "/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 25.6% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/404.html",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 9.5% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/about/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 28.2% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/book/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 11.3% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/contact/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 9.6% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/contact/thank-you/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 9.8% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/faq/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 10.8% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/gallery/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 47.0% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/locations/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 34.0% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/north-shore/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 15.1% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/privacy/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 12.9% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/process/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 28.2% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/saunas/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 47.0% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/sea-to-sky/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 17.1% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/squamish/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 17.0% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/vancouver/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 15.1% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/warranty/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 15.5% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/whistler/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 12.7% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    }
+  ],
   "pageOverrides": [],
-
   "expectedRedirects": {
     "/gallery/": "/saunas/",
     "/process/": "/about/"
   },
-
   "_notes": {
     "authority": "These are the ONLY budgets. lib/gate.mjs reads them and defaults nothing; no threshold is written down anywhere else in the harness. If a budget and a fixture in visual-diff.test.mjs disagree, the fixture wins and the budget is renegotiated in the plan, never tuned here to make a run pass.",
     "widths": "Capture widths in CSS pixels. 1440 = desktop, 390 = iPhone-class mobile. An empty list is a hard error: a run that captures nothing cannot pass.",
@@ -22,7 +165,6 @@
     "maxChangedPct": "Percentage of the page that may look different before it is treated as a regression. Cosmetic anti-aliasing noise sits well under 0.5%.",
     "expectedToChange": "Per-metric waivers, not a blanket pass. Shape: { \"route\": \"/about/\", \"reason\": \"new hero type scale\", \"waive\": [\"changedPct\"] }. Waivable: changedPct, heightDelta, structural. NEVER waivable: layoutShiftMaxPx, shiftCoverage -- a config that tries is a hard error. A page may waive changedPct and remain shift-gated; that is the whole point of the restructure. Bare route strings are rejected so an old-shape config cannot silently keep its old blanket-waiver meaning.",
     "pageOverrides": "Moves ONE named budget on ONE named page, in the direction that metric's TYPE allows, for a stated reason, until a stated date. Shape: { \"page\": \"/about/\", \"metric\": \"maxLayoutShiftPx\", \"value\": 24, \"reason\": \"new hero type scale moves the fold ~20px, approved in the Wave A design review\", \"expires\": \"2026-09-30\" }. CEILINGS (maxLayoutShiftPx, maxChangedPct) may only be RAISED, capped at 100x the global -- loud is fine, infinite is not, so value: 999999 is rejected. The FLOOR (minShiftCoverage) may only be LOWERED, bounded to [0.75, 1) -- lowering is the shippable direction for a deliberate restyle, and below 0.75 a quarter of the page's rows could not be matched at all, which is a human conversation rather than a config line. An override can NEVER disable a metric and can never rescue a page whose shift could not be measured. Rejected on load: unknown metric, wrong direction, out of bounds, missing or empty reason, missing or malformed expiry, an expiry more than 90 days out, a duplicate page/metric pair. An EXPIRED override fails the run loudly rather than lapsing back to the global budget, so a temporary allowance cannot quietly become permanent. Overrides affect only the page and metric they name. This exists so a deliberate restyle is shippable under review; the global budgets above stay unwaivable and are not to be lowered to make a run pass.",
-
     "expectedRedirects": "Client-side redirects the capture is expected to observe, as route -> settled destination. A redirect that is not declared, points somewhere else, or stops happening fails the run. Without this the harness screenshots the destination page under the source route's name and reports it as unchanged. /gallery/ and /process/ genuinely redirect today (verified 2026-07-30)."
   }
 }
