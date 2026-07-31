@@ -24,7 +24,7 @@ export const WAIVABLE = Object.freeze(['changedPct', 'heightDelta', 'structural'
  * against — that is precisely how the allowlist silently waived the only metric
  * that mattered.
  */
-export const UNWAIVABLE = Object.freeze(['layoutShiftMaxPx', 'shiftCoverage']);
+export const UNWAIVABLE = Object.freeze(['layoutShiftMaxPx', 'shiftCoverage', 'fitConfidence']);
 
 /**
  * Budgets a `pageOverrides` entry is permitted to name.
@@ -123,6 +123,15 @@ export function loadConfig(file, readFile, now = Date.now()) {
     // amounts. This is a "wildly differently" detector.
     maxOffsetDivergencePx: num('maxOffsetDivergencePx',
       'How far the widths of one page may disagree about its global offset.'),
+    // Same idea for the affine scale. Both widths of one page are subject to
+    // the SAME stylesheet, so a leading change should compress them by a
+    // comparable ratio even though their layouts differ.
+    maxScaleDivergence: num('maxScaleDivergence',
+      'How far the widths of one page may disagree about its affine scale.'),
+    // Below this, the affine model does not describe the page and the fit is
+    // not evidence of anything. Unwaivable and not overridable on purpose.
+    minFitConfidence: num('minFitConfidence',
+      'Fraction of rows the affine fit must explain before it counts as a fit.'),
   };
   if (budget.minShiftCoverage <= 0 || budget.minShiftCoverage > 1) {
     throw new Error(`${file}: "minShiftCoverage" must be in (0, 1].`);
@@ -359,7 +368,26 @@ export function evaluatePair(config, route, result) {
   if (!result.shiftMeasurable) {
     reasons.push('layout shift not measurable (page has no structured rows to match)');
   } else {
-    if (result.layoutShiftMaxPx > maxShift) {
+    // Does an affine map describe this page at all? If not, the instrument says
+    // so rather than reporting a number nobody should trust: every shift figure
+    // is a residual against this fit, so if the fit does not hold, neither do
+    // they. That suppresses the SHIFT reason only — coverage is reported
+    // alongside, because "almost none of the baseline was found again" is
+    // independently true and is the signal a content replacement has always
+    // produced. A gate that replaced one true reason with another would make
+    // failures harder to read, not easier.
+    const fitHolds = result.globalOffsetConfidence === undefined
+      || result.globalOffsetConfidence >= config.minFitConfidence;
+    if (!fitHolds) {
+      reasons.push(
+        `affine fit explains only ${(result.globalOffsetConfidence * 100).toFixed(1)}% of rows `
+        + `(< ${(config.minFitConfidence * 100).toFixed(0)}% required; `
+        + `scale ${result.globalScale}, offset ${result.globalOffsetPx}px). `
+        + `No single scale-and-offset describes this page, so the shift numbers `
+        + `beside it are residuals against a fit that does not hold. This is a `
+        + `model-does-not-fit result, not a pass and not a measured regression.`);
+    }
+    if (fitHolds && result.layoutShiftMaxPx > maxShift) {
       reasons.push(`layout shift ${result.layoutShiftMaxPx}px > ${maxShift}px `
         + `${src('maxLayoutShiftPx', maxShift)}`);
     }
@@ -406,9 +434,28 @@ export function evaluatePair(config, route, result) {
  * @param {{width:number, offset:number}[]} perWidth  one entry per captured width
  * @returns {string[]} human-readable failures, empty when the page is consistent
  */
-export function evaluateOffsetDivergence(config, route, perWidth) {
+export function evaluateFitDivergence(config, route, perWidth) {
   if (!Array.isArray(perWidth) || perWidth.length < 2) return [];
   const out = [];
+
+  // Scale first: under an affine model this is the sharper of the two numbers.
+  // Both widths are rendered from the SAME stylesheet, so a leading change
+  // compresses them by a comparable ratio even though their layouts differ. Two
+  // widths that disagree about the ratio are not describing one restyle.
+  const scales = perWidth.map((p) => (p.scale === undefined ? 1 : p.scale));
+  if (scales.some((s) => s !== undefined)) {
+    const sLo = Math.min(...scales);
+    const sHi = Math.max(...scales);
+    if (sHi - sLo > config.maxScaleDivergence) {
+      const shownScale = perWidth
+        .map((p, i) => `${p.width}px: ${scales[i].toFixed(4)}`).join(', ');
+      out.push(`${route}: the widths disagree about how much this page COMPRESSED `
+        + `(${shownScale}) — a spread of ${(sHi - sLo).toFixed(4)}, over the `
+        + `${config.maxScaleDivergence} budget. One stylesheet change should scale both `
+        + `widths comparably; this did not.`);
+    }
+  }
+
   const offsets = perWidth.map((p) => p.offset);
   const lo = Math.min(...offsets);
   const hi = Math.max(...offsets);

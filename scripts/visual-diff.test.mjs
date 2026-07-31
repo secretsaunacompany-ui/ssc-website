@@ -36,8 +36,8 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { startServer } from './lib/server.mjs';
 import { captureAll } from './lib/capture.mjs';
-import { comparePair, estimateGlobalOffset } from './lib/diff.mjs';
-import { loadConfig, evaluatePair, evaluateOffsetDivergence } from './lib/gate.mjs';
+import { comparePair, estimateAffine } from './lib/diff.mjs';
+import { loadConfig, evaluatePair, evaluateFitDivergence } from './lib/gate.mjs';
 import { resolveRef } from './lib/build-ref.mjs';
 import { comparePairs, tallyFailures, redirectFailures } from './visual-diff.mjs';
 
@@ -169,6 +169,21 @@ const LEADING_PARAS = Array.from({ length: 60 }, (_, i) =>
 const LEADING_CSS = '.para { padding: 10px 24px; border-bottom: 1px solid #c4a57b; }';
 const PAGE_LEADING_BASE = SHELL(LEADING_PARAS, `${LEADING_CSS} body { line-height: 1.8; }`);
 const PAGE_LEADING_TIGHT = SHELL(LEADING_PARAS, `${LEADING_CSS} body { line-height: 1.65; }`);
+/**
+ * G9: the same leading change PLUS one local displacement — paragraph 30 gains
+ * 6px of top padding, so everything below it sits 6px lower than the affine fit
+ * predicts. This is the case the scale degree of freedom could launder.
+ *
+ * SIX pixels specifically, and the size is load-bearing. A step is laundered by
+ * tilting the fit to interpolate it, which leaves a residual of roughly half the
+ * step — so a 16px nudge fails on residual (~8px) even with a broken tolerance,
+ * and proves nothing about the tolerance. A 6px nudge tilts to ~3px, UNDER the
+ * 4px budget: with the refit tolerance loosened, this page goes green and the
+ * harness stops catching exactly the regression it was repaired for. Found by
+ * mutation — the 16px version let a loosened tolerance survive.
+ */
+const PAGE_LEADING_TIGHT_NUDGED = SHELL(LEADING_PARAS,
+  `${LEADING_CSS} body { line-height: 1.65; } .para:nth-of-type(30) { padding-top: 6px; }`);
 
 /** F3 candidate: same page furniture, entirely different content. */
 const PAGE_CONTENT_REPLACED = SHELL(
@@ -235,9 +250,16 @@ async function main() {
     {
       const r = await renderPair(tmp, PAGE_BASE, PAGE_BUTTON_MOVED, 'f1');
       const v = evaluatePair(config, '/', r);
+      // The shift metric is the SPREAD of signed residuals, so a true 6px move
+      // reads as 6 plus up to a pixel of antialiasing tail (measured: the fit
+      // locks to the moved majority at offset +6, the unmoved rows sit at -6,
+      // and one stray row lands at +1 — spread 7). Spread can over-report by a
+      // pixel; it can never UNDER-report, which is the direction that matters
+      // for a gate. A tight `=== 6` here would be asserting the absence of
+      // antialiasing, not the presence of the move.
       check('F1 measured a 6px displacement',
-        r.layoutShiftMaxPx === 6,
-        `expected layoutShiftMaxPx === 6, got ${r.layoutShiftMaxPx} `
+        r.layoutShiftMaxPx >= 6 && r.layoutShiftMaxPx <= 8,
+        `expected a spread of 6-8px for a 6px move, got ${r.layoutShiftMaxPx} `
         + `(p99 ${r.layoutShiftPx}, coverage ${r.shiftCoverage.toFixed(3)})`);
       check('F1 verdict is FAIL',
         v.status === 'FAIL',
@@ -382,7 +404,11 @@ async function main() {
       check('G1 the offset is estimated at the true -300px translation',
         Math.abs(g1.globalOffsetPx + 300) <= 2,
         `expected about -300, got ${g1.globalOffsetPx} `
-        + `(votes ${g1.globalOffsetVotes}, confidence ${g1.globalOffsetConfidence.toFixed(3)})`);
+        + `(confidence ${g1.globalOffsetConfidence.toFixed(3)})`);
+      check('G1 a pure translation reports scale EXACTLY 1',
+        g1.globalScale === 1,
+        `a translated page has not been scaled; the affine model must report the `
+        + `a=1 special case exactly, got ${g1.globalScale}`);
       check('G1 coverage is honest, not collapsed',
         g1.shiftMeasurable && g1.shiftCoverage >= 0.95,
         `expected coverage >= 0.95 on identical content, got `
@@ -436,6 +462,12 @@ async function main() {
         `the page did not translate — two sections swapped. Expected an offset near 0, `
         + `got ${g3.globalOffsetPx}. A non-zero offset here means the estimator is `
         + `laundering reordering as compression.`);
+      check('G3 the affine fit does not BEND to explain a reorder either',
+        Math.abs(g3.globalScale - 1) <= 0.01,
+        `the page did not compress — two sections swapped, page height identical. `
+        + `Expected scale ~1, got ${g3.globalScale}. Adding a scale degree of freedom `
+        + `must not give the estimator a new way to explain reordering away; the `
+        + `swapped rows are a minority and must be OUTVOTED, not fitted.`);
       check('G3 verdict is FAIL even with every waivable metric waived',
         evaluatePair(gcfg, '/g/', g3).status === 'FAIL',
         `a swapped page must fail. shiftMax=${g3.layoutShiftMaxPx} `
@@ -452,38 +484,79 @@ async function main() {
       const g4 = await renderPair(tmp, PAGE_BASE, PAGE_BASE, 'g4');
       check('G4 an unchanged page reports offset exactly 0',
         g4.globalOffsetPx === 0,
-        `expected 0, got ${g4.globalOffsetPx} — ties must resolve toward zero`);
+        `expected 0, got ${g4.globalOffsetPx} — ties must resolve toward identity`);
+      check('G4 an unchanged page reports scale exactly 1',
+        g4.globalScale === 1,
+        `expected exactly 1, got ${g4.globalScale} — the identity must be exactly `
+        + `representable on the scale grid and must win ties`);
       check('G4 an unchanged page still passes',
         evaluatePair(config, '/', g4).status === 'PASS', 'control');
 
-      // G6: the honest limit of a SINGLE global offset, locked in a fixture so
-      // nobody later assumes this instrument handles leading changes.
+      // G6: progressive compression — what a real leading change actually does.
       //
-      // A real line-height change does not translate a page, it COMPRESSES it
-      // progressively: row 1 barely moves, the last row moves by the full
-      // height delta. No single offset fits that, and the estimator says so —
-      // measured here at confidence 0.034 (3.4% of rows agreeing) against
-      // ~1.000 for the genuine translation in G1. That confidence number is the
-      // instrument reporting its own inapplicability, which is the behaviour
-      // worth locking.
-      //
-      // This fixture asserts what IS true today, not what we wish were true. If
-      // the matcher ever learns an affine fit (offset + scale), this fixture
-      // should be revisited deliberately — it is a behaviour lock, not a target.
+      // HISTORY, kept deliberately. This fixture was born as a LIMITATION LOCK.
+      // Under the constant-offset model it recorded confidence 0.034, a 238px
+      // residual and a failing verdict, because a leading change compresses a
+      // page progressively rather than translating it and no single offset fits
+      // that. That measurement is what specified the affine extension. It is now
+      // a CAPABILITY PROOF, and the numbers it asserts are the evidence the
+      // extension did what it claimed. Do not soften it back into a lock.
       const g6 = await renderPair(tmp, PAGE_LEADING_BASE, PAGE_LEADING_TIGHT, 'g6');
-      check('G6 progressive compression yields LOW offset confidence',
-        g6.globalOffsetConfidence < 0.5,
-        `a progressively compressed page has no single translation, and the estimator `
-        + `must not pretend otherwise. confidence=${g6.globalOffsetConfidence.toFixed(3)} `
-        + `offset=${g6.globalOffsetPx} — compare G1's near-total agreement`);
-      check('G6 a genuine translation is far more confident than a compression',
-        g1.globalOffsetConfidence > g6.globalOffsetConfidence * 4,
-        `G1 confidence ${g1.globalOffsetConfidence.toFixed(3)} vs `
-        + `G6 ${g6.globalOffsetConfidence.toFixed(3)} — the number must discriminate`);
-      check('G6 progressive compression still FAILS (single offset does not fit it)',
-        evaluatePair(strict, '/none/', g6).status === 'FAIL',
-        `documented limitation: this instrument does not certify a leading change. `
+      check('G6 the fit recovers a compression scale inside the band',
+        g6.globalScale > 0.85 && g6.globalScale < 1,
+        `a 1.8 -> 1.65 leading change compresses text by 0.9167; unscaled padding and `
+        + `borders pull the effective page scale toward 1, so the fit should land `
+        + `between. got scale=${g6.globalScale}`);
+      check('G6 the fit is now CONFIDENT (was 0.034 under constant-offset)',
+        g6.globalOffsetConfidence >= 0.9,
+        `expected >= 0.9, got ${g6.globalOffsetConfidence.toFixed(3)} — this is the `
+        + `number that justified building the affine model`);
+      check('G6 coverage is honest',
+        g6.shiftMeasurable && g6.shiftCoverage >= 0.95,
+        `expected >= 0.95, got ${g6.shiftCoverage.toFixed(3)}`);
+      check('G6 the residual after the fit is within budget (was 238px)',
+        g6.layoutShiftMaxPx <= gcfg.maxLayoutShiftPx,
+        `expected <= ${gcfg.maxLayoutShiftPx}px, got ${g6.layoutShiftMaxPx}px`);
+      check('G6 the UNWAIVABLE gates are clean on their own merits',
+        !evaluatePair(strict, '/none/', g6).reasons.some(
+          (x) => x.includes('layout shift') || x.includes('coverage') || x.includes('affine fit')),
+        `a leading change must breach only the height and pixel budgets — both `
+        + `waivable — never shift, coverage or fit confidence. Got `
         + `${JSON.stringify(evaluatePair(strict, '/none/', g6).reasons)}`);
+      check('G6 a leading change is now certifiable under a normal restyle waiver',
+        (() => {
+          const v = evaluatePair(gcfg, '/g/', g6);
+          return v.status !== 'FAIL' && v.reasons.length === 0;
+        })(),
+        `the whole point of the extension. ${JSON.stringify(evaluatePair(gcfg, '/g/', g6))}`);
+
+      // G9: THE adversarial case for affine — a local move hiding inside a
+      // genuine compression. The scale degree of freedom is exactly what could
+      // launder it: a least-squares fit over everything would tilt slightly to
+      // interpolate the step and drive the residual under the budget. The hard
+      // inlier tolerance is what stops that, and this fixture is what proves it.
+      const g9 = await renderPair(tmp, PAGE_LEADING_BASE, PAGE_LEADING_TIGHT_NUDGED, 'g9');
+      check('G9 the fit still recovers the compression',
+        g9.globalScale > 0.85 && g9.globalScale < 1,
+        `got scale=${g9.globalScale} confidence=${g9.globalOffsetConfidence.toFixed(3)}`);
+      check('G9 the fit is still CONFIDENT — one step is a regression, not a bad model',
+        g9.globalOffsetConfidence >= 0.9,
+        `an affine map describes this page perfectly well apart from the very 6px step `
+        + `we want reported, so confidence must stay high and the failure must land on `
+        + `the SHIFT gate. Measuring confidence at the fit tolerance instead of the `
+        + `looser model-fit tolerance drops this to ~50% and the page gets dismissed as `
+        + `unmeasurable instead of reported as a regression. `
+        + `got ${g9.globalOffsetConfidence.toFixed(3)}`);
+      check('G9 a local move INSIDE a compressed page is still caught',
+        evaluatePair(gcfg, '/g/', g9).status === 'FAIL',
+        `the affine fit must not absorb a local displacement. `
+        + `shiftMax=${g9.layoutShiftMaxPx} scale=${g9.globalScale} `
+        + `coverage=${g9.shiftCoverage.toFixed(3)} `
+        + `reasons=${JSON.stringify(evaluatePair(gcfg, '/g/', g9).reasons)}`);
+      check('G9 it fails on the shift gate specifically, as a residual',
+        evaluatePair(gcfg, '/g/', g9).reasons.some((x) => x.includes('layout shift')),
+        `expected a layout-shift reason, got `
+        + `${JSON.stringify(evaluatePair(gcfg, '/g/', g9).reasons)}`);
 
       // G7/G8: the estimator's two robustness rules, driven directly.
       //
@@ -501,23 +574,55 @@ async function main() {
       {
         const a = ['sigA', 'sigB'];
         const index = new Map([['sigA', [0, 50]], ['sigB', [1, 51]]]);
-        const est = estimateGlobalOffset(a, index);
-        check('G7 an exact vote tie resolves toward zero',
-          est.offset === 0,
-          `two buckets tied on ${est.votes} votes; the estimator must prefer the one `
-          + `nearer zero, got offset ${est.offset}. Otherwise an unchanged page can `
-          + `report a translation that never happened.`);
+        const est = estimateAffine(a, index);
+        check('G7 an exact vote tie resolves toward the identity',
+          est.offset === 0 && est.scale === 1,
+          `two cells tied; the estimator must prefer the identity, got `
+          + `scale ${est.scale} offset ${est.offset}. Otherwise an unchanged page can `
+          + `report a translation or a compression that never happened.`);
       }
       // ...and the same tie in the other direction: a real translation must
-      // still win when it is not a tie, so G7 is not just "always return 0".
+      // still win when it is not a tie, so G7 is not just "always return identity".
       {
         const a = ['sigA', 'sigB', 'sigC'];
         const index = new Map([['sigA', [50]], ['sigB', [51]], ['sigC', [52]]]);
-        const est = estimateGlobalOffset(a, index);
+        const est = estimateAffine(a, index);
         check('G7 an unambiguous translation still wins outright',
-          est.offset === 50,
-          `control: preferring zero must only break TIES, not override evidence. `
-          + `got ${est.offset}`);
+          Math.abs(est.offset - 50) < 0.5 && Math.abs(est.scale - 1) < 1e-6,
+          `control: preferring the identity must only break TIES, not override `
+          + `evidence. got scale ${est.scale} offset ${est.offset}`);
+      }
+      // A genuine SCALE must win too, or the identity preference has become a
+      // refusal to ever see compression.
+      {
+        const a = [];
+        const index = new Map();
+        for (let i = 0; i < 40; i++) {
+          const y = 100 + i * 50;
+          a[y] = `s${i}`;
+          index.set(`s${i}`, [Math.round(0.9 * y + 20)]);
+        }
+        const est = estimateAffine(a, index);
+        check('G7 a genuine compression is recovered, not flattened to identity',
+          Math.abs(est.scale - 0.9) < 0.005 && Math.abs(est.offset - 20) < 2,
+          `synthetic y' = 0.9y + 20 must be recovered. got scale ${est.scale} `
+          + `offset ${est.offset} confidence ${est.confidence.toFixed(3)}`);
+      }
+      // A scale outside the band is not a restyle and must not be fitted.
+      {
+        const a = [];
+        const index = new Map();
+        for (let i = 0; i < 40; i++) {
+          const y = 100 + i * 50;
+          a[y] = `h${i}`;
+          index.set(`h${i}`, [Math.round(0.5 * y)]);
+        }
+        const est = estimateAffine(a, index);
+        check('G7 a scale outside [0.8, 1.05] is refused, not fitted',
+          est.scale >= 0.8 && est.scale <= 1.05 && est.confidence < 0.75,
+          `a page "scaled" to 0.5 is different content, not a leading change. The fit `
+          + `must stay in band and report low confidence, got scale ${est.scale} `
+          + `confidence ${est.confidence.toFixed(3)}`);
       }
 
       // G8: a signature repeated more often than MAX_SIGNATURE_HITS is
@@ -535,35 +640,131 @@ async function main() {
           ['unique1', [300]],
           ['unique2', [301]],
         ]);
-        const est = estimateGlobalOffset(a, index);
+        const est = estimateAffine(a, index);
         check('G8 non-distinctive rows do not drown the real offset',
-          est.offset === 100,
+          Math.abs(est.offset - 100) < 0.5 && Math.abs(est.scale - 1) < 1e-6,
           `100 identical rows must be excluded from the vote so the two distinctive `
-          + `rows carry the true +100 translation. Got offset ${est.offset} `
-          + `(${est.votes} votes) — repeating texture is matching everywhere and `
-          + `voting for nothing.`);
+          + `rows carry the true +100 translation. Got scale ${est.scale} offset `
+          + `${est.offset} — repeating texture is matching everywhere and voting `
+          + `for nothing.`);
+      }
+
+      // G12: the band is enforced on the REFIT too, not only on the vote grid.
+      //
+      // Found by mutation: deleting the refit's bounds check left the suite
+      // green, because on a normal page the least-squares refit never wanders
+      // far. It can on a SHORT one. The refit fits rows within 2px of the
+      // current line, so over a y-span of Y the slope can move by ~4/Y — on a
+      // 40px span that is 0.1, far enough to leave the band entirely. The grid
+      // would then have honoured the band and the refit would have quietly
+      // undone it.
+      {
+        // Getting this fixture to actually reach the bounds check took two
+        // goes, both caught by mutation. The refit is also protected by the
+        // monotone-improvement guard, so unless the out-of-band fit explains
+        // STRICTLY MORE rows than the in-band one, that guard rejects it first
+        // and the bounds check is never exercised — the fixture passes while
+        // testing nothing.
+        //
+        // A slope of 1.15 over a 60px span does it: the best in-band fit
+        // (capped at 1.05) drifts far enough to lose several rows, while the
+        // true 1.15 line captures all of them. So the refit genuinely wants to
+        // leave the band, strictly improves by doing so, and ONLY the bounds
+        // check stands in the way.
+        const a = [];
+        const index = new Map();
+        for (let y = 0; y <= 60; y += 5) {
+          a[y] = `t${y}`;
+          index.set(`t${y}`, [Math.round(1.15 * y)]);
+        }
+        const est = estimateAffine(a, index);
+        check('G12 the refit cannot walk the scale out of the band',
+          est.scale >= 0.8 && est.scale <= 1.05,
+          `a least-squares refit on a short span can escape [0.8, 1.05] while every `
+          + `point stays inside the 2px inlier tolerance. The bound must hold after `
+          + `refinement, not only on the vote grid. got scale ${est.scale}`);
+      }
+
+      // G10: a low-confidence fit FAILS, and says model-does-not-fit rather
+      // than reporting residuals against a fit that does not hold. The
+      // confidence gate is unwaivable and not overridable: if the instrument
+      // cannot describe the page, that is a human conversation.
+      {
+        const unfittable = {
+          layoutShiftPx: 0, layoutShiftMaxPx: 0, shiftCoverage: 1, shiftMeasurable: true,
+          heightDeltaPx: 0, changedPct: 0,
+          globalScale: 1, globalOffsetPx: 0, globalOffsetConfidence: 0.2,
+        };
+        const v = evaluatePair(strict, '/none/', unfittable);
+        check('G10 a low-confidence fit fails even when every other metric is clean',
+          v.status === 'FAIL',
+          `shift 0, coverage 1, nothing changed — but the fit explains 20% of rows, so `
+          + `none of those numbers mean anything. ${JSON.stringify(v)}`);
+        check('G10 it says model-does-not-fit, not a fake shift figure',
+          v.reasons.some((x) => x.includes('does not hold') || x.includes('affine fit')),
+          `expected an explicit model-does-not-fit reason, got ${JSON.stringify(v.reasons)}`);
+        check('G10 fit confidence cannot be waived away',
+          (() => {
+            try {
+              loadConfig('t.json', () => JSON.stringify({
+                ...JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')),
+                expectedToChange: [{ route: '/a/', reason: 'r', waive: ['fitConfidence'] }],
+                pageOverrides: [],
+              }));
+              return false;
+            } catch (err) { return /never be waived/.test(err.message); }
+          })(),
+          'a page must not be able to waive the check that says its measurement is void');
       }
 
       // G5: the offset gate, across widths of one page.
       check('G5 consistent widths raise nothing',
-        evaluateOffsetDivergence(config, '/a/',
+        evaluateFitDivergence(config, '/a/',
           [{ width: 1440, offset: -300 }, { width: 390, offset: -340 }]).length === 0,
         'comparable compression at both widths is normal and must stay quiet');
       check('G5 wildly divergent widths are reported',
-        evaluateOffsetDivergence(config, '/a/',
+        evaluateFitDivergence(config, '/a/',
           [{ width: 1440, offset: -40 }, { width: 390, offset: -900 }]).length === 1,
         'a 860px spread must be reported');
       check('G5 opposite directions are reported regardless of magnitude',
-        evaluateOffsetDivergence(config, '/a/',
+        evaluateFitDivergence(config, '/a/',
           [{ width: 1440, offset: 60 }, { width: 390, offset: -60 }]).length >= 1,
         'one width growing while another shrinks is never a single spacing change');
       check('G5 sub-noise offsets do not trip the sign check',
-        evaluateOffsetDivergence(config, '/a/',
+        evaluateFitDivergence(config, '/a/',
           [{ width: 1440, offset: 1 }, { width: 390, offset: -1 }]).length === 0,
         'rounding must not be reported as a direction conflict');
       check('G5 a single width cannot diverge from itself',
-        evaluateOffsetDivergence(config, '/a/', [{ width: 1440, offset: -300 }]).length === 0,
+        evaluateFitDivergence(config, '/a/', [{ width: 1440, offset: -300 }]).length === 0,
         'one width is not a comparison');
+
+      // Scale divergence, gated on the same terms as offset divergence. Under
+      // an affine model this is the sharper of the two: both widths render from
+      // ONE stylesheet, so a leading change should compress them by a
+      // comparable ratio even though their layouts differ.
+      check('G5 comparable compression at both widths is quiet',
+        evaluateFitDivergence(config, '/a/', [
+          { width: 1440, offset: 0, scale: 0.938 },
+          { width: 390, offset: 0, scale: 0.921 },
+        ]).length === 0,
+        'two widths compressing by a similar ratio is exactly what a leading change does');
+      check('G5 wildly divergent SCALE is reported',
+        evaluateFitDivergence(config, '/a/', [
+          { width: 1440, offset: 0, scale: 0.99 },
+          { width: 390, offset: 0, scale: 0.82 },
+        ]).some((f) => f.includes('COMPRESSED')),
+        'one width barely moving while the other compresses 18% is not one restyle');
+      check('G5 scale divergence is independent of offset divergence',
+        evaluateFitDivergence(config, '/a/', [
+          { width: 1440, offset: -10, scale: 0.99 },
+          { width: 390, offset: -12, scale: 0.82 },
+        ]).length === 1,
+        'identical offsets must not mask a scale disagreement');
+      check('G5 a missing scale defaults to identity rather than crashing',
+        evaluateFitDivergence(config, '/a/', [
+          { width: 1440, offset: -300 }, { width: 390, offset: -320 },
+        ]).length === 0,
+        'the offset-only shape must stay callable');
     }
 
     process.stdout.write('\nO — the orchestration layer (visual-diff.mjs itself)\n');

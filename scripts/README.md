@@ -183,13 +183,15 @@ tests, and each one is a defect it actually shipped with.
 | P | per-page overrides move one budget the way its type allows — ceilings up (capped at 100×), the coverage floor down (bounded to `[0.75, 1)`) — only on the page and metric named, never past a 90-day expiry |
 
 | F5 | invoking the CLI through a **symlinked** path still runs it, rather than exiting 0 in silence |
-| G1–G2 | a uniform 300px translation passes with honest coverage; a 6px local move *inside* it is still caught |
-| G3 | a genuine section **reorder** is not laundered as compression — the estimator stays at ~0 and the swap fails |
-| G4 | an unchanged page reports offset exactly 0 (ties resolve toward zero) |
-| G5 | the cross-width offset gate: wild divergence and opposite directions are reported |
-| G6 | progressive (leading-style) compression reports low confidence and still fails — the documented limit |
+| G1–G2 | a uniform 300px translation reports scale exactly 1 and passes with honest coverage; a 6px local move *inside* it is still caught |
+| G3 | a genuine section **reorder** is not laundered — neither the offset nor the *scale* bends to explain it, and the swap fails |
+| G4 | an unchanged page reports scale exactly 1 and offset exactly 0 (ties resolve toward the identity) |
+| G5 | the cross-width offset **and scale** gates: wild divergence and opposite directions are reported |
+| G6 | progressive (leading-style) compression is now fitted at ~96% confidence with a 1px residual — the capability proof (it began life as a limitation lock under the constant-offset model, at 3% confidence and a 238px residual) |
+| G9 | a local move *inside* an affinely compressed page is still caught as a residual — the case the scale degree of freedom could have laundered |
+| G10 | a low-confidence fit fails with an explicit model-does-not-fit reason, and cannot be waived |
 
-Plus the config-validation cases covering the fail-open paths. 111 assertions.
+Plus the config-validation cases covering the fail-open paths. 137 assertions.
 
 **The suite needs an ambient git repository.** O4 and F4e shell out to the real
 CLI against real refs (`HEAD`, `HEAD~1`), so from a `git archive` export or any
@@ -340,55 +342,83 @@ Two numbers come out of that, and **both are gated**:
 A page whose shift cannot be measured at all (no structured rows) **fails**. No
 evidence of change is not evidence of no change.
 
-### The Global offset column
+### The Affine fit column
 
-Every page pair gets one estimated **global vertical offset** — the single
-translation that best explains where the candidate's rows ended up — and every
-shift number in the report is measured *relative to it*:
+Every page pair gets one estimated **affine fit** — a scale and an offset, the
+single map `candidateY = scale x baselineY + offset` that best explains where the
+candidate's rows ended up — and every shift number in the report is the
+*residual* against it:
 
 ```
-localShift(row) = (candidateY - baselineY) - globalOffset
+localShift(row) = candidateY - (scale x baselineY + offset)
 ```
 
 This exists because the matcher used to read uniform movement as chaos. When a
-leading change moved every row on a page past the 240px search window, coverage
-collapsed to 0.171 on content that was provably identical — the instrument
-calling a translation "unmatchable", which is a measurement failure rather than
-a finding.
+leading change moved every row on a page, coverage collapsed to 0.171 on content
+that was provably identical — the instrument calling a restyle "unmatchable",
+which is a measurement failure rather than a finding.
 
-So the two questions are now separated. **"The whole page slid 300px"** shows up
-as an offset. **"Things moved relative to each other"** shows up as shift. Only
-the second is a layout regression, and a 6px button move inside a page that slid
-300px is still a 6px shift and still fails the 4px budget.
+So the questions are separated. **"The whole page moved or compressed together"**
+shows up as the fit. **"Things moved relative to each other"** shows up as
+shift. Only the second is a layout regression.
 
-Alongside the offset the report shows **how much of the page agreed on it**. The
-offset is estimated by a vote — every row names the candidate rows carrying its
-signature, and the winning displacement is the one most rows agree on — so the
-agreement percentage is the instrument's own confidence:
+- A page that slid up 300px reports `x1.0000 -300px` and residuals of zero.
+- A page whose leading went 1.8 to 1.65 reports about `x0.9388 +0px` and
+  residuals of zero, because that is what a leading change does to geometry: it
+  compresses progressively rather than translating. (The text ratio is 0.9167;
+  padding and borders do not scale, which pulls the page's effective scale
+  toward 1.)
+- A 6px button move inside **either** of those still reports a 6px residual and
+  still fails the 4px budget.
 
-| Agreement | Reading |
+The scale is bounded to **[0.8, 1.05]**. A leading change compresses modestly; a
+page that "scaled" to 0.5 is not a restyle, it is different content, and no fit
+may claim otherwise.
+
+#### How much of the page the fit explains
+
+Beside the fit the report shows a **percentage**: how many rows the fit actually
+accounts for. This is the instrument's own confidence, and a fit below
+`minFitConfidence` **fails the run** with an explicit *model-does-not-fit*
+message rather than reporting residuals against a fit that does not hold. That
+check cannot be waived and cannot be overridden per page — if the harness cannot
+describe what happened to a page, that is a conversation, not a config line.
+
+| Fit explains | Reading |
 |---|---|
-| near 100% | the page genuinely moved as one block; trust the offset |
-| low | no single translation fits this page; the offset is not meaningful and the shift numbers beside it should be read with suspicion |
+| near 100% | the fit describes the page; trust the residuals beside it |
+| low | no single scale-and-offset fits; the shift numbers are residuals against nothing and are not evidence |
 
-A vote is used rather than a mean or a plain median precisely so a **reorder**
-cannot be laundered as compression: swapped sections vote for their own
-displacements and are outvoted by the rest of the page, so they surface as large
-local shifts instead of being explained away. There is a fixture for this, and
-breaking the estimator turns it red.
+#### Why it cannot launder a reorder or a local move
 
-**Known limit, measured not assumed.** A single offset describes a *constant*
-translation. A real line-height change compresses a page *progressively* — the
-first row barely moves, the last moves by the full height delta — and no single
-offset fits that. The instrument reports it honestly (agreement drops to roughly
-3%, versus ~100% for a true translation) and the page still fails. Fixture G6
-locks that behaviour. Certifying a leading change would need an affine fit
-(offset **and** scale); this is not that, and it should not be described as that.
+The fit is chosen by a **vote** — a 2-D consensus over (scale, offset) — not a
+mean and not a least-squares pass over everything. Three properties do the work:
 
-The offset is also gated across the two capture widths of one page — see
-`maxOffsetDivergencePx`. A page may compress; it may not compress by wildly
-different amounts, or in opposite directions, at the two widths without that
-being visible.
+1. **Voting rewards concentration.** For a fixed scale, every row contributes an
+   offset to a histogram and the winner is the most populous bucket. Tilting the
+   scale *spreads* a constant group rather than merging two of them, so the vote
+   cannot buy agreement by tilting.
+2. **The shift number is a *spread*, not a largest-absolute-value.** This is the
+   one that matters. A fit with a scale is free to *tilt*, and tilting can merge
+   two groups of rows rather than just spreading them: a page that compressed
+   *and* gained a 6px step was fitted 0.0013 off the honest scale, turning
+   residuals of `{0, +6}` into `{-3, +3}` — largest absolute residual 3px, under
+   the 4px budget, real regression gone green. Measured, not hypothesised. The
+   spread of `{0, +6}` and of `{-3, +3}` is 6 either way, because a spread has no
+   origin for the fit to slide. Refitting also uses a hard 2px inlier tolerance
+   as a second line of defence.
+3. **The scale band** stops an extreme fit mapping arbitrary content onto
+   arbitrary content.
+
+A reordered page has no honest fit: the swapped sections are a minority, they are
+outvoted rather than absorbed, and they surface as large residuals. There are
+fixtures for all of this, and breaking any of the three turns them red.
+
+The fit is also gated across the two capture widths of one page — see
+`maxOffsetDivergencePx` and `maxScaleDivergence`. Both widths render from one
+stylesheet, so they should compress by a comparable ratio; a page may compress,
+but the widths may not disagree wildly about how much, or move in opposite
+directions, without that being visible.
 
 A run fails a page when any gated metric is over budget, and fails the *run*
 when the measurement itself is untrustworthy: a failed asset fetch, an

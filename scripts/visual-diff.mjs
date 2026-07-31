@@ -18,7 +18,7 @@ import { startServer } from './lib/server.mjs';
 import { captureAll } from './lib/capture.mjs';
 import { comparePair } from './lib/diff.mjs';
 import {
-  loadConfig as loadGateConfig, evaluatePair, overBudget, evaluateOffsetDivergence,
+  loadConfig as loadGateConfig, evaluatePair, overBudget, evaluateFitDivergence,
 } from './lib/gate.mjs';
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
@@ -179,16 +179,16 @@ export function comparePairs({ config, sharedRoutes, baselineShotDir, candidateS
     }
   }
 
-  // The global offset is gated on its own terms, across the widths of a single
-  // page. A page may compress; it may not compress by wildly different amounts
-  // at the two widths, or in opposite directions, without that being visible.
+  // The affine fit is gated on its own terms, across the widths of a single
+  // page. A page may compress; the two widths may not compress by wildly
+  // different ratios, or move in opposite directions, without that being visible.
   const byRoute = new Map();
   for (const p of pages) {
     if (!byRoute.has(p.route)) byRoute.set(p.route, []);
-    byRoute.get(p.route).push({ width: p.width, offset: p.globalOffsetPx });
+    byRoute.get(p.route).push({ width: p.width, offset: p.globalOffsetPx, scale: p.globalScale });
   }
   for (const [route, perWidth] of byRoute) {
-    runFailures.push(...evaluateOffsetDivergence(config, route, perWidth));
+    runFailures.push(...evaluateFitDivergence(config, route, perWidth));
   }
 
   // Comparing nothing at all is not a pass. This closes the `widths: []` class
@@ -223,7 +223,7 @@ function writeHtmlReport(file, report) {
       <td><code>${esc(p.route)}</code></td>
       <td>${p.width}px</td>
       <td>${p.changedPct.toFixed(3)}%</td>
-      <td>${p.globalOffsetPx > 0 ? '+' : ''}${p.globalOffsetPx}px <span style="color:#777">(${(p.globalOffsetConfidence * 100).toFixed(0)}% agree)</span></td>
+      <td>&times;${p.globalScale.toFixed(4)} ${p.globalOffsetPx > 0 ? '+' : ''}${p.globalOffsetPx}px <span style="color:#777">(${(p.globalOffsetConfidence * 100).toFixed(0)}% fit)</span></td>
       <td>${p.layoutShiftMaxPx}px <span style="color:#777">(p99 ${p.layoutShiftPx}px)</span></td>
       <td>${p.shiftMeasurable ? p.shiftCoverage.toFixed(3) : 'unmeasurable'}</td>
       <td>${p.heightDeltaPx > 0 ? '+' : ''}${p.heightDeltaPx}px</td>
@@ -259,7 +259,7 @@ function writeHtmlReport(file, report) {
 ${(report.runFailures.length || report.structural.length) ? `<ul class="runfail">${
   [...report.runFailures, ...report.structural].map((f) => `<li>${esc(f)}</li>`).join('')
 }</ul>` : ''}
-<table><thead><tr><th>Page</th><th>Width</th><th>Pixels changed</th><th>Global offset</th><th>Local shift (max)</th><th>Shift coverage</th><th>Height change</th><th>Status</th><th>Diff</th></tr></thead>
+<table><thead><tr><th>Page</th><th>Width</th><th>Pixels changed</th><th>Affine fit (scale + offset)</th><th>Local shift (max)</th><th>Shift coverage</th><th>Height change</th><th>Status</th><th>Diff</th></tr></thead>
 <tbody>${rows}</tbody></table>
 </body></html>`);
 }
@@ -366,11 +366,12 @@ async function main() {
     log(`  No visual change on any of ${shared.length} pages at ${config.widths.join('/')}px`
       + ` (${comparedPairs} page/width pairs compared).`);
   } else {
-    log('  Page                                    Width   Changed   Offset    Shift   Height   Status');
-    log('  ' + '-'.repeat(94));
+    log('  Page                                    Width   Changed    Scale   Offset    Shift   Height   Status');
+    log('  ' + '-'.repeat(103));
     for (const p of noisy.sort((x, y) => y.changedPct - x.changedPct)) {
       log(`  ${p.route.padEnd(38)}  ${String(p.width).padStart(5)}`
         + `  ${(`${p.changedPct.toFixed(3)}%`).padStart(9)}`
+        + `  ${(`x${p.globalScale.toFixed(3)}`).padStart(7)}`
         + `  ${(`${p.globalOffsetPx > 0 ? '+' : ''}${p.globalOffsetPx}px`).padStart(7)}`
         + `  ${(`${p.layoutShiftPx}px`).padStart(7)}`
         + `  ${(`${p.heightDeltaPx > 0 ? '+' : ''}${p.heightDeltaPx}px`).padStart(7)}`
