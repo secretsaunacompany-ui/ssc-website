@@ -16,7 +16,7 @@
     "events:test": "node scripts/events.test.mjs",
     "//fonts:test": "Group B drives a real Chromium against dist/, so run `npm run build` first. Static checks alone cannot tell you a font actually loaded.",
     "fonts:test": "node scripts/fonts.test.mjs",
-    "//rhythm:test": "Group R drives a real Chromium against dist/, so run `npm run build` first. A token's declared value and the value that reaches the element are different claims.",
+    "//rhythm:test": "Group R drives a real Chromium against dist/, so run `npm run build` first. A token's declared value and the value that reaches the element are different claims \u2014 and an edit (or mutation probe) made to styles.css WITHOUT a rebuild never reaches the measured page: it reports as 'suite did not notice', a coverage gap that isn't there.",
     "rhythm:test": "node scripts/rhythm.test.mjs",
     "dom-integrity": "node scripts/dom-integrity.mjs",
     "dom-integrity:test": "node scripts/dom-integrity.test.mjs",

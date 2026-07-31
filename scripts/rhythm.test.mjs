@@ -4,6 +4,14 @@
  *
  *   npm run build && npm run rhythm:test
  *
+ * MEASURES BUILT dist/, NOT styles.css. Rebuild between any stylesheet edit and
+ * a re-run -- a mutation applied to styles.css without a rebuild never reaches
+ * the page this suite measures, and a silent no-op reports as "the suite did
+ * not notice", which reads as a coverage gap that isn't there. (A reviewer lost
+ * three probes to exactly this before noticing. The sibling batteries throw on
+ * unapplicable mutations; this suite mutates nothing itself, so the discipline
+ * is on the person editing.)
+ *
  * WP-1b deleted six spacing utilities, consolidated three percentage gutters
  * into one viewport-relative token, and relaxed the line-length cap from 60/65ch
  * to 70ch. The DOM-integrity check certifies that those class names left the
