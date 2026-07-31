@@ -132,6 +132,19 @@
        ELEVATED surface must be --ink or --ember, never --ink-quiet (4.47). */
 
     --ember-hover: #d4b58b;   /* button hover fill; #000 on it = 10.78 */
+
+    /* Validation. REQUIREMENT specified by Jen at Stage 3 (C26/C27); the value is
+       derived and contrast-verified here, because doc 21 resolved no error token
+       and validation was rendering in --ember-hover -- the same warm tan as every
+       PRICE on the configurator, so "this field is wrong" and "this costs $2,000"
+       were the same colour on the money screen.
+       Desaturated warm red, hsl(6, 50%, 58%). Verified (WCAG 2.x relative
+       luminance): 5.28:1 on --ground, 4.93:1 on --elevated -- AA at every size on
+       BOTH surfaces, which matters because validation renders inside the modal
+       (elevated) and on the contact page (ground). Hue sits 28 degrees off
+       --ember (34.5deg) so it is not a darker ember; and it never carries the
+       message alone -- an invalid field gets a border AND text. */
+    --error: #c9695e;
     --ember-dark:  #a08060;   /* one consumer: .comparison-header.ours */
 
     /* Ember alphas. All five now share ONE base, rgb(196,165,123). Three of them
@@ -690,12 +703,17 @@ nav .container {
     position: relative;
     z-index: 1;
     text-align: center;
-    color: var(--color-white);
+    /* F10, Jen's ruling. --color-white is #fff; --ink is #e8e6e3. Pure white on
+       photography is the one value that cannot hold a warm system together --
+       it reads as a different palette arriving, and it is the brightest thing on
+       a page whose argument is restraint. The hero pair sits on an image behind
+       --hero-scrim, so contrast is carried by the scrim, not by the extra 4%. */
+    color: var(--ink);
     padding: var(--spacing-lg);
 }
 
 .hero h1 {
-    color: var(--color-white);
+    color: var(--ink);
     margin-bottom: var(--spacing-sm);
 }
 
@@ -981,12 +999,18 @@ nav .container {
 
 .stat-number {
     display: block;
-    /* stylelint-disable-next-line declaration-property-value-allowed-list --
-       OPEN, pending Jen at Stage 3. 3.5rem sits between --text-4xl (4rem) and
-       --text-3xl (3rem) and is the one figure on the site whose size is a
-       display decision rather than a hierarchy one. Deliberately left raw and
-       loudly marked rather than silently rounded to a token it does not mean. */
-    font-size: 3.5rem;
+    /* CLOSED by Jen at Stage 3, ruling (d): display-by-function. The raw 3.5rem
+       was held open on the argument that this figure's size is a display
+       decision rather than a hierarchy one -- and that is exactly the argument
+       FOR --text-4xl, which is the display step. A number that exists to be read
+       across a room is display type; it does not need a step of its own between
+       two existing ones. The stylelint exception retires with it. */
+    font-size: var(--text-4xl);
+    line-height: var(--leading-display);
+    /* It is a FIGURE, and figures in a column must align. Cormorant ships tnum;
+       without asking for it the numerals are proportional and a stack of stats
+       reads ragged down its left edge. */
+    font-variant-numeric: lining-nums tabular-nums;
     font-weight: 400;
     color: var(--ember);
     font-family: var(--font-heading);
@@ -1025,7 +1049,13 @@ nav .container {
        near-white one under .btn-outline -- which is the single loudest gesture
        on a site whose whole argument is restraint. */
     transition: background var(--transition-fast), color var(--transition-fast);
-    border: none;
+    /* F6. A TRANSPARENT 1px border, not `none`. The pair sat at 58px and 59px
+       because .btn-outline's border added to the box and .btn had none -- a
+       one-pixel mismatch between two buttons that sit side by side, which is the
+       kind of thing nobody can name and everybody can see. Reserving the same
+       border box on both is what makes them the same height by construction
+       rather than by coincidence. */
+    border: 1px solid transparent;
     cursor: pointer;
     border-radius: var(--radius-sm);
 }
@@ -1036,7 +1066,9 @@ nav .container {
 
 .btn-outline {
     background: transparent;
-    border: 2px solid var(--ink);
+    /* F6: 1px, matching .btn's reserved border box. 2px also read as heavier
+       than the filled button it is supposed to be secondary to. */
+    border: 1px solid var(--ink);
     border-radius: var(--radius-sm);
     color: var(--ink);
 }
@@ -1046,9 +1078,21 @@ nav .container {
     color: var(--color-black);
 }
 
+/* Ratification rider (c): the hero pair reads as ONE decision offered two ways,
+   so the two buttons match in size and weight and differ only in fill. The
+   font-size override here was --text-sm: 14px next to 16px, at the largest
+   moment on the site. Removed, not re-tokenized -- .btn already carries
+   --text-base and the secondary has no reason to disagree with it.
+   Equal width comes from a shared min-width rather than from the label lengths,
+   which are "Plan My Sauna Design" and "Or Book a Session" and will never
+   measure the same. */
+.hero-content .btn,
+.hero-content .btn-outline {
+    min-width: 16rem;
+}
+
 .btn--hero-secondary {
     margin-top: var(--spacing-sm);
-    font-size: var(--text-sm);
 }
 
 /* ============================================
@@ -1217,7 +1261,13 @@ label {
     display: block;
     margin-bottom: var(--spacing-xs);
     font-size: var(--text-sm);
-    letter-spacing: var(--tracking-caps);
+    /* F1. Was --tracking-caps (0.14em). 0.14em is the ALL-CAPS letterfit: caps
+       have no ascender/descender rhythm to carry them apart, so they need the
+       air. Applied to mixed-case text it does the opposite of what it is for --
+       it pulls words into loose strings of letters. Every form label on the site
+       is sentence case, and roughly forty of them sit on the configurator, which
+       is the screen where someone is about to spend money. */
+    letter-spacing: var(--tracking-body);
     color: var(--ink);
 }
 
@@ -1232,6 +1282,22 @@ select {
     font-family: inherit;
     font-size: var(--text-sm);
     transition: border-color var(--transition-fast);
+    /* F7. The radius collapse reached buttons and chips and stopped at the form,
+       so inputs were the one square-cornered control sitting next to 2px ones. */
+    border-radius: var(--radius-sm);
+    /* F7. <select> and text inputs disagreed by 2px: a UA stylesheet decides a
+       select's inner content box and it does not agree with an input's.
+       Normalising line-height closes most of it, and a min-height DERIVED FROM
+       THE SAME NUMBERS closes the rest -- content box + the padding and border
+       both controls already share. Same move as the hero button pair: the two
+       agree by construction rather than by coincidence, and they stay agreeing
+       if the padding token changes. */
+    line-height: 1.5;
+}
+
+input:not([type="radio"]):not([type="checkbox"]),
+select {
+    min-height: calc(1.5em + (2 * var(--spacing-sm)) + 2px);
 }
 
 input:focus,
@@ -1487,14 +1553,19 @@ textarea {
     accent-color: var(--ember);
 }
 
+/* F1, stated explicitly rather than left to inheritance. `.addon-option` IS a
+   <label>, so these two inherited the caps letterfit from the rule above. They
+   are mixed-case product names and prices; both take the body fit. */
 .addon-option .addon-label {
     flex: 1;
     font-size: var(--text-sm);
+    letter-spacing: var(--tracking-body);
 }
 
 .addon-option .addon-price {
     color: var(--ember);
     font-weight: 500;
+    letter-spacing: var(--tracking-body);
 }
 
 .addon-option.disabled {
@@ -1713,10 +1784,36 @@ textarea {
     min-height: 5rem;
 }
 
+/* C26/C27. Was --ember-hover: the same warm tan as every price in the
+   configurator, so an error message and a line item were the same colour on the
+   screen where someone is committing money. */
 .form-error {
     margin: var(--spacing-xs) 0 0;
     font-size: var(--text-sm);
-    color: var(--ember-hover);
+    color: var(--error);
+}
+
+/* C27. Every invalid field gets the SAME treatment. Previously only the name
+   field took a border, so email and location announced their problem in a line
+   of text with nothing tying it to the control it was about -- the field a
+   person is looking at stayed unmarked. Keyed on aria-invalid as well as :invalid
+   so the JS validator and the browser's own agree. */
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"],
+.form-group.has-error input,
+.form-group.has-error textarea,
+.form-group.has-error select {
+    border-color: var(--error);
+}
+
+input[aria-invalid="true"]:focus,
+textarea[aria-invalid="true"]:focus,
+select[aria-invalid="true"]:focus,
+.form-group.has-error input:focus,
+.form-group.has-error textarea:focus,
+.form-group.has-error select:focus {
+    border-color: var(--error);
 }
 
 .form-helper {
@@ -1818,9 +1915,22 @@ textarea {
     border: none;
 }
 
+/* F11 + the ratification riders. The commercial pin was #d7a07a / #b8805d -- a
+   second warm tan at hue 24.5deg against --ember's 34.5deg and half again its
+   saturation. Ten degrees is the worst kind of near-miss: close enough to read
+   as a mistake, far enough to read as two accents. The pin now uses the accent
+   itself, and a border that is --ember darkened at CONSTANT hue and saturation
+   (hsl 34.5deg / 38.2% at 50% lightness = #b0874f) rather than a second colour
+   picked by eye. */
 .map-pin {
     --pin-size: 30px;
     --pin-core: 12px;
+    /* Component-scoped, and the ONLY static shadow left in the stylesheet. A pin
+       floats over a map by definition -- it is the one element whose whole job
+       is to sit above the surface -- so it keeps a shadow where cards lost
+       theirs. Tokenized at the component rather than in :root because nothing
+       else may reach for it. */
+    --pin-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
     position: relative;
     width: var(--pin-size);
     height: var(--pin-size);
@@ -1828,7 +1938,7 @@ textarea {
     transform: rotate(-45deg);
     background: var(--pin-color);
     border: 1px solid var(--pin-color-dark);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--pin-shadow);
 }
 
 .map-pin__core {
@@ -1843,8 +1953,12 @@ textarea {
 }
 
 .map-pin--commercial {
-    --pin-color: #d7a07a;
-    --pin-color-dark: #b8805d;
+    --pin-color: var(--ember);
+    /* --ember's own hue and saturation at 50% lightness. Kept as a literal
+       because it is a component-scoped shade of a token, and :root is not the
+       place for one pin's border. 1.40:1 against the pin fill -- a seam, not a
+       stripe, which is what a 1px border on a 30px pin should be. */
+    --pin-color-dark: #b0874f;
 }
 
 .map-pin--residential {
@@ -2049,7 +2163,8 @@ footer::before {
 }
 
 .footer-section h4 {
-    color: var(--color-white);
+    /* F10: the three footer headings, same ruling as the hero pair. */
+    color: var(--ink);
     margin-bottom: var(--spacing-sm);
     font-size: var(--text-base);
     font-family: inherit;

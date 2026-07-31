@@ -68,7 +68,7 @@ Add to `:root` in `styles.css` (new block, after the color tokens):
 
 | Token | Face/weight | Used for | Replaces (selector: old value) |
 |---|---|---|---|
-| `--text-4xl` | Cormorant 400 | h1, hero display | `h1` clamp(2.5rem,5vw,4rem) — near-identical, now tokenized |
+| `--text-4xl` | Cormorant 400 | h1, hero display, **`.stat-number`** | `h1` clamp(2.5rem,5vw,4rem) — near-identical, now tokenized. `.stat-number` added 2026-07-31 (Jen Stage 3, ruling (d)): its raw 3.5rem was held open on the argument that the figure's size is a *display* decision rather than a hierarchy one — which is the argument for this step, not for a step between two existing ones. Takes `--leading-display` and tabular numerals with it, since a column of stats must align. |
 | `--text-3xl` | Cormorant 400 | h2 section heads | `h2` clamp(2rem,4vw,3rem) |
 | `--text-2xl` | Cormorant 500 | h2 in narrow/heavy contexts, pull quotes, `.stat-number` companion | — new step, no current selector migrates *up* into it. (`.model-header h3` 1.8rem is **demoted**, not promoted: it lands on `--text-lg`.) |
 | `--text-xl` | Cormorant 500 | h3 | `h3` clamp(1.5rem,3vw,2rem) — slightly smaller max; 2rem h3 was crowding h2. Also `.booking-option__price` 1.3rem, if it stays serif (§3) |

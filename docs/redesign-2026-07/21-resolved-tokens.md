@@ -36,6 +36,21 @@ Canonical names follow the mood board's vocabulary (`--ground`, `--ink`, `--rule
     --ember:       #c4a57b;
     --ember-quiet: rgba(196, 165, 123, 0.18);
 
+    /* ===== Validation ===== */
+    /* Requirement specified by Jen Stage 3 (C26/C27); value derived + verified at
+       implementation, 2026-07-31. This file resolved NO error token, so form
+       validation was rendering in --ember-hover — the same warm tan as every
+       price on the configurator, which made "this field is wrong" and "this costs
+       $2,000" the same colour on the money screen.
+       Desaturated warm red, hsl(6, 50%, 58%). Contrast verified (WCAG 2.x
+       relative luminance, calculated not estimated): 5.28:1 on --ground and
+       4.93:1 on --elevated — AA at every size on BOTH surfaces, which is required
+       because validation renders in the modal (elevated) and on /contact/
+       (ground). Hue sits 28 degrees off --ember (34.5deg), so it is not a darker
+       ember; and it never carries the message alone — an invalid field gets a
+       border AND text (C27). */
+    --error: #c9695e;
+
     /* ===== Fonts — families carried, stacks CHANGED by Beatrice 11 §6 ===== */
     /* The two Fallback families are metric-tuned @font-face blocks (11 §6, WP-1a).
        Until those land the names are skipped — paste-safe either way. */

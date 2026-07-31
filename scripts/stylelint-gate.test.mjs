@@ -111,10 +111,15 @@ check('the live stylesheet passes the guard', lints(css) === true);
     const blanket = /stylelint-disable(?!-next-line)/.test(css);
     check('every exemption is next-line scoped -- no blanket disable exists',
         blanket === false);
-    check(`exactly 6 documented exceptions remain (found ${disables})`,
-        disables === 6,
-        'four icon glyphs, the iOS zoom guard, and .stat-number pending Jen. '
-        + 'A seventh means an exception was added without this test being told.');
+    // Was 6. .stat-number's raw 3.5rem was held open "pending Jen at Stage 3";
+    // Jen ruled it display-by-function and it now takes --text-4xl, so its
+    // exception retired with it. This number is supposed to go DOWN, and it can
+    // only go down through a deliberate edit here -- which is the point.
+    check(`exactly 5 documented exceptions remain (found ${disables})`,
+        disables === 5,
+        'four icon glyphs and the iOS zoom guard. A sixth means an exception was '
+        + 'added without this test being told; a fourth means one retired without '
+        + 'the reason being recorded.');
 }
 
 {
