@@ -92,7 +92,7 @@
     },
     {
       "route": "/privacy/",
-      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 12.9% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "reason": "WP-1a type system (body line-height 1.8 -> 1.65, ad-hoc sizes replaced by the token scale) PLUS a deliberate content rewrite: the policy now describes the rebuilt quote configurator (the five collected fields and their purposes, Formspree as a US processor and what that means, the 7-day browser-side save, honest server-side retention, the analytics story including IP address, PIPA/PIPEDA, OIPC BC). Stale claims were removed because they were false, not merely reworded: the site has no Google Analytics, no Square, no Meta pixel and sets no cookies at all. The DOM text is therefore INTENTIONALLY not identical to the baseline, which is why the content-preservation language on the other routes is absent here. Section count goes 8 -> 12 and the page gets materially longer. Recolours nothing and moves no shared furniture, so the shift gates still apply unwaived and must hold.",
       "waive": [
         "changedPct",
         "heightDelta"
