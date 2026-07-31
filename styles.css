@@ -1467,7 +1467,7 @@ textarea {
     margin-top: var(--spacing-md);
     padding: 1.25rem var(--spacing-lg);
     background: var(--color-warm-wood);
-    /* Was --color-charcoal (#c0c0c0) on the warm-wood fill: about 2.4:1. The
+    /* Was --color-charcoal (#c0c0c0) on the warm-wood fill: 1.28:1. The
        single most important button on the site had the worst text contrast on
        the site. Black on ember measures 9.02:1, and matches every other button. */
     color: var(--color-black);

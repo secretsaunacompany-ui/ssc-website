@@ -1,6 +1,8 @@
 {
-  "widths": [1440, 390],
-
+  "widths": [
+    1440,
+    390
+  ],
   "whitelist": [
     {
       "op": "removed",
@@ -13,25 +15,33 @@
     {
       "op": "removed",
       "tag": "LINK",
-      "contains": "preconnect",
-      "count": 2,
-      "reason": "The two Google preconnect hints (fonts.googleapis.com and fonts.gstatic.com) exist only to warm up the connection the deleted stylesheet needed. With no Google origin left they are dead weight. Count is 2 and no more: a third disappearing preconnect would be an undeclared change to the Cloudinary hint, which must survive.",
+      "contains": "href=\"https://fonts.googleapis.com\" rel=\"preconnect\"",
+      "count": 1,
+      "reason": "The Google Fonts preconnect. Identified by its exact href+rel rather than the bare word \"preconnect\", which also matches the Cloudinary hint that must survive.",
+      "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours"
+    },
+    {
+      "op": "removed",
+      "tag": "LINK",
+      "contains": "href=\"https://fonts.gstatic.com\" rel=\"preconnect\"",
+      "count": 1,
+      "reason": "The gstatic preconnect, the second half of the Google font handshake. Split from its sibling so each entry names exactly one node.",
       "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours"
     },
     {
       "op": "added",
       "tag": "LINK",
-      "contains": "preload",
+      "contains": "as=\"font\"",
       "count": 2,
-      "reason": "Two self-hosted font preloads for the above-the-fold pair (Cormorant Garamond regular, Outfit variable). Declared per the mandate as a per-commit-documented addition; the italic face is deliberately NOT preloaded, so a third preload appearing is an undeclared change and fails.",
+      "reason": "Two self-hosted font preloads for the above-the-fold pair (Cormorant Garamond regular, Outfit variable). Declared per the mandate as a per-commit-documented addition; the italic face is deliberately NOT preloaded, so a third preload appearing is an undeclared change and fails. Identified by as=\"font\" rather than the bare word \"preload\", which also matches the hero image preload on pages that have one.",
       "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours"
     }
   ],
-
   "_notes": {
     "authority": "This whitelist is a DECLARATION, not a mute button. Every entry names a change, a count, a reason and the commit that made it legitimate. An undeclared change fails; a declared change that does not occur ALSO fails, because a stale entry is a hole nobody closed. Counts are per page/width comparison.",
     "widths": "Each page is loaded at both widths and fingerprinted separately. The site is responsive by CSS, so both widths should yield IDENTICAL markup -- if a page's DOM turns out to be width-dependent it is reported as a width anomaly, because a DOM-integrity result for such a page is per-width rather than general.",
     "volatile": "Two URL segments are normalized before comparison and nothing else: the ?v= content-hash cache stamp (P-A -- it changes whenever styles.css or a js/ file changes, which is exactly what a restyle does) and the hash segment of /fonts/<name>.<hash>.woff2 (the family name is KEPT, so substituting a different typeface still fails). Whether the bytes behind a font name are the right typeface is the fonts suite's question; it asserts computed faces against a real browser. Every other attribute compares raw.",
-    "text": "Text is whitespace-normalized (rendering collapses whitespace anyway) and otherwise compared EXACTLY. A reworded sentence, a changed price or a dropped word is a failure. That is the instrument's purpose, not a limitation of it."
+    "text": "Text is whitespace-normalized (rendering collapses whitespace anyway) and otherwise compared EXACTLY. A reworded sentence, a changed price or a dropped word is a failure. That is the instrument's purpose, not a limitation of it.",
+    "specificity": "Every entry's \"contains\" must identify the node, not a family of nodes: the run refuses to start if an entry matches more nodes in the relevant build than it declares. A count is a budget, not an identity -- an entry held in check by its count alone consumes the first n matching changes rather than the ones it was written for, and starts absorbing a different node the moment the intended one stops changing. This is why the two Google preconnects are two entries keyed on their exact hrefs rather than one entry matching the word \"preconnect\" (which also matches the Cloudinary hint that must survive), and why the font preloads key on as=\"font\" rather than \"preload\" (which also matches the hero image preload)."
   }
 }

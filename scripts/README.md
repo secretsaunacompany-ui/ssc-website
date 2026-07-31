@@ -227,6 +227,23 @@ run refuses to be quiet about it: if the two builds' `js/` differs at all, the
 report says the boundary was crossed rather than letting a reader infer a
 guarantee the run cannot give.
 
+One consequence worth stating plainly: with scripts off, the **width check is
+very nearly vacuous** — both widths parse the same bytes, so they cannot differ
+unless a `media` attribute changes what parses, and the fixture asserts that
+vacuity rather than pretending otherwise. It is kept at essentially zero cost
+because it would still catch genuinely width-conditional markup, and because a
+JS-enabled mode would need it on day one: *under scripts the DOM really is
+width-dependent*, which is what the first real run measured. Do not read a green
+width result as evidence about a JS-enabled page.
+
+Every whitelist entry must also **identify its node, not a family of nodes**. The
+run refuses to start if an entry's `contains` matches more nodes than it
+declares — a count is a budget, not an identity, and an entry held in check by
+its count alone starts absorbing a different node the moment the intended one
+stops changing. This is why the two Google preconnects are two entries keyed on
+their exact hrefs rather than one entry matching the word `preconnect` (which
+also matches the Cloudinary hint that must survive).
+
 ### Testing the harness itself
 
 ```bash

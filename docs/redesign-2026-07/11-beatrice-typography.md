@@ -77,7 +77,15 @@ Add to `:root` in `styles.css` (new block, after the color tokens):
 | `--text-base` | Outfit 400 | body copy, `.faq-answer`, form inputs, buttons | `body` 1rem (weight 300→400, leading 1.8→1.65) · `.btn` 1.1rem (buttons drop to 1rem) |
 | `--text-sm` | Outfit 400 (nav: 400, caps) | card body, specs, price rows, footer links, form labels, **nav links** | the whole 0.85/0.875/0.9/0.92/0.95rem cluster (`.model-card p`, `.card-content p`, `.footer-section a`, `label`) · `.nav-links a` 1.1rem → 14px per §4 |
 | `--text-xs` | Outfit 500 | micro-labels: spec labels, badges, dates, metadata | `.spec-item label` 0.75rem (size unchanged, now tokenized) · `.blog-card__date` · `.stat-source` · `.model-capacity` |
-| `--text-2xs` | Outfit 500 | footnotes, disclaimers, **section kickers** (doc 21 R10), plate provenance, index captions, the scroll cue | `.advisor__disclaimer` 0.7rem (raised to 11px) · `.compare-badge` 0.7rem · the mood board's 0.62–0.68rem specimen labels |
+| `--text-2xs` | Outfit 500 | footnotes, disclaimers, **section kickers** (doc 21 R10), plate provenance, index captions, the scroll cue | `.advisor__disclaimer` 0.7rem (raised to 11px) · the mood board’s 0.62–0.68rem specimen labels |
+
+> **Resolution note (2026-07-31, Razor review).** `.compare-badge` used to appear
+> in the `--text-2xs` "replaces" column above while the row for `--text-xs` named
+> badges in its ROLE column. The two contradicted each other. The role column is
+> authoritative and the shipped code took it: `.compare-badge` is `--text-xs`
+> (12px), not `--text-2xs` (11px). The stray entry has been removed rather than
+> the role reassigned. Do not "correct" this back by moving the badge down a
+> step — the code, not the replaces column, is the thing that was right.
 
 **Four rules the table encodes, stated so they are not re-litigated per selector:**
 

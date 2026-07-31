@@ -29,6 +29,7 @@ import { startServer } from './lib/server.mjs';
 import { installRouting } from './lib/capture.mjs';
 import {
   extractFingerprint, diffTokens, describeToken, loadWhitelist, applyWhitelist,
+  checkWhitelistSpecificity,
 } from './lib/dom-fingerprint.mjs';
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
@@ -179,6 +180,13 @@ async function main() {
 
   const runFailures = [...baseline.failures, ...candidate.failures];
 
+  // Refuse to start comparing if any whitelist entry is too lax to name the node
+  // it claims to describe. This runs against the real fingerprints, so it is a
+  // load-time check in the only sense that matters: before a single verdict is
+  // issued on the strength of that entry.
+  runFailures.push(...checkWhitelistSpecificity(
+    config.whitelist, baseline.prints, candidate.prints));
+
   // The stated boundary, enforced rather than assumed. This certificate covers
   // delivered markup; if the two builds ship different client JS then script-
   // injected content may differ in ways nothing here can see, and a reader must
@@ -248,6 +256,18 @@ async function main() {
   // responsive by CSS, so the same HTML should be delivered at both widths. If
   // that stops being true, every "identical DOM" claim silently becomes
   // width-specific, and a reviewer should be told rather than left to assume.
+  //
+  // HONESTY NOTE: with javaScriptEnabled:false this check is very nearly
+  // VACUOUS. Both widths parse the same bytes, so barring a `media` attribute
+  // that changes what parses, they cannot differ — and fixture F1 asserts that
+  // vacuity rather than pretending otherwise. It is kept, at essentially zero
+  // cost, for two reasons: it would still catch genuinely width-conditional
+  // markup (a template branching on a device hint, or a `<source media=...>`
+  // arriving in the tree), and it is the check a JS-enabled mode would need on
+  // day one. Under scripts the DOM IS width-dependent — that is exactly what
+  // the first real run measured before scripts were disabled. Deleting it now
+  // would mean rediscovering the need for it later. Do not read a green width
+  // result as evidence about a JS-enabled page.
   const widthAnomalies = [];
   if (config.widths.length > 1) {
     for (const route of shared) {

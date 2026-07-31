@@ -240,6 +240,60 @@ export function loadWhitelist(file, raw) {
 }
 
 /**
+ * Reject a whitelist entry whose `contains` is too lazy to mean what it says.
+ *
+ * A `contains` of "rel" matches every <link> on the page. Such an entry is held
+ * in check only by its count, which means it consumes the FIRST n matching
+ * changes rather than the n it was written for — and if the intended node stops
+ * changing, it silently starts absorbing something else. The count is a budget,
+ * not an identity.
+ *
+ * So: if `contains` matches more nodes in the relevant build than the entry
+ * declares, the entry is not specific enough to be a declaration and the run
+ * refuses to start. Cheap, structural, and it fires before any comparison.
+ *
+ * Which build is "relevant" depends on the op: a `removed` node exists in the
+ * baseline, an `added` node in the candidate. Checking the wrong side would let
+ * a lazy entry through precisely when it matters.
+ *
+ * NOTE, related and deliberately not fixed here: when an entry's count is
+ * exhausted, the surviving failure names the node that happened to arrive last,
+ * which for identical-looking siblings may not be the one a human would call
+ * "the unexpected one". Specificity enforcement makes that case rare rather
+ * than impossible. Naming it precisely would need the entry to identify nodes
+ * uniquely rather than by substring, which is a bigger change than this finding
+ * warrants.
+ *
+ * @param {object[]} whitelist  validated entries
+ * @param {Map<string, object[]>} baselinePrints  key -> token stream
+ * @param {Map<string, object[]>} candidatePrints
+ * @returns {string[]} one message per over-broad entry, empty when all are tight
+ */
+export function checkWhitelistSpecificity(whitelist, baselinePrints, candidatePrints) {
+  const problems = [];
+  whitelist.forEach((e, idx) => {
+    const prints = e.op === 'removed' ? baselinePrints : candidatePrints;
+    let worstKey = null;
+    let worstCount = 0;
+    for (const [key, tokens] of prints) {
+      const matches = tokens.filter((t) => t.kind === 'element'
+        && t.tag === e.tag.toUpperCase()
+        && t.attrs.includes(e.contains)).length;
+      if (matches > worstCount) { worstCount = matches; worstKey = key; }
+    }
+    if (worstCount > e.count) {
+      problems.push(`whitelist[${idx}]: "contains" ${JSON.stringify(e.contains)} matches `
+        + `${worstCount} <${e.tag.toLowerCase()}> node(s) on ${worstKey}, but the entry declares `
+        + `only ${e.count}. An entry held in check by its count alone consumes the first `
+        + `${e.count} matching changes rather than the ones it was written for, and will start `
+        + `absorbing a different node the moment the intended one stops changing. Make `
+        + `"contains" identify the node, not a family of nodes.`);
+    }
+  });
+  return problems;
+}
+
+/**
  * Apply the whitelist to one page's diff.
  *
  * Consumption is COUNTED and per-page. An entry declaring `count: 1` consumes

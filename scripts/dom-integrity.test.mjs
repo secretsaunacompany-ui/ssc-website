@@ -24,6 +24,7 @@ import { chromium } from 'playwright';
 import { startServer } from './lib/server.mjs';
 import {
   extractFingerprint, diffTokens, describeToken, loadWhitelist, applyWhitelist,
+  checkWhitelistSpecificity,
 } from './lib/dom-fingerprint.mjs';
 import * as realFingerprint from './lib/dom-fingerprint.mjs';
 
@@ -63,11 +64,19 @@ const PAGE = ({
   price = '$18,500',
   extraCard = '',
   reordered = false,
+  reparent = false,
   inlineJs = 'window.SSC = window.SSC || {};',
 } = {}) => {
-  const cards = [1, 2, 3].map((i) =>
-    `<article class="card" data-index="${i}"><h3>Model ${i}</h3><p>Description for model ${i}.</p></article>`
-  ).join('');
+  const card = (i) =>
+    `<article class="card" data-index="${i}"><h3>Model ${i}</h3><p>Description for model ${i}.</p></article>`;
+  // The RE-PARENTING case, and it is built to be adversarial: card 3 moves
+  // inside the group wrapper without changing document order and without
+  // changing any node's tag, attributes or text. Every token is byte-identical
+  // and only its ANCESTRY differs, so the ancestry path in tokenKey is the only
+  // thing that can see it.
+  const cards = reparent
+    ? `<div class="group">${card(1)}${card(2)}${card(3)}</div>`
+    : `<div class="group">${card(1)}${card(2)}</div>${card(3)}`;
   const intro = `<p class="intro">${bodyCopy}</p>`;
   const priceEl = `<p class="price">${price}</p>`;
   return `<!doctype html>
@@ -189,6 +198,16 @@ const MUTATIONS = [
     probe: (m, f, wl) => m.applyWhitelist(f.unrelatedLinkDeletion, wl).failures.length,
   },
   {
+    name: 'D-m9  ancestry path dropped from tokenKey',
+    proves: 're-parenting a node is caught (Razor: ops 4 -> 0 without the path)',
+    edits: { 'dom-fingerprint.mjs': [
+      "  return t.kind === 'element'\n    ? `E|${t.path}|${t.tag}|${t.attrs}`\n"
+      + "    : `${t.kind === 'code' ? 'C' : 'T'}|${t.path}|${t.text}`;",
+      "  return t.kind === 'element'\n    ? `E|${t.tag}|${t.attrs}`\n"
+      + "    : `${t.kind === 'code' ? 'C' : 'T'}|${t.text}`;"] },
+    probe: (m, f) => m.diffTokens(f.base, f.reparented).ops.length,
+  },
+  {
     name: 'D-m8  document order ignored (tokens sorted)',
     proves: 'a reordered section is caught',
     edits: { 'dom-fingerprint.mjs': [
@@ -290,6 +309,20 @@ async function main() {
         av.undeclared.length > 0,
         `a class change is a real change. got ${av.undeclared.length} failures`);
 
+      const reparented = await fp(PAGE({ reparent: true }), 'reparent');
+      const rv = verdict(before, reparented, whitelist);
+      check('C5 an element promoted into a different parent fails',
+        rv.undeclared.length > 0,
+        `card 3 moved inside the group wrapper. Document order is unchanged and every `
+        + `node's tag, attributes and text are identical -- only ancestry differs, which `
+        + `is precisely what the path in tokenKey exists to catch. `
+        + `got ${rv.undeclared.length} failures`);
+      check('C5 the failure names the re-parented node',
+        rv.undeclared.some((f) => describeToken(f.token).includes('data-index="3"')
+          || describeToken(f.token).includes('Model 3')),
+        `expected the moved card named, got:\n        `
+        + rv.undeclared.map((f) => describeToken(f.token)).join('\n        '));
+
       const jsChanged = await fp(PAGE({ inlineJs: 'window.SSC = window.SSC || {}; window.X = 1;' }), 'js');
       check('C4 an inline script change fails',
         verdict(before, jsChanged, whitelist).undeclared.length > 0,
@@ -376,8 +409,37 @@ async function main() {
       expectThrows('W6 a missing commit is rejected', bad({ ...ok, commit: '' }), 'commit');
       expectThrows('W7 a non-array whitelist is rejected',
         () => loadWhitelist('t.json', { whitelist: {} }), 'must be an array');
-      check('W8 the shipped whitelist loads', realWhitelist().length === 3,
-        `expected 3 declared entries, got ${realWhitelist().length}`);
+      check('W8 the shipped whitelist loads', realWhitelist().length === 4,
+        `expected 4 declared entries, got ${realWhitelist().length}`);
+
+      // N: an entry too lazy to identify its node is refused before any verdict
+      // rests on it. `contains: "rel"` matches every <link> on the page.
+      const prints = new Map([['/@1440', before]]);
+      const empty = new Map([['/@1440', []]]);
+      const lazy = loadWhitelist('t.json', { whitelist: [{
+        op: 'removed', tag: 'LINK', contains: 'rel', count: 1,
+        reason: 'lazy on purpose', commit: 'fixture',
+      }] });
+      const lazyProblems = checkWhitelistSpecificity(lazy, prints, empty);
+      check('N1 a lazy "contains" is rejected',
+        lazyProblems.length === 1,
+        `"rel" matches every link; the entry must be refused. got `
+        + `${JSON.stringify(lazyProblems)}`);
+      check('N2 the rejection names the over-match',
+        /matches \d+ <link> node\(s\)/.test(lazyProblems[0] || '')
+        && lazyProblems[0].includes('declares'),
+        `the message must say how many it matched and how many it declared, got `
+        + `${JSON.stringify(lazyProblems[0])}`);
+      check('N3 a specific "contains" is accepted',
+        checkWhitelistSpecificity(loadWhitelist('t.json', { whitelist: [{
+          op: 'removed', tag: 'LINK', contains: 'fonts.googleapis.com/css', count: 1,
+          reason: 'r', commit: 'c',
+        }] }), prints, empty).length === 0,
+        'an entry that names exactly one node must pass');
+      check('N4 the SHIPPED whitelist is specific enough',
+        checkWhitelistSpecificity(realWhitelist(), prints, empty)
+          .filter((x) => x.includes('LINK') || x.includes('link')).length === 0,
+        'the config we ship must satisfy the check it enforces');
     }
 
     process.stdout.write('\nM — mutation battery (runnable)\n');
@@ -387,19 +449,25 @@ async function main() {
         base: before,
         reworded: await fp(PAGE({ bodyCopy: 'Hand-built saunas for the Sea to Sky region.' }), 'm-reword'),
         reordered: await fp(PAGE({ reordered: true }), 'm-reorder'),
+        reparented: await fp(PAGE({ reparent: true }), 'm-reparent'),
         attrChanged: await fp(PAGE().replace('class="card" data-index="1"', 'class="card feature" data-index="1"'), 'm-attr'),
         queryChanged: await fp(PAGE().replace('/js/init.js?v=abc123def456', '/js/init.js?debug=1'), 'm-query'),
         fontA: await fp(PAGE({ preloads: '<link rel="preload" href="/fonts/outfit-var.55112282293d.woff2" as="font">' }), 'm-fa'),
         fontB: await fp(PAGE({ preloads: '<link rel="preload" href="/fonts/helvetica-var.55112282293d.woff2" as="font">' }), 'm-fb'),
         textA: await fp(PAGE({ bodyCopy: 'alpha beta' }), 'm-ta'),
         textSquashed: await fp(PAGE({ bodyCopy: 'alphabeta' }), 'm-ts'),
+        // Attributes are serialized in SORTED name order by the extractor, so
+        // these stubs must be too — a stub in source order matches nothing and
+        // the mutation silently tests an empty whitelist. (It did, once.)
+        // Two deletions of the SAME declared node against a count of 1, plus the
+        // Cloudinary hint that no entry names at all.
         twoPreconnectDeletionsPlusOne: [
-          { op: 'removed', token: { kind: 'element', tag: 'LINK', path: 'html/head', attrs: 'rel="preconnect" href="https://fonts.googleapis.com"' } },
-          { op: 'removed', token: { kind: 'element', tag: 'LINK', path: 'html/head', attrs: 'rel="preconnect" href="https://fonts.gstatic.com"' } },
-          { op: 'removed', token: { kind: 'element', tag: 'LINK', path: 'html/head', attrs: 'rel="preconnect" href="https://res.cloudinary.com"' } },
+          { op: 'removed', token: { kind: 'element', tag: 'LINK', path: 'html/head', attrs: 'href="https://fonts.googleapis.com" rel="preconnect"' } },
+          { op: 'removed', token: { kind: 'element', tag: 'LINK', path: 'html/head', attrs: 'href="https://fonts.googleapis.com" rel="preconnect"' } },
+          { op: 'removed', token: { kind: 'element', tag: 'LINK', path: 'html/head', attrs: 'crossorigin="" href="https://res.cloudinary.com" rel="preconnect"' } },
         ],
         unrelatedLinkDeletion: [
-          { op: 'removed', token: { kind: 'element', tag: 'LINK', path: 'html/head', attrs: 'rel="canonical" href="https://secretsaunacompany.ca/"' } },
+          { op: 'removed', token: { kind: 'element', tag: 'LINK', path: 'html/head', attrs: 'href="https://secretsaunacompany.ca/" rel="canonical"' } },
         ],
       };
       // Extraction-level mutations change the function that runs IN THE PAGE,
