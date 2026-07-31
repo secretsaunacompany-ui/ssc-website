@@ -164,6 +164,19 @@ all four hold. The eighteen rejected `layoutShiftMaxPx` overrides stay rejected 
 the implementer's own fixture proved they disarm the site-wide calibration, which
 is the exact blindness the mechanism was built to refuse.
 
+*Extension to affine (2026-07-30, same conversation):* the offset model landed
+and honestly reported its own limit — leading changes compress progressively,
+so a constant offset fits at 3% confidence and cannot certify WP-1a (measured,
+locked in fixture G6). The model extends to an **affine fit** (offset + scale),
+which is the actual geometry of a line-height change. Same four rules as above,
+plus: scale bounded to a sane band (~[0.8, 1.05]) and reported beside the
+offset; cross-width scale divergence gated like offset divergence; the reorder
+and 6px-local-move fixtures re-proven under the affine model (an affine fit must
+not launder either); confidence still reported, and a low-confidence fit still
+fails. One Razor review covers both instrument commits before WP-1a re-measures.
+The alternative — demoting the harness to advisory for the wave's largest visual
+batch — is rejected: it is the outcome the Batch 1 repair exists to prevent.
+
 ---
 
 ## 3. WP-0c — Quote integrity
