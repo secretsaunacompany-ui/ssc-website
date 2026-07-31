@@ -134,9 +134,31 @@
         document.body.classList.remove('pre-js');
         document.body.classList.add('js-loaded');
 
-        // Reveal -- the one motion system. Load-in and scroll-in together.
-        if (SSC.reveal && SSC.reveal.init) {
-            SSC.reveal.init();
+        // F5. Transitions are enabled AFTER the first paint has committed the
+        // hidden state that the inline <head> script put in place, and the
+        // reveal observer starts in the same frame.
+        //
+        // The double rAF is the ordering, not a superstition: the first callback
+        // runs before the upcoming paint, the second after it has been
+        // committed. Enabling transitions any earlier and the hidden state and
+        // the transition arrive together again, which is the bug -- the content
+        // would animate from visible to hidden exactly as it did before.
+        // Starting the observer any earlier and the above-fold elements get
+        // their `.seen` while transitions are still off, so the load-in snaps
+        // instead of resolving.
+        //
+        // reveal.init() stays INSIDE this callback so the hero-hold metric below
+        // still runs after it, which is the ordering that instrumentation needs.
+        const startReveal = () => {
+            document.documentElement.classList.add('reveal-ready');
+            if (SSC.reveal && SSC.reveal.init) {
+                SSC.reveal.init();
+            }
+        };
+        if (typeof requestAnimationFrame === 'function') {
+            requestAnimationFrame(() => requestAnimationFrame(startReveal));
+        } else {
+            startReveal();
         }
 
         // Arrival instrumentation (doc 14 §8). Must run AFTER reveal.init so the

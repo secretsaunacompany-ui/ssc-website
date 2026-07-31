@@ -1,5 +1,29 @@
 <head>
     <meta charset="UTF-8">
+    <script>
+        /* F5. The reveal system's HIDDEN state must exist before the first
+           paint, and this is the only thing that can put it there.
+
+           It used to be gated on `body.js-loaded`, which init.js adds on
+           DOMContentLoaded -- i.e. AFTER the browser has already painted the
+           page with every reveal element fully opaque. The 1000ms transition
+           was declared in the same rule, so the class landing animated the
+           content from visible to invisible: measured on /locations/, below-fold
+           elements read opacity 1 at 37ms and 0 at 288ms. Content appeared,
+           faded OUT over about a second, and faded back in on scroll. A reveal
+           that has to un-reveal first is not a reveal.
+
+           A synchronous inline script is the fix rather than a preference: it
+           runs during head parsing, before the body exists, so `.js` is on the
+           root element for the very first style resolution. Deferred or external
+           JS cannot be, by definition.
+
+           The transitions are deliberately NOT enabled here -- `.js .reveal`
+           carries opacity and transform only. init.js adds `.reveal-ready` after
+           the first paint has committed the hidden state, so the load-in
+           animates FROM hidden instead of animating TO it. */
+        document.documentElement.classList.add('js');
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Primary SEO Meta Tags -->

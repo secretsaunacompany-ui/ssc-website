@@ -452,6 +452,8 @@
 
         updateSpecs() {
             setText('modalTitle', currentModel.name);
+            // C22: the bar names the model the total belongs to.
+            setText('stickyModelName', currentModel.name);
             setText('specSize', currentModel.size);
             setText('specCapacity', currentModel.capacity);
             setText('specPrice', formatCurrency(currentModel.basePrice));
@@ -705,6 +707,13 @@
 
             const summaryTotal = document.getElementById('summaryTotal');
             if (summaryTotal) summaryTotal.textContent = formatCurrency(total);
+
+            // C22. The sticky bar mirrors the summary from the SAME value, in
+            // the same place, rather than reading the summary's rendered text
+            // back out of the DOM. Two elements showing one number must not
+            // have two ways of learning it -- that is how they drift.
+            const stickyTotal = document.getElementById('stickyTotal');
+            if (stickyTotal) stickyTotal.textContent = formatCurrency(total);
         }
 
         handlePremiumPackageChange() {

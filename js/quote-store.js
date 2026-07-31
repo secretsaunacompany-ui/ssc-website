@@ -29,11 +29,20 @@
  *
  * PRIVACY
  *
- * The record holds a city/area and free-text site-access notes in plaintext on
- * the visitor's own device. That is why the expiry is enforced on read rather
- * than trusted to a cleanup pass, why a visible "start over" exists, and why
- * the notice beside it states the 7 days plainly. It is cleared on confirmed
- * submit, on expiry, and on demand -- nowhere else.
+ * The record holds the CONFIGURATION only -- modelId, modelName, total,
+ * selections and a rendered summary string (see modal.js buildConfiguration).
+ * It does
+ * NOT hold a city/area or free-text site-access notes: those live on the Step-2
+ * contact form and are posted, never stored. This paragraph used to say they
+ * were, which overstated what sits on the visitor's device and would have sent
+ * the next reader looking for a field that is not there.
+ *
+ * It is still personal-adjacent data on the visitor's own device -- what they
+ * are shopping for, and what they are prepared to spend -- which is why the
+ * expiry is enforced on read rather than trusted to a cleanup pass, why a
+ * visible "start over" exists, and why the notice beside it states the 7 days
+ * plainly. It is cleared on confirmed submit, on expiry, and on demand --
+ * nowhere else.
  *
  * CONCURRENCY
  *

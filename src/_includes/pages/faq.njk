@@ -39,9 +39,21 @@
 {% endif %}
 
             {% for item in faq.items %}
+            {# C35. The question announced as a HEADING and did the work of a
+               button: role="button" and tabindex were bolted on in JS, Space
+               scrolled the page instead of toggling, and the accessible name
+               and the control were the same node.
+
+               A real <button> INSIDE the heading fixes both halves at once. The
+               <h3> stays, because the FAQ page's document outline is real
+               structure and the FAQPage schema above depends on the questions
+               being headings; the button is what takes focus, announces its
+               expanded state, and handles Enter and Space natively. #}
             <div class="faq-item reveal">
-                <h3 class="faq-question">{{ item.question }}</h3>
-                <p class="faq-answer">{{ item.answer | safe }}</p>
+                <h3 class="faq-question-heading">
+                    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-answer-{{ loop.index }}">{{ item.question }}</button>
+                </h3>
+                <p class="faq-answer" id="faq-answer-{{ loop.index }}">{{ item.answer | safe }}</p>
             </div>
             {% endfor %}
         </section>

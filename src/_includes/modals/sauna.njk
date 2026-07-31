@@ -11,6 +11,7 @@
         <div class="modal-content">
             <button class="modal-close" data-action="close-modal" aria-label="Close modal">&times;</button>
 
+
             <div class="modal-gallery">
                 <div id="modalMainMedia" class="modal-main-media"></div>
                 <div id="modalThumbnails" class="modal-thumbnails"></div>
@@ -387,6 +388,22 @@
                         </p>
                     </div>
                 </div>
+            </div>
+            {# C22, minimal version. Step 1 is 3,785px tall, so the total scrolls
+               out of sight almost immediately and every choice after that is
+               made without the number it changes. This bar keeps the model and
+               the running total on screen for the whole configuration.
+
+               aria-hidden because it is a DUPLICATE of the price summary that is
+               already in the document and already announced -- a screen-reader
+               user should not be told the total twice on every option change.
+               It is a visual affordance for a visual problem.
+
+               NOT C23's sticky left column: that is a bigger structural change
+               and belongs to Wave B. #}
+            <div class="modal-total-bar" aria-hidden="true">
+                <span class="modal-total-bar__model" id="stickyModelName"></span>
+                <span class="modal-total-bar__total" id="stickyTotal"></span>
             </div>
         </div>
     </div>

@@ -12,11 +12,16 @@
         const navLinks = document.getElementById('navLinks');
         if (!navLinks) return;
         const open = navLinks.classList.toggle('active');
-        // The button's label never changes, so aria-expanded is the only thing
-        // that tells a screen-reader user whether the menu they just toggled is
-        // now open or closed.
         const btn = document.querySelector('[data-action="toggle-menu"]');
-        if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (btn) {
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            // C34. The glyph now reports state too. aria-expanded already told
+            // a screen-reader user which way the control had gone; a sighted
+            // user got a hamburger either way and had to infer from the panel.
+            // The label is decorative -- aria-label carries the accessible name
+            // and does not change -- so swapping the character is safe.
+            btn.textContent = open ? '\u2715' : '\u2630';
+        }
     }
 
     // ============================================

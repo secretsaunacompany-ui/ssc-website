@@ -32,8 +32,14 @@
             const question = item.querySelector('.faq-question');
             if (!question) return;
 
-            question.setAttribute('role', 'button');
-            question.setAttribute('tabindex', '0');
+            // C35. `.faq-question` is a real <button> in the template now, so
+            // role, tabindex and the hand-rolled Enter/Space handler are gone --
+            // they were an imitation of a button, and an incomplete one: the
+            // element announced as a heading, and Space scrolled the page
+            // instead of toggling because a keydown handler on a non-button
+            // does not suppress the default scroll the way a button does.
+            // aria-expanded is still set from here so the initial state is
+            // asserted by the code that owns the toggling.
             question.setAttribute('aria-expanded', 'false');
 
             const toggle = () => {
@@ -42,12 +48,6 @@
             };
 
             question.addEventListener('click', toggle);
-            question.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    toggle();
-                }
-            });
         });
     }
 
