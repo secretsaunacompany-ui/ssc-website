@@ -101,7 +101,7 @@ const BASKET = [
   'Cedar exterior',
   'WiFi heater controller',
   'Interior & exterior lighting package',
-  'Built-in Bluetooth speakers',
+  'Built-in Bluetooth speakers (standard set)',
 ];
 const PACKAGE_OPTION = 'Premium Finish Package';
 

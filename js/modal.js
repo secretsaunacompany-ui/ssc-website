@@ -25,6 +25,29 @@
      */
     const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+    /**
+     * Option values that are NAMES OF PER-MODEL PRICES, not prices.
+     *
+     * An option whose price differs by model cannot carry a literal in the
+     * markup: it would be one model's price shown to five, and two options in
+     * one group sharing a literal are also indistinguishable to the quote
+     * serializer -- which is how both exteriors and both interiors became
+     * unquotable. The token maps to a field on the model; `updatePrices()`
+     * repaints the visible span from the same field.
+     *
+     * Clear cedar and thermowood deliberately map to ONE field at the same
+     * price today. They are separate tokens so the two can diverge without
+     * either of the failures above (doc 35 §7.7 has the pricing flagged as
+     * unverified).
+     */
+    const PER_MODEL_PRICE_KEYS = {
+        interiorClearCedar: 'interiorUpgrade',
+        interiorThermowood: 'interiorUpgrade',
+        exteriorStandingSeam: 'exteriorStandingSeam',
+        exteriorCedar: 'exteriorCedar',
+        premiumFinishPrice: 'premiumFinishPrice'
+    };
+
     /** Debounce and per-open ceiling for `configurator_option_change`. */
     const OPTION_EVENT_DEBOUNCE_MS = 500;
     const OPTION_EVENT_CAP = 12;
@@ -401,47 +424,76 @@
         }
 
         updatePrices() {
-            const upgradePrice = `+${formatCurrency(currentModel.interiorUpgrade)}`;
-            const clearCedarPrice = document.getElementById('clearCedarPrice');
-            const thermowoodPrice = document.getElementById('thermowoodPrice');
-            if (clearCedarPrice) clearCedarPrice.textContent = upgradePrice;
-            if (thermowoodPrice) thermowoodPrice.textContent = upgradePrice;
+            // Every price span whose option carries a PER_MODEL token must be
+            // repainted here, or the label disagrees with what calculateTotal
+            // adds -- the visitor reads the span, the quote carries the token.
+            const setPrice = (id, amount) => {
+                const el = document.getElementById(id);
+                if (el && typeof amount === 'number') el.textContent = `+${formatCurrency(amount)}`;
+            };
 
-            // Update Premium Finish Package price
-            const premiumFinishPrice = document.getElementById('premiumFinishPrice');
-            if (premiumFinishPrice && currentModel.premiumFinishPrice) {
-                premiumFinishPrice.textContent = `+${formatCurrency(currentModel.premiumFinishPrice)}`;
-            }
+            setPrice('clearCedarPrice', currentModel.interiorUpgrade);
+            setPrice('thermowoodPrice', currentModel.interiorUpgrade);
+            setPrice('standingSeamPrice', currentModel.exteriorStandingSeam);
+            setPrice('cedarExteriorPrice', currentModel.exteriorCedar);
+            setPrice('premiumFinishPrice', currentModel.premiumFinishPrice);
         }
 
+        /**
+         * Both heater upgrades are per-model in price AND in product.
+         *
+         * This slot previously swapped only the LABEL and left one hardcoded
+         * $2,000 behind it, so SC's 15kW Apex and the S2-S8 Revive were sold at
+         * one price that had only ever been costed for one of them. Value,
+         * price text and label are now set together from the model, every time.
+         *
+         * Wood-fired is per-model too: a model with no `woodFired` price has no
+         * wood-fired option, which is stronger than the old electricOnly flag
+         * -- it cannot be selected because there is no price for it to carry.
+         */
         handleHeaterOptions() {
-            const woodUpgrade = document.getElementById('heaterWoodUpgrade');
-            if (!woodUpgrade) return;
-
-            if (currentModel.electricOnly) {
-                woodUpgrade.classList.add('disabled');
-                const input = woodUpgrade.querySelector('input');
-                if (input) input.disabled = true;
-            } else {
-                woodUpgrade.classList.remove('disabled');
-                const input = woodUpgrade.querySelector('input');
-                if (input) input.disabled = false;
-            }
-
-            // Swap electric heater upgrade based on model
             const electricLabel = document.getElementById('heaterElectricLabel');
             const electricPrice = document.getElementById('heaterElectricPrice');
             const electricInput = document.querySelector('#heaterElectricUpgrade input');
             if (electricLabel && electricPrice && electricInput) {
-                if (currentModelId === 'sc') {
-                    electricLabel.textContent = 'Homecraft 15kW Apex (Electric)';
-                    electricPrice.textContent = '+$2,000';
-                    electricInput.value = '2000';
-                } else {
-                    electricLabel.textContent = 'Homecraft Revive 9kW (Electric)';
-                    electricPrice.textContent = '+$2,000';
-                    electricInput.value = '2000';
+                const amount = currentModel.electricHeaterUpgrade;
+                electricLabel.textContent = currentModelId === 'sc'
+                    ? 'Homecraft 15kW Apex (Electric)'
+                    : 'Homecraft Revive 9kW (Electric)';
+                electricPrice.textContent = `+${formatCurrency(amount)}`;
+                electricInput.value = String(amount);
+            }
+
+            const woodUpgrade = document.getElementById('heaterWoodUpgrade');
+            if (!woodUpgrade) return;
+
+            const woodInput = woodUpgrade.querySelector('input');
+            const woodLabel = document.getElementById('heaterWoodLabel');
+            const woodPrice = document.getElementById('heaterWoodPrice');
+            const woodAmount = currentModel.woodFired;
+            const unavailable = currentModel.electricOnly || typeof woodAmount !== 'number';
+
+            if (unavailable) {
+                woodUpgrade.classList.add('disabled');
+                if (woodInput) {
+                    woodInput.disabled = true;
+                    // A disabled radio keeps its checked state, and the group's
+                    // default is a different input -- so hand the selection back
+                    // rather than leaving an unbuyable heater in the total.
+                    if (woodInput.checked) {
+                        woodInput.checked = false;
+                        const fallback = document.querySelector('input[name="heater"][value="0"]');
+                        if (fallback) fallback.checked = true;
+                    }
                 }
+            } else {
+                woodUpgrade.classList.remove('disabled');
+                if (woodInput) {
+                    woodInput.disabled = false;
+                    woodInput.value = String(woodAmount);
+                }
+                if (woodLabel && currentModel.woodFiredLabel) woodLabel.textContent = currentModel.woodFiredLabel;
+                if (woodPrice) woodPrice.textContent = `+${formatCurrency(woodAmount)}`;
             }
         }
 
@@ -501,10 +553,8 @@
             document.querySelectorAll('.modal-addons input[type="radio"]:checked').forEach((input) => {
                 let value = input.value;
 
-                if (value === 'interiorUpgrade') {
-                    value = currentModel.interiorUpgrade;
-                } else if (value === 'premiumFinishPrice') {
-                    value = currentModel.premiumFinishPrice;
+                if (Object.prototype.hasOwnProperty.call(PER_MODEL_PRICE_KEYS, value)) {
+                    value = currentModel[PER_MODEL_PRICE_KEYS[value]] || 0;
                 } else {
                     // Named tokens that are NOT per-model price keys land here and are
                     // deliberately non-numeric: benchL / benchU exist only to be

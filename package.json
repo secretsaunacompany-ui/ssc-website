@@ -11,6 +11,8 @@
     "visual-diff:test": "node scripts/visual-diff.test.mjs",
     "build-cache:test": "node scripts/build-cache.test.mjs",
     "package-claim:test": "node scripts/package-claim.test.mjs",
+    "prices-version:test": "node scripts/prices-version.test.mjs",
+    "models-json:roundtrip": "node scripts/models-json-roundtrip.mjs",
     "quote-funnel:test": "node scripts/quote-funnel.test.mjs",
     "//events:test": "Requires a sibling ../ssc-ops checkout: the stream-separation scenarios load the REAL shared tracker from it. Without it the suite fails with that message rather than passing on a stub.",
     "events:test": "node scripts/events.test.mjs",

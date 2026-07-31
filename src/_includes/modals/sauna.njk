@@ -63,15 +63,21 @@
                             <span class="addon-label">Standard heater (included)</span>
                             <span class="addon-price">Included</span>
                         </label>
+                        {# Both heater upgrades are per-model: value, label and price
+                           are all set by modal.js from electricHeaterUpgrade /
+                           woodFired / woodFiredLabel. The markup below is the S4
+                           default the modal opens on. One slot previously sold two
+                           different heaters at one price -- never reintroduce a
+                           hardcoded heater price here. #}
                         <label class="addon-option" id="heaterElectricUpgrade">
-                            <input type="radio" name="heater" value="2000" data-addon="heater">
+                            <input type="radio" name="heater" value="3500" data-addon="heater">
                             <span class="addon-label" id="heaterElectricLabel">Homecraft Revive 9kW (Electric)</span>
-                            <span class="addon-price" id="heaterElectricPrice">+$2,000</span>
+                            <span class="addon-price" id="heaterElectricPrice">+$3,500</span>
                         </label>
                         <label class="addon-option" id="heaterWoodUpgrade">
-                            <input type="radio" name="heater" value="3000" data-addon="heater">
-                            <span class="addon-label">Kuuma Banya (Wood-fired)</span>
-                            <span class="addon-price">+$3,000</span>
+                            <input type="radio" name="heater" value="10800" data-addon="heater">
+                            <span class="addon-label" id="heaterWoodLabel">Original-IKI (Wood-fired)</span>
+                            <span class="addon-price" id="heaterWoodPrice">+$10,800</span>
                         </label>
                     </div>
 
@@ -83,14 +89,14 @@
                             <span class="addon-price">—</span>
                         </label>
                         <label class="addon-option">
-                            <input type="radio" name="changing" value="3500" data-addon="changing">
+                            <input type="radio" name="changing" value="11000" data-addon="changing">
                             <span class="addon-label">3' Changing room</span>
-                            <span class="addon-price">+$3,500</span>
+                            <span class="addon-price">+$11,000</span>
                         </label>
                         <label class="addon-option">
-                            <input type="radio" name="changing" value="4500" data-addon="changing">
+                            <input type="radio" name="changing" value="12500" data-addon="changing">
                             <span class="addon-label">4' Changing room</span>
-                            <span class="addon-price">+$4,500</span>
+                            <span class="addon-price">+$12,500</span>
                         </label>
                     </div>
 
@@ -101,15 +107,29 @@
                             <span class="addon-label">No deck</span>
                             <span class="addon-price">—</span>
                         </label>
+                        {# Two tiers, because one label was selling two different
+                           builds. "Front deck" reads as the semi-enclosed build to
+                           buyers, and that build was priced below cost at the
+                           platform price. Platform stays cheap and says so. #}
                         <label class="addon-option">
                             <input type="radio" name="deck" value="2000" data-addon="deck">
-                            <span class="addon-label">2' Front deck</span>
+                            <span class="addon-label">2' open deck platform</span>
                             <span class="addon-price">+$2,000</span>
                         </label>
                         <label class="addon-option">
                             <input type="radio" name="deck" value="3000" data-addon="deck">
-                            <span class="addon-label">3' Front deck</span>
+                            <span class="addon-label">3' open deck platform</span>
                             <span class="addon-price">+$3,000</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="deck" value="4100" data-addon="deck">
+                            <span class="addon-label">2' semi-enclosed deck — two finished side walls, covered roof</span>
+                            <span class="addon-price">+$4,100</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="deck" value="5200" data-addon="deck">
+                            <span class="addon-label">3' semi-enclosed deck — two finished side walls, covered roof</span>
+                            <span class="addon-price">+$5,200</span>
                         </label>
                     </div>
 
@@ -120,15 +140,18 @@
                             <span class="addon-label">Standard metal cladding</span>
                             <span class="addon-price">Included</span>
                         </label>
+                        {# Per-model tokens, not prices. These two carried the same
+                           literal 2500 and so were indistinguishable to the quote
+                           serializer as well as wrong on the larger models. #}
                         <label class="addon-option">
-                            <input type="radio" name="exterior" value="2500" data-addon="exterior">
+                            <input type="radio" name="exterior" value="exteriorStandingSeam" data-addon="exterior">
                             <span class="addon-label">Standing seam metal</span>
-                            <span class="addon-price">+$2,500</span>
+                            <span class="addon-price" id="standingSeamPrice">+$3,000</span>
                         </label>
                         <label class="addon-option">
-                            <input type="radio" name="exterior" value="2500" data-addon="exterior">
+                            <input type="radio" name="exterior" value="exteriorCedar" data-addon="exterior">
                             <span class="addon-label">Cedar exterior</span>
-                            <span class="addon-price">+$2,500</span>
+                            <span class="addon-price" id="cedarExteriorPrice">+$2,500</span>
                         </label>
                     </div>
 
@@ -139,15 +162,20 @@
                             <span class="addon-label">Knotty Western Red Cedar</span>
                             <span class="addon-price">Included</span>
                         </label>
+                        {# Two tokens, one price today. Clear cedar is priced at
+                           thermowood parity on an assumption doc 35 §7.7 flags as
+                           unverified; when it splits, these need to carry different
+                           prices. One shared token cannot do that, and it also made
+                           the two choices indistinguishable in the quote. #}
                         <label class="addon-option">
-                            <input type="radio" name="interior" value="interiorUpgrade" data-addon="interior">
+                            <input type="radio" name="interior" value="interiorClearCedar" data-addon="interior">
                             <span class="addon-label">Clear Cedar</span>
-                            <span class="addon-price" id="clearCedarPrice">+$1,500</span>
+                            <span class="addon-price" id="clearCedarPrice">+$2,600</span>
                         </label>
                         <label class="addon-option">
-                            <input type="radio" name="interior" value="interiorUpgrade" data-addon="interior">
+                            <input type="radio" name="interior" value="interiorThermowood" data-addon="interior">
                             <span class="addon-label">Thermowood</span>
-                            <span class="addon-price" id="thermowoodPrice">+$1,500</span>
+                            <span class="addon-price" id="thermowoodPrice">+$2,600</span>
                         </label>
                     </div>
 
@@ -167,7 +195,7 @@
 
                     <div class="addon-category premium-package-category">
                         <h4>Premium Finish Package</h4>
-                        <p class="package-description">Clear cedar interior, cedar or standing seam exterior, WiFi controller, lighting package, Bluetooth speakers. <strong>Save $1,000</strong> vs selecting individually.</p>
+                        <p class="package-description">Clear cedar interior, cedar or standing seam exterior, WiFi controller, lighting package, Bluetooth speakers. <strong>Save $500</strong> vs selecting individually.</p>
                         <label class="addon-option">
                             <input type="radio" name="premiumPackage" value="0" checked data-addon="premiumPackage" data-action="premium-change">
                             <span class="addon-label">No package (select options individually)</span>
@@ -176,32 +204,61 @@
                         <label class="addon-option premium-option">
                             <input type="radio" name="premiumPackage" value="premiumFinishPrice" data-addon="premiumPackage" data-action="premium-change">
                             <span class="addon-label">Premium Finish Package</span>
-                            <span class="addon-price" id="premiumFinishPrice">+$7,500</span>
+                            <span class="addon-price" id="premiumFinishPrice">+$9,600</span>
                         </label>
                     </div>
 
                     <div class="addon-category">
                         <h4>Additional Options</h4>
+                        {# Two window sizes, because one $1,500 line covered a small
+                           lite and a full-size one whose glass alone costs more
+                           than that. Separate data-addon keys: they are separately
+                           selectable, not a tier choice. #}
                         <label class="addon-option">
                             <input type="checkbox" value="1500" data-addon="window">
-                            <span class="addon-label">Additional window</span>
+                            <span class="addon-label">Additional window (standard size)</span>
                             <span class="addon-price">+$1,500</span>
                         </label>
                         <label class="addon-option">
-                            <input type="checkbox" value="1500" data-addon="lighting">
+                            <input type="checkbox" value="3700" data-addon="windowFullSize">
+                            <span class="addon-label">Additional full-size window (~23 sq ft)</span>
+                            <span class="addon-price">+$3,700</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="checkbox" value="2000" data-addon="lighting">
                             <span class="addon-label">Interior & exterior lighting package</span>
-                            <span class="addon-price">+$1,500</span>
-                        </label>
-                        <label class="addon-option">
-                            <input type="checkbox" value="1000" data-addon="speakers">
-                            <span class="addon-label">Built-in Bluetooth speakers</span>
-                            <span class="addon-price">+$1,000</span>
+                            <span class="addon-price">+$2,000</span>
                         </label>
                         <label class="addon-option">
                             <input type="checkbox" value="2000" data-addon="wifi">
                             <span class="addon-label">WiFi heater controller</span>
                             <span class="addon-price">+$2,000</span>
                         </label>
+                    </div>
+
+                    {# Audio is a tier choice, so it is a radio group with an
+                       explicit "none" default -- not two checkboxes a visitor
+                       could tick together and be quoted for twice. The Premium
+                       Finish Package carries the STANDARD set; a buyer who wants
+                       the premium tier pays the difference on top. #}
+                    <div class="addon-category">
+                        <h4>Audio</h4>
+                        <label class="addon-option">
+                            <input type="radio" name="speakers" value="0" checked data-addon="speakers">
+                            <span class="addon-label">No speakers</span>
+                            <span class="addon-price">—</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="speakers" value="1000" data-addon="speakers">
+                            <span class="addon-label">Built-in Bluetooth speakers (standard set)</span>
+                            <span class="addon-price">+$1,000</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="speakers" value="1500" data-addon="speakers">
+                            <span class="addon-label">Premium audio — Polk Atrium 5 all-weather pair + 2.1 Bluetooth amp</span>
+                            <span class="addon-price">+$1,500</span>
+                        </label>
+                        <p class="addon-note">Mounted outside the peak-heat zone; placement confirmed at consultation.</p>
                     </div>
                     </div><!-- /#configureStep -->
 

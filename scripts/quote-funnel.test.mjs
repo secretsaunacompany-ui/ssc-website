@@ -245,7 +245,7 @@ async function runStates(base, browser) {
   {
     const page = await newPage(browser);
     await openModal(page, base);
-    await pick(page, 'Kuuma Banya (Wood-fired)');
+    await pick(page, 'Mini-IKI (Wood-fired)');
     const totalBefore = await page.textContent('#summaryTotal');
     const urlBefore = page.url();
 
@@ -281,7 +281,7 @@ async function runStates(base, browser) {
 
     const stored = await readStore(page);
     check('send: the configuration is stored on ENTERING step 2',
-      !!stored && stored.modelId === MODEL && stored.summary.includes('Kuuma Banya'),
+      !!stored && stored.modelId === MODEL && stored.summary.includes('Mini-IKI'),
       `stored record was ${JSON.stringify(stored)}`);
 
     // "Change something" must return to exactly what was left.
@@ -290,7 +290,7 @@ async function runStates(base, browser) {
     check('send: "Change something" returns with every choice intact',
       await page.evaluate(() => {
         const opt = [...document.querySelectorAll('.modal-addons .addon-option')]
-          .find((o) => o.querySelector('.addon-label')?.textContent.trim() === 'Kuuma Banya (Wood-fired)');
+          .find((o) => o.querySelector('.addon-label')?.textContent.trim() === 'Mini-IKI (Wood-fired)');
         return opt.querySelector('input').checked;
       }), 'the selection was lost going back to step 1');
     await page.close();
@@ -550,8 +550,8 @@ async function runStates(base, browser) {
   {
     const page = await newPage(browser);
     await openModal(page, base);
-    await pick(page, 'Kuuma Banya (Wood-fired)');
-    await pick(page, 'Built-in Bluetooth speakers');
+    await pick(page, 'Mini-IKI (Wood-fired)');
+    await pick(page, 'Built-in Bluetooth speakers (standard set)');
     const total = await page.textContent('#summaryTotal');
     await page.click('[data-action="request-quote"]');
     await page.waitForSelector('#quoteForm', { state: 'visible' });
@@ -565,7 +565,7 @@ async function runStates(base, browser) {
       && await page.evaluate(() => [...document.querySelectorAll('.modal-addons .addon-option')]
         .filter((o) => o.querySelector('input').checked)
         .map((o) => o.querySelector('.addon-label').textContent.trim())
-        .includes('Kuuma Banya (Wood-fired)')),
+        .includes('Mini-IKI (Wood-fired)')),
       'the saved selections did not come back');
     check('closed mid-step-2: it reopens on step 1, not mid-form',
       await page.isVisible('#configureStep') && !(await page.isVisible('#quoteForm')),
@@ -586,7 +586,7 @@ async function runStates(base, browser) {
   {
     const page = await newPage(browser);
     await openModal(page, base);
-    await pick(page, 'Kuuma Banya (Wood-fired)');
+    await pick(page, 'Mini-IKI (Wood-fired)');
     await page.click('[data-action="request-quote"]');
     const fresh = await readStore(page);
 
@@ -611,7 +611,7 @@ async function runStates(base, browser) {
   {
     const page = await newPage(browser);
     await openModal(page, base);
-    await pick(page, 'Kuuma Banya (Wood-fired)');
+    await pick(page, 'Mini-IKI (Wood-fired)');
     await page.click('[data-action="request-quote"]');
     const rec = await readStore(page);
 
@@ -634,7 +634,7 @@ async function runStates(base, browser) {
       'a superseded configuration was restored with no note');
     check('stale stamp: the selections themselves still survive',
       await page.evaluate(() => !![...document.querySelectorAll('.modal-addons .addon-option')]
-        .find((o) => o.querySelector('.addon-label').textContent.trim() === 'Kuuma Banya (Wood-fired)')
+        .find((o) => o.querySelector('.addon-label').textContent.trim() === 'Mini-IKI (Wood-fired)')
         .querySelector('input').checked),
       'a stale record was thrown away instead of recomputed');
     await page.close();
@@ -644,7 +644,7 @@ async function runStates(base, browser) {
   {
     const page = await newPage(browser);
     await openModal(page, base);
-    await pick(page, 'Kuuma Banya (Wood-fired)');
+    await pick(page, 'Mini-IKI (Wood-fired)');
     await page.click('[data-action="request-quote"]');
 
     await page.goto(`${base}/contact/`, { waitUntil: 'networkidle' });
@@ -653,7 +653,7 @@ async function runStates(base, browser) {
       (await page.textContent('.quote-attached-banner')).includes('S4 Standard Sauna'),
       'the banner is missing or does not name the model');
     check('fallback: the message field is prefilled with the configuration',
-      (await page.inputValue('textarea[name="message"]')).includes('Kuuma Banya'),
+      (await page.inputValue('textarea[name="message"]')).includes('Mini-IKI'),
       'the configuration did not reach the contact form');
     check('fallback: the key SURVIVES the read',
       (await readStore(page)) !== null,
@@ -662,7 +662,7 @@ async function runStates(base, browser) {
     await page.reload({ waitUntil: 'networkidle' });
     check('fallback: and survives a reload, banner and all',
       await page.isVisible('.quote-attached-banner')
-      && (await page.inputValue('textarea[name="message"]')).includes('Kuuma Banya'),
+      && (await page.inputValue('textarea[name="message"]')).includes('Mini-IKI'),
       'the second visit to /contact/ came up empty');
     await page.close();
   }
@@ -763,7 +763,7 @@ const MUTATIONS = [
     run: async (base, browser) => {
       const page = await newPage(browser);
       await openModal(page, base);
-      await pick(page, 'Kuuma Banya (Wood-fired)');
+      await pick(page, 'Mini-IKI (Wood-fired)');
       await page.click('[data-action="request-quote"]');
       const rec = await readStore(page);
       await page.evaluate(([k, r]) => {
@@ -784,7 +784,7 @@ const MUTATIONS = [
     run: async (base, browser) => {
       const page = await newPage(browser);
       await openModal(page, base);
-      await pick(page, 'Kuuma Banya (Wood-fired)');
+      await pick(page, 'Mini-IKI (Wood-fired)');
       await page.click('[data-action="request-quote"]');
       const rec = await readStore(page);
       await page.evaluate(([k, r]) => {
@@ -871,29 +871,29 @@ const MUTATIONS = [
       // 1. Save a real record through the real UI, on unmutated markup.
       const author = await newPage(browser);
       await openModal(author, baselineBase);
-      await pick(author, 'Kuuma Banya (Wood-fired)');
-      await pick(author, 'Built-in Bluetooth speakers');
+      await pick(author, 'Mini-IKI (Wood-fired)');
+      await pick(author, 'Built-in Bluetooth speakers (standard set)');
       await author.click('[data-action="request-quote"]');
       const record = await readStore(author);
       await author.close();
-      if (!record || !record.selections.some((s) => s.label === 'Built-in Bluetooth speakers')) {
+      if (!record || !record.selections.some((s) => s.label === 'Built-in Bluetooth speakers (standard set)')) {
         throw new Error('M6 could not author a record through the UI; the fixture is broken, '
           + 'not the code under test.');
       }
 
       // The wood heater block, whose removal shifts every later index by one.
       const WOOD_HEATER_BLOCK = `                        <label class="addon-option" id="heaterWoodUpgrade">
-                            <input type="radio" name="heater" value="3000" data-addon="heater">
-                            <span class="addon-label">Kuuma Banya (Wood-fired)</span>
-                            <span class="addon-price">+$3,000</span>
+                            <input type="radio" name="heater" value="10800" data-addon="heater">
+                            <span class="addon-label" id="heaterWoodLabel">Original-IKI (Wood-fired)</span>
+                            <span class="addon-price" id="heaterWoodPrice">+$10,800</span>
                         </label>
 `;
       const removeOption = (dir) => mutate(
         path.join(dir, 'src', '_includes', 'modals', 'sauna.njk'), WOOD_HEATER_BLOCK, '');
       const relabelOption = (dir) => mutate(
         path.join(dir, 'src', '_includes', 'modals', 'sauna.njk'),
-        '<span class="addon-label">Built-in Bluetooth speakers</span>',
-        '<span class="addon-label">Built-in Bluetooth speakers (Polk)</span>');
+        '<span class="addon-label">Built-in Bluetooth speakers (standard set)</span>',
+        '<span class="addon-label">Built-in Bluetooth speakers (standard set) (Polk)</span>');
       // Razor's mutation, verbatim in effect: the signature check and its
       // fallback search, gone. `matches` stays defined so nothing else breaks
       // and the removal is the only difference.
@@ -947,7 +947,7 @@ const MUTATIONS = [
           `the restore put options in the quote that were never chosen: `
           + `${JSON.stringify(afterRemoval.unexpected)}`);
         check('M6a removed option: the rest of the configuration still comes back',
-          afterRemoval.checked.includes('Built-in Bluetooth speakers'),
+          afterRemoval.checked.includes('Built-in Bluetooth speakers (standard set)'),
           `speakers did not survive the index shift: ${JSON.stringify(afterRemoval.checked)}`);
 
         // 2b. The option was RELABELLED -- the index resolves, to the wrong thing.
@@ -958,11 +958,11 @@ const MUTATIONS = [
           afterRelabel.noteShown, `note state was ${JSON.stringify(afterRelabel)}`);
         check('M6b relabelled option: nothing the visitor never chose is checked',
           afterRelabel.unexpected.length === 0
-          && !afterRelabel.checked.includes('Built-in Bluetooth speakers (Polk)'),
+          && !afterRelabel.checked.includes('Built-in Bluetooth speakers (standard set) (Polk)'),
           `a renamed option was restored as though it were the saved one: `
           + `${JSON.stringify(afterRelabel)}`);
         check('M6b relabelled option: unaffected selections still come back',
-          afterRelabel.checked.includes('Kuuma Banya (Wood-fired)'),
+          afterRelabel.checked.includes('Mini-IKI (Wood-fired)'),
           `the heater choice was lost: ${JSON.stringify(afterRelabel.checked)}`);
 
         // 3. Now strip the guard and confirm the above becomes observably wrong.

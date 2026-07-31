@@ -9,8 +9,13 @@
      * Price-sheet version.
      *
      * Bump this in the SAME commit as any change to a price -- `basePrice`,
-     * `interiorUpgrade`, `premiumFinishPrice` here, or any option value in
-     * `_includes/modals/sauna.njk`. WP-0b-ii (the repricing) is the next bump.
+     * `interiorUpgrade`, `premiumFinishPrice`, `electricHeaterUpgrade`,
+     * `woodFired`, `exteriorStandingSeam`, `exteriorCedar` here, or any option
+     * value in `_includes/modals/sauna.njk`.
+     *
+     * This is not a convention anyone has to remember: `npm run
+     * prices-version:test` hashes the whole price table and fails if the hash
+     * moves without this number moving with it.
      *
      * It exists so a quote configuration saved on a visitor's device before a
      * price change can be recognised as belonging to the old world. A stale
@@ -18,7 +23,7 @@
      * recomputed from live prices, with a visible note. Without the stamp, a
      * week-old saved total would silently contradict its own line items.
      */
-    const pricesVersion = 1;
+    const pricesVersion = 2;
 
     // ============================================
     // Sauna Model Data
@@ -30,8 +35,13 @@
             size: "5' x 7'",
             capacity: '2-3 people',
             heater: 'Homecraft 7.5kW H Series',
-            interiorUpgrade: 1000,
-            premiumFinishPrice: 7000,
+            interiorUpgrade: 2200,
+            premiumFinishPrice: 9200,
+            electricHeaterUpgrade: 3500,
+            woodFired: null,
+            woodFiredLabel: null,
+            exteriorStandingSeam: 3000,
+            exteriorCedar: 2500,
             electricOnly: true,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768410759/Gemini_Generated_Image_ot1l9lot1l9lot1l_1_ukzekw.png',
@@ -46,8 +56,13 @@
             size: "7' x 7'",
             capacity: '4-5 people',
             heater: 'Harvia M3 or Homecraft 7.5kW',
-            interiorUpgrade: 1500,
-            premiumFinishPrice: 7500,
+            interiorUpgrade: 2600,
+            premiumFinishPrice: 9600,
+            electricHeaterUpgrade: 3500,
+            woodFired: 9800,
+            woodFiredLabel: 'Mini-IKI (Wood-fired)',
+            exteriorStandingSeam: 3000,
+            exteriorCedar: 2500,
             electricOnly: false,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768272416/PXL_20240808_173352968.MP_yhb9bq.jpg',
@@ -65,8 +80,13 @@
             size: "7' x 9'",
             capacity: '6-7 people',
             heater: 'Harvia M3 or Homecraft 7.5kW',
-            interiorUpgrade: 2500,
-            premiumFinishPrice: 8500,
+            interiorUpgrade: 3000,
+            premiumFinishPrice: 10500,
+            electricHeaterUpgrade: 3500,
+            woodFired: 10800,
+            woodFiredLabel: 'Original-IKI (Wood-fired)',
+            exteriorStandingSeam: 3500,
+            exteriorCedar: 3000,
             electricOnly: false,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250653/IMG_6404_hrncws.jpg',
@@ -82,7 +102,12 @@
             capacity: '8-10 people',
             heater: 'Harvia M3 or Homecraft 7.5kW',
             interiorUpgrade: 3500,
-            premiumFinishPrice: 9500,
+            premiumFinishPrice: 11000,
+            electricHeaterUpgrade: 3500,
+            woodFired: 10800,
+            woodFiredLabel: 'Original-IKI (Wood-fired)',
+            exteriorStandingSeam: 4000,
+            exteriorCedar: 3000,
             electricOnly: false,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324977/DSC03225-EDIT_crqtkp.jpg',
@@ -96,9 +121,14 @@
             basePrice: 57000,
             size: "7' x 12' or larger",
             capacity: '10-12+ people',
-            heater: 'Harvia Pro20 or Homecraft 9kW Apex',
-            interiorUpgrade: 4500,
-            premiumFinishPrice: 10500,
+            heater: 'Harvia Pro 20 or Homecraft Revive 9kW',
+            interiorUpgrade: 5000,
+            premiumFinishPrice: 12500,
+            electricHeaterUpgrade: 2800,
+            woodFired: 8200,
+            woodFiredLabel: 'Original-IKI (Wood-fired)',
+            exteriorStandingSeam: 4000,
+            exteriorCedar: 3000,
             electricOnly: false,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409622/IMG_5228_1_z2bz8q.jpg',

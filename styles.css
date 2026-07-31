@@ -1523,6 +1523,16 @@ textarea {
     color: var(--ember);
 }
 
+/* Install-practice note under an option group. Same register as the package
+   description: quiet, small, factual -- it qualifies a price rather than
+   selling it. */
+.addon-note {
+    font-size: var(--text-sm);
+    color: var(--ink-quiet);
+    margin-top: var(--spacing-sm);
+    line-height: var(--leading-caption);
+}
+
 .premium-option {
     background: var(--color-warm-wood-alpha-10);
     border-radius: var(--radius-sm);
