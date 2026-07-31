@@ -405,6 +405,25 @@ re-verified but watch-listed — if the line dies, base-model cost rises $775.
 Clear cedar is priced at thermowood parity on an unverified assumption (§7.7) and
 may split — which is exactly why Thermowood gets its own token above.
 
+**Shipped 2026-07-31 (6f83807) — orchestrator rulings on the implementer's flags:**
+(1) *Wood-fired markup default:* doc 35 §6 rows 6/12 self-contradict (SC-priced
+default vs S4 default model); the enumeration was followed (row 6), JS overwrites
+per model on open, nothing customer-visible depends on it — resolve the doc
+contradiction into doc 21 at the next corpus pass. (2) *Premium audio inside the
+package:* the enumerated machinery disables the speakers group under package
+selection, so the Polk upgrade is UNREACHABLE for package buyers — while the
+decision-table commentary recorded "pays the $500 delta on top." Shipped-as-
+enumerated is SAFE (no wrong charge); the delta-upgrade UI is a queued follow-up
+gated on one Lee confirmation (docked): "should package buyers be able to add
+the Polk set for +$500?" (3) *"No speakers" default:* necessary consequence of
+the radio-group form, preserves optionality, ratified. (4) *Advisor catalogue
+repricing* (products.json + prompts) beyond the 19 rows: ratified — leaving it
+was a net-new false-price surface; reviewer verifies the numbers. (5) */saunas/
+== /gallery/ metrics:* expected — /gallery/ client-redirects to /saunas/ and the
+harness photographs the destination (declared in expectedRedirects; not a bug).
+(6) *IKI added to warranty covered-brands:* factual gap closed; George glances at
+register in Stage 3.
+
 **Answered by Lee (2026-07-30) — WP-0b-ii is un-gated:**
 
 - **Transition: honour issued quotes.** New prices are effective immediately for
