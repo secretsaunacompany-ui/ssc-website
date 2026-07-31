@@ -550,6 +550,26 @@ Governed by doc 21 for tokens and `10-jen-art-direction.md` §4–5 for the syst
 
 **Cleared to implement and deploy to a draft URL.** Same production gate as WP-1a.
 
+**Certification for this batch (2026-07-31, from WP-1b's honest double-FAIL, no
+overrides):** (a) the DOM-integrity certificate extended with a **`renameMap`
+whitelist type** — declared old-class→new-class pairs applied during
+normalization (a 158-node rename is declared structure change, not noise);
+undeclared attribute changes still fail; built by the instrument author,
+Razor-reviewed, then the 1b DOM run re-issued — the batch author's out-of-band
+normalization already showed text byte-identical and residuals exactly the four
+declared change classes. (b) A **computed-rhythm suite** (spacing analog of the
+fonts suite): representative elements' computed paddings/margins/gutters at
+both widths asserted against doc 21's token values — built in the batch fix
+round. (c) The batch's measured isolation probes (heading/gutter/section-pad
+reverts) and Jen's Stage 3 fidelity review. (d) The pixel harness FAIL recorded
+as the honest verdict: viewport-relative rhythm tiers compress the widths by
+different ratios and sections progressively — outside any global-transform
+model's jurisdiction, and the instrument's next model evolution happens only if
+a future need justifies it. Instrument follow-up queued: the DOM whitelist is
+per-comparison but its file is per-repo (WP-1a's entries read stale against
+later baselines — the battery caught the naive removal; scope entries to a
+baseline..candidate range).
+
 ---
 
 ## 7. WP-2a — The mark *(unblocked by Lee, 2026-07-28)*
