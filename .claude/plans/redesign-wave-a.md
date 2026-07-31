@@ -177,6 +177,20 @@ fails. One Razor review covers both instrument commits before WP-1a re-measures.
 The alternative — demoting the harness to advisory for the wave's largest visual
 batch — is rejected: it is the outcome the Batch 1 repair exists to prevent.
 
+*Instrument follow-ups queued (2026-07-30, Razor's combined instrument review):*
+(1) the long-distance small-reorder blind spot — rows displaced beyond the 240px
+search window drop from the residual set, so <5% of rows swapped across a long
+page reports spread 0 and passes coverage (sized: 8 row-pairs on a 400-row page
+= clean PASS); mitigation is already-in-hand information — count and report "N
+rows matched only outside the search window". Later instrument round; does not
+gate WP-1a (a leading change is not a reorder). (2) fonts.test.mjs cannot
+self-run from a clean checkout (exits 1 without a prior build, unlike every
+sibling suite) — fold into WP-1a's review round. (3) The fixture-realism lesson,
+recorded for every future instrument change: synthetic fixtures with unique
+per-row signatures test the instrument against pages unlike the ones it
+measures; every new estimator behaviour needs at least one fixture built from
+repeating-texture content that mirrors the real site.
+
 ---
 
 ## 3. WP-0c — Quote integrity
