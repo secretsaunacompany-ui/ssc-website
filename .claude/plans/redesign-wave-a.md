@@ -146,6 +146,24 @@ flakes in between).
 human review at both widths — and then stop describing the harness as an acceptance
 gate anywhere in the plan.
 
+**Global-offset matching (instrument evolution, 2026-07-30 — from WP-1a's honest
+failure):** the mandated 1.8→1.65 leading uniformly compressed every page (−83 to
+−454px, content proven identical) and the row matcher's 240px search window reads
+uniform compression as unmatchable chaos — coverage collapsed below the override
+floor, which then correctly demanded a human conversation. This is that
+conversation's outcome: the matcher learns to estimate a single global vertical
+offset per page-pair (e.g. median row displacement) and match rows relative to
+it, reporting the offset separately. Rules: (1) SEPARATE commit, authored by the
+harness's own implementer, never by the agent whose batch awaits certification;
+(2) fixtures prove the 6px sitewide move and a genuine row REORDER still fail
+while uniform compression passes with honest coverage; (3) Razor reviews the
+instrument change BEFORE any batch is re-measured against it; (4) the offset
+itself is reported and gated (a page may compress; it may not compress
+differently at the two widths without explanation). WP-1a re-measures only after
+all four hold. The eighteen rejected `layoutShiftMaxPx` overrides stay rejected —
+the implementer's own fixture proved they disarm the site-wide calibration, which
+is the exact blindness the mechanism was built to refuse.
+
 ---
 
 ## 3. WP-0c — Quote integrity
