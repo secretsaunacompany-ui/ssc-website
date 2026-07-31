@@ -30,25 +30,51 @@
  *
  * Analytics payloads on this site carry counts, enums and identifiers. Never a
  * name, an email, a phone number, a street, free text, or a configuration blob.
- * That is not a rule written in a doc for the next author to read -- DENIED_KEYS
- * below drops those fields on the floor before they can leave the browser, and
- * the fixture asserts it. The visitor's words belong in Lee's inbox, not in an
- * events table.
+ * That is not a rule written in a doc for the next author to read -- the
+ * denylists below drop those fields on the floor before they can leave the
+ * browser, and the fixture asserts it. The visitor's words belong in Lee's
+ * inbox, not in an events table.
+ *
+ * FOUR EVENTS FROM DOC 14 §8 ARE DELIBERATELY NOT WIRED HERE
+ *
+ * `sessions_band_click`, `waitlist_submit_success`, `commercial_page_view` and
+ * `commercial_contact_click` have no trigger in this codebase: there is no
+ * sessions band, no waitlist form, and no /commercial/ page yet. They belong
+ * to the packages that build those surfaces, and each should be wired in the
+ * same commit as the thing it measures. Their absence is a decision, not an
+ * omission -- nobody should invent an event for a page that does not exist.
  */
 (function() {
     'use strict';
 
     /**
      * Field names that must never reach the events store, whatever a future
-     * call site believes it is doing. Matched case-insensitively against the
-     * key, and against substrings, so `customerEmail` is caught as well as
-     * `email`.
+     * call site believes it is doing.
+     *
+     * Two lists, because two matching rules are correct. Long, distinctive
+     * words match as SUBSTRINGS, so `customerEmail` is caught as well as
+     * `email`. Short words match as WHOLE WORDS: `ip` as a substring silently
+     * eats `skipped`, `zip` and `description`, and `{ skipped: true }` is a
+     * payload this site is one hero-hold event away from wanting. A denylist
+     * that quietly deletes legitimate fields teaches the next author to stop
+     * trusting it.
      */
-    const DENIED_KEYS = [
-        'name', 'email', 'phone', 'message', 'note', 'notes', 'address',
-        'location', 'city', 'summary', 'configuration', 'text', 'query',
-        'url', 'href', 'ip', 'user'
+    const DENIED_SUBSTRINGS = [
+        'name', 'email', 'phone', 'message', 'note', 'address',
+        'location', 'city', 'summary', 'configuration', 'text', 'query'
     ];
+    const DENIED_WORDS = ['ip', 'url', 'href', 'user'];
+
+    /**
+     * Value-side guard. The key denylist structurally cannot see a NOVEL key
+     * carrying free text -- `{ detail: 'call me at lee@example.com' }` passes
+     * every name check anyone will ever write. So the value is checked too:
+     * anything shaped like an email address or a phone number is dropped
+     * whatever it is called. Values on this site are enums, counts and short
+     * identifiers, none of which can legitimately look like contact details.
+     */
+    const EMAIL_SHAPE = /[^\s@]+@[^\s@]+\.[^\s@]/;
+    const PHONE_SHAPE = /(?:\+?\d[\s().-]*){9,}/;
 
     /**
      * The outgoing budget. The server's silent-drop threshold is 5,000; this is
@@ -62,7 +88,17 @@
 
     function isDenied(key) {
         const k = String(key).toLowerCase();
-        return DENIED_KEYS.some((bad) => k.indexOf(bad) !== -1);
+        if (DENIED_SUBSTRINGS.some((bad) => k.indexOf(bad) !== -1)) return true;
+        // Split on separators AND on camelCase boundaries, so `userId` and
+        // `user_id` are both denied while `skipped` is not.
+        const words = String(key).split(/[^A-Za-z0-9]+|(?=[A-Z])/)
+            .filter(Boolean).map((w) => w.toLowerCase());
+        return words.some((word) => DENIED_WORDS.indexOf(word) !== -1);
+    }
+
+    /** True when a value looks like contact details, whatever its key is. */
+    function looksLikeContact(value) {
+        return EMAIL_SHAPE.test(value) || PHONE_SHAPE.test(value);
     }
 
     /**
@@ -77,6 +113,12 @@
         if (typeof value === 'string') {
             const trimmed = value.trim();
             if (!trimmed) return undefined;
+            // Checked BEFORE truncation: a 48-character prefix of an email
+            // address is still an email address.
+            if (looksLikeContact(trimmed)) {
+                warn('analytics: dropped a value shaped like contact details');
+                return undefined;
+            }
             return trimmed.slice(0, MAX_STRING_CHARS);
         }
         return undefined;

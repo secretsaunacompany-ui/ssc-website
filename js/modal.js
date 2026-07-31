@@ -109,8 +109,16 @@
             }
 
             // Initialize price calculation listeners
+            // `.addon-option input`, NOT `.modal-addons input`: #quoteForm --
+            // name, email, location, notes -- lives INSIDE .modal-addons, so
+            // the looser selector bound step 2's own fields as if they were
+            // configurator options. Every visitor who completed the funnel
+            // emitted three phantom configurator_option_change events, on
+            // exactly the walks that converted, and burned three of the twelve
+            // per-open slots doing it. An option is a thing inside an
+            // .addon-option; nothing else is.
             const setupAddonListeners = () => {
-                document.querySelectorAll('.modal-addons input').forEach((input) => {
+                document.querySelectorAll('.modal-addons .addon-option input').forEach((input) => {
                     input.addEventListener('change', () => {
                         this.calculateTotal();
                         this.trackOptionChange(input);
@@ -171,13 +179,30 @@
             if (this.optionEventCount >= OPTION_EVENT_CAP) return;
             this.pendingOption = input.dataset.addon || input.name || 'option';
             window.clearTimeout(this.optionTimer);
-            this.optionTimer = window.setTimeout(() => {
-                this.optionEventCount += 1;
-                window.SSC.track('configurator_option_change', {
-                    model: currentModelId,
-                    addon: this.pendingOption
-                });
-            }, OPTION_EVENT_DEBOUNCE_MS);
+            this.optionTimer = window.setTimeout(() => this.flushOptionChange(),
+                OPTION_EVENT_DEBOUNCE_MS);
+        }
+
+        /**
+         * Emit whatever the debounce is holding, now.
+         *
+         * Called when the visitor leaves step 1 or closes the modal, because a
+         * debounced event that fires on its own schedule arrives AFTER the
+         * conversion it preceded -- an engagement event landing behind the
+         * success it led to, in a funnel whose whole purpose is order.
+         */
+        flushOptionChange() {
+            window.clearTimeout(this.optionTimer);
+            this.optionTimer = null;
+            if (!this.pendingOption) return;
+            const addon = this.pendingOption;
+            this.pendingOption = null;
+            if (this.optionEventCount >= OPTION_EVENT_CAP) return;
+            this.optionEventCount += 1;
+            window.SSC.track('configurator_option_change', {
+                model: currentModelId,
+                addon: addon
+            });
         }
 
         close() {
@@ -191,6 +216,10 @@
             // model restores it. Only the success panel is transient -- it has
             // already done its job and would be a lie on the next open.
             if (this.step === 'success') this.setStep('configure');
+
+            // A modal closed mid-configure still emits what it was holding:
+            // abandonment is a measurement, not a reason to drop the evidence.
+            this.flushOptionChange();
 
             if (this.lastFocused && typeof this.lastFocused.focus === 'function') {
                 this.lastFocused.focus();
@@ -689,6 +718,11 @@
          */
         requestQuote() {
             if (!currentModel) return;
+
+            // Ordering matters more than the extra 500ms of coalescing: an
+            // option change the visitor made BEFORE clicking through must be
+            // recorded before the step it led to.
+            this.flushOptionChange();
 
             const config = this.buildConfiguration();
             window.SSC.quoteStore.save(config);

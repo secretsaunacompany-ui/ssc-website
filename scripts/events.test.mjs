@@ -35,6 +35,14 @@
  *      both ends. Every payload here is byte-counted, and the privacy
  *      denylist is driven through the real shipped module rather than trusted.
  *
+ * REQUIRES A SIBLING ssc-ops CHECKOUT
+ *
+ * The stream-separation scenarios load `../ssc-ops/tracker.js` -- the real
+ * shared tracker, from a checkout beside this repo. A stub written by the same
+ * hand as the fix cannot prove the fix, so this suite goes RED (with that
+ * message, not a crash) on a machine where ssc-ops is missing. Clone it beside
+ * this repo:  git clone <ssc-ops> ../ssc-ops
+ *
  * MUTATION IS BUILT IN, NOT A RITUAL
  *
  * The two load-bearing repairs in this package -- the advisor guard rewire and
@@ -330,6 +338,70 @@ async function runInventory(base, browser) {
     await page.close();
   }
 
+  // --- the exact inventory of a clean success walk ---------------------
+  //
+  // Not "the events I expected are present" -- "these events and NO OTHERS,
+  // in this order". The looser property is what let a real defect ship: step
+  // 2's own name/email/location fields were bound as configurator options, so
+  // every walk that CONVERTED emitted three phantom option-change events and
+  // burned three of the twelve per-open slots. Every assertion around it
+  // passed, because each of them only asked whether the event it cared about
+  // was there.
+  {
+    const page = await newPage(browser);
+    await stubFormspree(page, 'success');
+    await openModal(page, base);
+    await page.click('.modal-addons input[data-addon="wifi"]');
+    await page.click('[data-action="request-quote"]');
+    await fillStep2(page);
+    await page.click('#quoteSubmit');
+    await page.waitForSelector('#successStep', { state: 'visible' });
+    // Longer than the option-change debounce: a phantom event fired by the
+    // step 2 fields lands ~500ms after the last keystroke, which is AFTER the
+    // success panel. Reading immediately would miss exactly the bug this
+    // scenario exists to catch.
+    await page.waitForTimeout(900);
+    const events = await readEvents(page);
+
+    const expected = [
+      'configurator_open',
+      'configurator_option_change',
+      'quote_step2_view',
+      'quote_submit_attempt',
+      'quote_submit_success',
+    ];
+    check('inventory: a clean success walk emits EXACTLY these events, in order',
+      JSON.stringify(events.map((e) => e.type)) === JSON.stringify(expected),
+      `walk emitted ${JSON.stringify(events.map((e) => e.type))}`);
+    check('inventory: the one option change is the option the visitor clicked',
+      one(events, 'configurator_option_change')
+      && one(events, 'configurator_option_change').data.addon === 'wifi',
+      `option change was ${JSON.stringify(one(events, 'configurator_option_change'))}`);
+    collected.push(...events);
+    await page.close();
+  }
+
+  // --- the per-open ceiling --------------------------------------------
+  {
+    const page = await newPage(browser);
+    await openModal(page, base);
+    // Spaced past the debounce so each toggle is its own event. Fifteen
+    // deliberate changes, twelve slots: a visitor who plays with the
+    // configurator for ten minutes registers as engaged, not as a flood.
+    for (let i = 0; i < 15; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await page.click('.modal-addons input[data-addon="wifi"]');
+      // eslint-disable-next-line no-await-in-loop
+      await page.waitForTimeout(600);
+    }
+    const events = await readEvents(page);
+    check('configurator_option_change: capped at 12 per open, whatever the visitor does',
+      typeOf(events, 'configurator_option_change').length === 12,
+      `${typeOf(events, 'configurator_option_change').length} option-change events for 15 changes`);
+    collected.push(...events);
+    await page.close();
+  }
+
   // --- failure codes ---------------------------------------------------
   const failureCase = async (outcome, expectedCode, offline) => {
     const page = await newPage(browser);
@@ -488,6 +560,15 @@ async function runInventory(base, browser) {
       // per-value cap; a payload with too many FIELDS is cut by the budget
       // loop. Testing only the first would leave the second unexercised while
       // looking like coverage.
+      // A key nothing could have anticipated, carrying contact details.
+      window.SSC.track('probe_novel_key', {
+        model: 's4', detail: 'reach me at lee@example.com', ref: '+1 604 555 0134',
+      });
+      // The other half of the denylist contract: it must not eat legitimate
+      // fields. `skipped` is one hero-hold event away from being real.
+      window.SSC.track('probe_keep', {
+        skipped: true, zip: 1234, userId: 'abc', url: 'https://example.com',
+      });
       window.SSC.track('probe_string', { model: 's4', addon: 'y'.repeat(4000) });
       const wide = { model: 's4' };
       for (let i = 0; i < 60; i += 1) wide[`k${i}`] = 1234567;
@@ -500,6 +581,16 @@ async function runInventory(base, browser) {
       && !('message' in piiEvent.d) && !('location' in piiEvent.d)
       && piiEvent.d.model === 's4' && piiEvent.d.ok === true,
       `payload was ${JSON.stringify(piiEvent && piiEvent.d)}`);
+    const novelEvent = sent.find((e) => e.t === 'probe_novel_key');
+    check('sanitiser: contact details are dropped by SHAPE, under a key no denylist knows',
+      novelEvent && !('detail' in novelEvent.d) && !('ref' in novelEvent.d)
+      && novelEvent.d.model === 's4',
+      `payload was ${JSON.stringify(novelEvent && novelEvent.d)}`);
+    const keepEvent = sent.find((e) => e.t === 'probe_keep');
+    check('sanitiser: short denied words are anchored, so skipped/zip survive',
+      keepEvent && keepEvent.d.skipped === true && keepEvent.d.zip === 1234
+      && !('userId' in keepEvent.d) && !('url' in keepEvent.d),
+      `payload was ${JSON.stringify(keepEvent && keepEvent.d)}`);
     const stringEvent = sent.find((e) => e.t === 'probe_string');
     check('sanitiser: an over-long string value is capped, not passed through',
       stringEvent && typeof stringEvent.d.addon === 'string' && stringEvent.d.addon.length <= 48,
@@ -647,19 +738,23 @@ const MUTATIONS = [
     name: 'M3 privacy denylist disabled',
     proves: 'a payload carrying a name or an email is detected',
     apply: (dir) => mutate(path.join(dir, 'js', 'analytics.js'),
-      'return DENIED_KEYS.some((bad) => k.indexOf(bad) !== -1);',
-      'return false && k;'),
+      'if (DENIED_SUBSTRINGS.some((bad) => k.indexOf(bad) !== -1)) return true;',
+      'if (false && k) return true;'),
     run: async (base, browser) => {
       const page = await newPage(browser);
       await page.goto(`${base}/contact/`, { waitUntil: 'networkidle' });
       const payload = await page.evaluate(() => {
         let sent = null;
         window.analyticsTracker = { trackEvent: (t, d) => { sent = d; }, trackPageView: () => {} };
-        window.SSC.track('probe_pii', { model: 's4', email: 'lee@example.com' });
+        // A plain name, deliberately: it is caught by the KEY denylist and by
+        // nothing else, so this mutation tests the thing it claims to. An
+        // email address would still be stopped by the value-side guard and
+        // the mutation would look detected for the wrong reason.
+        window.SSC.track('probe_pii', { model: 's4', name: 'Lee Salo' });
         return sent;
       });
       await page.close();
-      return !!(payload && 'email' in payload);
+      return !!(payload && 'name' in payload);
     },
   },
   {
@@ -697,6 +792,71 @@ const MUTATIONS = [
       await page.close();
       const step2 = one(events, 'quote_step2_view');
       return !step2 || typeof step2.data.total !== 'number';
+    },
+  },
+  {
+    // The W2a proof, made permanent. This is the exact defect Razor found:
+    // #quoteForm lives inside .modal-addons, so the looser selector binds
+    // step 2's own fields as configurator options.
+    name: 'M6 option listener widened back over #quoteForm',
+    proves: 'phantom option-change events from step 2 fields are detected',
+    apply: (dir) => mutate(path.join(dir, 'js', 'modal.js'),
+      ".modal-addons .addon-option input')", ".modal-addons input')"),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await stubFormspree(page, 'success');
+      await openModal(page, base);
+      await page.click('.modal-addons input[data-addon="wifi"]');
+      await page.click('[data-action="request-quote"]');
+      await fillStep2(page);
+      await page.click('#quoteSubmit');
+      await page.waitForSelector('#successStep', { state: 'visible' });
+      await page.waitForTimeout(900);
+      const events = await readEvents(page);
+      await page.close();
+      const expected = [
+        'configurator_open', 'configurator_option_change', 'quote_step2_view',
+        'quote_submit_attempt', 'quote_submit_success',
+      ];
+      return JSON.stringify(events.map((e) => e.type)) !== JSON.stringify(expected);
+    },
+  },
+  {
+    name: 'M7 per-open option ceiling raised',
+    proves: 'an uncapped option-change stream is detected',
+    apply: (dir) => mutate(path.join(dir, 'js', 'modal.js'),
+      'const OPTION_EVENT_CAP = 12;', 'const OPTION_EVENT_CAP = 9999;'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await openModal(page, base);
+      for (let i = 0; i < 15; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await page.click('.modal-addons input[data-addon="wifi"]');
+        // eslint-disable-next-line no-await-in-loop
+        await page.waitForTimeout(600);
+      }
+      const events = await readEvents(page);
+      await page.close();
+      return typeOf(events, 'configurator_option_change').length !== 12;
+    },
+  },
+  {
+    name: 'M8 value-side contact guard disabled',
+    proves: 'free text carrying an email under an innocent key is detected',
+    apply: (dir) => mutate(path.join(dir, 'js', 'analytics.js'),
+      'return EMAIL_SHAPE.test(value) || PHONE_SHAPE.test(value);',
+      'return false && value;'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.goto(`${base}/contact/`, { waitUntil: 'networkidle' });
+      const payload = await page.evaluate(() => {
+        let sent = null;
+        window.analyticsTracker = { trackEvent: (t, d) => { sent = d; }, trackPageView: () => {} };
+        window.SSC.track('probe_novel_key', { detail: 'reach me at lee@example.com' });
+        return sent;
+      });
+      await page.close();
+      return !!(payload && 'detail' in payload);
     },
   },
 ];
