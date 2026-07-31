@@ -405,6 +405,25 @@ re-verified but watch-listed — if the line dies, base-model cost rises $775.
 Clear cedar is priced at thermowood parity on an unverified assumption (§7.7) and
 may split — which is exactly why Thermowood gets its own token above.
 
+**Shipped 2026-07-31 (6f83807) — orchestrator rulings on the implementer's flags:**
+(1) *Wood-fired markup default:* doc 35 §6 rows 6/12 self-contradict (SC-priced
+default vs S4 default model); the enumeration was followed (row 6), JS overwrites
+per model on open, nothing customer-visible depends on it — resolve the doc
+contradiction into doc 21 at the next corpus pass. (2) *Premium audio inside the
+package:* the enumerated machinery disables the speakers group under package
+selection, so the Polk upgrade is UNREACHABLE for package buyers — while the
+decision-table commentary recorded "pays the $500 delta on top." Shipped-as-
+enumerated is SAFE (no wrong charge); the delta-upgrade UI is a queued follow-up
+gated on one Lee confirmation (docked): "should package buyers be able to add
+the Polk set for +$500?" (3) *"No speakers" default:* necessary consequence of
+the radio-group form, preserves optionality, ratified. (4) *Advisor catalogue
+repricing* (products.json + prompts) beyond the 19 rows: ratified — leaving it
+was a net-new false-price surface; reviewer verifies the numbers. (5) */saunas/
+== /gallery/ metrics:* expected — /gallery/ client-redirects to /saunas/ and the
+harness photographs the destination (declared in expectedRedirects; not a bug).
+(6) *IKI added to warranty covered-brands:* factual gap closed; George glances at
+register in Stage 3.
+
 **Answered by Lee (2026-07-30) — WP-0b-ii is un-gated:**
 
 - **Transition: honour issued quotes.** New prices are effective immediately for
@@ -549,6 +568,46 @@ Governed by doc 21 for tokens and `10-jen-art-direction.md` §4–5 for the syst
   tidy.
 
 **Cleared to implement and deploy to a draft URL.** Same production gate as WP-1a.
+
+**Certification for this batch (2026-07-31, from WP-1b's honest double-FAIL, no
+overrides):** (a) the DOM-integrity certificate extended with a **`renameMap`
+whitelist type** — declared old-class→new-class pairs applied during
+normalization (a 158-node rename is declared structure change, not noise);
+undeclared attribute changes still fail; built by the instrument author,
+Razor-reviewed, then the 1b DOM run re-issued — the batch author's out-of-band
+normalization already showed text byte-identical and residuals exactly the four
+declared change classes. (b) A **computed-rhythm suite** (spacing analog of the
+fonts suite): representative elements' computed paddings/margins/gutters at
+both widths asserted against doc 21's token values — built in the batch fix
+round. (c) The batch's measured isolation probes (heading/gutter/section-pad
+reverts) and Jen's Stage 3 fidelity review. (d) The pixel harness FAIL recorded
+as the honest verdict: viewport-relative rhythm tiers compress the widths by
+different ratios and sections progressively — outside any global-transform
+model's jurisdiction, and the instrument's next model evolution happens only if
+a future need justifies it. Instrument follow-up queued: the DOM whitelist is
+per-comparison but its file is per-repo (WP-1a's entries read stale against
+later baselines — the battery caught the naive removal; scope entries to a
+baseline..candidate range). *[Both landed 2026-07-31 in the fix round, plus
+delete-subtree and kind:'code' vocabulary.]*
+
+**Queued from the behavioral fix round (2026-07-31):** the /contact/ modal-scoping
+cleanup (removes the vestigial empty hidden fields that sent the evaluator
+chasing phantom data loss) deletes a 352-token subtree — beyond dom-integrity's
+`MAX_SUBTREE_TOKENS = 64`, a deliberate loud-fail limit. The implementer wrote
+the fix, then REVERTED it rather than raising the harness cap inside the round
+the cap would certify. It ships as its own small batch carrying the harness
+change explicitly (cap raise + fixture at the new bound), reviewed together.
+The honeypot's 34×34 tap target stays as-is (offscreen, untappable, and any
+whitelist entry naming it consumes its legitimate modal twin).
+
+**Queued from the 1b fix round (2026-07-31):** (1) the mobile gutter — `@media
+(max-width: 768px) { section { padding: … 5% } }` flattens the three
+`--section-pad` tiers at the width most visitors use; found by the rhythm
+suite, invisible to every prior instrument; recorded at doc 21 §6.2a; a
+rendered-output change on every page = its own small batch with the full gate
+run, post-Wave-A or as WP-1c. (2) `--ember-dark` survived the warm-wood fold
+(only `-hover` folded) — doc 21 §6.5's flat-ember-vs-keep decision is inherited,
+not made; decide it in the same batch as (1).
 
 ---
 
