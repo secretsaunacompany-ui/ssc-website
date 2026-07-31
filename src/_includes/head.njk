@@ -1,7 +1,6 @@
 <head>
     <meta charset="UTF-8">
-    <script data-ssc="reveal-boot">
-        /* F5. The reveal system's HIDDEN state must exist before the first
+    {#- F5 reveal-boot. F5. The reveal system's HIDDEN state must exist before the first
            paint, and this is the only thing that can put it there.
 
            It used to be gated on `body.js-loaded`, which init.js adds on
@@ -21,9 +20,13 @@
            The transitions are deliberately NOT enabled here -- `.js .reveal`
            carries opacity and transform only. init.js adds `.reveal-ready` after
            the first paint has committed the hidden state, so the load-in
-           animates FROM hidden instead of animating TO it. */
-        document.documentElement.classList.add('js');
-    </script>
+           animates FROM hidden instead of animating TO it.
+        CSP: this script is inline BY NECESSITY (parse-time, pre-first-paint) and is
+        allowlisted by sha256 hash in netlify.toml. The body below must stay EXACTLY
+        one line — any change (even whitespace) breaks the hash and the CSP silently
+        kills the script on Netlify only. scripts/csp-inline-hash.test.mjs recomputes
+        the hash from the built output and fails on drift, either side. -#}
+    <script data-ssc="reveal-boot">document.documentElement.classList.add('js')</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Primary SEO Meta Tags -->

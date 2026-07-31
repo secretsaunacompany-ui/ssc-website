@@ -24,7 +24,9 @@
     "dom-integrity:test": "node scripts/dom-integrity.test.mjs",
     "//lint:css": "The guard that keeps the type scale and the radius collapse from drifting back: raw font-size and border-radius literals are rejected outside :root. Six exceptions exist and every one carries a stylelint-disable-next-line with its reason.",
     "lint:css": "npx stylelint styles.css",
-    "lint:css:test": "node scripts/stylelint-gate.test.mjs"
+    "lint:css:test": "node scripts/stylelint-gate.test.mjs",
+    "csp-hash:test": "node scripts/csp-inline-hash.test.mjs",
+    "//csp-hash:test": "Requires a build first. Recomputes every inline script hash from dist/ and asserts each is declared in netlify.toml script-src \u2014 CSP headers exist only on Netlify, so a blocked inline script is invisible to every local instrument (learned when the reveal-boot shipped blocked)."
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

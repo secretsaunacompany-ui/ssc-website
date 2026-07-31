@@ -79,7 +79,7 @@
     # Fonts are self-hosted as of WP-1a, so this policy SHRANK:
     # https://fonts.googleapis.com left style-src and https://fonts.gstatic.com
     # left font-src. Nothing was added. font-src is now 'self' alone.
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://ssc-ops.netlify.app; style-src 'self' 'unsafe-inline' https://unpkg.com; font-src 'self'; img-src 'self' https://res.cloudinary.com https://*.basemaps.cartocdn.com data:; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://*.supabase.co https://unpkg.com https://formspree.io https://cdn.jsdelivr.net https://script.google.com https://ssc-ops.netlify.app; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formspree.io"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-Du+OJKJSbdUgz5nrHeWWINvez6XKDDU/tyj/5c2uvwo=' 'sha256-/s69UjooOsNABgZKxKExBkkAM2ESQvTyX5KcH4FbS+I=' https://cdn.jsdelivr.net https://unpkg.com https://ssc-ops.netlify.app; style-src 'self' 'unsafe-inline' https://unpkg.com; font-src 'self'; img-src 'self' https://res.cloudinary.com https://*.basemaps.cartocdn.com data:; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://*.supabase.co https://unpkg.com https://formspree.io https://cdn.jsdelivr.net https://script.google.com https://ssc-ops.netlify.app; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formspree.io"
     # SECURITY: Permissions Policy - restricts browser features
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
 
