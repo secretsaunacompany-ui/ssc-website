@@ -17,7 +17,10 @@
     "//fonts:test": "Group B drives a real Chromium against dist/, so run `npm run build` first. Static checks alone cannot tell you a font actually loaded.",
     "fonts:test": "node scripts/fonts.test.mjs",
     "dom-integrity": "node scripts/dom-integrity.mjs",
-    "dom-integrity:test": "node scripts/dom-integrity.test.mjs"
+    "dom-integrity:test": "node scripts/dom-integrity.test.mjs",
+    "//lint:css": "The guard that keeps the type scale and the radius collapse from drifting back: raw font-size and border-radius literals are rejected outside :root. Six exceptions exist and every one carries a stylelint-disable-next-line with its reason.",
+    "lint:css": "npx stylelint styles.css",
+    "lint:css:test": "node scripts/stylelint-gate.test.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
@@ -32,6 +35,7 @@
     "pixelmatch": "7.2.0",
     "playwright": "1.62.0",
     "pngjs": "7.0.0",
-    "postgres": "^3.4.8"
+    "postgres": "^3.4.8",
+    "stylelint": "17.14.1"
   }
 }

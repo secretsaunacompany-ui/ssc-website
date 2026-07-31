@@ -134,19 +134,15 @@
         document.body.classList.remove('pre-js');
         document.body.classList.add('js-loaded');
 
-        // Initialize scroll animations
-        if (SSC.scrollAnimations && SSC.scrollAnimations.init) {
-            SSC.scrollAnimations.init();
+        // Reveal -- the one motion system. Load-in and scroll-in together.
+        if (SSC.reveal && SSC.reveal.init) {
+            SSC.reveal.init();
         }
 
-        // Initialize hero intro animation
-        if (SSC.heroIntro && SSC.heroIntro.init) {
-            SSC.heroIntro.init();
-        }
-
-        // Initialize hero parallax
-        if (SSC.initHeroParallax) {
-            SSC.initHeroParallax();
+        // Arrival instrumentation (doc 14 §8). Must run AFTER reveal.init so the
+        // hero has settled into its own choreography before we time it.
+        if (SSC.initHeroHoldMetric) {
+            SSC.initHeroHoldMetric();
         }
 
         // Initialize gallery lightbox
@@ -185,9 +181,10 @@
     // Initialize on Window Load
     // ============================================
     window.addEventListener('load', () => {
-        // Re-initialize scroll animations after all resources loaded
-        if (SSC.scrollAnimations && SSC.scrollAnimations.init) {
-            SSC.scrollAnimations.init();
+        // Re-run reveal after all resources load: late images move things into
+        // view. init() is idempotent and reuses its observer.
+        if (SSC.reveal && SSC.reveal.init) {
+            SSC.reveal.init();
         }
     });
 

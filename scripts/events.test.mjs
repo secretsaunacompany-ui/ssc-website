@@ -483,26 +483,30 @@ async function runInventory(base, browser) {
   }
 
   // --- the held hero moment --------------------------------------------
+  //
+  // The hold is no longer a scroll LOCK -- WP-1b deleted HeroIntroAnimation and
+  // with it `body.hero-locked` and the 5s auto-reveal that these two scenarios
+  // used to synchronise on. The question the events answer is unchanged (is the
+  // held moment watched or skipped?) but it is now asked of a photograph the
+  // visitor is free to leave, so the branch is decided by the choreography's own
+  // settle boundary, 1240ms, rather than by which timer fired.
+  //
+  //   hero_hold_skipped   first scroll BEFORE the page finished settling
+  //   hero_hold_complete  first scroll after it, or the page going away unscrolled
+  //
+  // Note both scenarios scroll for real now. Scrolling is the thing that used to
+  // be impossible here, which is the whole point of the change.
   {
     const page = await newPage(browser);
-    // domcontentloaded, NOT networkidle: the hero carries heavy media and
-    // network idle on this page can arrive after the hold has already
-    // auto-revealed at 5s -- which is how this scenario silently measured the
-    // wrong branch the first two times it was run. The hold starts when the
-    // intro initialises, so that is what we wait for.
     await page.goto(base, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('body.hero-locked');
-    // ArrowDown, not mouse.wheel: the hold blocks scrolling with a
-    // preventDefault-ing wheel listener, and Playwright's wheel helper waits
-    // for a scroll that by design never comes -- it hangs past the 5s
-    // auto-reveal and the test ends up measuring the wrong branch. A key press
-    // is a real visitor gesture and takes the same code path.
-    await page.keyboard.press('ArrowDown');
+    // Immediately: well inside the 1240ms settle, so this is the skip branch.
+    await page.mouse.wheel(0, 600);
     await page.waitForTimeout(200);
     const events = await readEvents(page);
     const skipped = one(events, 'hero_hold_skipped');
-    check('hero_hold_skipped: a gesture during the hold reports the ms given to it',
+    check('hero_hold_skipped: a scroll before the page settles reports the ms given to it',
       !!skipped && typeof skipped.data.ms === 'number'
+      && skipped.data.ms < 1240
       && typeOf(events, 'hero_hold_complete').length === 0,
       `events were ${JSON.stringify(events)}`);
     collected.push(...events);
@@ -511,16 +515,36 @@ async function runInventory(base, browser) {
   {
     const page = await newPage(browser);
     await page.goto(base, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('body.hero-locked');
-    // The hold ends itself at 5s when nobody touches it. That is the
-    // "watched it" case, and it is the only way to observe it.
-    await page.waitForTimeout(5600);
+    // Let it settle, THEN scroll. That is the "watched it" case.
+    await page.waitForTimeout(1600);
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(200);
     const events = await readEvents(page);
-    check('hero_hold_complete: the unattended hold reports as complete, once',
-      typeOf(events, 'hero_hold_complete').length === 1
+    const done = one(events, 'hero_hold_complete');
+    check('hero_hold_complete: a scroll after the settle reports as complete, once',
+      !!done && typeof done.data.ms === 'number' && done.data.ms >= 1240
+      && typeOf(events, 'hero_hold_complete').length === 1
       && typeOf(events, 'hero_hold_skipped').length === 0,
       `events were ${JSON.stringify(events)}`);
     collected.push(...events);
+    await page.close();
+  }
+  {
+    // The scroll lock is gone, and that is a behavioural claim worth asserting
+    // rather than assuming: this scenario would have hung or timed out against
+    // the old build, which is exactly why it belongs here.
+    const page = await newPage(browser);
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.mouse.wheel(0, 800);
+    await page.waitForTimeout(300);
+    const y = await page.evaluate(() => window.pageYOffset);
+    check('the first scroll gesture always works -- no lock, at any moment',
+      y > 0, `pageYOffset was ${y}`);
+    check('no scroll-lock class or style survives on the body',
+      await page.evaluate(() =>
+        !document.body.classList.contains('hero-locked')
+        && getComputedStyle(document.body).overflow !== 'hidden'),
+      'body still carries the lock');
     await page.close();
   }
 

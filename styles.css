@@ -106,42 +106,55 @@
    CSS Custom Properties (Design Tokens)
    ============================================ */
 :root {
-    /* Colors */
-    --color-off-white: #e8e6e3;
-    --color-soft-grey: #2a2a2a;
-    --color-charcoal: #c0c0c0;
-    --color-muted-black: #0c0c0c;
-    --color-warm-wood: #c4a57b;
-    --color-warm-wood-hover: #d4b58b;
-    --color-warm-wood-dark: #a08060;
-    --color-bg-dark: #1a1a1a;
-    --color-bg-grey: #111111;
-    --color-border-subtle: #3a3a3a;
+    /* ===== Surfaces -- the warm ramp (21 R6/R7; mood board; Saul 12 §7.3) =====
+       Two surfaces, one rule colour. The site previously ran FOUR surface greys
+       and TWO cool border greys doing one job; a cool elevated surface inside an
+       otherwise warm ramp is the two-generation seam this program removes. */
+    --ground:     #0c0c0c;
+    --elevated:   #161512;   /* NOT #1a1a1a -- 21 R7. #111111 collapses here too */
+    --rule:       #2a2724;   /* the ONE hairline colour -- 21 R6 */
+    --rule-hover: rgba(196, 165, 123, 0.45);   /* Jen 10 §5.2 border warms on hover */
 
-    /* Semantic text colors */
-    --color-text-muted: #888;
-    --color-text-subtle: #aaa;
-    --color-text-dim: #666;
-    --color-text-faint: #999;
-    --color-text-feature: #ccc;
+    /* ===== Ink -- three honest tokens, nothing else (Jen 10 §4.3) =====
+       Was: seven text greys (#c0c0c0 #888 #aaa #666 #999 #ccc #e8e6e3), two of
+       which failed AA. Ratios on --ground / --elevated, computed not estimated
+       (21 §7). --ink-faint is the ADJUSTED value: the specified #6b6762 measured
+       3.49:1, an outright AA failure at every size it was used at (21 R5). */
+    --ink:        #e8e6e3;   /* 15.70 / 14.66 -- AAA everywhere */
+    --ink-quiet:  #9a9590;   /*  6.59 /  6.15 -- AA at every size, both surfaces */
+    --ink-faint:  #7f7a74;   /*  4.60 /  4.29 -- AA all sizes on ground;
+                                 LARGE TEXT ONLY on elevated (21 R5 constraint) */
+
+    /* ===== Accent ===== */
+    --ember:       #c4a57b;   /* 8.40 on ground; #000 on ember fill = 9.02 */
+    --ember-quiet: rgba(196, 165, 123, 0.18);
+    /* Constraint, 21 §7: small text on an --ember-quiet fill that sits on an
+       ELEVATED surface must be --ink or --ember, never --ink-quiet (4.47). */
+
+    --color-warm-wood-hover: #d4b58b;   /* button hover fill; #000 on it = 10.78 */
+    --color-warm-wood-dark:  #a08060;   /* one consumer: .comparison-header.ours */
+
+    /* Ember alphas. All five now share ONE base, rgb(196,165,123). Three of them
+       were silently built on rgb(184,156,104) -- a different accent (21 R9). */
+    --color-warm-wood-alpha-04: rgba(196, 165, 123, 0.04);
+    --color-warm-wood-alpha-10: rgba(196, 165, 123, 0.1);
+    --color-warm-wood-alpha-25: rgba(196, 165, 123, 0.25);
+    --color-warm-wood-alpha-30: rgba(196, 165, 123, 0.3);
+
+    /* ===== Utility constants ===== */
     --color-black: #000;
     --color-white: #fff;
 
-    /* Warm wood alpha variants */
-    --color-warm-wood-alpha-04: rgba(196, 165, 123, 0.04);
-    --color-warm-wood-alpha-05: rgba(196, 165, 123, 0.05);
-    --color-warm-wood-alpha-10: rgba(184, 156, 104, 0.1);
-    --color-warm-wood-alpha-25: rgba(184, 156, 104, 0.25);
-    --color-warm-wood-alpha-30: rgba(184, 156, 104, 0.3);
-
-    /* White/black alpha variants */
+    /* ===== Neutral alpha overlays ===== */
     --color-white-alpha-03: rgba(255, 255, 255, 0.03);
     --color-white-alpha-05: rgba(255, 255, 255, 0.05);
-    --color-white-alpha-08: rgba(255, 255, 255, 0.08);
     --color-white-alpha-10: rgba(255, 255, 255, 0.1);
     --color-black-alpha-30: rgba(0, 0, 0, 0.3);
-    --color-black-alpha-80: rgba(0, 0, 0, 0.8);
-    --color-black-alpha-95: rgba(0, 0, 0, 0.95);
+    --color-black-alpha-95: rgba(0, 0, 0, 0.95);   /* .lightbox-overlay */
+
+    /* ===== Scrims ===== */
+    --nav-scrim:  rgba(12, 12, 12, 0.72);   /* nav bg; the ONE sanctioned blur */
+    --hero-scrim: linear-gradient(transparent 40%, rgba(12, 12, 12, 0.72));
 
     /* Typography */
     --font-primary: 'Outfit', 'Outfit Fallback', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -185,30 +198,66 @@
     --tracking-caps: 0.14em;     /* ALL uppercase micro-type uses this, one value */
     --tracking-caps-wide: 0.2em; /* eyebrows/kickers only */
 
-    /* Spacing */
+    /* Spacing -- component-scale only. Section rhythm is NOT spacing; it has its
+       own tiers below. --spacing-3xl (8rem) retired: it was the flat metronome. */
     --spacing-xs: 0.5rem;
     --spacing-sm: 1rem;
     --spacing-md: 1.5rem;
     --spacing-lg: 2rem;
     --spacing-xl: 3rem;
     --spacing-2xl: 4rem;
-    --spacing-3xl: 8rem;
 
-    /* Transitions */
-    --transition-fast: 0.3s ease;
-    --transition-medium: 0.5s ease;
-    --transition-slow: 0.8s ease-out;
+    /* ===== Section rhythm -- three tiers, not one metronome (Jen 10 §2.0; 21 R3)
+       One rhythm is a metronome: compression only reads as compression against a
+       default, so density needs its own tier rather than a global tightening. */
+    --section-pad:       clamp(6rem, 14vh, 10rem);
+    --section-pad-tight: clamp(3.5rem, 8vh, 5rem);
+    --section-pad-open:  clamp(8rem, 18vh, 13rem);
 
-    /* Shadows */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.2);
-    --shadow-lg: 0 15px 30px rgba(0, 0, 0, 0.3);
-    --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.4);
+    /* ===== Layout -- container tiers (21 R1/R2/R8) =====
+       ONE contained tier. Jen's 72rem and the live 1200px would have coexisted
+       48px apart -- a Ledger and a card grid on the same page misaligning by
+       accident is two design systems averaged together, so 1200px wins on the
+       ground that every existing component is already built against it. */
+    --gutter:         clamp(1.5rem, 6vw, 7rem);
+    --hold:           75rem;      /* 1200px -- the contained tier */
+    --hold-wide:      87.5rem;    /* 1400px -- .wide-container */
+    --width-frame:    120rem;     /* 1920px -- body frame */
+    --overflow-reach: 4rem;       /* essay image outward overflow */
 
-    /* Border radius */
-    --radius-sm: 4px;
-    --radius-md: 6px;
-    --radius-lg: 20px;
+    /* Measures -- reading widths, not containers */
+    --measure:        65ch;    /* prose; law for p */
+    --measure-wide:   70ch;    /* the one relaxed measure (11 §5) */
+    --measure-narrow: 34rem;   /* thesis/lede column (21 R2) */
+    --measure-thesis: 26ch;    /* serif display line cap */
+    --measure-caption: 45ch;   /* captions, eyebrows */
+
+    /* ===== Plates ===== */
+    --plate-h:      clamp(24rem, 78svh, 46rem);
+    --plate-pair-h: clamp(20rem, 52svh, 34rem);
+
+    /* ===== Motion (Jen 10 §5) =====
+       --transition-medium (0.5s) and --transition-slow (0.8s) are GONE, together
+       with their consumers: image motion and surface state are different jobs and
+       were sharing one duration. */
+    --transition-fast:   200ms ease-out;   /* surface + colour state (was 0.3s ease) */
+    --transition-micro:  250ms ease-out;   /* accordion, mobile menu, modal steps */
+    --transition-image:  600ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    --transition-reveal: 1000ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    --reveal-shift: 28px;
+    --stagger-step: 120ms;   /* per-child delay; --i capped at 4 */
+
+    /* ===== Elevation -- ONE shadow, and it is a hover affordance =====
+       --shadow-sm/-md had zero consumers; -lg/-xl unify here (21 A4). No
+       box-shadow on any static surface: separation is done with rules. */
+    --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.35);
+
+    /* ===== Border radius (Jen 10 §4.1) =====
+       Surfaces are square; interactive controls keep a 2px hairline of
+       forgiveness so a button does not read as a table cell. --radius-md
+       (6px) is retired -- it was an alias of sm by the time it resolved. */
+    --radius-sm: 2px;   /* buttons, inputs, chips */
+    --radius-lg: 0;     /* surfaces, cards, images */
 }
 
 /* ============================================
@@ -228,13 +277,13 @@ html {
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    background: var(--color-muted-black);
+    background: var(--ground);
 }
 
 body {
     font-family: var(--font-primary);
-    color: var(--color-off-white);
-    background: var(--color-muted-black);
+    color: var(--ink);
+    background: var(--ground);
     /* 1.8 was right for nothing: too loose for long-form even at 65ch, and
        actively wrong in cards, spec rows, buttons and lists -- which is why
        three components were re-fixing it locally. 1.65 is the long-form value;
@@ -261,8 +310,8 @@ body {
     overflow: hidden;
     z-index: 9999;
     padding: 0.75rem 1.5rem;
-    background: var(--color-warm-wood);
-    color: var(--color-muted-black);
+    background: var(--ember);
+    color: var(--ground);
     font-size: var(--text-sm);
     font-weight: 500;
     text-decoration: none;
@@ -293,18 +342,18 @@ body::after {
 }
 
 a {
-    color: var(--color-warm-wood);
+    color: var(--ember);
     text-decoration-color: rgba(196, 165, 123, 0.4);
     transition: color var(--transition-fast);
 }
 
 a:hover {
-    color: var(--color-off-white);
+    color: var(--ink);
 }
 
 ::selection {
     background: var(--color-warm-wood-alpha-30);
-    color: var(--color-off-white);
+    color: var(--ink);
 }
 
 img {
@@ -326,10 +375,34 @@ h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     font-weight: 400;
     line-height: var(--leading-heading);
-    margin-bottom: var(--spacing-md);
     letter-spacing: var(--tracking-heading);
     text-wrap: balance;   /* progressive enhancement; harmless where unsupported */
 }
+
+/* The heading-space system (11 §5). Replaces a flat margin-bottom: 1.5rem on
+   every heading plus the .grid-3--mt-2/-3/-4, .heading--mb-2 and .section--mt-8
+   utilities that existed to correct it, template by template.
+
+   Margins are em-relative, so the space a heading claims scales with the heading
+   itself. The type scale is fluid; a rem-based margin would hold still while the
+   heading it belongs to grew by 24px between 320 and 1440, which is why the
+   utilities kept being needed at one breakpoint and not another. This needs no
+   breakpoint patching at all. */
+h1, h2, h3, h4 {
+    margin-block: 0 0.6em;
+}
+
+/* Space ABOVE only when something precedes -- a heading that opens a section
+   takes its space from the section's own rhythm tier, not from a margin. */
+* + h2 { margin-block-start: 2.5em; }
+* + h3 { margin-block-start: 2em; }
+* + h4 { margin-block-start: 1.75em; }
+
+/* An eyebrow belongs TO the heading under it. Anything else would let the
+   * + h2 rule push a kicker 2.5em away from the line it labels. */
+.eyebrow + h1,
+.eyebrow + h2,
+.eyebrow + h3 { margin-block-start: 0.5em; }
 
 h1 {
     font-size: var(--text-4xl);
@@ -365,9 +438,11 @@ h1 {
     font-variant-ligatures: common-ligatures;
 }
 
+/* 65ch is law for prose. Exceptions are named, and there is exactly one
+   (.measure-wide, 70ch) plus the two link clouds that are not prose at all. */
 p {
-    margin-bottom: var(--spacing-md);
-    max-width: 65ch;
+    margin-block: 0 var(--spacing-md);
+    max-width: var(--measure);
 }
 
 /* Tabular numerals.
@@ -391,50 +466,80 @@ p {
    tracking zoo. All-caps at small sizes needs >=0.08em, and it needs ONE value.
    `.eyebrow` has no consumer yet; it is the class the section work adopts. */
 .eyebrow {
+    max-width: var(--measure-caption);
     font-family: var(--font-primary);
     font-size: var(--text-xs);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: var(--tracking-caps);
     line-height: var(--leading-caption);
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
 }
 
 /* The section kicker -- one per section. Smaller, wider, ember. This is the
    wayfinding element the mood board established; it is the ONE eyebrow that
    sits at the 11px floor with the wide tracking, and it passes AA on both
    surfaces (ember on ground 8.40:1, on elevated 7.84:1).
-   Uses --color-warm-wood, which is the live name for the same value the colour
-   package will rename to --ember; referencing an undefined token here would
-   reproduce the exact bug that package exists to fix. */
+   WP-1a set this on the legacy accent name because --ember did not exist yet --
+   deliberately, rather than reference an undefined token and reproduce the exact
+   bug (P0-3) the colour package existed to fix. WP-1b defines --ember and this
+   is now wired to it directly, per 21 R10. */
 .eyebrow--wide {
     font-size: var(--text-2xs);
     letter-spacing: var(--tracking-caps-wide);
-    color: var(--color-warm-wood);
+    color: var(--ember);
 }
 
 /* ============================================
    Layout Components
    ============================================ */
+/* Container tiers. Percentage padding resolved against the PARENT, so `0 5%`
+   silently produced a different gutter on a section, on the body, and inside a
+   nav -- three gutters that looked like one rule. --gutter is one value, viewport
+   -relative, and it is the same everywhere it appears (21 R1). */
 .container {
-    max-width: 1200px;
+    max-width: var(--hold);
     margin: 0 auto;
-    padding: 0 5%;
+    padding: 0 var(--gutter);
 }
 
 .wide-container {
-    max-width: 1400px;
+    max-width: var(--hold-wide);
     margin: 0 auto;
-    padding: 0 5%;
+    padding: 0 var(--gutter);
+}
+
+/* Section rhythm. Was a flat --spacing-3xl (8rem) on every section: a metronome.
+   Three tiers, because compression only reads as compression against a default
+   (Jen 10 §2.0/§2.2). A section carries a tier by class; the bare element keeps
+   the standard tier so nothing un-migrated collapses. */
+section {
+    padding: var(--section-pad) var(--gutter);
 }
 
 section.wide-container {
-    padding-top: var(--spacing-3xl);
-    padding-bottom: var(--spacing-3xl);
+    padding-top: var(--section-pad);
+    padding-bottom: var(--section-pad);
 }
 
-section {
-    padding: var(--spacing-3xl) 5%;
+.section--tight {
+    padding-block: var(--section-pad-tight);
+}
+
+.section--open {
+    padding-block: var(--section-pad-open);
+}
+
+/* Elevated ground marks a REGISTER CHANGE, not decoration -- Voice sections and
+   the Threshold only, never two in a row, and never per-card (Jen 10 §4.3). */
+.section--elevated {
+    background: var(--elevated);
+}
+
+/* Full-bleed figures sit BETWEEN sections and carry no rhythm of their own. */
+.section--bleed {
+    padding-inline: 0;
+    padding-block: 0;
 }
 
 .page {
@@ -463,19 +568,23 @@ nav {
     right: 0;
     max-width: 1920px;
     margin: 0 auto;
-    background: var(--color-black-alpha-80);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    /* THE ONE SANCTIONED BLUR on the site. It survives because it is chrome
+       moving over content, not a card pretending to be glass (Jen 10 §4.2).
+       Every other frosted surface in the stylesheet is deleted in this batch;
+       if a second backdrop-filter ever appears, one of them is wrong. */
+    background: var(--nav-scrim);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 1000;
     padding: var(--spacing-sm) 2.5%;
-    border-bottom: 1px solid var(--color-white-alpha-10);
+    border-bottom: 1px solid var(--rule);
 }
 
 nav .container {
     max-width: none;
     margin: 0;
-    padding-left: 6rem;
-    padding-right: 6rem;
+    padding-left: var(--gutter);
+    padding-right: var(--gutter);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -491,7 +600,7 @@ nav .container {
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: var(--tracking-caps);
-    color: var(--color-off-white);
+    color: var(--ink);
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -503,10 +612,6 @@ nav .container {
     object-fit: contain;
     display: block;
     flex-shrink: 0;
-    background: rgba(0, 0, 0, 0.35);
-    border-radius: 999px;
-    padding: 0.4rem;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
 .nav-links {
@@ -520,7 +625,7 @@ nav .container {
    element. An architecture studio's nav whispers. Small, spaced and quiet is
    the register; 1.1rem was doing hero work in a utility bar. */
 .nav-links a {
-    color: var(--color-off-white);
+    color: var(--ink);
     text-decoration: none;
     font-size: var(--text-sm);
     font-weight: 400;
@@ -531,20 +636,20 @@ nav .container {
 }
 
 .nav-links a:hover {
-    color: var(--color-warm-wood);
+    color: var(--ember);
 }
 
 .mobile-menu-btn {
     display: none;
     background: none;
     border: none;
+    /* stylelint-disable-next-line declaration-property-value-allowed-list --
+       An icon GLYPH, not text. Its size is the icon's dimensions; putting it on
+       the text scale would couple a chevron to the reading hierarchy. */
     font-size: 1.5rem;
     cursor: pointer;
-    color: var(--color-off-white);
+    color: var(--ink);
 }
-
-/* Hero intro animations are handled by inline <style> in head.njk
-   using body.page-home / body.hero-revealed classes */
 
 /* ============================================
    Hero Section
@@ -558,21 +663,24 @@ nav .container {
     overflow: hidden;
 }
 
+/* The held photograph. It is now HELD -- static, 100svh, and exactly its own
+   height (Jen 10 §5.3).
+
+   Three things were moving here at once and none of them was asked for:
+   `slowZoom` ran a 20s infinite scale 1->1.1 forever, on the largest image on
+   the site, on every homepage visit; `height: 160%` existed only to give the
+   parallax rig somewhere to travel; and `will-change: top` pinned a full-screen
+   compositor layer for a scroll handler that wrote `top` every frame. All three
+   are gone with the parallax that motivated them. The only infinite animation
+   left on the site is the 1px scroll cue. */
 .hero-image {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 160%;
+    height: 100%;
     object-fit: cover;
     filter: brightness(0.7);
-    animation: slowZoom 20s ease-in-out infinite alternate;
-    will-change: top;
-}
-
-@keyframes slowZoom {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.1); }
 }
 
 .hero-content {
@@ -609,21 +717,8 @@ nav .container {
 
 .page-hero p {
     margin: 0 auto;
-    max-width: 60ch;
+    max-width: var(--measure);
     font-size: var(--text-md);
-}
-
-.page-hero::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80%;
-    height: 120%;
-    background: radial-gradient(ellipse at center, var(--color-warm-wood-alpha-04) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
 }
 
 /* ============================================
@@ -653,16 +748,25 @@ nav .container {
 /* ============================================
    Cards
    ============================================ */
+/* ONE hover grammar for every interactive surface (Jen 10 §5.2): lift 3px, warm
+   the border, raise the one sanctioned shadow, all at --transition-fast. The old
+   set ran -8px/-5px lifts on three different durations (0.5s, 0.4s) with a
+   brightness+saturate pop on the image -- five hover dialects. The brightness pop
+   is gone specifically: "no lighting up" is a hard rule, and an image that
+   brightens on hover is the CTA glow wearing a photograph. */
 .offering-card {
-    background: var(--color-bg-dark);
-    transition: transform var(--transition-medium) cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                box-shadow var(--transition-medium);
+    background: var(--elevated);
+    border: 1px solid var(--rule);
+    transition: transform var(--transition-fast),
+                border-color var(--transition-fast),
+                box-shadow var(--transition-fast);
     overflow: hidden;
 }
 
 .offering-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-xl);
+    transform: translateY(-3px);
+    border-color: var(--rule-hover);
+    box-shadow: var(--shadow-hover);
 }
 
 .card-image {
@@ -670,13 +774,11 @@ nav .container {
     height: 300px;
     object-fit: cover;
     margin-bottom: var(--spacing-md);
-    transition: transform var(--transition-slow) cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                filter var(--transition-medium);
+    transition: transform var(--transition-image);
 }
 
 .offering-card:hover .card-image {
-    transform: scale(1.05);
-    filter: brightness(1.08) saturate(1.15);
+    transform: scale(1.03);
 }
 
 .card-content {
@@ -688,7 +790,7 @@ nav .container {
 }
 
 .card-content p {
-    color: var(--color-charcoal);
+    color: var(--ink-quiet);
     font-size: var(--text-sm);
 }
 
@@ -700,28 +802,30 @@ nav .container {
 }
 
 .model-card {
-    background: var(--color-bg-dark);
-    border: 1px solid var(--color-soft-grey);
-    transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    background: var(--elevated);
+    border: 1px solid var(--rule);
+    transition: transform var(--transition-fast),
+                border-color var(--transition-fast),
+                box-shadow var(--transition-fast);
     overflow: hidden;
     cursor: pointer;
 }
 
 .model-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--color-warm-wood);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+    border-color: var(--rule-hover);
+    box-shadow: var(--shadow-hover);
 }
 
 .model-card-image {
     width: 100%;
     height: 200px;
     object-fit: cover;
-    transition: transform var(--transition-medium);
+    transition: transform var(--transition-image);
 }
 
 .model-card:hover .model-card-image {
-    transform: scale(1.05);
+    transform: scale(1.03);
 }
 
 .model-card-content {
@@ -734,25 +838,25 @@ nav .container {
     align-items: center;
     margin-bottom: var(--spacing-sm);
     padding-bottom: var(--spacing-sm);
-    border-bottom: 1px solid var(--color-soft-grey);
+    border-bottom: 1px solid var(--rule);
 }
 
 .model-header h3 {
     font-size: var(--text-lg);
     margin: 0;
-    color: var(--color-warm-wood);
+    color: var(--ember);
 }
 
 .model-capacity {
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
     letter-spacing: var(--tracking-caps);
 }
 
 .model-card p {
     font-size: var(--text-sm);
-    color: var(--color-text-subtle);
-    line-height: 1.7;
+    color: var(--ink-quiet);
+    line-height: var(--leading-ui);
     margin-bottom: var(--spacing-md);
 }
 
@@ -761,16 +865,16 @@ nav .container {
     justify-content: space-between;
     align-items: center;
     padding-top: var(--spacing-sm);
-    border-top: 1px solid var(--color-soft-grey);
+    border-top: 1px solid var(--rule);
     font-size: var(--text-sm);
 }
 
 .model-specs span:first-child {
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
 }
 
 .model-price {
-    color: var(--color-warm-wood);
+    color: var(--ember);
     font-weight: 500;
 }
 
@@ -782,8 +886,8 @@ nav .container {
 }
 
 .comparison-card {
-    background: var(--color-bg-dark);
-    border: 1px solid var(--color-soft-grey);
+    background: var(--elevated);
+    border: 1px solid var(--rule);
     overflow: hidden;
     transition: transform var(--transition-fast);
 }
@@ -798,7 +902,7 @@ nav .container {
 }
 
 .comparison-header.ours {
-    background: linear-gradient(135deg, var(--color-warm-wood), var(--color-warm-wood-dark));
+    background: linear-gradient(135deg, var(--ember), var(--color-warm-wood-dark));
 }
 
 .comparison-header.ours h3 {
@@ -807,7 +911,7 @@ nav .container {
 
 .comparison-header.barrels,
 .comparison-header.infrared {
-    background: var(--color-soft-grey);
+    background: var(--rule);
 }
 
 .comparison-header h3 {
@@ -828,7 +932,7 @@ nav .container {
 .comparison-badge-alt {
     display: inline-block;
     background: var(--color-white-alpha-10);
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
     padding: 0.25rem 0.75rem;
     border-radius: var(--radius-lg);
     font-size: var(--text-xs);
@@ -843,9 +947,9 @@ nav .container {
 
 .comparison-list li {
     padding: 0.6rem 0;
-    border-bottom: 1px solid var(--color-soft-grey);
+    border-bottom: 1px solid var(--rule);
     font-size: var(--text-sm);
-    color: var(--color-text-subtle);
+    color: var(--ink-quiet);
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
@@ -856,41 +960,48 @@ nav .container {
 }
 
 .comparison-list .check {
-    color: var(--color-warm-wood);
+    color: var(--ember);
     font-weight: bold;
 }
 
 .comparison-list .x {
-    color: var(--color-text-dim);
+    color: var(--ink-quiet);
 }
 
 /* Stat Cards */
 .stat-card {
-    background: var(--color-bg-dark);
+    background: var(--elevated);
     padding: var(--spacing-lg);
     text-align: center;
-    border: 1px solid var(--color-soft-grey);
+    border: 1px solid var(--rule);
 }
 
 .stat-number {
     display: block;
+    /* stylelint-disable-next-line declaration-property-value-allowed-list --
+       OPEN, pending Jen at Stage 3. 3.5rem sits between --text-4xl (4rem) and
+       --text-3xl (3rem) and is the one figure on the site whose size is a
+       display decision rather than a hierarchy one. Deliberately left raw and
+       loudly marked rather than silently rounded to a token it does not mean. */
     font-size: 3.5rem;
     font-weight: 400;
-    color: var(--color-warm-wood);
+    color: var(--ember);
     font-family: var(--font-heading);
     margin-bottom: var(--spacing-sm);
 }
 
 .stat-card p {
     font-size: var(--text-sm);
-    color: var(--color-text-subtle);
+    color: var(--ink-quiet);
     margin-bottom: var(--spacing-sm);
 }
 
 .stat-source {
     font-size: var(--text-xs);
-    color: var(--color-text-dim);
-    font-style: italic;
+    color: var(--ink-quiet);
+    /* No italic. Outfit ships no italic face, so this was a synthesized
+       oblique -- a mechanically slanted roman, which is the tell this program
+       exists to remove. Metadata carries its quietness with size and colour. */
 }
 
 /* ============================================
@@ -899,36 +1010,37 @@ nav .container {
 .btn {
     display: inline-block;
     padding: var(--spacing-sm) 2.5rem;
-    background: var(--color-warm-wood);
+    background: var(--ember);
     color: var(--color-black);
     text-decoration: none;
     font-size: var(--text-base);
     font-weight: 500;
     letter-spacing: 0.05em;
-    transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+    /* Colour only. "No lighting up of call-to-action buttons" is a hard rule for
+       the Threshold .btn (Jen 10 §5.2): no lift, no glow, no pulse. Both hover
+       states were raising a coloured glow -- an ember one under .btn and a
+       near-white one under .btn-outline -- which is the single loudest gesture
+       on a site whose whole argument is restraint. */
+    transition: background var(--transition-fast), color var(--transition-fast);
     border: none;
     cursor: pointer;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
 }
 
 .btn:hover {
     background: var(--color-warm-wood-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px var(--color-warm-wood-alpha-25);
 }
 
 .btn-outline {
     background: transparent;
-    border: 2px solid var(--color-off-white);
-    border-radius: var(--radius-md);
-    color: var(--color-off-white);
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    color: var(--ink);
 }
 
 .btn-outline:hover {
-    background: var(--color-off-white);
+    background: var(--ink);
     color: var(--color-black);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(232, 230, 227, 0.15);
 }
 
 .btn--hero-secondary {
@@ -945,17 +1057,16 @@ nav .container {
     height: 70vh;
 }
 
+/* A standalone Plate is a photograph, not a rig. No parallax, no hover scale --
+   the image-hover grammar applies ONLY to images inside an interactive card or
+   row (Jen 10 §5.2/§5.3). `will-change: transform` went with the transform it
+   was promoting; it was pinning a compositor layer for a 90vh image on every
+   page for a 1.02 scale that no longer happens. */
 .full-width-image {
     width: 100%;
     height: 90vh;
     object-fit: cover;
     display: block;
-    will-change: transform;
-    transition: transform var(--transition-slow);
-}
-
-.full-width-image:hover {
-    transform: scale(1.02);
 }
 
 /* Gallery -- Mosaic Grid */
@@ -971,7 +1082,8 @@ nav .container {
 .gallery-mosaic .gallery-item {
     position: relative;
     overflow: hidden;
-    border-radius: var(--radius-sm);
+    /* Photography is never rounded (Jen 10 §4.2). --radius-lg is 0. */
+    border-radius: var(--radius-lg);
 }
 
 .gallery-mosaic .gallery-item--wide {
@@ -987,38 +1099,24 @@ nav .container {
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform var(--transition-slow) cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                filter var(--transition-medium);
+    transition: transform var(--transition-image);
 }
 
 .gallery-mosaic .gallery-item:hover img {
-    transform: scale(1.05);
-    filter: brightness(1.08) saturate(1.15);
+    transform: scale(1.03);
 }
 
 .gallery-mosaic .gallery-item::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(140, 100, 50, 0.25) 0%, transparent 50%);
+    background: linear-gradient(to top, var(--ember-quiet) 0%, transparent 50%);
     opacity: 0;
-    transition: opacity var(--transition-medium);
+    transition: opacity var(--transition-fast);
 }
 
 .gallery-mosaic .gallery-item:hover::after {
     opacity: 1;
-}
-
-/* Scroll reveal for gallery items */
-.gallery-item--reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-.gallery-item--visible {
-    opacity: 1;
-    transform: translateY(0);
 }
 
 /* Legacy column gallery (kept for any other pages) */
@@ -1033,29 +1131,27 @@ nav .container {
     overflow: hidden;
     margin-bottom: var(--spacing-md);
     break-inside: avoid;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-lg);
 }
 
 .gallery-item img {
     width: 100%;
     height: auto;
     display: block;
-    transition: transform var(--transition-slow) cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                filter var(--transition-medium);
+    transition: transform var(--transition-image);
 }
 
 .gallery-item:hover img {
-    transform: scale(1.05);
-    filter: brightness(1.08) saturate(1.15);
+    transform: scale(1.03);
 }
 
 .gallery-item::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(140, 100, 50, 0.25) 0%, transparent 50%);
+    background: linear-gradient(to top, var(--ember-quiet) 0%, transparent 50%);
     opacity: 0;
-    transition: opacity var(--transition-medium);
+    transition: opacity var(--transition-fast);
 }
 
 .gallery-item:hover::after {
@@ -1069,16 +1165,13 @@ nav .container {
     gap: 0;
 }
 
+/* Standalone plates in a 3-up band -- not interactive surfaces, so no hover
+   grammar applies (Jen 10 §5.2). They were scaling AND brightening on hover
+   while linking nowhere. */
 .about-banner img {
     width: 100%;
     height: 300px;
     object-fit: cover;
-    transition: transform var(--transition-medium), filter var(--transition-medium);
-}
-
-.about-banner img:hover {
-    transform: scale(1.02);
-    filter: brightness(1.08) saturate(1.15);
 }
 
 /* ============================================
@@ -1096,7 +1189,7 @@ nav .container {
     max-width: 600px;
     margin: var(--spacing-xl) auto calc(-1 * var(--spacing-md));
     padding: var(--spacing-sm) var(--spacing-md);
-    border-left: 3px solid var(--color-warm-wood);
+    border-left: 3px solid var(--ember);
     background: var(--color-warm-wood-alpha-10);
     border-radius: var(--radius-sm);
 }
@@ -1104,13 +1197,13 @@ nav .container {
 .quote-attached-banner__title {
     margin: 0;
     font-size: var(--text-sm);
-    color: var(--color-off-white);
+    color: var(--ink);
 }
 
 .quote-attached-banner__note {
     margin: var(--spacing-xs) 0 0;
     font-size: var(--text-sm);
-    color: var(--color-text-subtle);
+    color: var(--ink-quiet);
 }
 
 .form-group {
@@ -1122,7 +1215,7 @@ label {
     margin-bottom: var(--spacing-xs);
     font-size: var(--text-sm);
     letter-spacing: var(--tracking-caps);
-    color: var(--color-off-white);
+    color: var(--ink);
 }
 
 input,
@@ -1130,9 +1223,9 @@ textarea,
 select {
     width: 100%;
     padding: var(--spacing-sm);
-    border: 1px solid var(--color-border-subtle);
-    background: var(--color-bg-dark);
-    color: var(--color-off-white);
+    border: 1px solid var(--rule);
+    background: var(--elevated);
+    color: var(--ink);
     font-family: inherit;
     font-size: var(--text-sm);
     transition: border-color var(--transition-fast);
@@ -1142,11 +1235,11 @@ input:focus,
 textarea:focus,
 select:focus {
     outline: none;
-    border-color: var(--color-warm-wood);
+    border-color: var(--ember);
 }
 
 :focus-visible {
-    outline: 2px solid var(--color-warm-wood);
+    outline: 2px solid var(--ember);
     outline-offset: 2px;
 }
 
@@ -1190,7 +1283,10 @@ textarea {
     right: var(--spacing-sm);
     background: none;
     border: none;
-    color: var(--color-off-white);
+    color: var(--ink);
+    /* stylelint-disable-next-line declaration-property-value-allowed-list --
+       An icon GLYPH, not text. Its size is the icon's dimensions; putting it on
+       the text scale would couple a chevron to the reading hierarchy. */
     font-size: 2rem;
     cursor: pointer;
     z-index: 10;
@@ -1203,7 +1299,7 @@ textarea {
 }
 
 .modal-close:hover {
-    color: var(--color-warm-wood);
+    color: var(--ember);
     transform: rotate(90deg);
 }
 
@@ -1259,14 +1355,14 @@ textarea {
 }
 
 .modal-specs h2 {
-    color: var(--color-warm-wood);
+    color: var(--ember);
     margin-bottom: var(--spacing-md);
 }
 
 .modal-specs h3 {
     font-size: var(--text-md);
     margin-bottom: var(--spacing-sm);
-    color: var(--color-off-white);
+    color: var(--ink);
 }
 
 .specs-grid {
@@ -1279,20 +1375,20 @@ textarea {
 .spec-item {
     padding: var(--spacing-sm);
     background: var(--color-white-alpha-03);
-    border-left: 2px solid var(--color-warm-wood);
+    border-left: 2px solid var(--ember);
 }
 
 .spec-item label {
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: var(--tracking-caps);
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
     margin-bottom: 0.25rem;
 }
 
 .spec-item span {
     font-size: var(--text-md);
-    color: var(--color-off-white);
+    color: var(--ink);
 }
 
 .standard-features {
@@ -1308,7 +1404,7 @@ textarea {
 .standard-features h4 {
     font-family: var(--font-primary);
     font-weight: 500;
-    color: var(--color-warm-wood);
+    color: var(--ember);
     margin-bottom: 0.75rem;
     font-size: var(--text-xs);
     text-transform: uppercase;
@@ -1326,19 +1422,19 @@ textarea {
     padding-left: var(--spacing-md);
     position: relative;
     font-size: var(--text-sm);
-    color: var(--color-text-feature);
+    color: var(--ink-quiet);
 }
 
 .standard-features li::before {
     content: '✓';
     position: absolute;
     left: 0;
-    color: var(--color-warm-wood);
+    color: var(--ember);
 }
 
 /* Addons Section */
 .modal-addons h3 {
-    color: var(--color-warm-wood);
+    color: var(--ember);
     margin-bottom: var(--spacing-md);
 }
 
@@ -1360,7 +1456,7 @@ textarea {
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: var(--tracking-caps);
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
     margin-bottom: 0.75rem;
 }
 
@@ -1382,7 +1478,7 @@ textarea {
 .addon-option input[type="checkbox"] {
     width: auto;
     margin-right: var(--spacing-sm);
-    accent-color: var(--color-warm-wood);
+    accent-color: var(--ember);
 }
 
 .addon-option .addon-label {
@@ -1391,7 +1487,7 @@ textarea {
 }
 
 .addon-option .addon-price {
-    color: var(--color-warm-wood);
+    color: var(--ember);
     font-weight: 500;
 }
 
@@ -1410,18 +1506,18 @@ textarea {
 }
 
 .premium-package-category h4 {
-    color: var(--color-warm-wood);
+    color: var(--ember);
 }
 
 .package-description {
     font-size: var(--text-sm);
-    color: var(--color-text-faint);
+    color: var(--ink-quiet);
     margin-bottom: var(--spacing-sm);
-    line-height: 1.5;
+    line-height: var(--leading-caption);
 }
 
 .package-description strong {
-    color: var(--color-warm-wood);
+    color: var(--ember);
 }
 
 .premium-option {
@@ -1431,7 +1527,7 @@ textarea {
 
 /* Price Summary */
 .price-summary {
-    background: var(--color-bg-dark);
+    background: var(--elevated);
     border-top: 1px solid var(--color-warm-wood-alpha-30);
     padding: var(--spacing-md);
     margin-top: var(--spacing-2xl);
@@ -1445,18 +1541,18 @@ textarea {
 }
 
 .price-row.base {
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
 }
 
 .price-row.addon {
-    color: var(--color-text-subtle);
+    color: var(--ink-quiet);
     font-size: var(--text-sm);
 }
 
 .price-row.total {
     font-size: var(--text-lg);
     font-weight: 600;
-    color: var(--color-warm-wood);
+    color: var(--ember);
     padding-top: var(--spacing-sm);
     margin-top: var(--spacing-sm);
     border-top: 1px solid var(--color-white-alpha-10);
@@ -1466,8 +1562,8 @@ textarea {
     width: 100%;
     margin-top: var(--spacing-md);
     padding: 1.25rem var(--spacing-lg);
-    background: var(--color-warm-wood);
-    /* Was --color-charcoal (#c0c0c0) on the warm-wood fill: 1.28:1. The
+    background: var(--ember);
+    /* Was --color-charcoal (#c0c0c0) on the ember fill: 1.28:1. The
        single most important button on the site had the worst text contrast on
        the site. Black on ember measures 9.02:1, and matches every other button. */
     color: var(--color-black);
@@ -1478,20 +1574,19 @@ textarea {
     font-weight: 500;
     font-size: var(--text-base);
     cursor: pointer;
-    transition: background var(--transition-fast), transform var(--transition-fast);
-    border-radius: var(--radius-md);
+    transition: background var(--transition-fast), color var(--transition-fast);
+    border-radius: var(--radius-sm);
 }
 
 .quote-btn:hover {
     background: var(--color-warm-wood-hover);
-    transform: translateY(-2px);
 }
 
 .contact-note {
     text-align: center;
     margin-top: var(--spacing-sm);
     font-size: var(--text-sm);
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
 }
 
 /* ============================================
@@ -1540,7 +1635,7 @@ textarea {
     padding: 0;
     border: none;
     background: none;
-    color: var(--color-warm-wood);
+    color: var(--ember);
     font-family: inherit;
     font-size: inherit;
     text-decoration: underline;
@@ -1554,9 +1649,9 @@ textarea {
 .quote-storage-note {
     margin-top: var(--spacing-sm);
     padding-top: var(--spacing-sm);
-    border-top: 1px solid var(--color-white-alpha-08);
+    border-top: 1px solid var(--rule);
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
 }
 
 .quote-storage-note__text {
@@ -1566,10 +1661,10 @@ textarea {
 .quote-stale-note {
     margin: var(--spacing-sm) 0 0;
     padding: var(--spacing-xs) var(--spacing-sm);
-    border-left: 3px solid var(--color-warm-wood);
+    border-left: 3px solid var(--ember);
     background: var(--color-warm-wood-alpha-10);
     font-size: var(--text-sm);
-    color: var(--color-text-subtle);
+    color: var(--ink-quiet);
 }
 
 .quote-send-heading {
@@ -1606,33 +1701,33 @@ textarea {
 .form-helper {
     margin: var(--spacing-xs) 0 0;
     font-size: var(--text-sm);
-    color: var(--color-text-subtle);
+    color: var(--ink-quiet);
 }
 
 .quote-error {
     margin: var(--spacing-md) 0;
     padding: var(--spacing-sm) var(--spacing-md);
-    border-left: 3px solid var(--color-warm-wood);
+    border-left: 3px solid var(--ember);
     background: var(--color-warm-wood-alpha-10);
 }
 
 .quote-error__message {
     margin: 0;
     font-size: var(--text-sm);
-    color: var(--color-off-white);
+    color: var(--ink);
 }
 
 .quote-error__mailto {
     display: inline-block;
     margin-top: var(--spacing-xs);
     font-size: var(--text-sm);
-    color: var(--color-warm-wood);
+    color: var(--ember);
 }
 
 .quote-privacy-note {
     margin-top: var(--spacing-sm);
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
     text-align: center;
 }
 
@@ -1642,7 +1737,7 @@ textarea {
 
 .quote-success-body {
     margin-bottom: var(--spacing-sm);
-    color: var(--color-text-feature);
+    color: var(--ink-quiet);
 }
 
 .quote-success-actions {
@@ -1659,27 +1754,27 @@ textarea {
     padding: 0.75rem 1.5rem;
     background: var(--color-white-alpha-05);
     border: 2px solid var(--color-white-alpha-10);
-    color: var(--color-charcoal);
+    color: var(--ink-quiet);
     font-family: var(--font-primary);
     font-size: var(--text-sm);
     font-weight: 500;
     letter-spacing: 0.05em;
     cursor: pointer;
     transition: all var(--transition-fast);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     text-transform: uppercase;
 }
 
 .map-filter-btn:hover {
-    background: var(--color-white-alpha-08);
+    background: var(--color-white-alpha-05);
     border-color: rgba(196, 165, 123, 0.5);
-    color: var(--color-off-white);
+    color: var(--ink);
     transform: translateY(-2px);
 }
 
 .map-filter-btn.active {
-    background: var(--color-warm-wood);
-    border-color: var(--color-warm-wood);
+    background: var(--ember);
+    border-color: var(--ember);
     color: var(--color-black);
 }
 
@@ -1767,8 +1862,9 @@ textarea {
     max-width: 100%;
     max-height: 85vh;
     object-fit: contain;
-    border-radius: var(--radius-sm);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    /* Square, and unshadowed: the one shadow on the site is the hover-lift
+       affordance, and a lightbox image is not hovering. */
+    border-radius: var(--radius-lg);
 }
 
 .lightbox-close {
@@ -1777,7 +1873,10 @@ textarea {
     right: 1.5rem;
     background: none;
     border: none;
-    color: var(--color-off-white);
+    color: var(--ink);
+    /* stylelint-disable-next-line declaration-property-value-allowed-list --
+       An icon GLYPH, not text. Its size is the icon's dimensions; putting it on
+       the text scale would couple a chevron to the reading hierarchy. */
     font-size: 2.5rem;
     cursor: pointer;
     z-index: 10;
@@ -1791,7 +1890,7 @@ textarea {
 }
 
 .lightbox-close:hover {
-    color: var(--color-warm-wood);
+    color: var(--ember);
     transform: scale(1.1);
     opacity: 1;
 }
@@ -1802,7 +1901,7 @@ textarea {
     transform: translateY(-50%);
     background: var(--color-white-alpha-10);
     border: none;
-    color: var(--color-off-white);
+    color: var(--ink);
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -1816,7 +1915,7 @@ textarea {
 
 .lightbox-nav:hover {
     background: rgba(255, 255, 255, 0.2);
-    color: var(--color-warm-wood);
+    color: var(--ember);
     opacity: 1;
 }
 
@@ -1833,7 +1932,7 @@ textarea {
     bottom: 1.5rem;
     left: 50%;
     transform: translateX(-50%);
-    color: var(--color-off-white);
+    color: var(--ink);
     font-size: var(--text-sm);
     letter-spacing: 0.1em;
     opacity: 0.7;
@@ -1848,7 +1947,7 @@ textarea {
    FAQ Section
    ============================================ */
 .faq-item {
-    border-bottom: 1px solid var(--color-border-subtle);
+    border-bottom: 1px solid var(--rule);
     padding: var(--spacing-lg) 0;
 }
 
@@ -1865,9 +1964,8 @@ textarea {
 }
 
 .faq-answer {
-    color: var(--color-charcoal);
-    line-height: 1.8;
-    max-width: 80ch;
+    color: var(--ink-quiet);
+    max-width: var(--measure-wide);
     display: none;
     margin-top: 0.5rem;
 }
@@ -1877,7 +1975,10 @@ textarea {
     position: absolute;
     right: 0;
     top: 0;
-    color: var(--color-warm-wood);
+    color: var(--ember);
+    /* stylelint-disable-next-line declaration-property-value-allowed-list --
+       An icon GLYPH, not text. Its size is the icon's dimensions; putting it on
+       the text scale would couple a chevron to the reading hierarchy. */
     font-size: 1.1rem;
     line-height: 1;
 }
@@ -1894,10 +1995,10 @@ textarea {
    Footer
    ============================================ */
 footer {
-    background: var(--color-muted-black);
-    color: var(--color-charcoal);
-    padding: var(--spacing-2xl) 5% var(--spacing-lg);
-    margin-top: var(--spacing-3xl);
+    background: var(--ground);
+    color: var(--ink-quiet);
+    padding: var(--spacing-2xl) var(--gutter) var(--spacing-lg);
+    margin-top: var(--section-pad);
     position: relative;
 }
 
@@ -1928,7 +2029,7 @@ footer::before {
 }
 
 .footer-section a {
-    color: var(--color-charcoal);
+    color: var(--ink-quiet);
     text-decoration: none;
     display: block;
     margin-bottom: var(--spacing-xs);
@@ -1949,7 +2050,7 @@ footer::before {
     left: 0;
     width: 0;
     height: 1px;
-    background: var(--color-off-white);
+    background: var(--ink);
     transition: width 0.3s ease;
 }
 
@@ -1967,8 +2068,8 @@ footer::before {
 /* ============================================
    Utility Classes
    ============================================ */
-.bg-grey {
-    background: var(--color-bg-grey);
+.surface--elevated {
+    background: var(--elevated);
 }
 
 .section--fade-edges {
@@ -1988,12 +2089,12 @@ footer::before {
 
 .section--fade-edges::before {
     top: 0;
-    background: linear-gradient(to bottom, var(--color-muted-black), transparent);
+    background: linear-gradient(to bottom, var(--ground), transparent);
 }
 
 .section--fade-edges::after {
     bottom: 0;
-    background: linear-gradient(to top, var(--color-muted-black), transparent);
+    background: linear-gradient(to top, var(--ground), transparent);
 }
 
 .text-center {
@@ -2001,72 +2102,45 @@ footer::before {
 }
 
 /* ============================================
-   Scroll Animations
-   ============================================ */
-.js-loaded .fade-in {
+   Reveal -- ONE system (Jen 10 §5.1)
+   ============================================
+
+   Was six classes and two JS paths: .fade-in, .slide-up, .slide-left,
+   .slide-right, .scale-in (each with its own `.visible` partner) plus
+   .gallery-item--reveal with a `.gallery-item--visible` partner and its own
+   inline transition-delay. Four of them moved in a direction; one scaled.
+   Directional slides say something -- "this arrived from the right" -- and on
+   this site they said it arbitrarily, because the direction tracked which
+   template the author copied rather than any compositional intent.
+
+   One direction sitewide: up. Opacity and translateY, nothing else. Never top,
+   never filter, never scale on reveal. Fires once and is unobserved -- reveals
+   that reverse on scroll-up are a scroll-position readout, not a reveal. */
+.js-loaded .reveal {
     opacity: 0;
-    transform: translateY(30px);
-    transition: opacity var(--transition-slow), transform var(--transition-slow);
+    transform: translateY(var(--reveal-shift));
+    transition: opacity var(--transition-reveal), transform var(--transition-reveal);
+    /* --i is the stagger index, set per child by animations.js and CAPPED AT 4.
+       Uncapped, a 12-row ledger took 1.4s of stagger on top of a 1s reveal; the
+       5th child and everything after it share the 480ms slot. */
+    transition-delay: calc(var(--i, 0) * var(--stagger-step));
 }
 
-.fade-in.visible {
+.reveal.seen {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
 }
 
-.js-loaded .slide-up {
-    opacity: 0;
-    transform: translateY(60px);
-    transition: opacity var(--transition-slow), transform var(--transition-slow);
-}
-
-.slide-up.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.js-loaded .slide-left {
-    opacity: 0;
-    transform: translateX(60px);
-    transition: opacity var(--transition-slow), transform var(--transition-slow);
-}
-
-.slide-left.visible {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.js-loaded .slide-right {
-    opacity: 0;
-    transform: translateX(-60px);
-    transition: opacity var(--transition-slow), transform var(--transition-slow);
-}
-
-.slide-right.visible {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.js-loaded .scale-in {
-    opacity: 0;
-    transform: scale(0.9);
-    transition: opacity var(--transition-slow), transform var(--transition-slow);
-}
-
-.scale-in.visible {
-    opacity: 1;
-    transform: scale(1);
-}
-
-/* Animation Delays (driven by JS --stagger-index custom property) */
-.js-loaded .grid-2 > *,
-.js-loaded .grid-3 > *,
-.js-loaded .model-grid > *,
-.js-loaded .grid-offerings > *,
-.js-loaded .comparison-grid > *,
-.js-loaded .gallery-item,
-.js-loaded .faq-item {
-    transition-delay: calc(var(--stagger-index, 0) * 0.1s + 0.05s);
+/* Both layers, not just one. The JS bails before constructing the observer, and
+   this rule composes the page even if a stale .reveal ships without a .seen --
+   a reduced-motion visitor must never be able to land on invisible content. */
+@media (prefers-reduced-motion: reduce) {
+    .js-loaded .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+        transition-delay: 0s;
+    }
 }
 
 /* ============================================
@@ -2085,14 +2159,10 @@ footer::before {
 
 /* --- Navigation Styles --- */
 .nav-links a.nav-link--accent {
-    color: var(--color-warm-wood);
+    color: var(--ember);
 }
 
 /* --- Section Spacing --- */
-.section--mt-8 {
-    margin-top: 8rem;
-}
-
 .section--pt-6 {
     padding-top: 6rem;
 }
@@ -2105,33 +2175,21 @@ footer::before {
 /* --- Text Styles --- */
 .text--intro {
     margin: 0 auto 4rem;
-    color: var(--color-charcoal);
+    color: var(--ink-quiet);
 }
 
-.text--intro-70ch {
-    margin: 0 auto 3rem;
-    max-width: 70ch;
-}
-
-.text--intro-65ch {
-    margin: 0 auto 4rem;
-    max-width: 65ch;
-}
-
-.text--centered-70ch {
-    margin: 0 auto;
-    max-width: 70ch;
-}
-
-.text--centered-60ch {
-    color: var(--color-charcoal);
-    max-width: 60ch;
-    margin: 0 auto;
+/* ONE relaxed measure, and it carries nothing but a width. 65ch is the law for
+   prose (p sets it); this is the single named exception (11 §5). The four
+   classes it replaces bundled margins and a colour into a width, which is why
+   every one of them had to be applied together with a correction. */
+.measure-wide {
+    max-width: var(--measure-wide);
+    margin-inline: auto;
 }
 
 /* --- Link Styles --- */
 .link--accent {
-    color: var(--color-warm-wood);
+    color: var(--ember);
     text-decoration: none;
     font-size: var(--text-sm);
     letter-spacing: 0.03em;
@@ -2146,7 +2204,7 @@ footer::before {
     left: 0;
     width: 0;
     height: 1px;
-    background: var(--color-warm-wood);
+    background: var(--ember);
     transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
@@ -2155,7 +2213,7 @@ footer::before {
 }
 
 .link--accent-underline {
-    color: var(--color-warm-wood);
+    color: var(--ember);
     text-decoration: underline;
     text-decoration-color: rgba(196, 165, 123, 0.4);
     text-underline-offset: 3px;
@@ -2164,11 +2222,11 @@ footer::before {
 }
 
 .link--accent-underline:hover {
-    text-decoration-color: var(--color-warm-wood);
+    text-decoration-color: var(--ember);
 }
 
-.link--charcoal {
-    color: var(--color-charcoal);
+.link--quiet {
+    color: var(--ink-quiet);
     text-decoration: none;
 }
 
@@ -2188,18 +2246,6 @@ footer::before {
 
 .grid-2--mb-4 {
     margin-bottom: 4rem;
-}
-
-.grid-3--mt-3 {
-    margin-top: 3rem;
-}
-
-.grid-3--mt-4 {
-    margin-top: 4rem;
-}
-
-.grid-3--mt-2 {
-    margin-top: 2rem;
 }
 
 /* --- Positioning Utilities --- */
@@ -2296,24 +2342,6 @@ footer::before {
     opacity: 0.1;
 }
 
-/* --- Warm Glow Utility --- */
-.section--warm-glow {
-    position: relative;
-}
-
-.section--warm-glow::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 70%;
-    height: 100%;
-    background: radial-gradient(ellipse at center, var(--color-warm-wood-alpha-05) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-}
-
 /* --- Feature Image (Overflow Effect) --- */
 .feature-image--overflow {
     width: 160%;
@@ -2367,7 +2395,7 @@ footer::before {
 .cta__footer {
     margin-top: 2rem;
     font-size: var(--text-sm);
-    color: var(--color-charcoal);
+    color: var(--ink-quiet);
 }
 
 /* --- Center Wrapper --- */
@@ -2387,20 +2415,22 @@ footer::before {
 
 /* --- Testimonial Card --- */
 .testimonial-card {
-    background: var(--color-bg-dark);
+    background: var(--elevated);
     padding: 2rem;
     text-align: center;
 }
 
 .testimonial-card__quote {
+    font-family: var(--font-heading);
+    font-size: var(--text-md);
     font-style: italic;
-    margin-bottom: 1rem;
-    line-height: 1.8;
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.55;
 }
 
 .testimonial-card__author {
     font-size: var(--text-sm);
-    color: var(--color-charcoal);
+    color: var(--ink-quiet);
     margin: 0;
 }
 
@@ -2416,12 +2446,12 @@ footer::before {
 
 /* --- Location Card Details --- */
 .location-card__highlight {
-    color: var(--color-warm-wood);
+    color: var(--ember);
     margin-bottom: 0.5rem;
 }
 
 .location-card__address {
-    color: var(--color-charcoal);
+    color: var(--ink-quiet);
     margin-bottom: 0.5rem;
 }
 
@@ -2431,18 +2461,20 @@ footer::before {
 
 .location-card__meta {
     font-size: var(--text-sm);
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
     margin-top: 1rem;
 }
 
 /* --- Map Container --- */
+/* Square and ruled. The heavy drop shadow was doing separation work that a 1px
+   rule does without lifting a static surface off the page (Jen 10 §4.2/§4.3). */
 .map-container {
     height: 600px;
     width: 100%;
-    margin-bottom: 4rem;
-    border-radius: 8px;
+    margin-bottom: var(--spacing-2xl);
+    border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    border: 1px solid var(--rule);
 }
 
 /* --- Map Filter Container --- */
@@ -2454,18 +2486,15 @@ footer::before {
     flex-wrap: wrap;
 }
 
-/* --- Heading with Bottom Margin --- */
-.heading--mb-2 {
-    margin-bottom: 2rem;
-}
-
-/* --- Contact Form Container --- */
+/* --- Contact Form --- */
+/* The frosted card is DELETED (Jen 10 §4.2). It was a translucent 12px-radius
+   panel with a 4px backdrop blur -- a consumer-app gesture, and a fifth surface
+   colour (rgba(15,15,15,.75)) that belonged to no ramp. The form sits on ground
+   and its fieldsets are separated by rules, which is how every other group of
+   things on this site is now separated. The class is kept as a no-op hook so the
+   markup does not have to change in a colour batch; it carries only layout. */
 .contact-form--styled {
-    background: rgba(15, 15, 15, 0.75);
-    padding: 2.5rem;
-    border-radius: 12px;
-    border: 1px solid var(--color-white-alpha-08);
-    backdrop-filter: blur(4px);
+    padding: 0;
 }
 
 .contact-form .form-fieldset {
@@ -2474,9 +2503,15 @@ footer::before {
     padding: 0;
 }
 
+.contact-form .form-fieldset + .form-fieldset {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-xl);
+    border-top: 1px solid var(--rule);
+}
+
 .contact-form .form-fieldset legend {
     font-size: var(--text-sm);
-    color: var(--color-text-muted, #999);
+    color: var(--ink-quiet, #999);
     margin-bottom: 1rem;
     padding: 0;
 }
@@ -2486,9 +2521,10 @@ footer::before {
     text-align: center;
     margin-top: 4rem;
     padding-top: 3rem;
-    border-top: 1px solid var(--color-border-subtle);
+    border-top: 1px solid var(--rule);
 }
 
+/* A link cloud, not prose -- one of the two named measure exceptions (11 §5). */
 .contact-info p {
     max-width: none;
     margin-left: auto;
@@ -2511,15 +2547,15 @@ footer::before {
 /* --- Booking Option Card --- */
 .booking-option {
     display: block;
-    background: var(--color-bg-dark);
-    border: 2px solid var(--color-border-subtle);
+    background: var(--elevated);
+    border: 2px solid var(--rule);
     padding: clamp(1rem, 3vw, 1.5rem);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .booking-option--selected {
-    border-color: var(--color-warm-wood);
+    border-color: var(--ember);
 }
 
 .booking-option__input {
@@ -2538,11 +2574,11 @@ footer::before {
 .booking-option__title {
     font-size: var(--text-md);
     font-weight: 600;
-    color: var(--color-off-white);
+    color: var(--ink);
 }
 
 .booking-option__title--accent {
-    color: var(--color-warm-wood);
+    color: var(--ember);
 }
 
 /* Serif survives here only by clearing the Cormorant floor: bumped from 1.3rem
@@ -2551,11 +2587,11 @@ footer::before {
     font-size: var(--text-xl);
     font-family: var(--font-heading);
     font-weight: 500;
-    color: var(--color-off-white);
+    color: var(--ink);
 }
 
 .booking-option__price--accent {
-    color: var(--color-warm-wood);
+    color: var(--ember);
 }
 
 .booking-option__price-suffix {
@@ -2566,7 +2602,7 @@ footer::before {
 .booking-option__desc {
     margin: 0;
     font-size: var(--text-sm);
-    color: var(--color-text-subtle);
+    color: var(--ink-quiet);
 }
 
 /* --- Booking Options Grid --- */
@@ -2592,7 +2628,7 @@ footer::before {
 
 /* --- Included List --- */
 .included-box {
-    background: var(--color-bg-dark);
+    background: var(--elevated);
     padding: 2rem;
     margin-bottom: 2rem;
 }
@@ -2611,21 +2647,23 @@ footer::before {
 .included-list__check {
     position: absolute;
     left: 0;
-    color: var(--color-warm-wood);
+    color: var(--ember);
 }
 
 .included-box__note {
     font-size: var(--text-sm);
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
     margin-top: 1rem;
-    font-style: italic;
+    /* No italic. Outfit ships no italic face, so this was a synthesized
+       oblique -- a mechanically slanted roman, which is the tell this program
+       exists to remove. Metadata carries its quietness with size and colour. */
 }
 
 /* --- Booking Form Container --- */
 .booking-form-container {
-    background: var(--color-bg-dark);
+    background: var(--elevated);
     padding: clamp(1rem, 3vw, 2rem);
-    border: 1px solid var(--color-soft-grey);
+    border: 1px solid var(--rule);
     max-width: 100%;
     overflow: hidden;
     box-sizing: border-box;
@@ -2638,7 +2676,7 @@ footer::before {
 /* --- Calendar Container --- */
 .calendar-container {
     background: var(--color-black);
-    border: 1px solid var(--color-border-subtle);
+    border: 1px solid var(--rule);
     padding: clamp(0.5rem, 2vw, 1rem);
     max-width: 100%;
     overflow: hidden;
@@ -2654,7 +2692,7 @@ footer::before {
 
 /* --- No Slots Message --- */
 .no-slots-message {
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
     font-size: var(--text-sm);
     margin-top: 0.5rem;
     display: none;
@@ -2670,7 +2708,7 @@ footer::before {
 }
 
 .booking-summary__title {
-    color: var(--color-warm-wood);
+    color: var(--ember);
     margin-bottom: 1rem;
     font-size: var(--text-base);
 }
@@ -2694,7 +2732,7 @@ footer::before {
 }
 
 .booking-summary__total-value {
-    color: var(--color-warm-wood);
+    color: var(--ember);
 }
 
 /* --- Booking Confirmation Note --- */
@@ -2702,7 +2740,7 @@ footer::before {
     text-align: center;
     margin-top: 1rem;
     font-size: var(--text-sm);
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
 }
 
 /* --- Footer Logo --- */
@@ -2717,7 +2755,7 @@ footer::before {
 
 .footer-tagline {
     font-size: var(--text-sm);
-    line-height: 1.6;
+    line-height: var(--leading-ui);
 }
 
 /* ============================================
@@ -2749,38 +2787,38 @@ footer::before {
 .blog-card {
     display: block;
     padding: var(--spacing-lg);
-    background: var(--color-bg-dark);
-    border: 1px solid var(--color-soft-grey);
+    background: var(--elevated);
+    border: 1px solid var(--rule);
     text-decoration: none;
     transition: transform var(--transition-fast), border-color var(--transition-fast);
 }
 
 .blog-card:hover {
     transform: translateY(-3px);
-    border-color: var(--color-warm-wood);
+    border-color: var(--ember);
 }
 
 .blog-card__date {
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
     letter-spacing: var(--tracking-caps);
 }
 
 .blog-card__title {
     font-size: var(--text-lg);
-    color: var(--color-off-white);
+    color: var(--ink);
     margin-bottom: var(--spacing-xs);
     margin-top: var(--spacing-xs);
 }
 
 .blog-card__excerpt {
-    color: var(--color-charcoal);
+    color: var(--ink-quiet);
     font-size: var(--text-sm);
     margin: 0;
 }
 
 .blog-post__meta {
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
     font-size: var(--text-sm);
 }
 
@@ -2795,7 +2833,7 @@ footer::before {
 }
 
 .blog-post__content img {
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-lg);
     margin: var(--spacing-lg) 0;
 }
 
@@ -2803,13 +2841,13 @@ footer::before {
     max-width: 700px;
     margin: var(--spacing-2xl) auto var(--spacing-xl);
     padding-top: var(--spacing-lg);
-    border-top: 1px solid var(--color-border-subtle);
+    border-top: 1px solid var(--rule);
 }
 
 .blog-empty {
     text-align: center;
-    padding: var(--spacing-3xl) 0;
-    color: var(--color-text-muted);
+    padding: var(--section-pad-tight) 0;
+    color: var(--ink-quiet);
 }
 
 /* ============================================
@@ -2866,11 +2904,11 @@ footer::before {
         top: 100%;
         left: 0;
         width: 100%;
-        background: var(--color-muted-black);
+        background: var(--ground);
         flex-direction: column;
         padding: var(--spacing-lg) 5%;
         gap: var(--spacing-sm);
-        border-bottom: 1px solid var(--color-border-subtle);
+        border-bottom: 1px solid var(--rule);
     }
 
     .nav-links.active {
@@ -2954,6 +2992,11 @@ footer::before {
 
     /* Prevent iOS zoom on input focus (inputs < 16px trigger zoom) */
     input, select, textarea {
+        /* stylelint-disable-next-line declaration-property-value-allowed-list --
+           The iOS zoom guard. Safari zooms the whole viewport when a focused
+           input computes below 16px, and this must be a hard 16px in absolute
+           terms -- a token that later moves would silently re-enable the zoom.
+           This is the one place a magic number is more correct than a token. */
         font-size: 16px !important;
     }
 
@@ -3018,7 +3061,7 @@ footer::before {
 .compare-table td {
     padding: var(--spacing-sm) var(--spacing-md);
     text-align: center;
-    border-bottom: 1px solid var(--color-border-subtle);
+    border-bottom: 1px solid var(--rule);
 }
 
 /* Serif at the 19px floor takes weight 600 -- the smallest Cormorant permitted,
@@ -3027,7 +3070,7 @@ footer::before {
     font-family: var(--font-heading);
     font-size: var(--text-lg);
     font-weight: 600;
-    color: var(--color-off-white);
+    color: var(--ink);
     padding-bottom: var(--spacing-md);
     vertical-align: bottom;
 }
@@ -3035,16 +3078,16 @@ footer::before {
 .compare-table__label-col {
     text-align: left !important;
     font-weight: 500;
-    color: var(--color-text-subtle);
+    color: var(--ink-quiet);
     white-space: nowrap;
     position: sticky;
     left: 0;
-    background: var(--color-muted-black);
+    background: var(--ground);
     z-index: 1;
 }
 
 .compare-table thead .compare-table__label-col {
-    background: var(--color-muted-black);
+    background: var(--ground);
 }
 
 .compare-table__highlight {
@@ -3052,7 +3095,7 @@ footer::before {
 }
 
 .compare-table thead .compare-table__highlight {
-    color: var(--color-warm-wood);
+    color: var(--ember);
 }
 
 .compare-badge {
@@ -3062,12 +3105,12 @@ footer::before {
     font-weight: 500;
     letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
-    color: var(--color-warm-wood);
+    color: var(--ember);
     margin-top: 0.25rem;
 }
 
 .compare-table tbody td {
-    color: var(--color-off-white);
+    color: var(--ink);
     font-size: var(--text-sm);
 }
 
@@ -3078,14 +3121,16 @@ footer::before {
 /* ============================================
    Advisor Components
    ============================================ */
+/* The second frosted card, and the last one. Opaque --elevated, square, ruled --
+   the register-change surface, not a pane of glass (Jen 10 §4.2). Its background
+   and border were BOTH raw literals belonging to no ramp. */
 .advisor {
     max-width: 600px;
-    margin: 2rem auto 3rem;
-    padding: 2rem;
-    background: rgba(15, 15, 15, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    backdrop-filter: blur(4px);
+    margin: var(--spacing-lg) auto var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: var(--elevated);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
 }
 
 .advisor__starters {
@@ -3098,9 +3143,9 @@ footer::before {
 .advisor__starter {
     padding: 0.4rem 0.9rem;
     background: transparent;
-    border: 1px solid var(--color-warm-wood);
-    border-radius: 20px;
-    color: var(--color-warm-wood);
+    border: 1px solid var(--ember);
+    border-radius: var(--radius-sm);
+    color: var(--ember);
     font-family: inherit;
     font-size: var(--text-xs);
     font-weight: 400;
@@ -3109,8 +3154,8 @@ footer::before {
 }
 
 .advisor__starter:hover {
-    background: var(--color-warm-wood);
-    color: var(--color-bg);
+    background: var(--ember);
+    color: var(--ground);
 }
 
 .advisor__input-row {
@@ -3121,10 +3166,10 @@ footer::before {
 .advisor__input {
     flex: 1;
     padding: 0.75rem 1rem;
-    background: var(--color-bg-dark);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: 8px;
-    color: var(--color-off-white);
+    background: var(--elevated);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+    color: var(--ink);
     font-family: inherit;
     font-size: var(--text-sm);
     transition: border-color var(--transition-fast);
@@ -3132,7 +3177,7 @@ footer::before {
 
 .advisor__input:focus {
     outline: none;
-    border-color: var(--color-warm-wood);
+    border-color: var(--ember);
 }
 
 .advisor__input:disabled {
@@ -3145,10 +3190,13 @@ footer::before {
     justify-content: center;
     width: 44px;
     padding: 0;
-    background: var(--color-warm-wood);
+    background: var(--ember);
     border: none;
-    border-radius: 8px;
-    color: var(--color-bg);
+    border-radius: var(--radius-sm);
+    /* P0-3, closed: this consumed var(--color-bg), which the stylesheet never
+       defined -- the declaration was invalid at computed-value time and the
+       button rendered inherited near-white on ember. Now dark on ember, 9.02:1. */
+    color: var(--ground);
     cursor: pointer;
     transition: opacity var(--transition-fast);
     flex-shrink: 0;
@@ -3166,7 +3214,7 @@ footer::before {
 .advisor__response {
     margin-top: 1.25rem;
     padding-top: 1.25rem;
-    border-top: 1px solid var(--color-border-subtle);
+    border-top: 1px solid var(--rule);
 }
 
 .advisor__exchange {
@@ -3182,15 +3230,17 @@ footer::before {
 
 .advisor__question {
     font-size: var(--text-sm);
-    color: var(--color-warm-wood);
+    color: var(--ember);
     margin-bottom: 0.5rem;
-    font-style: italic;
+    /* No italic. Outfit ships no italic face, so this was a synthesized
+       oblique -- a mechanically slanted roman, which is the tell this program
+       exists to remove. Metadata carries its quietness with size and colour. */
 }
 
 .advisor__answer p {
     font-size: var(--text-sm);
-    line-height: 1.7;
-    color: var(--color-off-white);
+    line-height: var(--leading-ui);
+    color: var(--ink);
     margin-bottom: 0.75rem;
 }
 
@@ -3203,9 +3253,9 @@ footer::before {
     margin-top: 1rem;
     padding: 0.4rem 0.9rem;
     background: transparent;
-    border: 1px solid var(--color-border-subtle);
-    border-radius: 6px;
-    color: var(--color-charcoal);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+    color: var(--ink-quiet);
     font-family: inherit;
     font-size: var(--text-xs);
     cursor: pointer;
@@ -3213,14 +3263,14 @@ footer::before {
 }
 
 .advisor__clear:hover {
-    border-color: var(--color-warm-wood);
-    color: var(--color-off-white);
+    border-color: var(--ember);
+    color: var(--ink);
 }
 
 .advisor__disclaimer {
     margin-top: 1rem;
     font-size: var(--text-2xs);
-    color: var(--color-text-muted);
+    color: var(--ink-quiet);
     text-align: center;
 }
 
@@ -3233,7 +3283,7 @@ footer::before {
 .advisor__loading span {
     width: 6px;
     height: 6px;
-    background: var(--color-warm-wood);
+    background: var(--ember);
     border-radius: 50%;
     animation: advisorPulse 1.2s ease-in-out infinite;
 }

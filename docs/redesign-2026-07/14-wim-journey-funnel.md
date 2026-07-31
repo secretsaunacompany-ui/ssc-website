@@ -215,7 +215,7 @@ Events (name — payload — the question it answers):
 - `quote_fallback_contact` — config banner shown on `/contact/` (fallback path still used?)
 
 **Arrival & ladder:**
-- `hero_hold_complete` vs `hero_hold_skipped` — `{ms_before_scroll}` — is the held moment being watched or skipped? This decides the hold duration empirically instead of by taste.
+- `hero_hold_complete` vs `hero_hold_skipped` — `{ms}` — is the held moment being watched or skipped? This decides the hold duration empirically instead of by taste. **Re-based WP-1b (2026-07-31):** the scroll-lock hold was deleted per 21 N2, so the branch is now decided by the reveal choreography's settle boundary (1240ms = `--transition-reveal` + 2×`--stagger-step`) rather than by a timer: `skipped` = first scroll before the page settled, `complete` = first scroll after it or no scroll at all. `ms` is the time given to the photograph in both branches, which is what keeps the median usable — it now tunes the settle duration rather than a lock duration. The event fires once per page view. The payload key is `ms`, not `ms_before_scroll`; that name never shipped.
 - `sessions_band_click`, `book_page_view` — `{paused: bool}`
 - `waitlist_submit_success` — the paused-state capture working
 - `contact_submit_success` — `{source: direct|configurator_fallback|commercial}`
@@ -224,7 +224,7 @@ Events (name — payload — the question it answers):
 **Health checks (already-known failure classes):**
 - `quote_submit_error` alerting: any occurrence is worth a look; a *streak* means the endpoint broke again — this event class is the tripwire that would have caught the original bug in a day instead of never.
 
-Success criteria, 30 days post-launch: `quote_submit_success > 0` (literally any), step2→success conversion ≥60%, `hero_hold_skipped` median informs hold timing, waitlist captures > 0 during ban.
+Success criteria, 30 days post-launch: `quote_submit_success > 0` (literally any), step2→success conversion ≥60%, `hero_hold_skipped` median informs the settle duration (see the re-basing note in §8), waitlist captures > 0 during ban.
 
 ---
 
