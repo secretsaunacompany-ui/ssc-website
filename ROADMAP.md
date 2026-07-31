@@ -10,6 +10,8 @@ deferred:
   - "Site CLS: lazy images without width/height/aspect-ratio (/about/ and elsewhere) — real cumulative layout shift for visitors, found during harness repair. Candidate WP-1b line. Recorded 2026-07-30."
   - "Media cache keys on URL alone, ignores Range header — ranged media replays wrong (hero video). Site bug documented in scripts/lib/capture.mjs. Recorded 2026-07-30."
   - "Badge SVG mask rendering verified in Chrome only — one Safari look owed before the footer seal ships. Recorded 2026-07-30."
+  - "CROSS-REPO: ssc-ops shared tracker's form_submit handler reads a field named 'sauna' that no form has — every site on that tracker records interest 'not specified'. This site now suppresses the generic listener and sends its own event (WP-0a seam), but the tracker itself needs its own authorized change in the ssc-ops repo. Recorded 2026-07-30."
+  - "Analytics reading note: hero_hold_complete always reports ms:5000 (fires from the auto-reveal, including backgrounded tabs) — read the complete/skipped pair as a ratio; only the skipped branch carries real attention time. Recorded 2026-07-30."
 testing: "npm run visual-diff -- --baseline main --candidate <branch> (harness repair pending — see plan §2)"
 pinned: false
 shipped:
