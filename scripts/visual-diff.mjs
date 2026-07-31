@@ -119,6 +119,16 @@ async function captureBuild(name, ref, config) {
       failures.push(`${name}: image(s) failed to load, which collapses their box and moves `
         + `everything beneath them:\n      - ${assetStats.brokenImages.join('\n      - ')}`);
     }
+    // VIDEO_URL liveness (Razor, final review): if video elements exist but the
+    // URL pattern stubbed zero requests, the pattern has gone stale — the fourth
+    // reference-into-a-foreign-vocabulary to go silently inert on this branch.
+    // The DOM-level stub is belt-and-braces, but a measurement tool must prove
+    // it is still measuring; both counters already exist, so this is free.
+    if (assetStats.videoElements > 0 && assetStats.videoStubbed === 0) {
+      failures.push(`${name}: ${assetStats.videoElements} video element(s) present but the `
+        + `VIDEO_URL pattern stubbed 0 requests — the pattern no longer matches the site's `
+        + `video sources. Re-aim VIDEO_URL in lib/capture.mjs; determinism cannot be vouched for.`);
+    }
     failures.push(...redirectFailures(name, assetStats.redirects, config.expectedRedirects));
 
     return { built, routes, shotDir, failures };

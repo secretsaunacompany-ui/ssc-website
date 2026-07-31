@@ -155,7 +155,113 @@
       ]
     }
   ],
-  "pageOverrides": [],
+  "pageOverrides": [
+    {
+      "page": "/contact/",
+      "metric": "maxLayoutShiftPx",
+      "value": 260,
+      "reason": "F7 normalises input line-height and derives min-height from shared tokens; every input grows 52->55px and .btn 50->52 (F6). Document height +16px; the large shift figure is accumulated row residual down a long form, not a jump. (Razor final review, attributed by element geometry on both refs.)",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/contact/",
+      "metric": "minShiftCoverage",
+      "value": 0.85,
+      "reason": "Rows below the first form field all shift by the compounded 3px growth (F7+F6). Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/locations/",
+      "metric": "maxLayoutShiftPx",
+      "value": 130,
+      "reason": "F2: the fixed wood-plank background layer is deleted on this page only, per the orchestrator ruling of 2026-07-31 on Jen's written record.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/locations/",
+      "metric": "minShiftCoverage",
+      "value": 0.75,
+      "reason": "F2 layer deletion, as above.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/404.html",
+      "metric": "minShiftCoverage",
+      "value": 0.85,
+      "reason": "F6 border-box +/-2px sitewide + C2 footer reservation; spread <=2px. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/north-shore/",
+      "metric": "minShiftCoverage",
+      "value": 0.93,
+      "reason": "F6 border-box +/-2px sitewide + C2 footer reservation; measured coverage 0.935-0.949, spread <=2px. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/sea-to-sky/",
+      "metric": "minShiftCoverage",
+      "value": 0.93,
+      "reason": "F6 border-box +/-2px sitewide + C2 footer reservation; measured coverage 0.935-0.949, spread <=2px. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/vancouver/",
+      "metric": "minShiftCoverage",
+      "value": 0.93,
+      "reason": "F6 border-box +/-2px sitewide + C2 footer reservation; measured coverage 0.935-0.949, spread <=2px. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/squamish/",
+      "metric": "minShiftCoverage",
+      "value": 0.93,
+      "reason": "F6 border-box +/-2px sitewide + C2 footer reservation; measured coverage 0.935-0.949, spread <=2px. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/whistler/",
+      "metric": "minShiftCoverage",
+      "value": 0.93,
+      "reason": "F6 border-box +/-2px sitewide + C2 footer reservation; measured coverage 0.935-0.949, spread <=2px. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/book/",
+      "metric": "maxLayoutShiftPx",
+      "value": 8,
+      "reason": "F6 + F7 input/button box growth, 1-6px measured. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/contact/thank-you/",
+      "metric": "maxLayoutShiftPx",
+      "value": 8,
+      "reason": "F6 + F7 input/button box growth, 1-6px measured. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/saunas/",
+      "metric": "maxLayoutShiftPx",
+      "value": 40,
+      "reason": "Ruling (d) .stat-number 3.5rem -> --text-4xl (-44px x3 at mobile), C4 offering-card margin-top:auto (+12px x4), F6 button border parity (+/-2px), C2 footer logo reservation (0->150px box). Razor final review. (This route renders /saunas/ content; /gallery/ redirects there.)",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/gallery/",
+      "metric": "maxLayoutShiftPx",
+      "value": 40,
+      "reason": "Ruling (d) .stat-number 3.5rem -> --text-4xl (-44px x3 at mobile), C4 offering-card margin-top:auto (+12px x4), F6 button border parity (+/-2px), C2 footer logo reservation (0->150px box). Razor final review. (This route renders /saunas/ content; /gallery/ redirects there.)",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/faq/",
+      "metric": "maxLayoutShiftPx",
+      "value": 8,
+      "reason": "C35 h3->button conversion: 5px measured shift at 1440. The @390 coverage failure is NOT declared - below the floor's absolute bound by design; routed to Jen's rendered review (passed). Razor final review.",
+      "expires": "2026-09-15"
+    }
+  ],
   "expectedRedirects": {
     "/gallery/": "/saunas/",
     "/process/": "/about/"
@@ -172,7 +278,8 @@
     "expectedToChange": "Per-metric waivers, not a blanket pass. Shape: { \"route\": \"/about/\", \"reason\": \"new hero type scale\", \"waive\": [\"changedPct\"] }. Waivable: changedPct, heightDelta, structural. NEVER waivable: layoutShiftMaxPx, shiftCoverage -- a config that tries is a hard error. A page may waive changedPct and remain shift-gated; that is the whole point of the restructure. Bare route strings are rejected so an old-shape config cannot silently keep its old blanket-waiver meaning.",
     "pageOverrides": "Moves ONE named budget on ONE named page, in the direction that metric's TYPE allows, for a stated reason, until a stated date. Shape: { \"page\": \"/about/\", \"metric\": \"maxLayoutShiftPx\", \"value\": 24, \"reason\": \"new hero type scale moves the fold ~20px, approved in the Wave A design review\", \"expires\": \"2026-09-30\" }. CEILINGS (maxLayoutShiftPx, maxChangedPct) may only be RAISED, capped at 100x the global -- loud is fine, infinite is not, so value: 999999 is rejected. The FLOOR (minShiftCoverage) may only be LOWERED, bounded to [0.75, 1) -- lowering is the shippable direction for a deliberate restyle, and below 0.75 a quarter of the page's rows could not be matched at all, which is a human conversation rather than a config line. An override can NEVER disable a metric and can never rescue a page whose shift could not be measured. Rejected on load: unknown metric, wrong direction, out of bounds, missing or empty reason, missing or malformed expiry, an expiry more than 90 days out, a duplicate page/metric pair. An EXPIRED override fails the run loudly rather than lapsing back to the global budget, so a temporary allowance cannot quietly become permanent. Overrides affect only the page and metric they name. This exists so a deliberate restyle is shippable under review; the global budgets above stay unwaivable and are not to be lowered to make a run pass.",
     "expectedRedirects": "Client-side redirects the capture is expected to observe, as route -> settled destination. A redirect that is not declared, points somewhere else, or stops happening fails the run. Without this the harness screenshots the destination page under the source route's name and reports it as unchanged. /gallery/ and /process/ genuinely redirect today (verified 2026-07-30).",
-    "wp1b": "WP-1b (156c073, 0cca59e) FAILS this harness and the failure is RECORDED, not overridden or configured away. It is also not configurable away: shiftCoverage came in at 0.052-0.491 on every content page, against a floor of 0.95 whose pageOverride bottoms out at 0.75 by deliberate design, and three pages returned model-does-not-fit, which is neither waivable nor overridable. No set of legal config values makes this run pass, so no attempt was made to find one. NO pageOverrides were added by this batch. WHY, measured rather than asserted: the batch replaces a flat 8rem section metronome with three viewport-relative rhythm tiers (clamp(6rem,14vh,10rem) and siblings) and replaces flat rem heading margins with em-relative ones on a FLUID type scale (11 \u00a75, verbatim). Both are width-dependent by construction -- that is the specified behaviour, 'rhythm scales with the fluid sizes for free' -- so the two capture widths legitimately compress by different amounts. The grew-while-shrank detector fired on /about/, /process/ and /whistler/ for exactly this reason. Its premise, 'no single spacing change does that', is true of a fixed spacing change and false of a viewport- and em-relative one. Isolation probe on /about/ page height (1440/390): as shipped 4771/6829; heading system reverted 4782/6918; gutter reverted to 5% 4736/6776; section-pad reverted to 8rem 5419/7725. Each term moves the two widths by different ratios, which is the affine model's assumption failing, not a regression underneath it. This is the same disposition WP-1a recorded when pixel geometry turned out to be the wrong instrument for a font swap. The instrument is working; the change class is outside what it can describe. What DID hold and is worth reading: /booking-ops.html came back coverage 1.000, changedPct 0.00 at both widths -- the critic's T2 boundary held, that page is genuinely untouched apart from one reconciled token value. ESCALATED to the orchestrator for a human call on how a rhythm batch gets certified. Do not resolve it by lowering a budget.",
-    "stalePin": "BLOCKER found 2026-07-31 during the Jen Stage 3 certification, and it invalidates this harness's reveal handling for every run since WP-1b. The capture pin at scripts/lib/capture.mjs (the rule that forces every scroll-reveal target to its settled visible state, so below-fold content is captured deterministically) still names the SIX PRE-WP-1b classes: .fade-in, .slide-up, .slide-left, .slide-right, .scale-in, .gallery-item--reveal. WP-1b collapsed all six into .reveal. Measured against the current build: those six selectors match ZERO elements, and the 206 elements carrying .reveal are matched by NOTHING in the pin. The pin has been inert since WP-1b landed. Consequence, stated plainly: below-fold reveal content is captured in whatever state the IntersectionObserver happened to have reached, which is timing-dependent -- exactly the non-determinism the pin exists to remove. Stage 3's F5 changes WHEN the hidden state is applied (parse time instead of DOMContentLoaded), so it shifts that timing and the run reports large diffs on content pages: / 7.6%/20.0%, /saunas/ and /gallery/ 12.3%/39.1%, /faq/ coverage 0.63, /contact/ shift 239px. Pages with no reveal-heavy below-fold content came back clean and are the control: /about/ 0.00%, /process/ 0.00%, /warranty/ 0.00%, /privacy/ 0.00%, /booking-ops.html 0.00% coverage 1.000 -- all PASS. A batch whose CSS-only items are provably DOM-neutral cannot legitimately move /saunas/ by 39% while leaving /about/ at zero. NO expectedToChange entries and NO pageOverrides were written from these numbers. Declaring a measurement taken through a broken instrument as expected is how noise becomes a permanent waiver. The pin is repaired FIRST, as its own reviewed commit by the harness's implementer, and only then is this batch re-measured -- the same rule the plan sets for every other instrument change. Until then the Stage 3 visual certification is OPEN, not passed and not waived. It also reframes the WP-1b record above: that run's coverage collapse was attributed entirely to the rhythm change, and some of it may be this."
+    "wp1b": "WP-1b's recorded coverage figures were measured while the reveal pin was INERT (it still named the six pre-1b class names) and carry unquantifiable observer-race noise on reveal-heavy pages. They are not reproducible under the repaired harness (077ce33) and must not be quoted as a baseline. The batch's conclusions stand on its other evidence (DOM certificate, computed-rhythm suite, isolation probes).",
+    "stalePin": "BLOCKER found 2026-07-31 during the Jen Stage 3 certification, and it invalidates this harness's reveal handling for every run since WP-1b. The capture pin at scripts/lib/capture.mjs (the rule that forces every scroll-reveal target to its settled visible state, so below-fold content is captured deterministically) still names the SIX PRE-WP-1b classes: .fade-in, .slide-up, .slide-left, .slide-right, .scale-in, .gallery-item--reveal. WP-1b collapsed all six into .reveal. Measured against the current build: those six selectors match ZERO elements, and the 206 elements carrying .reveal are matched by NOTHING in the pin. The pin has been inert since WP-1b landed. Consequence, stated plainly: below-fold reveal content is captured in whatever state the IntersectionObserver happened to have reached, which is timing-dependent -- exactly the non-determinism the pin exists to remove. Stage 3's F5 changes WHEN the hidden state is applied (parse time instead of DOMContentLoaded), so it shifts that timing and the run reports large diffs on content pages: / 7.6%/20.0%, /saunas/ and /gallery/ 12.3%/39.1%, /faq/ coverage 0.63, /contact/ shift 239px. Pages with no reveal-heavy below-fold content came back clean and are the control: /about/ 0.00%, /process/ 0.00%, /warranty/ 0.00%, /privacy/ 0.00%, /booking-ops.html 0.00% coverage 1.000 -- all PASS. A batch whose CSS-only items are provably DOM-neutral cannot legitimately move /saunas/ by 39% while leaving /about/ at zero. NO expectedToChange entries and NO pageOverrides were written from these numbers. Declaring a measurement taken through a broken instrument as expected is how noise becomes a permanent waiver. The pin is repaired FIRST, as its own reviewed commit by the harness's implementer, and only then is this batch re-measured -- the same rule the plan sets for every other instrument change. Until then the Stage 3 visual certification is OPEN, not passed and not waived. It also reframes the WP-1b record above: that run's coverage collapse was attributed entirely to the rhythm change, and some of it may be this.",
+    "residualsNotDeclared": "Three classes from the polish-batch re-measure are deliberately NOT declared, because the mechanism refuses them by design: /faq/@390 coverage 0.627 (below the 0.75 absolute floor - C35 rewrites every question node; a human conversation, had: Jen's rendered review passed it), and fit-confidence failures on /@390 (0.706) and /saunas/ /gallery/@390 (0.565) - fitConfidence is unwaivable and non-overridable. These stay red as truth-tellers until the next baseline advance retires the comparison. ADDITIONALLY: / (home) carries NO shift override even though its 30px@1440 is fully attributed \u2014 the F1/F1b calibration fixtures evaluate route '/' against the shipped config, so any home-page shift override disarms the harness's own self-test (this property has now caught bad overrides three times: WP-1a's 18, and the reviewer's+orchestrator's own entry on 2026-07-31). The calibration route stays un-overridden by RULE; home's attributed residual is a truth-teller until the baseline advances."
   }
 }

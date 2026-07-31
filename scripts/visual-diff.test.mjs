@@ -1666,9 +1666,22 @@ async function main() {
       cfg([LIVE, { ...LIVE, page: '/faq/' }]).overrides.size === 2,
       'the key must distinguish pages, not just metrics');
 
-    check('P6 the shipped config declares no overrides',
-      loadConfig(CONFIG_FILE, fs.readFileSync).overrides.size === 0,
-      'Batch 1 changes no rendered output, so it must need no raised budgets');
+    // Historical note: this assertion originally required ZERO shipped overrides
+    // ("Batch 1 changes no rendered output"). That was Batch-1-scoped truth baked
+    // as a permanent invariant; the wave's later batches legitimately ship
+    // reviewer-attributed overrides. What IS permanent is the calibration-route
+    // rule, learned 2026-07-31 when a reviewer-prescribed override on '/' was
+    // applied and disarmed F1 within minutes: the F-series calibrates against
+    // route '/' using the SHIPPED config, so an override there blinds the
+    // harness's own self-test. This fixture is that rule's enforcement.
+    {
+      const shipped = loadConfig(CONFIG_FILE, fs.readFileSync).overrides;
+      const onCalibrationRoute = [...shipped.values()].filter((o) => o.page === '/');
+      check('P6 no shipped override ever names the calibration route "/"',
+        onCalibrationRoute.length === 0,
+        `the F-series self-test evaluates '/' against the shipped config; an override there `
+        + `disarms it (caught live 2026-07-31). Found: ${JSON.stringify(onCalibrationRoute)}`);
+    }
   }
 
   process.stdout.write(`\n${passes} passed, ${failures} failed\n`);
