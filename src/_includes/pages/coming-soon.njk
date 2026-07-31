@@ -1,4 +1,7 @@
-    <div id="coming-soon" class="page page--has-bg">
+    {# data-book-state is read by js/analytics.js for the book_page_view event
+       (doc 14 §8). The template knows which state it rendered; JavaScript would
+       have to infer it. #}
+    <div id="coming-soon" class="page page--has-bg" data-book-state="paused">
         <div class="page-bg--fixed page-bg--opacity-30" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768271313/IMG_2819_bl3kb1.jpg');"></div>
         <section class="page-hero">
             <h1>Bookings, Coming Back Soon</h1>

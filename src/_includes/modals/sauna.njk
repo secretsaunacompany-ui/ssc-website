@@ -1,7 +1,16 @@
     <!-- Sauna Model Modal -->
-    <div id="saunaModal" class="modal-overlay">
+    {#
+      Two steps, one surface. Step 1 (configure) and Step 2 (send) are both
+      inside this dialog and the Step 1 inputs are HIDDEN, never unmounted, when
+      Step 2 is showing -- "Change something" has to return to exactly the
+      configuration the visitor left, and the price summary has to stay visible
+      across the transition. Nothing here navigates: the form posts from inside
+      the modal and success is rendered in place.
+    #}
+    <div id="saunaModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true" data-contact-email="{{ site.email }}">
         <div class="modal-content">
             <button class="modal-close" data-action="close-modal" aria-label="Close modal">&times;</button>
+
 
             <div class="modal-gallery">
                 <div id="modalMainMedia" class="modal-main-media"></div>
@@ -45,8 +54,9 @@
                 </div>
 
                 <div class="modal-addons">
-                    <h3>Customize Your Sauna</h3>
+                    <h3 id="configureHeading">Customize Your Sauna</h3>
 
+                    <div id="configureStep">
                     <div class="addon-category">
                         <h4>Heater Upgrade</h4>
                         <label class="addon-option">
@@ -54,15 +64,21 @@
                             <span class="addon-label">Standard heater (included)</span>
                             <span class="addon-price">Included</span>
                         </label>
+                        {# Both heater upgrades are per-model: value, label and price
+                           are all set by modal.js from electricHeaterUpgrade /
+                           woodFired / woodFiredLabel. The markup below is the S4
+                           default the modal opens on. One slot previously sold two
+                           different heaters at one price -- never reintroduce a
+                           hardcoded heater price here. #}
                         <label class="addon-option" id="heaterElectricUpgrade">
-                            <input type="radio" name="heater" value="2000" data-addon="heater">
+                            <input type="radio" name="heater" value="3500" data-addon="heater">
                             <span class="addon-label" id="heaterElectricLabel">Homecraft Revive 9kW (Electric)</span>
-                            <span class="addon-price" id="heaterElectricPrice">+$2,000</span>
+                            <span class="addon-price" id="heaterElectricPrice">+$3,500</span>
                         </label>
                         <label class="addon-option" id="heaterWoodUpgrade">
-                            <input type="radio" name="heater" value="3000" data-addon="heater">
-                            <span class="addon-label">Kuuma Banya (Wood-fired)</span>
-                            <span class="addon-price">+$3,000</span>
+                            <input type="radio" name="heater" value="10800" data-addon="heater">
+                            <span class="addon-label" id="heaterWoodLabel">Original-IKI (Wood-fired)</span>
+                            <span class="addon-price" id="heaterWoodPrice">+$10,800</span>
                         </label>
                     </div>
 
@@ -74,14 +90,14 @@
                             <span class="addon-price">—</span>
                         </label>
                         <label class="addon-option">
-                            <input type="radio" name="changing" value="3500" data-addon="changing">
+                            <input type="radio" name="changing" value="11000" data-addon="changing">
                             <span class="addon-label">3' Changing room</span>
-                            <span class="addon-price">+$3,500</span>
+                            <span class="addon-price">+$11,000</span>
                         </label>
                         <label class="addon-option">
-                            <input type="radio" name="changing" value="4500" data-addon="changing">
+                            <input type="radio" name="changing" value="12500" data-addon="changing">
                             <span class="addon-label">4' Changing room</span>
-                            <span class="addon-price">+$4,500</span>
+                            <span class="addon-price">+$12,500</span>
                         </label>
                     </div>
 
@@ -92,15 +108,29 @@
                             <span class="addon-label">No deck</span>
                             <span class="addon-price">—</span>
                         </label>
+                        {# Two tiers, because one label was selling two different
+                           builds. "Front deck" reads as the semi-enclosed build to
+                           buyers, and that build was priced below cost at the
+                           platform price. Platform stays cheap and says so. #}
                         <label class="addon-option">
                             <input type="radio" name="deck" value="2000" data-addon="deck">
-                            <span class="addon-label">2' Front deck</span>
+                            <span class="addon-label">2' open deck platform</span>
                             <span class="addon-price">+$2,000</span>
                         </label>
                         <label class="addon-option">
                             <input type="radio" name="deck" value="3000" data-addon="deck">
-                            <span class="addon-label">3' Front deck</span>
+                            <span class="addon-label">3' open deck platform</span>
                             <span class="addon-price">+$3,000</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="deck" value="4100" data-addon="deck">
+                            <span class="addon-label">2' semi-enclosed deck — two finished side walls, covered roof</span>
+                            <span class="addon-price">+$4,100</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="deck" value="5200" data-addon="deck">
+                            <span class="addon-label">3' semi-enclosed deck — two finished side walls, covered roof</span>
+                            <span class="addon-price">+$5,200</span>
                         </label>
                     </div>
 
@@ -111,15 +141,18 @@
                             <span class="addon-label">Standard metal cladding</span>
                             <span class="addon-price">Included</span>
                         </label>
+                        {# Per-model tokens, not prices. These two carried the same
+                           literal 2500 and so were indistinguishable to the quote
+                           serializer as well as wrong on the larger models. #}
                         <label class="addon-option">
-                            <input type="radio" name="exterior" value="2500" data-addon="exterior">
+                            <input type="radio" name="exterior" value="exteriorStandingSeam" data-addon="exterior">
                             <span class="addon-label">Standing seam metal</span>
-                            <span class="addon-price">+$2,500</span>
+                            <span class="addon-price" id="standingSeamPrice">+$3,000</span>
                         </label>
                         <label class="addon-option">
-                            <input type="radio" name="exterior" value="2500" data-addon="exterior">
+                            <input type="radio" name="exterior" value="exteriorCedar" data-addon="exterior">
                             <span class="addon-label">Cedar exterior</span>
-                            <span class="addon-price">+$2,500</span>
+                            <span class="addon-price" id="cedarExteriorPrice">+$2,500</span>
                         </label>
                     </div>
 
@@ -130,27 +163,32 @@
                             <span class="addon-label">Knotty Western Red Cedar</span>
                             <span class="addon-price">Included</span>
                         </label>
+                        {# Two tokens, one price today. Clear cedar is priced at
+                           thermowood parity on an assumption doc 35 §7.7 flags as
+                           unverified; when it splits, these need to carry different
+                           prices. One shared token cannot do that, and it also made
+                           the two choices indistinguishable in the quote. #}
                         <label class="addon-option">
-                            <input type="radio" name="interior" value="interiorUpgrade" data-addon="interior">
+                            <input type="radio" name="interior" value="interiorClearCedar" data-addon="interior">
                             <span class="addon-label">Clear Cedar</span>
-                            <span class="addon-price" id="clearCedarPrice">+$1,500</span>
+                            <span class="addon-price" id="clearCedarPrice">+$2,600</span>
                         </label>
                         <label class="addon-option">
-                            <input type="radio" name="interior" value="interiorUpgrade" data-addon="interior">
+                            <input type="radio" name="interior" value="interiorThermowood" data-addon="interior">
                             <span class="addon-label">Thermowood</span>
-                            <span class="addon-price" id="thermowoodPrice">+$1,500</span>
+                            <span class="addon-price" id="thermowoodPrice">+$2,600</span>
                         </label>
                     </div>
 
                     <div class="addon-category">
                         <h4>Bench Configuration</h4>
                         <label class="addon-option">
-                            <input type="radio" name="bench" value="0" checked data-addon="bench">
+                            <input type="radio" name="bench" value="benchL" checked data-addon="bench" data-default>
                             <span class="addon-label">L-Shaped benches</span>
                             <span class="addon-price">Included</span>
                         </label>
                         <label class="addon-option">
-                            <input type="radio" name="bench" value="0" data-addon="bench">
+                            <input type="radio" name="bench" value="benchU" data-addon="bench">
                             <span class="addon-label">U-Shaped benches</span>
                             <span class="addon-price">Included</span>
                         </label>
@@ -158,7 +196,7 @@
 
                     <div class="addon-category premium-package-category">
                         <h4>Premium Finish Package</h4>
-                        <p class="package-description">Clear cedar interior, cedar or standing seam exterior, WiFi controller, lighting package, Bluetooth speakers. <strong>Save $1,000</strong> vs selecting individually.</p>
+                        <p class="package-description">Clear cedar interior, cedar or standing seam exterior, WiFi controller, lighting package, Bluetooth speakers. <strong>Save $500</strong> vs selecting individually.</p>
                         <label class="addon-option">
                             <input type="radio" name="premiumPackage" value="0" checked data-addon="premiumPackage" data-action="premium-change">
                             <span class="addon-label">No package (select options individually)</span>
@@ -167,29 +205,68 @@
                         <label class="addon-option premium-option">
                             <input type="radio" name="premiumPackage" value="premiumFinishPrice" data-addon="premiumPackage" data-action="premium-change">
                             <span class="addon-label">Premium Finish Package</span>
-                            <span class="addon-price" id="premiumFinishPrice">+$7,500</span>
+                            <span class="addon-price" id="premiumFinishPrice">+$9,600</span>
                         </label>
                     </div>
 
                     <div class="addon-category">
                         <h4>Additional Options</h4>
+                        {# Two window sizes, because one $1,500 line covered a small
+                           lite and a full-size one whose glass alone costs more
+                           than that. Separate data-addon keys: they are separately
+                           selectable, not a tier choice. #}
                         <label class="addon-option">
                             <input type="checkbox" value="1500" data-addon="window">
-                            <span class="addon-label">Additional window</span>
+                            <span class="addon-label">Additional window (standard size)</span>
                             <span class="addon-price">+$1,500</span>
                         </label>
                         <label class="addon-option">
-                            <input type="checkbox" value="1500" data-addon="lighting">
+                            <input type="checkbox" value="3700" data-addon="windowFullSize">
+                            <span class="addon-label">Additional full-size window (~23 sq ft)</span>
+                            <span class="addon-price">+$3,700</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="checkbox" value="2000" data-addon="lighting">
                             <span class="addon-label">Interior & exterior lighting package</span>
-                            <span class="addon-price">+$1,500</span>
+                            <span class="addon-price">+$2,000</span>
                         </label>
                         <label class="addon-option">
-                            <input type="checkbox" value="1000" data-addon="speakers">
-                            <span class="addon-label">Built-in Bluetooth speakers</span>
-                            <span class="addon-price">+$1,000</span>
+                            <input type="checkbox" value="2000" data-addon="wifi">
+                            <span class="addon-label">WiFi heater controller</span>
+                            <span class="addon-price">+$2,000</span>
                         </label>
                     </div>
 
+                    {# Audio is a tier choice, so it is a radio group with an
+                       explicit "none" default -- not two checkboxes a visitor
+                       could tick together and be quoted for twice. The Premium
+                       Finish Package carries the STANDARD set; a buyer who wants
+                       the premium tier pays the difference on top. #}
+                    <div class="addon-category">
+                        <h4>Audio</h4>
+                        <label class="addon-option">
+                            <input type="radio" name="speakers" value="0" checked data-addon="speakers">
+                            <span class="addon-label">No speakers</span>
+                            <span class="addon-price">—</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="speakers" value="1000" data-addon="speakers">
+                            <span class="addon-label">Built-in Bluetooth speakers (standard set)</span>
+                            <span class="addon-price">+$1,000</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="speakers" value="1500" data-addon="speakers">
+                            <span class="addon-label">Premium audio — Polk Atrium 5 all-weather pair + 2.1 Bluetooth amp</span>
+                            <span class="addon-price">+$1,500</span>
+                        </label>
+                        <p class="addon-note">Mounted outside the peak-heat zone; placement confirmed at consultation.</p>
+                    </div>
+                    </div><!-- /#configureStep -->
+
+                    {# The summary stays mounted and visible in BOTH steps. The
+                       visitor must see their configuration survive the
+                       transition; a recap that is re-rendered from stored text
+                       is a different artifact and reads as one. #}
                     <div class="price-summary">
                         <div class="price-row base">
                             <span>Base Price</span>
@@ -200,10 +277,133 @@
                             <span>Estimated Total</span>
                             <span id="summaryTotal">$29,000</span>
                         </div>
-                        <button class="quote-btn" data-action="request-quote">Request Quote for This Configuration</button>
-                        <p class="contact-note">Final pricing confirmed after consultation. Custom requests welcome.</p>
+
+                        {# Shown by modal.js only when a saved configuration was
+                           restored from a superseded price sheet. #}
+                        <p id="quoteStaleNote" class="quote-stale-note" role="status" hidden>Prices have been updated since you saved this, so the total above has been recalculated.</p>
+
+                        <div id="configureActions">
+                            <button type="button" class="quote-btn" data-action="request-quote">Request This Quote</button>
+                            <p class="contact-note">Goes straight to us with your model, options, and total. We'll reply with a formal quote within three business days, usually the next day.</p>
+                            <p class="contact-note">Final pricing is confirmed after consultation. Custom requests welcome.</p>
+                        </div>
+
+                        <div class="quote-storage-note">
+                            <button type="button" class="quote-link-btn" data-action="quote-start-over">Start over</button>
+                            <span class="quote-storage-note__text">Your progress is saved on this device for 7 days.</span>
+                        </div>
+                    </div>
+
+                    {# Step 2. Posts to the same endpoint every other form on the
+                       site posts to -- site.forms.endpoint, defined once. #}
+                    <div id="sendStep" hidden>
+                        <h3 class="quote-send-heading">Send this configuration</h3>
+                        <p class="quote-send-intro">
+                            <button type="button" class="quote-link-btn" data-action="quote-back">Change something</button>
+                        </p>
+
+                        <form id="quoteForm" method="POST" action="{{ site.forms.endpoint }}" data-action="quote-submit" novalidate>
+                            {# Honeypot. Formspree silently discards any submission
+                               that fills this in. Not display:none via CSS class so
+                               it cannot be lost to a stylesheet refactor. #}
+                            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">
+
+                            {# Composed by modal.js at send time from the LIVE
+                               summary: one human-readable blob rather than
+                               per-option fields. Three checkboxes carry no name
+                               attribute and two radio groups still collide on
+                               value, so per-option naming would drop or merge
+                               real choices. A blob is immune to both. #}
+                            <input type="hidden" name="configuration" id="quoteConfiguration" value="">
+                            <input type="hidden" name="model" id="quoteModel" value="">
+                            <input type="hidden" name="estimated_total" id="quoteTotal" value="">
+                            {# _subject is the legacy alias that demonstrably still
+                               works; subject is the documented spelling. Both are
+                               sent with the same value so the inbox stays
+                               triageable whichever one Formspree honours. #}
+                            <input type="hidden" name="_subject" id="quoteSubject" value="">
+                            <input type="hidden" name="subject" id="quoteSubjectAlt" value="">
+
+                            <div class="form-group">
+                                <label for="quoteName">Name</label>
+                                <input type="text" id="quoteName" name="name" required autocomplete="name" aria-describedby="quoteNameError">
+                                <p class="form-error" id="quoteNameError" hidden>We need a name to address you by.</p>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="quoteEmail">Email</label>
+                                <input type="email" id="quoteEmail" name="email" required autocomplete="email" aria-describedby="quoteEmailError">
+                                <p class="form-error" id="quoteEmailError" hidden>This one's required, so we know where to send the reply.</p>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="quoteLocation">Where would the sauna go? (city or area)</label>
+                                <input type="text" id="quoteLocation" name="location" required autocomplete="address-level2" autocapitalize="words" placeholder="e.g. Squamish, North Vancouver, Whistler" aria-describedby="quoteLocationError">
+                                <p class="form-error" id="quoteLocationError" hidden>We need to know where it's going to quote it, and city or area is plenty.</p>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="quoteAccess">Getting it in place (optional)</label>
+                                <select id="quoteAccess" name="site_access">
+                                    <option value="">Select one</option>
+                                    <option value="easy">Easy access — a truck can get close</option>
+                                    <option value="tight">Tight — stairs, slope, gate, or narrow path</option>
+                                    <option value="crane">Would likely need a crane or lift</option>
+                                    <option value="trailer">It's going on a trailer — mobile</option>
+                                    <option value="on-site">No access for a finished unit — might need building on site</option>
+                                    <option value="not-sure">Not sure — help me figure it out</option>
+                                </select>
+                                <p class="form-helper" id="quoteAccessHelper" aria-live="polite" hidden></p>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="quoteNotes">Anything about your site we should know? (optional)</label>
+                                <textarea id="quoteNotes" name="notes" rows="3" class="quote-notes"></textarea>
+                            </div>
+
+                            {# Failure, offline and rate-limit states all render
+                               here. aria-live so a keyboard or screen-reader user
+                               learns the send failed without hunting for it. #}
+                            <div class="quote-error" id="quoteError" role="alert" aria-live="assertive" hidden></div>
+
+                            <button type="submit" class="quote-btn" id="quoteSubmit">Send Quote Request</button>
+
+                            <p class="quote-privacy-note">
+                                Sent via our US form processor. See our <a href="/privacy/">privacy policy</a>.
+                            </p>
+                        </form>
+                    </div>
+
+                    {# Step 3. Rendered in place: nothing navigates on success
+                       either. #}
+                    <div id="successStep" hidden>
+                        <h3 class="quote-success-heading">Configuration sent</h3>
+                        <p class="quote-success-body">We've got it, and a formal quote will follow within three business days, usually the next day.</p>
+{% if site.forms.formspreeAutoresponse %}
+                        <p class="quote-success-body">A copy is on its way to your inbox.</p>
+{% endif %}
+                        <p class="quote-success-actions">
+                            <a href="/about/">See how the process works</a>
+                            <button type="button" class="quote-link-btn" data-action="close-modal">Close</button>
+                        </p>
                     </div>
                 </div>
+            </div>
+            {# C22, minimal version. Step 1 is 3,785px tall, so the total scrolls
+               out of sight almost immediately and every choice after that is
+               made without the number it changes. This bar keeps the model and
+               the running total on screen for the whole configuration.
+
+               aria-hidden because it is a DUPLICATE of the price summary that is
+               already in the document and already announced -- a screen-reader
+               user should not be told the total twice on every option change.
+               It is a visual affordance for a visual problem.
+
+               NOT C23's sticky left column: that is a bigger structural change
+               and belongs to Wave B. #}
+            <div class="modal-total-bar" aria-hidden="true">
+                <span class="modal-total-bar__model" id="stickyModelName"></span>
+                <span class="modal-total-bar__total" id="stickyTotal"></span>
             </div>
         </div>
     </div>

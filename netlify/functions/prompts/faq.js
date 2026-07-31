@@ -33,8 +33,8 @@ TIMELINE: ${products.timeline.typical}. ${products.timeline.note}
 SERVICE AREAS: ${products.serviceAreas.primary}. Extended: ${products.serviceAreas.extended}
 
 HEATING:
-- Electric: consistent temperature control, indoor-friendly, lower maintenance. Standard heater varies by model (Homecraft 7.5kW on S2-S8, Homecraft 9kW Apex on SC).
-- Wood-fired: authentic Finnish experience, outdoor ideal, ritual of fire-tending. Harvia M3 included on S4-SC. Kuuma Banya available as an upgrade (+$3,000).
+- Electric: consistent temperature control, indoor-friendly, lower maintenance. Standard heater varies by model (Homecraft 7.5kW on S2-S8, Harvia Pro 20 or Homecraft Revive 9kW on SC).
+- Wood-fired: authentic Finnish experience, outdoor ideal, ritual of fire-tending. Harvia M3 included on S4-SC. IKI wood-fired stoves available as an upgrade (Mini-IKI +$9,800 on S4; Original-IKI +$10,800 on S6/S8, +$8,200 on SC).
 - S2 is electric only. All other models support both.
 
 RULES:

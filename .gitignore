@@ -1,5 +1,6 @@
 node_modules/
-package-lock.json
+# package-lock.json is deliberately TRACKED (P-C): the deploy story rests on
+# reproducible builds, so the lockfile is committed, not ignored.
 .netlify/
 .env
 .env.*
@@ -13,3 +14,9 @@ _site/
 
 # Visual diff harness working directory (builds, screenshots, asset cache)
 .visual-diff/
+
+# DOM-integrity working directory (builds, fingerprints, report)
+.dom-integrity/
+
+# Rhythm suite working directory (mutant dist copies)
+.rhythm/

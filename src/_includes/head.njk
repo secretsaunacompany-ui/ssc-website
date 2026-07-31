@@ -1,18 +1,29 @@
 <head>
-    <style>
-      /* Homepage hero intro: hide nav + hero text until scroll reveals them */
-      body.page-home:not(.hero-revealed) nav { opacity: 0; transform: translateY(-20px); pointer-events: none; }
-      body.page-home:not(.hero-revealed) .hero-content { opacity: 0; transform: translateY(30px); pointer-events: none; }
-      body.page-home.hero-revealed nav { transition: opacity 0.8s ease, transform 0.8s ease; }
-      body.page-home.hero-revealed .hero-content { transition: opacity 1s ease 0.15s, transform 1s ease 0.15s; }
-      /* Stage 1: lock scroll while viewer admires hero, then while they read */
-      body.page-home.hero-locked { overflow: hidden; overscroll-behavior: none; touch-action: none; }
-    </style>
-    <noscript><style>
-      body.page-home nav, body.page-home .hero-content { opacity: 1 !important; transform: none !important; pointer-events: auto !important; }
-      body.page-home.hero-locked { overflow: auto !important; touch-action: auto !important; }
-    </style></noscript>
     <meta charset="UTF-8">
+    <script data-ssc="reveal-boot">
+        /* F5. The reveal system's HIDDEN state must exist before the first
+           paint, and this is the only thing that can put it there.
+
+           It used to be gated on `body.js-loaded`, which init.js adds on
+           DOMContentLoaded -- i.e. AFTER the browser has already painted the
+           page with every reveal element fully opaque. The 1000ms transition
+           was declared in the same rule, so the class landing animated the
+           content from visible to invisible: measured on /locations/, below-fold
+           elements read opacity 1 at 37ms and 0 at 288ms. Content appeared,
+           faded OUT over about a second, and faded back in on scroll. A reveal
+           that has to un-reveal first is not a reveal.
+
+           A synchronous inline script is the fix rather than a preference: it
+           runs during head parsing, before the body exists, so `.js` is on the
+           root element for the very first style resolution. Deferred or external
+           JS cannot be, by definition.
+
+           The transitions are deliberately NOT enabled here -- `.js .reveal`
+           carries opacity and transform only. init.js adds `.reveal-ready` after
+           the first paint has committed the hidden state, so the load-in
+           animates FROM hidden instead of animating TO it. */
+        document.documentElement.classList.add('js');
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Primary SEO Meta Tags -->
@@ -287,18 +298,28 @@
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768254526/CircleWhite2025_gqtclg.png">
 
     <!-- Preconnect & Preload -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
     {% if preload_image %}
     <link rel="preload" as="image" href="{{ preload_image }}">
     {% endif %}
 
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Fonts: self-hosted, so no Google origins and no third-party round trip.
+         The two Google preconnects and the Google CSS <link> are gone; the CSP
+         lost both origins with them.
+
+         Preload EXACTLY these two: the above-the-fold pair. The Cormorant
+         italic and nothing else are deliberately not preloaded -- they are
+         below the fold on every entry page, and preloading them would compete
+         with the LCP hero image for bandwidth.
+
+         Filenames are content-hashed, so `crossorigin` is required (fonts are
+         always fetched in anonymous CORS mode; without it the preload is
+         discarded and the file is fetched twice). -->
+    <link rel="preload" href="/fonts/cormorant-garamond-var.16b298e9dcfa.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/outfit-var.55112282293d.woff2" as="font" type="font/woff2" crossorigin>
 
     <!-- External Stylesheet -->
-    <link rel="stylesheet" href="/styles.css?v=20260226">
+    <link rel="stylesheet" href="{{ '/styles.css' | assetUrl }}">
 
     <!-- Leaflet.js for Maps - lazy loaded when locations page is visited -->
 </head>

@@ -1,16 +1,285 @@
 {
-  "widths": [1440, 390],
-
-  "maxLayoutShiftPx": 8,
+  "widths": [
+    1440,
+    390
+  ],
+  "maxLayoutShiftPx": 4,
+  "minShiftCoverage": 0.95,
   "maxChangedPct": 0.5,
-
-  "expectedToChange": [],
-
+  "maxOffsetDivergencePx": 400,
+  "maxScaleDivergence": 0.05,
+  "minFitConfidence": 0.75,
+  "expectedToChange": [
+    {
+      "route": "/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 25.6% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/404.html",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 9.5% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/about/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 28.2% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/book/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 11.3% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/contact/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 9.6% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/contact/thank-you/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 9.8% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/faq/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 10.8% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/gallery/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 47.0% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/locations/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 34.0% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/north-shore/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 15.1% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/privacy/",
+      "reason": "WP-1a type system (body line-height 1.8 -> 1.65, ad-hoc sizes replaced by the token scale) PLUS a deliberate content rewrite: the policy now describes the rebuilt quote configurator (the five collected fields and their purposes, Formspree as a US processor and what that means, the 7-day browser-side save, honest server-side retention, the analytics story including IP address, PIPA/PIPEDA, OIPC BC). Stale claims were removed because they were false, not merely reworded: the site has no Google Analytics, no Square, no Meta pixel and sets no cookies at all. The DOM text is therefore INTENTIONALLY not identical to the baseline, which is why the content-preservation language on the other routes is absent here. Section count goes 8 -> 12 and the page gets materially longer. Recolours nothing and moves no shared furniture, so the shift gates still apply unwaived and must hold.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/process/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 28.2% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/saunas/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 47.0% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/sea-to-sky/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 17.1% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/squamish/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 17.0% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/vancouver/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 15.1% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/warranty/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 15.5% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    },
+    {
+      "route": "/whistler/",
+      "reason": "WP-1a type system: body line-height 1.8 -> 1.65 and ~20 ad-hoc sizes replaced by the token scale. Recolours nothing; 12.7% of pixels differ because almost every text run re-set. Verified no content lost: DOM text length, element count, paragraph count and image count are identical to the baseline.",
+      "waive": [
+        "changedPct",
+        "heightDelta"
+      ]
+    }
+  ],
+  "pageOverrides": [
+    {
+      "page": "/contact/",
+      "metric": "maxLayoutShiftPx",
+      "value": 260,
+      "reason": "F7 normalises input line-height and derives min-height from shared tokens; every input grows 52->55px and .btn 50->52 (F6). Document height +16px; the large shift figure is accumulated row residual down a long form, not a jump. (Razor final review, attributed by element geometry on both refs.)",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/contact/",
+      "metric": "minShiftCoverage",
+      "value": 0.85,
+      "reason": "Rows below the first form field all shift by the compounded 3px growth (F7+F6). Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/locations/",
+      "metric": "maxLayoutShiftPx",
+      "value": 130,
+      "reason": "F2: the fixed wood-plank background layer is deleted on this page only, per the orchestrator ruling of 2026-07-31 on Jen's written record.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/locations/",
+      "metric": "minShiftCoverage",
+      "value": 0.75,
+      "reason": "F2 layer deletion, as above.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/404.html",
+      "metric": "minShiftCoverage",
+      "value": 0.85,
+      "reason": "F6 border-box +/-2px sitewide + C2 footer reservation; spread <=2px. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/north-shore/",
+      "metric": "minShiftCoverage",
+      "value": 0.93,
+      "reason": "F6 border-box +/-2px sitewide + C2 footer reservation; measured coverage 0.935-0.949, spread <=2px. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/sea-to-sky/",
+      "metric": "minShiftCoverage",
+      "value": 0.93,
+      "reason": "F6 border-box +/-2px sitewide + C2 footer reservation; measured coverage 0.935-0.949, spread <=2px. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/vancouver/",
+      "metric": "minShiftCoverage",
+      "value": 0.93,
+      "reason": "F6 border-box +/-2px sitewide + C2 footer reservation; measured coverage 0.935-0.949, spread <=2px. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/squamish/",
+      "metric": "minShiftCoverage",
+      "value": 0.93,
+      "reason": "F6 border-box +/-2px sitewide + C2 footer reservation; measured coverage 0.935-0.949, spread <=2px. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/whistler/",
+      "metric": "minShiftCoverage",
+      "value": 0.93,
+      "reason": "F6 border-box +/-2px sitewide + C2 footer reservation; measured coverage 0.935-0.949, spread <=2px. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/book/",
+      "metric": "maxLayoutShiftPx",
+      "value": 8,
+      "reason": "F6 + F7 input/button box growth, 1-6px measured. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/contact/thank-you/",
+      "metric": "maxLayoutShiftPx",
+      "value": 8,
+      "reason": "F6 + F7 input/button box growth, 1-6px measured. Razor final review.",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/saunas/",
+      "metric": "maxLayoutShiftPx",
+      "value": 40,
+      "reason": "Ruling (d) .stat-number 3.5rem -> --text-4xl (-44px x3 at mobile), C4 offering-card margin-top:auto (+12px x4), F6 button border parity (+/-2px), C2 footer logo reservation (0->150px box). Razor final review. (This route renders /saunas/ content; /gallery/ redirects there.)",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/gallery/",
+      "metric": "maxLayoutShiftPx",
+      "value": 40,
+      "reason": "Ruling (d) .stat-number 3.5rem -> --text-4xl (-44px x3 at mobile), C4 offering-card margin-top:auto (+12px x4), F6 button border parity (+/-2px), C2 footer logo reservation (0->150px box). Razor final review. (This route renders /saunas/ content; /gallery/ redirects there.)",
+      "expires": "2026-09-15"
+    },
+    {
+      "page": "/faq/",
+      "metric": "maxLayoutShiftPx",
+      "value": 8,
+      "reason": "C35 h3->button conversion: 5px measured shift at 1440. The @390 coverage failure is NOT declared - below the floor's absolute bound by design; routed to Jen's rendered review (passed). Razor final review.",
+      "expires": "2026-09-15"
+    }
+  ],
+  "expectedRedirects": {
+    "/gallery/": "/saunas/",
+    "/process/": "/about/"
+  },
   "_notes": {
-    "widths": "Capture widths in CSS pixels. 1440 = desktop, 390 = iPhone-class mobile.",
-    "maxLayoutShiftPx": "Budget from the redesign acceptance criterion: nothing may move more than this on a page that is not expected to change.",
+    "authority": "These are the ONLY budgets. lib/gate.mjs reads them and defaults nothing; no threshold is written down anywhere else in the harness. If a budget and a fixture in visual-diff.test.mjs disagree, the fixture wins and the budget is renegotiated in the plan, never tuned here to make a run pass.",
+    "widths": "Capture widths in CSS pixels. 1440 = desktop, 390 = iPhone-class mobile. An empty list is a hard error: a run that captures nothing cannot pass.",
+    "maxLayoutShiftPx": "Budget from the redesign acceptance criterion. Gated against layoutShiftMaxPx -- the MAXIMUM observed row displacement, not the p99. A 6px sitewide button move touches few enough rows that a percentile hides it, and hiding it is exactly the defect this harness was repaired for.",
+    "minShiftCoverage": "Fraction of structured baseline rows that must be found again in the candidate. This is what catches the two failures the pixel and p99 metrics are blind to: content that moved further than diff.mjs's 240px search window, and a page whose content changed outright. Both report a shift of zero; both drop coverage to near zero.",
     "maxChangedPct": "Percentage of the page that may look different before it is treated as a regression. Cosmetic anti-aliasing noise sits well under 0.5%.",
-    "expectedToChange": "Routes the spec explicitly says will change, e.g. \"/about/\" or \"/\". Listed routes are still measured and reported, but do not fail the run. Use the exact route as printed in the report.",
-    "expectedToChangeShape": "Either a plain route string, or { \"route\": \"/about/\", \"reason\": \"new hero type scale\" }."
+    "maxScaleDivergence": "How far the two capture widths of ONE page may disagree about that page's affine SCALE. Under the affine model this is the sharper of the two divergence checks: both widths render from the same stylesheet, so a leading change should compress them by a comparable ratio even though their layouts differ. 0.05 is a first calibration and should be revisited once real per-page scales from a leading change have been seen; tighten it, do not loosen it, without saying why.",
+    "minFitConfidence": "Fraction of a page's ELIGIBLE rows (those whose row signature is distinctive enough to take part in the fit at all -- rows of repeating texture are excluded from both sides of the ratio) that the affine fit must explain before the fit counts as a fit at all. Below this the run FAILS with an explicit model-does-not-fit reason rather than reporting residuals against a fit that does not hold -- if the model is wrong, every shift number beside it is measured against nothing. Deliberately NOT waivable (see UNWAIVABLE in lib/gate.mjs) and NOT overridable per page: a page the instrument cannot describe is a human conversation, not a config line. 0.75 separates the observed cases by a wide margin -- a real leading change fits at 0.958, a constant-offset model on the same page fitted at 0.034 -- but it is a first calibration, not a measured threshold.",
+    "maxOffsetDivergencePx": "How far the two capture widths of ONE page may disagree about that page's estimated global vertical offset. Deliberately generous: the 1440px and 390px layouts are different documents and a leading change legitimately compresses them by different amounts, so this is a 'wildly differently' detector rather than a precision gate. The sharp signal alongside it needs no budget at all -- if one width GREW while the other SHRANK, that is reported regardless of magnitude, because no single spacing change does that. 400 is a first calibration and should be revisited once real per-page offsets from a leading change have been seen; tighten it, do not loosen it, without saying why.",
+    "expectedToChange": "Per-metric waivers, not a blanket pass. Shape: { \"route\": \"/about/\", \"reason\": \"new hero type scale\", \"waive\": [\"changedPct\"] }. Waivable: changedPct, heightDelta, structural. NEVER waivable: layoutShiftMaxPx, shiftCoverage -- a config that tries is a hard error. A page may waive changedPct and remain shift-gated; that is the whole point of the restructure. Bare route strings are rejected so an old-shape config cannot silently keep its old blanket-waiver meaning.",
+    "pageOverrides": "Moves ONE named budget on ONE named page, in the direction that metric's TYPE allows, for a stated reason, until a stated date. Shape: { \"page\": \"/about/\", \"metric\": \"maxLayoutShiftPx\", \"value\": 24, \"reason\": \"new hero type scale moves the fold ~20px, approved in the Wave A design review\", \"expires\": \"2026-09-30\" }. CEILINGS (maxLayoutShiftPx, maxChangedPct) may only be RAISED, capped at 100x the global -- loud is fine, infinite is not, so value: 999999 is rejected. The FLOOR (minShiftCoverage) may only be LOWERED, bounded to [0.75, 1) -- lowering is the shippable direction for a deliberate restyle, and below 0.75 a quarter of the page's rows could not be matched at all, which is a human conversation rather than a config line. An override can NEVER disable a metric and can never rescue a page whose shift could not be measured. Rejected on load: unknown metric, wrong direction, out of bounds, missing or empty reason, missing or malformed expiry, an expiry more than 90 days out, a duplicate page/metric pair. An EXPIRED override fails the run loudly rather than lapsing back to the global budget, so a temporary allowance cannot quietly become permanent. Overrides affect only the page and metric they name. This exists so a deliberate restyle is shippable under review; the global budgets above stay unwaivable and are not to be lowered to make a run pass.",
+    "expectedRedirects": "Client-side redirects the capture is expected to observe, as route -> settled destination. A redirect that is not declared, points somewhere else, or stops happening fails the run. Without this the harness screenshots the destination page under the source route's name and reports it as unchanged. /gallery/ and /process/ genuinely redirect today (verified 2026-07-30).",
+    "wp1b": "WP-1b's recorded coverage figures were measured while the reveal pin was INERT (it still named the six pre-1b class names) and carry unquantifiable observer-race noise on reveal-heavy pages. They are not reproducible under the repaired harness (077ce33) and must not be quoted as a baseline. The batch's conclusions stand on its other evidence (DOM certificate, computed-rhythm suite, isolation probes).",
+    "stalePin": "BLOCKER found 2026-07-31 during the Jen Stage 3 certification, and it invalidates this harness's reveal handling for every run since WP-1b. The capture pin at scripts/lib/capture.mjs (the rule that forces every scroll-reveal target to its settled visible state, so below-fold content is captured deterministically) still names the SIX PRE-WP-1b classes: .fade-in, .slide-up, .slide-left, .slide-right, .scale-in, .gallery-item--reveal. WP-1b collapsed all six into .reveal. Measured against the current build: those six selectors match ZERO elements, and the 206 elements carrying .reveal are matched by NOTHING in the pin. The pin has been inert since WP-1b landed. Consequence, stated plainly: below-fold reveal content is captured in whatever state the IntersectionObserver happened to have reached, which is timing-dependent -- exactly the non-determinism the pin exists to remove. Stage 3's F5 changes WHEN the hidden state is applied (parse time instead of DOMContentLoaded), so it shifts that timing and the run reports large diffs on content pages: / 7.6%/20.0%, /saunas/ and /gallery/ 12.3%/39.1%, /faq/ coverage 0.63, /contact/ shift 239px. Pages with no reveal-heavy below-fold content came back clean and are the control: /about/ 0.00%, /process/ 0.00%, /warranty/ 0.00%, /privacy/ 0.00%, /booking-ops.html 0.00% coverage 1.000 -- all PASS. A batch whose CSS-only items are provably DOM-neutral cannot legitimately move /saunas/ by 39% while leaving /about/ at zero. NO expectedToChange entries and NO pageOverrides were written from these numbers. Declaring a measurement taken through a broken instrument as expected is how noise becomes a permanent waiver. The pin is repaired FIRST, as its own reviewed commit by the harness's implementer, and only then is this batch re-measured -- the same rule the plan sets for every other instrument change. Until then the Stage 3 visual certification is OPEN, not passed and not waived. It also reframes the WP-1b record above: that run's coverage collapse was attributed entirely to the rhythm change, and some of it may be this.",
+    "residualsNotDeclared": "Three classes from the polish-batch re-measure are deliberately NOT declared, because the mechanism refuses them by design: /faq/@390 coverage 0.627 (below the 0.75 absolute floor - C35 rewrites every question node; a human conversation, had: Jen's rendered review passed it), and fit-confidence failures on /@390 (0.706) and /saunas/ /gallery/@390 (0.565) - fitConfidence is unwaivable and non-overridable. These stay red as truth-tellers until the next baseline advance retires the comparison. ADDITIONALLY: / (home) carries NO shift override even though its 30px@1440 is fully attributed \u2014 the F1/F1b calibration fixtures evaluate route '/' against the shipped config, so any home-page shift override disarms the harness's own self-test (this property has now caught bad overrides three times: WP-1a's 18, and the reviewer's+orchestrator's own entry on 2026-07-31). The calibration route stays un-overridden by RULE; home's attributed residual is a truth-teller until the baseline advances."
   }
 }

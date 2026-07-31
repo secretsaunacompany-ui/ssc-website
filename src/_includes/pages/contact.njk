@@ -7,7 +7,7 @@
 
         <section class="container">
 {% if site.features.advisor %}
-            <div class="advisor-container fade-in"
+            <div class="advisor-container reveal"
                  data-advisor-type="inquiry"
                  data-advisor-placeholder="Tell us about your project — we'll help you figure out what to ask for"
                  data-advisor-multi-turn="true"
@@ -15,7 +15,11 @@
             </div>
 {% endif %}
 
-            <form class="contact-form contact-form--styled" method="POST" action="https://formspree.io/f/mdaaejwp" data-action="contact-submit">
+            {# Endpoint comes from src/_data/site.json (site.forms.endpoint) -- the single
+               definition for every form on the site. It used to be written out here AND
+               hardcoded as a fallback in js/forms.js; the configurator form would have
+               made it three copies. Never paste the literal back in. #}
+            <form class="contact-form contact-form--styled" method="POST" action="{{ site.forms.endpoint }}" data-action="contact-submit">
                 <input type="hidden" name="_next" value="https://www.secretsaunacompany.ca/contact/thank-you/">
                 <input type="hidden" name="_subject" value="New Sauna Inquiry from Website">
                 <div class="form-group">
@@ -102,7 +106,7 @@
 
             <div class="contact-info">
                 <p class="contact-info__label"><strong>Email</strong></p>
-                <p class="contact-info__value"><a href="mailto:secretsaunacompany@gmail.com" class="link--charcoal">secretsaunacompany@gmail.com</a></p>
+                <p class="contact-info__value"><a href="mailto:secretsaunacompany@gmail.com" class="link--quiet">secretsaunacompany@gmail.com</a></p>
 
                 <p class="contact-info__label"><strong>Based in</strong></p>
                 <p>Squamish, British Columbia</p>

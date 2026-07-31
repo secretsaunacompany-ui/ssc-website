@@ -1,0 +1,653 @@
+{
+  "widths": [
+    1440,
+    390
+  ],
+  "whitelist": [
+    {
+      "op": "removed",
+      "tag": "LINK",
+      "contains": "fonts.googleapis.com/css",
+      "count": 1,
+      "reason": "WP-1a self-hosts both typefaces, so the Google Fonts stylesheet link is deleted. This is the ONE deletion the type batch was specified to make.",
+      "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours",
+      "range": "4dc8716..7b4974f"
+    },
+    {
+      "op": "removed",
+      "tag": "LINK",
+      "contains": "href=\"https://fonts.googleapis.com\" rel=\"preconnect\"",
+      "count": 1,
+      "reason": "The Google Fonts preconnect. Identified by its exact href+rel rather than the bare word \"preconnect\", which also matches the Cloudinary hint that must survive.",
+      "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours",
+      "range": "4dc8716..7b4974f"
+    },
+    {
+      "op": "removed",
+      "tag": "LINK",
+      "contains": "href=\"https://fonts.gstatic.com\" rel=\"preconnect\"",
+      "count": 1,
+      "reason": "The gstatic preconnect, the second half of the Google font handshake. Split from its sibling so each entry names exactly one node.",
+      "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours",
+      "range": "4dc8716..7b4974f"
+    },
+    {
+      "op": "added",
+      "tag": "LINK",
+      "contains": "as=\"font\"",
+      "count": 2,
+      "reason": "Two self-hosted font preloads for the above-the-fold pair (Cormorant Garamond regular, Outfit variable). Declared per the mandate as a per-commit-documented addition; the italic face is deliberately NOT preloaded, so a third preload appearing is an undeclared change and fails. Identified by as=\"font\" rather than the bare word \"preload\", which also matches the hero image preload on pages that have one.",
+      "commit": "1877955 relay batch WP-1a: the type system, and fonts that are ours",
+      "range": "4dc8716..7b4974f"
+    },
+    {
+      "op": "rename",
+      "from": "fade-in",
+      "to": "reveal",
+      "range": "198c0bb..c208508",
+      "reason": "WP-1b collapses six reveal classes into one `reveal` token across 158 markup sites. A global rename is declared structure change; no substring-and-count entry can express it, and every entry it would need is the lazy kind the specificity check exists to reject.",
+      "commit": "c208508 relay batch WP-1b (156c073 colour, shape, spacing, motion)"
+    },
+    {
+      "op": "rename",
+      "from": "slide-up",
+      "to": "reveal",
+      "range": "198c0bb..c208508",
+      "reason": "WP-1b collapses six reveal classes into one `reveal` token across 158 markup sites. A global rename is declared structure change; no substring-and-count entry can express it, and every entry it would need is the lazy kind the specificity check exists to reject.",
+      "commit": "c208508 relay batch WP-1b (156c073 colour, shape, spacing, motion)"
+    },
+    {
+      "op": "rename",
+      "from": "slide-left",
+      "to": "reveal",
+      "range": "198c0bb..c208508",
+      "reason": "WP-1b collapses six reveal classes into one `reveal` token across 158 markup sites. A global rename is declared structure change; no substring-and-count entry can express it, and every entry it would need is the lazy kind the specificity check exists to reject.",
+      "commit": "c208508 relay batch WP-1b (156c073 colour, shape, spacing, motion)"
+    },
+    {
+      "op": "rename",
+      "from": "slide-right",
+      "to": "reveal",
+      "range": "198c0bb..c208508",
+      "reason": "WP-1b collapses six reveal classes into one `reveal` token across 158 markup sites. A global rename is declared structure change; no substring-and-count entry can express it, and every entry it would need is the lazy kind the specificity check exists to reject.",
+      "commit": "c208508 relay batch WP-1b (156c073 colour, shape, spacing, motion)"
+    },
+    {
+      "op": "rename",
+      "from": "scale-in",
+      "to": "reveal",
+      "range": "198c0bb..c208508",
+      "reason": "WP-1b collapses six reveal classes into one `reveal` token across 158 markup sites. A global rename is declared structure change; no substring-and-count entry can express it, and every entry it would need is the lazy kind the specificity check exists to reject.",
+      "commit": "c208508 relay batch WP-1b (156c073 colour, shape, spacing, motion)"
+    },
+    {
+      "op": "rename",
+      "from": "gallery-item--reveal",
+      "to": "reveal",
+      "range": "198c0bb..c208508",
+      "reason": "WP-1b collapses six reveal classes into one `reveal` token across 158 markup sites. A global rename is declared structure change; no substring-and-count entry can express it, and every entry it would need is the lazy kind the specificity check exists to reject.",
+      "commit": "c208508 relay batch WP-1b (156c073 colour, shape, spacing, motion)"
+    },
+    {
+      "op": "rename",
+      "from": "bg-grey",
+      "to": "surface--elevated",
+      "range": "198c0bb..c208508",
+      "reason": "The grey ramp collapses to three honest tokens (doc 21 6.1). `.bg-grey` named a colour that the elevated-surface vocabulary now owns, so the class moves with it. 7 markup sites in src/ (doc 21 said 6 -- warranty.njk was omitted; corrected in this batch), rendering to 14 occurrences per width across 11 served routes (route count exceeds file count because some routes redirect; the instrument measures what each route serves).",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "rename",
+      "from": "link--charcoal",
+      "to": "link--quiet",
+      "range": "198c0bb..c208508",
+      "reason": "`--color-charcoal` was a lying name (#c0c0c0, a light silver) and the class inherited the lie. Doc 21 6.1 requires a grep for `charcoal` to return zero after WP-1b. 1 CSS selector + 1 markup site (contact.njk, the email link).",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "rename",
+      "from": "text--centered-60ch",
+      "to": "measure-wide",
+      "range": "198c0bb..c208508",
+      "reason": "Four `text--*` line-length utilities collapse into one `.measure-wide` (70ch). Declared as four renames rather than one because they are four distinct source tokens; the LINE LENGTH they now resolve to is a real visual change, asserted from computed styles by scripts/rhythm.test.mjs rather than assumed here.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "rename",
+      "from": "text--centered-70ch",
+      "to": "measure-wide",
+      "range": "198c0bb..c208508",
+      "reason": "Second of the four `text--*` collapses. See text--centered-60ch.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "rename",
+      "from": "text--intro-70ch",
+      "to": "measure-wide",
+      "range": "198c0bb..c208508",
+      "reason": "Third of the four `text--*` collapses. See text--centered-60ch.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "rename",
+      "from": "text--intro-65ch",
+      "to": "measure-wide",
+      "range": "198c0bb..c208508",
+      "reason": "Fourth of the four `text--*` collapses. See text--centered-60ch.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "rename",
+      "from": "section--warm-glow",
+      "to": null,
+      "range": "198c0bb..c208508",
+      "reason": "Component cut entirely: `.section--warm-glow::before` is a warm radial glow, and Saul 12:316 rules radial glows atmosphere-without-information. Jen 10:171 concurs. 2 markup sites (home.njk, service-area.njk); the class is REMOVED, not renamed -- the element survives and its other classes are untouched.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "rename",
+      "from": "grid-3--mt-2",
+      "to": null,
+      "range": "198c0bb..c208508",
+      "reason": "Rhythm utility deleted. Ad-hoc margin-top utilities are replaced by the em-relative spacing system in doc 11 5, which lives on the heading and grid defaults rather than on per-instance classes. That the replacement produces the documented spacing is proven from COMPUTED styles by scripts/rhythm.test.mjs -- a deletion is only safe if something else does the job.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "rename",
+      "from": "grid-3--mt-3",
+      "to": null,
+      "range": "198c0bb..c208508",
+      "reason": "Rhythm utility deleted. See grid-3--mt-2.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "rename",
+      "from": "grid-3--mt-4",
+      "to": null,
+      "range": "198c0bb..c208508",
+      "reason": "Rhythm utility deleted. See grid-3--mt-2.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "rename",
+      "from": "heading--mb-2",
+      "to": null,
+      "range": "198c0bb..c208508",
+      "reason": "Rhythm utility deleted. See grid-3--mt-2.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "rename",
+      "from": "section--mt-8",
+      "to": null,
+      "range": "198c0bb..c208508",
+      "reason": "Rhythm utility deleted. See grid-3--mt-2.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "STYLE",
+      "path": "html/head/style",
+      "textHash": "6275c558669a23fb",
+      "count": 1,
+      "range": "198c0bb..c208508",
+      "reason": "The hero-intro hold: an inline <style> that hid the nav and hero text until a scroll reveal fired. `HeroIntroAnimation` is deleted in this batch (plan 6, motion), so the style that served it goes with it. Attribute-less, so no `contains` can name it; the hash is measured from the baseline build, span 2 (the <style> and its text), present on 18 of 19 routes -- every route except /booking-ops.html, which is a standalone file outside src/ and carries a DIFFERENT <style> at the same path (hash 2ab2fe0e4d0894e2). That is exactly the pair a `contains` entry could not tell apart.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "NOSCRIPT",
+      "path": "html/head/noscript",
+      "textHash": "7f006313ce6ec1a9",
+      "count": 1,
+      "range": "198c0bb..c208508",
+      "reason": "The no-JS escape hatch for the hero-intro hold, deleted with it. ONE declaration covering three elements: the <noscript>, the <style> nested inside it, and that style's text -- span 3, measured. A nested subtree is one deletion, not three, and declaring it as three would leave the inner nodes able to disappear independently without anyone noticing.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "removed",
+      "tag": "IMG",
+      "contains": "style=\"border-radius: var(--radius-sm);\"",
+      "count": 1,
+      "range": "198c0bb..c208508",
+      "reason": "Photography is never rounded (Jen 4.2; doc 21 6.2's last row names this inline style specifically). Five location-page images carried the radius as an INLINE style, so the change is an attribute deletion on a surviving node and arrives as a removed/added element pair -- there is no node appearing or disappearing, and this entry plus its `added` twin is the honest way to say that. One per page on 5 routes, verified 1 match per page in the baseline.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "added",
+      "tag": "IMG",
+      "contains": "class=\"img--full-cover-500\"",
+      "count": 1,
+      "range": "198c0bb..c208508",
+      "reason": "The `added` half of the five inline-radius removals above: the same five <img> nodes, now without the inline style. Keyed on the class rather than the absent attribute, because an entry cannot name a thing by what it lacks; verified to match exactly 1 node per page, so it identifies the node rather than a family of them. Consumes 10 across the run (5 routes x 2 widths) -- the two img--full-cover-500 images that did NOT change produce no op and are not consumed.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "removed",
+      "kind": "code",
+      "tag": "STYLE",
+      "contains": "--color-bg: #0f0f0f",
+      "count": 1,
+      "range": "198c0bb..c208508",
+      "reason": "booking-ops.html defines its own `:root` inline, and defined --color-bg as #0f0f0f while the stylesheet consumed the name without defining it at all (audit P0-3). Plan 6 requires the two reconciled in the same edit so the token is not defined twice differently. This is an inline-CSS body changing, which is why the entry carries kind:code.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "added",
+      "kind": "code",
+      "tag": "STYLE",
+      "contains": "--color-bg: #0c0c0c",
+      "count": 1,
+      "range": "198c0bb..c208508",
+      "reason": "The reconciled value: --color-bg now equals --ground (#0c0c0c) in booking-ops.html, matching the resolved :root in doc 21 1. The `added` half of the pair above.",
+      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "removed",
+      "tag": "BUTTON",
+      "contains": "class=\"mobile-menu-btn\"",
+      "count": 1,
+      "range": "83421b9..dec32ac",
+      "reason": "The mobile menu toggle gains aria-expanded and aria-controls, which arrives as a removed/added pair on a surviving node. Its label never changes, so aria-expanded is the only thing that can tell a screen-reader user whether the menu they just pressed is now open. One per route, all 19.",
+      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
+    },
+    {
+      "op": "added",
+      "tag": "BUTTON",
+      "contains": "aria-expanded=\"false\"",
+      "count": 1,
+      "range": "83421b9..dec32ac",
+      "reason": "The `added` half of the mobile menu toggle pair, keyed on the new state attribute rather than on the class, so it names this change rather than a family of buttons.",
+      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
+    },
+    {
+      "op": "removed",
+      "tag": "SPAN",
+      "contains": "class=\"check\"",
+      "count": 7,
+      "range": "83421b9..dec32ac",
+      "reason": "The seven comparison ticks on /saunas/ become aria-hidden: they are decoration, the sentence beside each already carries the meaning, and a screen reader announcing 'check mark' seven times adds nothing to it. Removed/added pair on surviving nodes; 7 measured in the baseline.",
+      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
+    },
+    {
+      "op": "added",
+      "tag": "SPAN",
+      "contains": "aria-hidden=\"true\" class=\"check\"",
+      "count": 7,
+      "range": "83421b9..dec32ac",
+      "reason": "The `added` half of the seven ticks.",
+      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
+    },
+    {
+      "op": "removed",
+      "tag": "SPAN",
+      "contains": "class=\"x\"",
+      "count": 14,
+      "range": "83421b9..dec32ac",
+      "reason": "The fourteen comparison crosses on /saunas/, same reasoning as the ticks. 14 measured in the baseline.",
+      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
+    },
+    {
+      "op": "added",
+      "tag": "SPAN",
+      "contains": "aria-hidden=\"true\" class=\"x\"",
+      "count": 14,
+      "range": "83421b9..dec32ac",
+      "reason": "The `added` half of the fourteen crosses.",
+      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "contains": "data-ssc=\"reveal-boot\"",
+      "count": 1,
+      "reason": "F5. The synchronous inline script that puts the reveal system's HIDDEN state on the root element during head parsing, before the first paint. It is an ADDED node on every page, which is the intended blast radius: the bug it fixes was sitewide. Named with data-ssc precisely so it can be declared -- an attribute-less inline script has no expressible identity in this vocabulary.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "kind": "code",
+      "tag": "SCRIPT",
+      "contains": "F5. The reveal system's HIDDEN state must exist before the first paint",
+      "count": 1,
+      "reason": "The body of the boot script above. Declared separately because an element and its inline code are two tokens, and the code is the part that could change without the element changing at all.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "tag": "DIV",
+      "contains": "class=\"modal-total-bar\"",
+      "count": 1,
+      "reason": "C22. The sticky total bar at the modal's foot. Present in the delivered markup of every page because the sauna modal is included sitewide and rendered closed; it is only ever seen once a model is opened.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "tag": "SPAN",
+      "contains": "id=\"stickyModelName\"",
+      "count": 1,
+      "reason": "C22. The model name in the sticky bar. Empty in delivered markup -- modal.js fills it when a model opens, from the same call that sets the modal title.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "tag": "SPAN",
+      "contains": "id=\"stickyTotal\"",
+      "count": 1,
+      "reason": "C22. The running total in the sticky bar. Empty in delivered markup -- modal.js writes it from the SAME value that writes #summaryTotal, at the same seam, so the two cannot drift.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "tag": "H3",
+      "contains": "class=\"faq-question\"",
+      "count": 11,
+      "reason": "C35. The question was an <h3> doing the work of a button. All 11 on /faq/ become a heading wrapping a real <button>; this is the old node. Count is the measured number of FAQ items, so a twelfth question appearing undeclared still fails.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "tag": "H3",
+      "contains": "class=\"faq-question-heading\"",
+      "count": 11,
+      "reason": "C35. The heading survives -- the FAQ page's document outline is real structure and the FAQPage schema depends on the questions being headings -- but it now carries the button instead of being it.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "tag": "BUTTON",
+      "contains": "class=\"faq-question\"",
+      "count": 11,
+      "reason": "C35. The real <button>: takes focus, announces aria-expanded, handles Enter and Space natively. Replaces role=\"button\" + tabindex + a hand-rolled key handler that Space did not work through.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "tag": "P",
+      "contains": "class=\"faq-answer\"",
+      "count": 11,
+      "reason": "C35. The answer paragraph gains an id so the button's aria-controls can point at it; an attribute addition on a surviving element arrives as a removed/added pair. This is the old node.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "tag": "P",
+      "contains": "class=\"faq-answer\" id=\"faq-answer-",
+      "count": 11,
+      "reason": "C35. The same 11 paragraphs, now addressable by aria-controls. The `contains` includes the id PREFIX so it cannot match an unrelated .faq-answer that never got one.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "kind": "text",
+      "tag": "H3",
+      "contains": "How long does it take to receive a sauna?",
+      "count": 1,
+      "reason": "C35. Question 1 of 11, moving out of the <h3> and into the button inside it. Declared one by one with the EXACT question text rather than as a count of eleven anonymous strings: a text move is the one thing this instrument exists to refuse, and 'eleven texts changed somewhere' is not a declaration of which.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "kind": "text",
+      "tag": "BUTTON",
+      "contains": "How long does it take to receive a sauna?",
+      "count": 1,
+      "reason": "C35. Question 1 of 11 arriving inside the button. Paired with its removal above, so the text is proven to have MOVED rather than one text having vanished and a different one appeared.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "kind": "text",
+      "tag": "H3",
+      "contains": "What are your saunas made of?",
+      "count": 1,
+      "reason": "C35. Question 2 of 11, moving out of the <h3> and into the button inside it. Declared one by one with the EXACT question text rather than as a count of eleven anonymous strings: a text move is the one thing this instrument exists to refuse, and 'eleven texts changed somewhere' is not a declaration of which.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "kind": "text",
+      "tag": "BUTTON",
+      "contains": "What are your saunas made of?",
+      "count": 1,
+      "reason": "C35. Question 2 of 11 arriving inside the button. Paired with its removal above, so the text is proven to have MOVED rather than one text having vanished and a different one appeared.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "kind": "text",
+      "tag": "H3",
+      "contains": "What type of foundation is needed?",
+      "count": 1,
+      "reason": "C35. Question 3 of 11, moving out of the <h3> and into the button inside it. Declared one by one with the EXACT question text rather than as a count of eleven anonymous strings: a text move is the one thing this instrument exists to refuse, and 'eleven texts changed somewhere' is not a declaration of which.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "kind": "text",
+      "tag": "BUTTON",
+      "contains": "What type of foundation is needed?",
+      "count": 1,
+      "reason": "C35. Question 3 of 11 arriving inside the button. Paired with its removal above, so the text is proven to have MOVED rather than one text having vanished and a different one appeared.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "kind": "text",
+      "tag": "H3",
+      "contains": "What's the difference between wood-fired and electric saunas?",
+      "count": 1,
+      "reason": "C35. Question 4 of 11, moving out of the <h3> and into the button inside it. Declared one by one with the EXACT question text rather than as a count of eleven anonymous strings: a text move is the one thing this instrument exists to refuse, and 'eleven texts changed somewhere' is not a declaration of which.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "kind": "text",
+      "tag": "BUTTON",
+      "contains": "What's the difference between wood-fired and electric saunas?",
+      "count": 1,
+      "reason": "C35. Question 4 of 11 arriving inside the button. Paired with its removal above, so the text is proven to have MOVED rather than one text having vanished and a different one appeared.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "kind": "text",
+      "tag": "H3",
+      "contains": "Do I need a special license to tow a mobile sauna?",
+      "count": 1,
+      "reason": "C35. Question 5 of 11, moving out of the <h3> and into the button inside it. Declared one by one with the EXACT question text rather than as a count of eleven anonymous strings: a text move is the one thing this instrument exists to refuse, and 'eleven texts changed somewhere' is not a declaration of which.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "kind": "text",
+      "tag": "BUTTON",
+      "contains": "Do I need a special license to tow a mobile sauna?",
+      "count": 1,
+      "reason": "C35. Question 5 of 11 arriving inside the button. Paired with its removal above, so the text is proven to have MOVED rather than one text having vanished and a different one appeared.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "kind": "text",
+      "tag": "H3",
+      "contains": "What does the Limited Warranty cover?",
+      "count": 1,
+      "reason": "C35. Question 6 of 11, moving out of the <h3> and into the button inside it. Declared one by one with the EXACT question text rather than as a count of eleven anonymous strings: a text move is the one thing this instrument exists to refuse, and 'eleven texts changed somewhere' is not a declaration of which.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "kind": "text",
+      "tag": "BUTTON",
+      "contains": "What does the Limited Warranty cover?",
+      "count": 1,
+      "reason": "C35. Question 6 of 11 arriving inside the button. Paired with its removal above, so the text is proven to have MOVED rather than one text having vanished and a different one appeared.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "kind": "text",
+      "tag": "H3",
+      "contains": "What kind of maintenance do saunas require?",
+      "count": 1,
+      "reason": "C35. Question 7 of 11, moving out of the <h3> and into the button inside it. Declared one by one with the EXACT question text rather than as a count of eleven anonymous strings: a text move is the one thing this instrument exists to refuse, and 'eleven texts changed somewhere' is not a declaration of which.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "kind": "text",
+      "tag": "BUTTON",
+      "contains": "What kind of maintenance do saunas require?",
+      "count": 1,
+      "reason": "C35. Question 7 of 11 arriving inside the button. Paired with its removal above, so the text is proven to have MOVED rather than one text having vanished and a different one appeared.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "kind": "text",
+      "tag": "H3",
+      "contains": "How does payment work?",
+      "count": 1,
+      "reason": "C35. Question 8 of 11, moving out of the <h3> and into the button inside it. Declared one by one with the EXACT question text rather than as a count of eleven anonymous strings: a text move is the one thing this instrument exists to refuse, and 'eleven texts changed somewhere' is not a declaration of which.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "kind": "text",
+      "tag": "BUTTON",
+      "contains": "How does payment work?",
+      "count": 1,
+      "reason": "C35. Question 8 of 11 arriving inside the button. Paired with its removal above, so the text is proven to have MOVED rather than one text having vanished and a different one appeared.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "kind": "text",
+      "tag": "H3",
+      "contains": "Do you build infrared saunas?",
+      "count": 1,
+      "reason": "C35. Question 9 of 11, moving out of the <h3> and into the button inside it. Declared one by one with the EXACT question text rather than as a count of eleven anonymous strings: a text move is the one thing this instrument exists to refuse, and 'eleven texts changed somewhere' is not a declaration of which.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "kind": "text",
+      "tag": "BUTTON",
+      "contains": "Do you build infrared saunas?",
+      "count": 1,
+      "reason": "C35. Question 9 of 11 arriving inside the button. Paired with its removal above, so the text is proven to have MOVED rather than one text having vanished and a different one appeared.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "kind": "text",
+      "tag": "H3",
+      "contains": "What's included in a rental?",
+      "count": 1,
+      "reason": "C35. Question 10 of 11, moving out of the <h3> and into the button inside it. Declared one by one with the EXACT question text rather than as a count of eleven anonymous strings: a text move is the one thing this instrument exists to refuse, and 'eleven texts changed somewhere' is not a declaration of which.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "kind": "text",
+      "tag": "BUTTON",
+      "contains": "What's included in a rental?",
+      "count": 1,
+      "reason": "C35. Question 10 of 11 arriving inside the button. Paired with its removal above, so the text is proven to have MOVED rather than one text having vanished and a different one appeared.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "kind": "text",
+      "tag": "H3",
+      "contains": "Do you work outside British Columbia?",
+      "count": 1,
+      "reason": "C35. Question 11 of 11, moving out of the <h3> and into the button inside it. Declared one by one with the EXACT question text rather than as a count of eleven anonymous strings: a text move is the one thing this instrument exists to refuse, and 'eleven texts changed somewhere' is not a declaration of which.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "kind": "text",
+      "tag": "BUTTON",
+      "contains": "Do you work outside British Columbia?",
+      "count": 1,
+      "reason": "C35. Question 11 of 11 arriving inside the button. Paired with its removal above, so the text is proven to have MOVED rather than one text having vanished and a different one appeared.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "tag": "DIV",
+      "contains": "class=\"page-bg--fixed page-bg--opacity-15\" style=\"background-image",
+      "count": 1,
+      "reason": "F2, scoped. The fixed wood-plank layer, deleted from /locations/ only, on the orchestrator's ruling from Jen's written record. Fourteen other pages still carry one; the sitewide question is Wave B's.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "tag": "DIV",
+      "contains": "id=\"locations\"",
+      "count": 1,
+      "reason": "F2. The page wrapper losing `page--has-bg`, which arrives as a removed/added pair because it is a class change on a surviving element. The class exists only to establish the stacking context the deleted layer needed. This is the old node.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "added",
+      "tag": "DIV",
+      "contains": "id=\"locations\"",
+      "count": 1,
+      "reason": "F2. The same wrapper, now plain `page`. NOT declared as a global class removal: `page--has-bg` is still correct on the fourteen pages that still have a layer, and a rename entry would rewrite them all.",
+      "range": "c41dec1..2a23c8d",
+      "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    }
+  ],
+  "_notes": {
+    "authority": "This whitelist is a DECLARATION, not a mute button. Every entry names a change, a count, a reason and the commit that made it legitimate. An undeclared change fails; a declared change that does not occur ALSO fails, because a stale entry is a hole nobody closed. Counts are per page/width comparison.",
+    "widths": "Each page is loaded at both widths and fingerprinted separately. The site is responsive by CSS, so both widths should yield IDENTICAL markup -- if a page's DOM turns out to be width-dependent it is reported as a width anomaly, because a DOM-integrity result for such a page is per-width rather than general.",
+    "volatile": "Two URL segments are normalized before comparison and nothing else: the ?v= content-hash cache stamp (P-A -- it changes whenever styles.css or a js/ file changes, which is exactly what a restyle does) and the hash segment of /fonts/<name>.<hash>.woff2 (the family name is KEPT, so substituting a different typeface still fails). Whether the bytes behind a font name are the right typeface is the fonts suite's question; it asserts computed faces against a real browser. Every other attribute compares raw.",
+    "text": "Text is whitespace-normalized (rendering collapses whitespace anyway) and otherwise compared EXACTLY. A reworded sentence, a changed price or a dropped word is a failure. That is the instrument's purpose, not a limitation of it.",
+    "specificity": "Every entry's \"contains\" must identify the node, not a family of nodes: the run refuses to start if an entry matches more nodes in the relevant build than it declares. A count is a budget, not an identity -- an entry held in check by its count alone consumes the first n matching changes rather than the ones it was written for, and starts absorbing a different node the moment the intended one stops changing. This is why the two Google preconnects are two entries keyed on their exact hrefs rather than one entry matching the word \"preconnect\" (which also matches the Cloudinary hint that must survive), and why the font preloads key on as=\"font\" rather than \"preload\" (which also matches the hero image preload).",
+    "wp1b": "WP-1b's full certification map, range-scoped to 198c0bb..c208508 (the batch commits vs their parent). Six reveal-class renames, six further class renames, six class REMOVALS (to:null -- the rhythm utilities and the cut warm-glow), two delete-subtree entries for the hero-intro hold, an added/removed pair for the five inline image radii, and a kind:code pair for booking-ops.html's reconciled --color-bg. Every count is measured against the real builds, not budgeted: the earlier note here recorded that the residual was wider than the four declared change classes and refused to widen the map to go green. This map is that residual ENUMERATED, which is the opposite move -- each line names one change, its reason and its commit, and the run reports what each consumed.",
+    "staleness": "These four entries are the WP-1a declaration (commit 1877955 vs its parent) and they are the FIXTURE DATA for scripts/dom-integrity.test.mjs -- A1, A3, W8 and two mutation-battery properties (D-m6, D-m7) lose their coverage entirely without them. WP-1b tried removing them as stale and the suite caught it, which is the fixture-wins rule working. Consequence, stated so nobody rediscovers it as a bug: run this instrument against any baseline at or after 1877955 and all four report STALE WHITELIST, because the changes they declare are present on BOTH sides of that comparison. The entries are not wrong and the staleness check is not wrong -- the whitelist is per-COMPARISON while the file is per-repo, and the `commit` field records which comparison an entry belongs to without anything reading it. Resolving that is a harness change, not a batch change; flagged, not attempted here.",
+    "scope": "Every entry declares the comparison it belongs to as \"range\": \"<baselineSha>..<candidateSha>\". The file is per-repo but each entry describes ONE batch's change, so without a scope an old batch's declarations sit here forever, reading stale against every later baseline while still being load-bearing. Out-of-scope entries are INERT for a run -- reported so they can be pruned, never consuming a diff they were not written for.",
+    "renameMap": "An \"op\": \"rename\" entry declares an old->new CLASS TOKEN pair, applied to the BASELINE's vocabulary before anything is compared. Whole tokens only, never substrings, so renaming `fade-in` cannot touch `fade-in-late`. Everything the map does not explain survives into the comparison and still fails: a rename plus a smuggled extra class fails naming the smuggled token. A rename whose `from` never appears is flagged stale, so dead declarations cannot accumulate. A \"to\" of null declares that the token was REMOVED rather than renamed: the element survives and one of its class tokens goes, which no node entry can express. Same strictness -- an undeclared removal on the same node still fails.",
+    "deleteSubtree": "A \"delete-subtree\" entry names a deleted node by tag + ancestry path + a HASH of its own serialized content, and consumes the whole run of removed tokens or nothing. It exists for attribute-less nodes, where the only substrings a `contains` entry could use are exactly the lazy kind the specificity check rejects. The hash cannot be written from memory -- it is measured from the baseline build -- and an entry whose hash matches nothing there is reported before any verdict rests on it. A nested subtree is ONE entry, not one per element.",
+    "kind": "A removed/added entry names an ELEMENT unless it declares kind:\"code\" or kind:\"text\", in which case `contains` is matched against the token's TEXT. Without it an edit to an inline <style> body is undeclarable by construction, which is how booking-ops.html's :root reconciliation had no way to be certified. Kind is part of the entry's identity: a code entry cannot consume an element change even when its substring appears in an attribute.",
+    "wp0bi_fix": "WP-0b-i's fix round, range-scoped to 83421b9..dec32ac. Two change classes: aria-expanded and aria-controls on the mobile menu toggle, and aria-hidden on 21 decorative comparison glyphs on /saunas/. NOT DONE, and recorded here rather than quietly dropped: scoping the configurator modal to /saunas/, the only page with anything that opens it. Sitewide it puts a second inert <form> on 18 routes whose empty `configuration`, `model` and `estimated_total` hidden inputs sit in the DOM beside the real contact form -- a behavioural reviewer read the /contact/ one as a live field that had lost its data. The change is right and it was written and measured (one deleted subtree, span 352, hash c3a120b59594b6b1). It cannot be CERTIFIED today: delete-subtree caps its slice search at MAX_SUBTREE_TOKENS = 64, stated in the harness as a real limit whose safe direction is to fail loudly. Raising the cap to make this batch's own change pass is the tuning-until-green move this instrument exists to refuse, and a harness change does not belong in a fix round. Reverted, and handed on as its own small batch that carries the harness change with it. The honeypot's inline padding was left alone for a related reason: it is offscreen and untappable, its 34x34 measurement is an artefact of the global input rule, and its markup is identical to the copy inside the modal, so any declaration naming one would consume the other. The JS RUN FAILURE is expected here and waived nowhere: this instrument certifies delivered markup with scripts disabled, and the batch changes modal.js and navigation.js by design. What the scripts do is certified by scripts/quote-funnel.test.mjs, which drives them in a real browser through every state including the two defects this round fixed. Read the two together.",
+    "stage3": "Jen Stage 3 final polish, range-scoped to c41dec1..2a23c8d. Sixteen items shipped; only FOUR touch delivered markup and all four are declared here. The other twelve (F1 tracking, F6/(c) hero pair, F7 inputs, F10 white->ink, F11 pin colours, (d) stat-number, C26/C27 error token, C4 CTA alignment) are CSS-only and produce no DOM delta -- confirmed by measurement, not assumed: they do not appear in the residual at all. C34's hamburger glyph is a runtime textContent swap and this check runs with scripts disabled, so it is correctly invisible here; C2's footer fix is CSS-only for the same reason. The 22 FAQ text entries are declared one question at a time with exact strings rather than as a count of eleven anonymous moves, because 'eleven texts changed somewhere on this page' is not a declaration of which."
+  }
+}

@@ -1,0 +1,222 @@
+{
+  "_comment": "Single source of truth for SSC model and configurator pricing. Used by the quote generator and other tools outside the website repo.",
+  "_updated": "2026-07-31",
+  "_source": "js/data.js and src/_includes/modals/sauna.njk in ssc-website, at pricesVersion 2 (WP-0b-ii). Derivations and margins: docs/redesign-2026-07/35-configurator-price-sheet.md.",
+  "_schema": "v2. The v1 file could not hold what the configurator now offers: one heater_apex entry cannot carry a per-model electric split, and there were no bench, deck-tier, window-tier, speaker-tier or per-model wood-fired structures at all. Options are now grouped exactly as the configurator groups them, and any price that varies by model is an explicit pricePerModel map rather than v1's 'model.interiorUpgrade' magic string, which every consumer had to know how to interpret.",
+
+  "pricesVersion": 2,
+  "_pricesVersionNote": "Matches SSC.pricesVersion in js/data.js. Saved customer configurations are stamped with it; a mismatch means a stored total belongs to a superseded sheet. Bump both together, always.",
+
+  "models": {
+    "S2": {
+      "name": "S2 Standard Sauna",
+      "size": "5' x 7'",
+      "basePrice": 22500,
+      "capacity": "2-3 people",
+      "heater": "Homecraft 7.5kW H Series",
+      "electricOnly": true
+    },
+    "S4": {
+      "name": "S4 Standard Sauna",
+      "size": "7' x 7'",
+      "basePrice": 29000,
+      "capacity": "4-5 people",
+      "heater": "Harvia M3 or Homecraft 7.5kW",
+      "electricOnly": false
+    },
+    "S6": {
+      "name": "S6 Standard Sauna",
+      "size": "7' x 9'",
+      "basePrice": 35500,
+      "capacity": "6-7 people",
+      "heater": "Harvia M3 or Homecraft 7.5kW",
+      "electricOnly": false
+    },
+    "S8": {
+      "name": "S8 Standard Sauna",
+      "size": "7' x 11'",
+      "basePrice": 44000,
+      "capacity": "8-10 people",
+      "heater": "Harvia M3 or Homecraft 7.5kW",
+      "electricOnly": false
+    },
+    "SC": {
+      "name": "SC Commercial Sauna",
+      "size": "7' x 12' or larger",
+      "basePrice": 57000,
+      "capacity": "10-12+ people",
+      "heater": "Harvia Pro 20 or Homecraft Revive 9kW",
+      "electricOnly": false
+    }
+  },
+
+  "optionGroups": {
+    "heater": {
+      "label": "Heater Upgrade",
+      "select": "one",
+      "options": [
+        { "id": "heater_standard", "name": "Standard heater (included)", "price": 0, "default": true },
+        {
+          "id": "heater_electric",
+          "name": "Homecraft Revive 9kW (Electric)",
+          "nameByModel": { "SC": "Homecraft 15kW Apex (Electric)" },
+          "pricePerModel": { "S2": 3500, "S4": 3500, "S6": 3500, "S8": 3500, "SC": 2800 },
+          "_note": "One slot previously sold the SC's 15kW Apex and the S2-S8 Revive at a single $2,000 that had only ever been costed for one of them."
+        },
+        {
+          "id": "heater_wood",
+          "name": "Original-IKI (Wood-fired)",
+          "nameByModel": { "S4": "Mini-IKI (Wood-fired)" },
+          "pricePerModel": { "S2": null, "S4": 9800, "S6": 10800, "S8": 10800, "SC": 8200 },
+          "availableOn": ["S4", "S6", "S8", "SC"],
+          "_note": "Replaces the Kuuma Banya, cut at ~$3,000/sale loss. A null price means the model has no wood-fired option."
+        }
+      ]
+    },
+    "changingRoom": {
+      "label": "Changing Room",
+      "select": "one",
+      "options": [
+        { "id": "changing_none", "name": "No changing room", "price": 0, "default": true },
+        { "id": "changing_3ft", "name": "3' Changing room", "price": 11000 },
+        { "id": "changing_4ft", "name": "4' Changing room", "price": 12500 }
+      ]
+    },
+    "deck": {
+      "label": "Front Deck",
+      "select": "one",
+      "options": [
+        { "id": "deck_none", "name": "No deck", "price": 0, "default": true },
+        { "id": "deck_platform_2ft", "name": "2' open deck platform", "price": 2000 },
+        { "id": "deck_platform_3ft", "name": "3' open deck platform", "price": 3000 },
+        { "id": "deck_enclosed_2ft", "name": "2' semi-enclosed deck — two finished side walls, covered roof", "price": 4100 },
+        { "id": "deck_enclosed_3ft", "name": "3' semi-enclosed deck — two finished side walls, covered roof", "price": 5200 }
+      ],
+      "_note": "Two tiers. One 'front deck' label was selling both builds, and the semi-enclosed build was below cost at the platform price."
+    },
+    "exterior": {
+      "label": "Exterior Cladding",
+      "select": "one",
+      "options": [
+        { "id": "exterior_standard", "name": "Standard metal cladding", "price": 0, "default": true },
+        {
+          "id": "exterior_standing_seam",
+          "name": "Standing seam metal",
+          "pricePerModel": { "S2": 3000, "S4": 3000, "S6": 3500, "S8": 4000, "SC": 4000 }
+        },
+        {
+          "id": "exterior_cedar",
+          "name": "Cedar exterior",
+          "pricePerModel": { "S2": 2500, "S4": 2500, "S6": 3000, "S8": 3000, "SC": 3000 }
+        }
+      ]
+    },
+    "interior": {
+      "label": "Interior Wood",
+      "select": "one",
+      "options": [
+        { "id": "interior_knotty_cedar", "name": "Knotty Western Red Cedar", "price": 0, "default": true },
+        {
+          "id": "interior_clear_cedar",
+          "name": "Clear Cedar",
+          "pricePerModel": { "S2": 2200, "S4": 2600, "S6": 3000, "S8": 3500, "SC": 5000 }
+        },
+        {
+          "id": "interior_thermowood",
+          "name": "Thermowood",
+          "pricePerModel": { "S2": 2200, "S4": 2600, "S6": 3000, "S8": 3500, "SC": 5000 }
+        }
+      ],
+      "_note": "Clear cedar is priced at thermowood parity on an assumption doc 35 §7.7 flags as unverified. The two are separate options precisely so they can diverge."
+    },
+    "bench": {
+      "label": "Bench Configuration",
+      "select": "one",
+      "options": [
+        { "id": "bench_l", "name": "L-Shaped benches", "price": 0, "default": true },
+        { "id": "bench_u", "name": "U-Shaped benches", "price": 0 }
+      ],
+      "_note": "Both are included at no cost, but the choice is a build instruction and must reach the quote. It did not for the site's entire history."
+    },
+    "audio": {
+      "label": "Audio",
+      "select": "one",
+      "options": [
+        { "id": "speakers_none", "name": "No speakers", "price": 0, "default": true },
+        { "id": "speakers_standard", "name": "Built-in Bluetooth speakers (standard set)", "price": 1000 },
+        {
+          "id": "speakers_premium",
+          "name": "Premium audio — Polk Atrium 5 all-weather pair + 2.1 Bluetooth amp",
+          "price": 1500,
+          "note": "Mounted outside the peak-heat zone; placement confirmed at consultation."
+        }
+      ],
+      "_note": "The Premium Finish Package carries the STANDARD set. Premium audio is priced outside the package."
+    },
+    "additional": {
+      "label": "Additional Options",
+      "select": "any",
+      "options": [
+        { "id": "window_standard", "name": "Additional window (standard size)", "price": 1500 },
+        { "id": "window_full_size", "name": "Additional full-size window (~23 sq ft)", "price": 3700 },
+        { "id": "lighting_package", "name": "Interior & exterior lighting package", "price": 2000 },
+        { "id": "wifi_controller", "name": "WiFi heater controller", "price": 2000 }
+      ],
+      "_note": "One $1,500 window line previously covered both sizes; the full-size glass alone costs more than that."
+    }
+  },
+
+  "packages": {
+    "premium_finish": {
+      "name": "Premium Finish Package",
+      "description": "Clear cedar interior, cedar or standing seam exterior, WiFi controller, lighting package, Bluetooth speakers (standard set).",
+      "includes": [
+        "interior_clear_cedar",
+        "exterior_cedar",
+        "wifi_controller",
+        "lighting_package",
+        "speakers_standard"
+      ],
+      "pricePerModel": { "S2": 9200, "S4": 9600, "S6": 10500, "S8": 11000, "SC": 12500 },
+      "savings": 500,
+      "_note": "savings = (sum of `includes` at the CHEAPEST qualifying combination, i.e. cedar rather than standing seam) minus the package price, and it must hold on every model. Verified in CI by scripts/package-claim.test.mjs in the website repo, which scrapes the advertised figure off the rendered page rather than trusting this number."
+    }
+  },
+
+  "delivery": {
+    "delivery_local": {
+      "name": "Local Delivery (Sea to Sky)",
+      "price": 500,
+      "description": "Delivery within Sea to Sky corridor"
+    },
+    "delivery_extended": {
+      "name": "Extended Delivery",
+      "price": 0,
+      "description": "Delivery outside local area - $3/km (calculate separately)"
+    },
+    "_note": "Not configurator lines; quoted separately. Carried over from schema v1 unchanged."
+  },
+
+  "standard_inclusions": [
+    "Knotty Western Red Cedar interior",
+    "Standard metal exterior cladding",
+    "One exterior accent wall (entrance wall is always T&G, never metal)",
+    "L-shaped or U-shaped bench (choice included)",
+    "Standard heater (Harvia M3 or Homecraft 7.5kW)",
+    "One large window",
+    "Vapor barrier and insulation",
+    "Basic electrical (heater hookup)"
+  ],
+
+  "client_responsibility": [
+    "Electrical service to unit (licensed electrician required)",
+    "Foundation/site prep",
+    "Permits (if required)",
+    "Crane services (if needed for placement)"
+  ],
+
+  "quoting_practice": {
+    "validityDays": 30,
+    "_note": "Every quote carries a 30-day validity line. Quotes already issued before pricesVersion 2 are honoured for their stated validity, or 30 days from issue where unstated. Prices are firm; no discounting (per Lee, 2026-07-30)."
+  }
+}

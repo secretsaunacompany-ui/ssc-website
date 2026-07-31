@@ -76,7 +76,10 @@
     # script execution here is a deliberate supply-chain call: it is first-party
     # infrastructure serving five sites, and self-hosting would fork a working
     # centralized tracker five ways. Revisit if that site gains contributors.
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://ssc-ops.netlify.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://res.cloudinary.com https://*.basemaps.cartocdn.com data:; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://*.supabase.co https://unpkg.com https://formspree.io https://cdn.jsdelivr.net https://script.google.com https://ssc-ops.netlify.app; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formspree.io"
+    # Fonts are self-hosted as of WP-1a, so this policy SHRANK:
+    # https://fonts.googleapis.com left style-src and https://fonts.gstatic.com
+    # left font-src. Nothing was added. font-src is now 'self' alone.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://ssc-ops.netlify.app; style-src 'self' 'unsafe-inline' https://unpkg.com; font-src 'self'; img-src 'self' https://res.cloudinary.com https://*.basemaps.cartocdn.com data:; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://*.supabase.co https://unpkg.com https://formspree.io https://cdn.jsdelivr.net https://script.google.com https://ssc-ops.netlify.app; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formspree.io"
     # SECURITY: Permissions Policy - restricts browser features
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
 
@@ -121,6 +124,14 @@
 # Cache CSS with long-term immutable headers
 [[headers]]
   for = "/styles.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache self-hosted fonts forever. Safe precisely because the filenames carry a
+# content hash: different bytes produce a different URL, so `immutable` can
+# never pin a visitor to a stale face the way a hand-typed ?v= stamp could.
+[[headers]]
+  for = "/fonts/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 

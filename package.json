@@ -5,22 +5,41 @@
   "main": "index.html",
   "scripts": {
     "dev": "npx @11ty/eleventy --serve",
-    "build": "npx @11ty/eleventy",
+    "build": "rm -rf dist && npx @11ty/eleventy",
     "dev:netlify": "netlify dev",
-    "visual-diff": "node scripts/visual-diff.mjs"
+    "visual-diff": "node scripts/visual-diff.mjs",
+    "visual-diff:test": "node scripts/visual-diff.test.mjs",
+    "build-cache:test": "node scripts/build-cache.test.mjs",
+    "package-claim:test": "node scripts/package-claim.test.mjs",
+    "prices-version:test": "node scripts/prices-version.test.mjs",
+    "models-json:roundtrip": "node scripts/models-json-roundtrip.mjs",
+    "quote-funnel:test": "node scripts/quote-funnel.test.mjs",
+    "//events:test": "Requires a sibling ../ssc-ops checkout: the stream-separation scenarios load the REAL shared tracker from it. Without it the suite fails with that message rather than passing on a stub.",
+    "events:test": "node scripts/events.test.mjs",
+    "//fonts:test": "Group B drives a real Chromium against dist/, so run `npm run build` first. Static checks alone cannot tell you a font actually loaded.",
+    "fonts:test": "node scripts/fonts.test.mjs",
+    "//rhythm:test": "Group R drives a real Chromium against dist/, so run `npm run build` first. A token's declared value and the value that reaches the element are different claims \u2014 and an edit (or mutation probe) made to styles.css WITHOUT a rebuild never reaches the measured page: it reports as 'suite did not notice', a coverage gap that isn't there.",
+    "rhythm:test": "node scripts/rhythm.test.mjs",
+    "dom-integrity": "node scripts/dom-integrity.mjs",
+    "dom-integrity:test": "node scripts/dom-integrity.test.mjs",
+    "//lint:css": "The guard that keeps the type scale and the radius collapse from drifting back: raw font-size and border-radius literals are rejected outside :root. Six exceptions exist and every one carries a stylelint-disable-next-line with its reason.",
+    "lint:css": "npx stylelint styles.css",
+    "lint:css:test": "node scripts/stylelint-gate.test.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
     "@supabase/supabase-js": "^2.39.0"
   },
   "devDependencies": {
-    "@11ty/eleventy": "^2.0.0",
-    "esbuild": "^0.27.3",
-    "lightningcss": "^1.31.1",
+    "@11ty/eleventy": "2.0.1",
+    "esbuild": "0.27.3",
+    "fontaine": "0.8.0",
+    "lightningcss": "1.31.1",
     "netlify-cli": "^17.0.0",
     "pixelmatch": "7.2.0",
     "playwright": "1.62.0",
     "pngjs": "7.0.0",
-    "postgres": "^3.4.8"
+    "postgres": "^3.4.8",
+    "stylelint": "17.14.1"
   }
 }

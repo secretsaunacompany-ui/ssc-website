@@ -19,7 +19,7 @@ permalink: false
         {% if posts.length > 0 %}
         <div class="blog-list">
             {% for post in posts %}
-            <a href="{{ post.url }}" class="blog-card fade-in">
+            <a href="{{ post.url }}" class="blog-card reveal">
                 <div class="blog-card__content">
                     <time class="blog-card__date" datetime="{{ post.date | date('YYYY-MM-DD') }}">{{ post.date | date("MMMM D, YYYY") }}</time>
                     <h2 class="blog-card__title">{{ post.data.title }}</h2>
@@ -31,7 +31,7 @@ permalink: false
             {% endfor %}
         </div>
         {% else %}
-        <div class="blog-empty fade-in">
+        <div class="blog-empty reveal">
             <p>Posts coming soon. In the meantime, <a href="/contact/" class="link--accent-underline">get in touch</a> if you have questions about our saunas.</p>
         </div>
         {% endif %}

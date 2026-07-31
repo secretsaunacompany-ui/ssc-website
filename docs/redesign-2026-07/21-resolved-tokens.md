@@ -36,6 +36,21 @@ Canonical names follow the mood board's vocabulary (`--ground`, `--ink`, `--rule
     --ember:       #c4a57b;
     --ember-quiet: rgba(196, 165, 123, 0.18);
 
+    /* ===== Validation ===== */
+    /* Requirement specified by Jen Stage 3 (C26/C27); value derived + verified at
+       implementation, 2026-07-31. This file resolved NO error token, so form
+       validation was rendering in --ember-hover — the same warm tan as every
+       price on the configurator, which made "this field is wrong" and "this costs
+       $2,000" the same colour on the money screen.
+       Desaturated warm red, hsl(6, 50%, 58%). Contrast verified (WCAG 2.x
+       relative luminance, calculated not estimated): 5.28:1 on --ground and
+       4.93:1 on --elevated — AA at every size on BOTH surfaces, which is required
+       because validation renders in the modal (elevated) and on /contact/
+       (ground). Hue sits 28 degrees off --ember (34.5deg), so it is not a darker
+       ember; and it never carries the message alone — an invalid field gets a
+       border AND text (C27). */
+    --error: #c9695e;
+
     /* ===== Fonts — families carried, stacks CHANGED by Beatrice 11 §6 ===== */
     /* The two Fallback families are metric-tuned @font-face blocks (11 §6, WP-1a).
        Until those land the names are skipped — paste-safe either way. */
@@ -99,8 +114,8 @@ Canonical names follow the mood board's vocabulary (`--ground`, `--ink`, `--rule
     --color-black-alpha-95: rgba(0, 0, 0, 0.95);  /* .lightbox-overlay */
 
     /* ===== Accent support — CARRIED ===== */
-    --color-warm-wood-hover: #d4b58b;   /* button hover fill — colour-only hover is sanctioned, Jen §5.2 */
-    --color-warm-wood-dark:  #a08060;   /* one consumer: .comparison-header.ours gradient — WP-1b flag, §6.5 */
+    --ember-hover: #d4b58b;   /* button hover fill — colour-only hover is sanctioned, Jen §5.2 */
+    --ember-dark:  #a08060;   /* one consumer: .comparison-header.ours gradient — §6.5 */
 
     /* ===== Motion (Jen §5, mood board implementation) ===== */
     --transition-fast:   200ms ease-out;   /* was 0.3s ease — 20 live declarations change, §5.3 */
@@ -217,8 +232,8 @@ The live `:root` (`styles.css:9–75`) defines **48** custom properties. One mor
 | `--color-charcoal` | `#c0c0c0` | 14 | Resolved / Retired | alias → `--ink-quiet`; the lying name — call sites §6.1 |
 | `--color-muted-black` | `#0c0c0c` | 9 | Resolved | alias → `--ground` (same value) |
 | `--color-warm-wood` | `#c4a57b` | 52 | Resolved | alias → `--ember` (same value) |
-| `--color-warm-wood-hover` | `#d4b58b` | 4 | Carried | button hover fill; colour-only hover sanctioned (Jen §5.2) |
-| `--color-warm-wood-dark` | `#a08060` | 1 | Carried | one gradient consumer — WP-1b flag, §6.5 |
+| `--ember-hover` | `#d4b58b` | 6 | Carried (renamed WP-1b, was `--color-warm-wood-hover`) | button hover fill; colour-only hover sanctioned (Jen §5.2) |
+| `--ember-dark` | `#a08060` | 1 | Carried (renamed WP-1b, was `--color-warm-wood-dark`) | one gradient consumer — §6.5 |
 | `--color-bg-dark` | `#1a1a1a` | 12 | Resolved | alias → `--elevated` `#161512` (R7) |
 | `--color-bg-grey` | `#111111` | 1 | Resolved / Retired | alias → `--elevated` (R7); `.bg-grey` class in 6 markup sites, §6.1 |
 | `--color-border-subtle` | `#3a3a3a` | 11 | Resolved | alias → `--rule` (R6) |
@@ -308,9 +323,11 @@ Selector names and counts — line numbers shift the moment the first edit lands
 
 `.card-content p` · `.quote-btn` · `.map-filter-btn` · `.faq-answer` · `footer` · `.footer-section a` · `.text--intro` · `.text--centered-60ch` · `.link--charcoal` · `.cta__footer` · `.testimonial-card__author` · `.location-card__address` · `.blog-card__excerpt` · `.advisor__clear`
 
-Plus the **class name** `.link--charcoal` itself, which inherits the lie: 1 CSS selector + 1 markup site (`contact.njk`, the email link). Rename to `.link--quiet` (or fold into a link default) in the same WP-1b batch — a grep for `charcoal` after WP-1b must return zero.
+Plus the **class name** `.link--charcoal` itself, which inherits the lie: 1 CSS selector + 1 markup site (`contact.njk`, the email link). Renamed to **`.link--quiet`** in WP-1b (or fold into a link default) in the same WP-1b batch — a grep for `charcoal` after WP-1b must return zero.
 
-Related `.bg-grey`: 1 CSS selector + **6 markup sites** (`home.njk` ×2, `about.njk` ×2, `saunas.njk` ×1, `service-area.njk` ×1) — the class survives only if renamed to match the elevated vocabulary; four of those six are `hero-overlay` sections that Jen retires anyway (10:79).
+Related `.bg-grey`: 1 CSS selector + **7 markup sites** (`home.njk` ×2, `about.njk` ×2, `saunas.njk` ×1, `service-area.njk` ×1, `warranty.njk` ×1) — the class survives only if renamed to match the elevated vocabulary; six of those seven are `hero-overlay` sections that Jen retires anyway (10:79).
+
+**Corrected 2026-07-31 (WP-1b certification):** this row read **6** markup sites and omitted `warranty.njk`. Re-derived by grep against the batch's own baseline commit and confirmed independently in review. The rename target, previously unstated here, is **`.surface--elevated`** — chosen to match the `--elevated` surface token rather than to carry the colour word forward, which is the same lie `.link--charcoal` was renamed to escape. Renders to 14 occurrences per width across 12 routes; declared as a single `rename` entry in `scripts/dom-integrity.config.json`, which rewrote 28 class tokens across the run.
 
 ### 6.2 Retired tokens — consumers by selector
 
@@ -328,6 +345,20 @@ Related `.bg-grey`: 1 CSS selector + **6 markup sites** (`home.njk` ×2, `about.
 | `--radius-md` (4) | `.btn`, `.btn-outline`, `.quote-btn`, `.map-filter-btn` → `var(--radius-sm)`, then delete the token |
 | `--radius-sm` image sites | gallery/photography consumers go to `0`, not 2px — "photography is never rounded" (Jen §4.2), incl. the inline style in `service-area.njk` |
 
+### 6.2a Gutter migration — INCOMPLETE after WP-1b (found 2026-07-31 by `scripts/rhythm.test.mjs`)
+
+R1's premise is that `0 5%` resolves against the parent and so produces several gutters wearing one rule's name. `--gutter` replaced most of them. **Three percentage gutters survive**, measured from computed style in a real browser at 1440 and 390:
+
+| Site | Rule | Resolves to | Status |
+|---|---|---|---|
+| `nav` | `padding: var(--spacing-sm) 2.5%` (`styles.css:579`) | 36px @1440 · 9.75px @390 | unmigrated |
+| `.page-hero` | `padding: 12rem 5% 6rem` (`styles.css:712`) | 72px @1440 · 19.5px @390 | unmigrated |
+| bare `section` **below 768px** | `@media (max-width: 768px) { section { padding: var(--spacing-2xl) 5% } }` (`styles.css:2936`) | 19.5px @390 | unmigrated |
+
+The third is the one worth flagging. It is invisible at desktop width, invisible to the DOM-integrity check (no markup changed) and invisible to the pixel harness (the batch was expected to move things), and nothing in the repo was reading the narrow width's computed padding until this suite existed. It also **flattens the section rhythm**: the three `--section-pad` tiers (Jen §2.0/§2.2) collapse to a flat `--spacing-2xl` below 768px, so the compression that is supposed to read *as* compression does not exist on a phone — which is the width most visitors use.
+
+Not fixed here: this is a rendered-output change on every page at the mobile width, so it belongs in its own batch under the harness's own eyes, not folded into a certification round. Pinned by rule in `scripts/rhythm.test.mjs` so a fourth deviation fails and so migrating one of the three has to be a deliberate edit.
+
 ### 6.3 Alpha-overlay consumers WP-1b re-homes (tokens stay until their counts hit zero)
 
 `nav` border-bottom (`-10`) → `--rule` · `.contact-form--styled` border (`-08`) → component deleted (Jen §4.2: frosted card dies) · `.map-filter-btn` border/fills (`-05`/`-08`/`-10`) → rule grammar · `.comparison-badge-alt`, `.price-row.total`, `.addon-category`, `.addon-option:hover`, `.spec-item`, `.lightbox-nav` — reviewed against the ruled-surface grammar in WP-1b; any that survive keep the tokens, which is why the tokens are Carried, not Retired.
@@ -338,11 +369,17 @@ Related `.bg-grey`: 1 CSS selector + **6 markup sites** (`home.njk` ×2, `about.
 
 ### 6.5 One-consumer oddity
 
-`.comparison-header.ours` runs `linear-gradient(135deg, var(--color-warm-wood), var(--color-warm-wood-dark))` — the only gradient fill on an interactive-adjacent surface. Saul bans gradient *meshes* and radial *glows*, not this; but it is the sole reason `--color-warm-wood-dark` exists. WP-1b decides flat-ember vs keep; if flattened, the token retires with it. Flagged, not resolved.
+`.comparison-header.ours` runs `linear-gradient(135deg, var(--ember), var(--ember-dark))` (quoted at its post-WP-1b names) — the only gradient fill on an interactive-adjacent surface. Saul bans gradient *meshes* and radial *glows*, not this; but it is the sole reason `--ember-dark` exists. WP-1b decides flat-ember vs keep; if flattened, the token retires with it. Flagged, not resolved — **still open after WP-1b**: the token was renamed with the rest of the accent family, not retired, so the one gradient consumer survives and this decision is inherited rather than made.
 
 ### 6.6 Pure renames — alias-backed, mechanical, selector-independent
 
-Global find-and-replace on the `var()` name; §1's aliases make before/after render identically, so these need counts, not selector lists: `--color-off-white`→`--ink` (27) · `--color-warm-wood`→`--ember` (52) · `--color-muted-black`→`--ground` (9) · `--color-bg-dark`→`--elevated` (12) · `--color-bg-grey`→`--elevated` (1) · `--color-border-subtle`→`--rule` (11) · `--color-soft-grey`→`--rule` (9) · `--color-text-muted`→`--ink-quiet` (16) · `--color-text-subtle`→`--ink-quiet` (6) · `--color-text-dim`→`--ink-quiet` (2) · `--color-text-faint`→`--ink-quiet` (1) · `--color-text-feature`→`--ink-quiet` (1) · `--color-charcoal`→`--ink-quiet` (14, §6.1). After the sweep, the alias block empties and is deleted.
+Global find-and-replace on the `var()` name; §1's aliases make before/after render identically, so these need counts, not selector lists: `--color-off-white`→`--ink` (27) · `--color-warm-wood`→`--ember` (52) · `--color-muted-black`→`--ground` (9) · `--color-bg-dark`→`--elevated` (12) · `--color-bg-grey`→`--elevated` (1) · `--color-border-subtle`→`--rule` (11) · `--color-soft-grey`→`--rule` (9) · `--color-text-muted`→`--ink-quiet` (16) · `--color-text-subtle`→`--ink-quiet` (6) · `--color-text-dim`→`--ink-quiet` (2) · `--color-text-faint`→`--ink-quiet` (1) · `--color-text-feature`→`--ink-quiet` (1) · `--color-charcoal`→`--ink-quiet` (14, §6.1).
+
+**Added 2026-07-31 (NOTE-2c, done in WP-1b):** `--color-warm-wood-hover`→**`--ember-hover`** (6) · `--color-warm-wood-dark`→**`--ember-dark`** (1). These two were the last names in the accent family still carrying the `warm-wood` vocabulary after `--color-warm-wood`→`--ember` (52) landed, which left the stylesheet naming one colour two ways — the precise drift this ledger exists to close. Folded at every call site; a grep for `color-warm-wood-hover` or `color-warm-wood-dark` across `styles.css`, `src/`, `js/` and `booking-ops.html` now returns **zero**. The hover count is **6**, not the 4 recorded in §5 — re-derived by grep, and §5's row is corrected with it.
+
+The **alpha** tokens (`--color-warm-wood-alpha-*`) deliberately keep their names for now, per §6.3: they retire when their consumer counts reach zero, not before, and renaming them ahead of that would churn call sites twice.
+
+After the sweep, the alias block empties and is deleted.
 
 ### 6.7 Reveal-class inventory — the corrected count for WP-1b's grep-clean gate
 
@@ -373,7 +410,7 @@ WCAG 2.x relative-luminance ratios, computed 2026-07-28. AA thresholds: 4.5:1 no
 | `--ink-faint` #7f7a74 | 4.60 | **4.29** | AA at all sizes on ground; **large-text only on elevated** (R5 constraint — holds) |
 | `--ember` #c4a57b | 8.40 | 7.84 | AA at every size — the 11px ember kicker (R10) passes on both surfaces |
 | `#000` on `--ember` fill | 9.02 | — | `.btn` text passes |
-| `#000` on `--color-warm-wood-hover` | 10.78 | — | hover state passes |
+| `#000` on `--ember-hover` | 10.78 | — | hover state passes |
 
 **Alias sweep:** every legacy text alias in §1 resolves to `--ink` or `--ink-quiet` — both pass AA at every size on both surfaces — so all 74 aliased text call sites pass without per-site review. The single faint-mapped alias in the first issue (`--color-text-dim`) was the one failure this sweep caught: `.stat-source` is 0.8rem italic on an elevated card (`.stat-card` runs `--color-bg-dark` → `--elevated`), where faint is 4.29:1. Corrected by A1; with the alias on quiet the site has **no live small-text-on-elevated pairing below 6.15:1.**
 

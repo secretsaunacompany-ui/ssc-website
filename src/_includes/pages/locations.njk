@@ -1,7 +1,19 @@
-    <div id="locations" class="page page--has-bg">
-        <!-- Fixed Background Image -->
-        <div class="page-bg--fixed page-bg--opacity-15" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768616089/PXL_20250907_221307193_dtioaf.jpg');"></div>
+    {# F2, scoped to THIS page by orchestrator ruling (2026-07-31), on Jen's
+       written record: the fixed wood-plank layer showing through the
+       --elevated location cards was her named objection, and her section 2.3
+       rule is that atmosphere must not leak into the surfaces that carry
+       information. The layer is deleted here and only here.
 
+       The SITEWIDE fixed-background question is Wave B's, with the mechanism
+       corrected on record: this layer's opacity does NOT vary with scroll --
+       measured constant at 0.15 across five scroll positions, transform none,
+       and no JS touches it. It is a fixed-attachment layer, not a fifth
+       parallax variant. Sixteen other pages still carry one.
+
+       `page--has-bg` goes with the div rather than being left behind: it exists
+       to establish the stacking context that layer needed, and a class asserting
+       a background on a page that has none is the next reader's wrong turn. #}
+    <div id="locations" class="page">
         <section class="page-hero">
             <h1>Where to Find Us</h1>
             <p>Experience our saunas across British Columbia and beyond</p>
@@ -25,11 +37,11 @@
             <div id="map" class="map-container"></div>
 
             <!-- Commercial Locations Info -->
-            <h2 class="text-center fade-in heading--mb-2">Visit Our Saunas</h2>
+            <h2 class="text-center reveal">Visit Our Saunas</h2>
 
             <div class="grid-2 grid-2--mb-4">
-                <div class="offering-card slide-up">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768616084/PXL_20250910_044921755_wobuh2.jpg" alt="Brackendale Art Gallery Sauna" class="card-image">
+                <div class="offering-card reveal">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768616084/PXL_20250910_044921755_wobuh2.jpg" alt="Brackendale Art Gallery Sauna" class="card-image" width="1920" height="1446">
                     <div class="card-content">
                         <h3>Brackendale Art Gallery</h3>
                         <p class="location-card__highlight">Brackendale, BC</p>
@@ -39,8 +51,8 @@
                     </div>
                 </div>
 
-                <div class="offering-card slide-up">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409622/IMG_5228_1_z2bz8q.jpg" alt="The Good Sauna Vancouver" class="card-image">
+                <div class="offering-card reveal">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409622/IMG_5228_1_z2bz8q.jpg" alt="The Good Sauna Vancouver" class="card-image" width="1920" height="1280">
                     <div class="card-content">
                         <h3>The Good Sauna</h3>
                         <p class="location-card__address">1216 Franklin St, Vancouver, BC</p>
@@ -50,8 +62,8 @@
                     </div>
                 </div>
 
-                <div class="offering-card slide-up">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409619/PXL_20251217_173040936_cnznku.jpg" alt="Gatherwell Ambleside Sauna" class="card-image">
+                <div class="offering-card reveal">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409619/PXL_20251217_173040936_cnznku.jpg" alt="Gatherwell Ambleside Sauna" class="card-image" width="1920" height="1446">
                     <div class="card-content">
                         <h3>Gatherwell - Ambleside</h3>
                         <p class="location-card__address">Ambleside Beach, West Vancouver, BC</p>
@@ -61,8 +73,8 @@
                     </div>
                 </div>
 
-                <div class="offering-card slide-up">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409618/IMG_7123_bmcx9s.jpg" alt="Finnish Sauna Co Sea Edge" class="card-image">
+                <div class="offering-card reveal">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409618/IMG_7123_bmcx9s.jpg" alt="Finnish Sauna Co Sea Edge" class="card-image" width="1905" height="1261">
                     <div class="card-content">
                         <h3>The Finnish Sauna Co. - Sea Edge</h3>
                         <p class="location-card__address">209 Island Hwy W, Parksville, BC</p>
@@ -75,32 +87,32 @@
 
             <!-- Additional Info -->
             <div class="text-center center-wrapper--padded">
-                <p class="text--centered-60ch">
+                <p class="measure-wide">
                     We've built across British Columbia, from residential backyards to commercial installations.
                 </p>
             </div>
         </section>
 
         <section class="wide-container">
-            <h2 class="text-center fade-in">Our Builds Across BC</h2>
+            <h2 class="text-center reveal">Our Builds Across BC</h2>
             <div class="gallery">
-                <div class="gallery-item scale-in">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768275849/IMG_7017-EDIT_tvspyb.jpg" alt="Custom Finnish sauna at a BC wellness location">
+                <div class="gallery-item reveal">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768275849/IMG_7017-EDIT_tvspyb.jpg" alt="Custom Finnish sauna at a BC wellness location" width="600" height="900">
                 </div>
-                <div class="gallery-item scale-in">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768409620/IMG_5722_k3dl1r.jpg" alt="Secret Sauna Company build at partner location">
+                <div class="gallery-item reveal">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768409620/IMG_5722_k3dl1r.jpg" alt="Secret Sauna Company build at partner location" width="600" height="400">
                 </div>
-                <div class="gallery-item scale-in">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324981/PXL_20240911_022834882.MP_wtnwtj.jpg" alt="Mobile sauna setup at scenic waterfront">
+                <div class="gallery-item reveal">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324981/PXL_20240911_022834882.MP_wtnwtj.jpg" alt="Mobile sauna setup at scenic waterfront" width="600" height="452">
                 </div>
-                <div class="gallery-item scale-in">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324977/DSC03225-EDIT_crqtkp.jpg" alt="Sauna exterior with modern metal cladding">
+                <div class="gallery-item reveal">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324977/DSC03225-EDIT_crqtkp.jpg" alt="Sauna exterior with modern metal cladding" width="600" height="401">
                 </div>
-                <div class="gallery-item scale-in">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250657/PXL_20250605_231738816.MP_javbdv.jpg" alt="Cedar sauna interior with multi-tier benching">
+                <div class="gallery-item reveal">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250657/PXL_20250605_231738816.MP_javbdv.jpg" alt="Cedar sauna interior with multi-tier benching" width="600" height="452">
                 </div>
-                <div class="gallery-item scale-in">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324985/IMG_7463_fevmyz.jpg" alt="Warm sauna interior with ambient lighting">
+                <div class="gallery-item reveal">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324985/IMG_7463_fevmyz.jpg" alt="Warm sauna interior with ambient lighting" width="600" height="400">
                 </div>
             </div>
         </section>

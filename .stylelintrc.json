@@ -1,0 +1,22 @@
+{
+  "//": "The guard that makes WP-1a's type consolidation and WP-1b's radius collapse PERMANENT rather than a one-time tidy. Both were previously done by hand and both drifted back: ~20 ad-hoc font-sizes and five radius values had accumulated since the last pass, one reasonable-looking exception at a time. A rule catches the next one on the commit that adds it. Core stylelint only -- no plugin -- because declaration-property-value-allowed-list already expresses exactly this and a third-party dependency for a two-property rule is not worth its supply chain.",
+
+  "//scope": "The rules below match DECLARATIONS of font-size and border-radius. :root declares only custom properties (--text-*, --radius-*), never these properties directly, so the token definitions are outside the rules' reach by construction rather than by an exclusion that could rot.",
+
+  "rules": {
+    "declaration-property-value-allowed-list": {
+      "font-size": ["/^var\\(--text-/", "inherit"],
+      "border-radius": ["/^var\\(--radius-/", "/^50%/"]
+    }
+  },
+
+  "overrides": [
+    {
+      "files": ["booking-ops.html"],
+      "//": "Standalone admin document with its own :root and no link to styles.css. Out of scope for the design system (critic T2 boundary): it is not on the token scale and forcing it onto one is a separate decision.",
+      "rules": {
+        "declaration-property-value-allowed-list": null
+      }
+    }
+  ]
+}

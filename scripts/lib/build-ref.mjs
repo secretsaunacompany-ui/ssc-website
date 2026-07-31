@@ -2,10 +2,15 @@
  * Build the site at a given git ref into an isolated output directory.
  *
  * Two modes:
- *   ref === 'WORKING'  -> build the current working tree (uncommitted edits
- *                         included), in place, then snapshot dist/.
+ *   ref === 'WORKING'  -> copy the current working tree (uncommitted edits
+ *                         included) into a temp dir, build THERE, snapshot dist/.
  *   any other ref      -> `git worktree add --detach` a clean checkout of that
  *                         ref into a temp dir, build there, snapshot dist/.
+ *
+ * WORKING deliberately does NOT build in place. The build command starts with
+ * `rm -rf dist`, and running that against the live working tree means a
+ * measurement tool destroying the developer's own build output as a side
+ * effect. Neither mode now writes anything inside the repo.
  *
  * The build command is always `rm -rf dist && <eleventy>`. The clean is
  * load-bearing per netlify.toml: Eleventy does not remove stale output, so a
@@ -34,6 +39,84 @@ function runBuild(dir) {
 }
 
 /**
+ * Directory names at the repo root that are never copied into a WORKING build.
+ * Build artefacts, VCS metadata, the harness's own scratch space, and secrets.
+ *
+ * RISK, stated rather than discovered later: this is a DENYLIST, so it fails
+ * open. Anything new at the repo root is copied by default. Two consequences —
+ * a new build-artefact directory silently inflates every WORKING build until
+ * someone adds it here, and a new secrets file that is not named `.env*` gets
+ * copied into a world-readable temp directory. (The `.env` entry plus the
+ * `startsWith('.env')` guard in materializeWorkingTree cover today's secrets;
+ * they do not cover a future `credentials.json`.) An allowlist would fail
+ * closed but would need updating for every legitimate new top-level input,
+ * which is the more frequent event by far. Kept as a denylist deliberately;
+ * revisit if a non-`.env` secret ever lands at the repo root.
+ */
+const WORKING_COPY_EXCLUDE = new Set([
+  'node_modules', '.git', 'dist', '_site', '.visual-diff', '.netlify',
+  '.cache', 'tmp', '.env',
+]);
+
+/**
+ * Copy the live working tree (including uncommitted edits) into `dest`, minus
+ * build artefacts and secrets, and symlink node_modules the same way the
+ * git-worktree path does.
+ */
+function materializeWorkingTree(dest) {
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(REPO_ROOT, { withFileTypes: true })) {
+    if (WORKING_COPY_EXCLUDE.has(entry.name)) continue;
+    if (entry.name.startsWith('.env')) continue;
+    fs.cpSync(path.join(REPO_ROOT, entry.name), path.join(dest, entry.name), {
+      recursive: true,
+      dereference: false,
+      verbatimSymlinks: true,
+    });
+  }
+  fs.symlinkSync(path.join(REPO_ROOT, 'node_modules'), path.join(dest, 'node_modules'), 'dir');
+}
+
+/**
+ * Resolve a ref to a short sha, so two refs naming the same commit can be
+ * detected before an expensive self-comparison is run.
+ *
+ * WORKING resolves to HEAD's sha, with a `+dirty` suffix ONLY when the working
+ * tree actually differs from HEAD. The suffix used to be unconditional, which
+ * made `baselineSha === candidateSha` unreachable for WORKING and so disarmed
+ * the self-comparison guard entirely: on a clean tree the default invocation
+ * (`-b main -c WORKING` with main checked out) built the same commit twice,
+ * measured nothing, and reported PASS. Suffixing only when dirty lets the
+ * equality guard in visual-diff.mjs fire on exactly that case.
+ *
+ * `git status --porcelain` is the right dirtiness test rather than a
+ * tracked-files-only diff: materializeWorkingTree copies untracked files into
+ * the build too, so an untracked file genuinely makes WORKING a different build
+ * from HEAD.
+ *
+ * `cwd` exists so the fixtures can exercise both the clean and the dirty case
+ * against a real scratch repository. The live repo is dirty whenever anyone is
+ * working in it, so the clean-tree branch — the one that was broken — is
+ * otherwise untestable. Production callers always use the default.
+ *
+ * @returns {string} short sha, `<sha>+dirty`, or 'working-tree' outside a repo.
+ */
+export function resolveRef(ref, cwd = REPO_ROOT) {
+  if (ref === 'WORKING') {
+    try {
+      const head = git(['rev-parse', '--short', 'HEAD'], cwd);
+      const dirty = git(['status', '--porcelain'], cwd) !== '';
+      return dirty ? `${head}+dirty` : head;
+    } catch { return 'working-tree'; }
+  }
+  try {
+    return git(['rev-parse', '--short', ref], cwd);
+  } catch (err) {
+    throw new Error(`Not a git ref: ${ref}`);
+  }
+}
+
+/**
  * @param {string} ref  git ref, or the literal 'WORKING'
  * @param {string} outDir  where the built dist/ should end up
  * @returns {{ ref: string, sha: string, outDir: string }}
@@ -43,16 +126,19 @@ export function buildRef(ref, outDir) {
   fs.mkdirSync(path.dirname(outDir), { recursive: true });
 
   if (ref === 'WORKING') {
-    runBuild(REPO_ROOT);
-    fs.cpSync(path.join(REPO_ROOT, 'dist'), outDir, { recursive: true });
-    let sha = 'working-tree';
+    const sha = resolveRef('WORKING');
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ssc-visual-diff-working-'));
     try {
-      sha = `${git(['rev-parse', '--short', 'HEAD'])}+dirty`;
-    } catch { /* detached / no HEAD is fine */ }
+      materializeWorkingTree(tmp);
+      runBuild(tmp);
+      fs.cpSync(path.join(tmp, 'dist'), outDir, { recursive: true });
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
     return { ref, sha, outDir };
   }
 
-  const sha = git(['rev-parse', '--short', ref]);
+  const sha = resolveRef(ref);
   const wt = fs.mkdtempSync(path.join(os.tmpdir(), 'ssc-visual-diff-'));
   try {
     git(['worktree', 'add', '--detach', '--quiet', wt, ref]);

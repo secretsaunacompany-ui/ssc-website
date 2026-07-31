@@ -2,7 +2,7 @@
     <footer>
         <div class="footer-content">
             <div class="footer-section">
-                <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768255497/FINAL_LOGO_TEXT1.1_qwtccv.png" alt="Secret Sauna Company" class="footer-logo">
+                <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768255497/FINAL_LOGO_TEXT1.1_qwtccv.png" alt="Secret Sauna Company" class="footer-logo" width="1920" height="953">
                 <p class="footer-tagline">Designed by Finnish Standards, Inspired by Tradition and Rooted in Science.</p>
             </div>
             <div class="footer-section">
@@ -34,5 +34,16 @@
         </div>
     </footer>
 
+    {# NOTE, deliberate: this include is sitewide although only /saunas/ can open
+       the modal, so 18 routes ship a second, inert <form> whose empty
+       `configuration`, `model` and `estimated_total` hidden inputs sit in the
+       DOM beside the real contact form. A behavioural reviewer read the
+       /contact/ one as a live field that had lost its data, and the fix -- a
+       `configurator` page flag around this include -- was written, measured and
+       then REVERTED: it deletes a 352-token subtree, and dom-integrity's
+       delete-subtree op caps its slice search at 64 tokens by design. Raising
+       that cap to make this change certify is tuning the instrument until it
+       gives the wanted answer. Handed on as its own batch, carrying the harness
+       change with it. #}
     {% include "modals/sauna.njk" %}
     {% include "modals/lightbox.njk" %}
