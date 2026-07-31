@@ -131,6 +131,13 @@ module.exports = function(eleventyConfig) {
 
   eleventyConfig.addPassthroughCopy("js");
   eleventyConfig.addPassthroughCopy("styles.css");
+  // Self-hosted web fonts. The binaries carry a content hash IN THE FILENAME
+  // (not a ?v= stamp), so the `max-age=31536000, immutable` header in
+  // netlify.toml can never serve a stale face: new bytes mean a new name and a
+  // new URL. Copied verbatim -- woff2 is already brotli-compressed, so the
+  // minify hook does not touch them. The OFL licence files ride along, which is
+  // the attribution the licence asks for.
+  eleventyConfig.addPassthroughCopy({ "src/fonts": "fonts" });
 
   // Post-build minification: JS (esbuild) + CSS (lightningcss).
   //

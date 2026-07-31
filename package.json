@@ -13,7 +13,9 @@
     "package-claim:test": "node scripts/package-claim.test.mjs",
     "quote-funnel:test": "node scripts/quote-funnel.test.mjs",
     "//events:test": "Requires a sibling ../ssc-ops checkout: the stream-separation scenarios load the REAL shared tracker from it. Without it the suite fails with that message rather than passing on a stub.",
-    "events:test": "node scripts/events.test.mjs"
+    "events:test": "node scripts/events.test.mjs",
+    "//fonts:test": "Group B drives a real Chromium against dist/, so run `npm run build` first. Static checks alone cannot tell you a font actually loaded.",
+    "fonts:test": "node scripts/fonts.test.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
@@ -22,6 +24,7 @@
   "devDependencies": {
     "@11ty/eleventy": "2.0.1",
     "esbuild": "0.27.3",
+    "fontaine": "0.8.0",
     "lightningcss": "1.31.1",
     "netlify-cli": "^17.0.0",
     "pixelmatch": "7.2.0",

@@ -287,15 +287,25 @@
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768254526/CircleWhite2025_gqtclg.png">
 
     <!-- Preconnect & Preload -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
     {% if preload_image %}
     <link rel="preload" as="image" href="{{ preload_image }}">
     {% endif %}
 
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Fonts: self-hosted, so no Google origins and no third-party round trip.
+         The two Google preconnects and the Google CSS <link> are gone; the CSP
+         lost both origins with them.
+
+         Preload EXACTLY these two: the above-the-fold pair. The Cormorant
+         italic and nothing else are deliberately not preloaded -- they are
+         below the fold on every entry page, and preloading them would compete
+         with the LCP hero image for bandwidth.
+
+         Filenames are content-hashed, so `crossorigin` is required (fonts are
+         always fetched in anonymous CORS mode; without it the preload is
+         discarded and the file is fetched twice). -->
+    <link rel="preload" href="/fonts/cormorant-garamond-var.16b298e9dcfa.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/outfit-var.55112282293d.woff2" as="font" type="font/woff2" crossorigin>
 
     <!-- External Stylesheet -->
     <link rel="stylesheet" href="{{ '/styles.css' | assetUrl }}">
