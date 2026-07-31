@@ -111,9 +111,91 @@ fails, the missing-PNG `continue` (`visual-diff.mjs:174`) fails, discarded redir
 determinism holds by construction; the underlying cache bug is filed as a site bug
 and fixed on its own merits — the determinism claim no longer leans on it.
 
+**Per-page overrides (orchestrator reconciliation, 2026-07-30, post-Razor batch 1
+— his W5):** the budgets paragraph scoped shift gates to pages *not* expected to
+change while also making them unwaivable — which leaves a page whose type scale
+legitimately moves content 20px with no path to a green run, and the only
+remaining lever (lowering the global budgets) is forbidden by the config's own
+authority note. Reconciliation: global budgets stay unwaivable and untouchable; a
+page may carry an explicit `pageOverrides` entry — `{page, metric, value, reason,
+expires}` — that **raises a named budget, never disables a metric**, for a stated
+reason with an expiry date. Overrides are diff-visible, fixture-tested, and
+reviewed like code. The silent-blanket-waiver class stays dead; deliberate
+restyles become shippable under review instead of un-shippable or re-run-until-green.
+
+*Refined post-re-review (2026-07-30, Razor W-C/W-D, orchestrator-ratified):*
+override direction follows the metric's TYPE — ceiling metrics
+(`maxLayoutShiftPx`, `maxChangedPct`) may be **raised**, capped at 100× the
+global (loud is fine, infinite is not); the floor metric (`minShiftCoverage`)
+may be **lowered** — that is the shippable direction — bounded to [0.75, 1)
+(below 0.75, a quarter of the page's rows can't be matched and that needs a
+human conversation, not a config line). `expires` is mandatory and at most
+90 days out at commit time. Same reason + expiry + report.json visibility for
+every direction.
+
+**Lazy-image dimensions (pulled forward, 2026-07-30 — Razor W4):** the `/about/`
+flake's root cause (`loading="lazy"` images with no `width`/`height`) is real
+visitor CLS and a standing flake source for every later batch. It becomes its own
+micro-batch immediately after Batch 1 closes — a deliberate rendered-output
+change, made under the repaired harness's own eyes with `pageOverrides` entries
+carrying its expected shifts, reviewed normally. Not folded into Batch 1 (whose
+contract is zero rendered change) and not left to WP-1b (too late to stop the
+flakes in between).
+
 **If the repair is declined**, say so explicitly and substitute a named page-by-page
 human review at both widths — and then stop describing the harness as an acceptance
 gate anywhere in the plan.
+
+**Global-offset matching (instrument evolution, 2026-07-30 — from WP-1a's honest
+failure):** the mandated 1.8→1.65 leading uniformly compressed every page (−83 to
+−454px, content proven identical) and the row matcher's 240px search window reads
+uniform compression as unmatchable chaos — coverage collapsed below the override
+floor, which then correctly demanded a human conversation. This is that
+conversation's outcome: the matcher learns to estimate a single global vertical
+offset per page-pair (e.g. median row displacement) and match rows relative to
+it, reporting the offset separately. Rules: (1) SEPARATE commit, authored by the
+harness's own implementer, never by the agent whose batch awaits certification;
+(2) fixtures prove the 6px sitewide move and a genuine row REORDER still fail
+while uniform compression passes with honest coverage; (3) Razor reviews the
+instrument change BEFORE any batch is re-measured against it; (4) the offset
+itself is reported and gated (a page may compress; it may not compress
+differently at the two widths without explanation). WP-1a re-measures only after
+all four hold. The eighteen rejected `layoutShiftMaxPx` overrides stay rejected —
+the implementer's own fixture proved they disarm the site-wide calibration, which
+is the exact blindness the mechanism was built to refuse.
+
+*Extension to affine (2026-07-30, same conversation):* the offset model landed
+and honestly reported its own limit — leading changes compress progressively,
+so a constant offset fits at 3% confidence and cannot certify WP-1a (measured,
+locked in fixture G6). The model extends to an **affine fit** (offset + scale),
+which is the actual geometry of a line-height change. Same four rules as above,
+plus: scale bounded to a sane band (~[0.8, 1.05]) and reported beside the
+offset; cross-width scale divergence gated like offset divergence; the reorder
+and 6px-local-move fixtures re-proven under the affine model (an affine fit must
+not launder either); confidence still reported, and a low-confidence fit still
+fails. One Razor review covers both instrument commits before WP-1a re-measures.
+The alternative — demoting the harness to advisory for the wave's largest visual
+batch — is rejected: it is the outcome the Batch 1 repair exists to prevent.
+
+*Instrument follow-ups queued (2026-07-30/31, Razor's instrument reviews):*
+(0) Flake retirement (NOTE-A, next instrument touch): give mutation predicate
+A-m12 the F1 treatment — assert the mutation *materially shrank* the measured
+value relative to the reference (`v < ref - 2`), not that it landed under a bare
+constant with 1px of render headroom; and make the battery's failure detail
+interpolate the measured number so a one-in-twenty flake self-diagnoses on first
+recurrence. Neither gates anything — the failure mode is false-red only.
+(1) the long-distance small-reorder blind spot — rows displaced beyond the 240px
+search window drop from the residual set, so <5% of rows swapped across a long
+page reports spread 0 and passes coverage (sized: 8 row-pairs on a 400-row page
+= clean PASS); mitigation is already-in-hand information — count and report "N
+rows matched only outside the search window". Later instrument round; does not
+gate WP-1a (a leading change is not a reorder). (2) fonts.test.mjs cannot
+self-run from a clean checkout (exits 1 without a prior build, unlike every
+sibling suite) — fold into WP-1a's review round. (3) The fixture-realism lesson,
+recorded for every future instrument change: synthetic fixtures with unique
+per-row signatures test the instrument against pages unlike the ones it
+measures; every new estimator behaviour needs at least one fixture built from
+repeating-texture content that mirrors the real site.
 
 ---
 
@@ -298,6 +380,14 @@ premium option (row 14b). Load-bearing highlights:
   — which needs no input from Lee to be accurate (critic X4.4: a $1,500 audio
   upgrade on a hot-room product cannot ship silent on where the speakers go). Lee's
   actual practice sentence replaces it when he supplies it (docked, doc 35 §5B.2).
+- **`pricesVersion` bump, same commit, enforced** *(from WP-0b-i, 2026-07-30)*:
+  `js/data.js` exports `pricesVersion = 1`, stamped into every saved
+  configuration; the restore path recomputes and shows a "prices have been
+  updated" note when stale. This commit bumps it to 2 **and adds the fixture
+  that ties the stamp to the price values** (hash the price table into the test;
+  a price change without a version bump goes red) — nothing currently enforces
+  the bump, and a repricing that forgets it lets week-old saved totals restore
+  silently as fresh.
 - **`models.json` — a schema extension, not a value copy** *(critic 8.1)*: the
   file cannot represent what doc 35 creates — one `heater_apex` entry cannot hold
   the S2–S8/SC split, and there is no bench, deck-tier, speaker-tier, window-tier
@@ -391,6 +481,45 @@ doc 21's T1–T4 (three count corrections **plus T2, the `booking-ops.html` scop
 defect** — it lives outside `src/` and must be inside every sweep; calling all four
 "count corrections" is how it would have been skipped).
 
+**Certification for this batch — DOM integrity, not pixel geometry (2026-07-31).**
+The re-measure under the repaired-and-affine harness failed 37 of 38 pairs, and
+that verdict is HONEST: a typeface replacement changes every text pixel by
+design, so row signatures can't match and no position model applies — coverage
+collapse here is the product, not a defect. Making the pixel instrument certify
+a font swap would be modelling until the answer turns green. The change-class-
+correct certificate: (a) **DOM-integrity check** (new, instrument-adjacent) —
+element tree + text content extracted from both builds must be IDENTICAL modulo
+an explicit whitelist (the deleted Google Fonts link); any structural or textual
+delta fails loudly; (b) the fonts suite's computed-style assertions (faces,
+floors, tabular numerals — already 31 checks); (c) the pixel harness read as
+advisory data (heightDelta direction, cross-width divergence anomalies get
+named investigation, not overrides); (d) Jen's Stage 3 fidelity review against
+docs 11/21 and the behavioral evaluation — the human-shaped checks a wholesale
+re-render always needed. The failing pixel run is RECORDED as the honest
+instrument verdict, not overridden; `expectedToChange`/`pageOverrides` stay
+untouched. Named anomalies owed an explanation before the batch clears:
+`/privacy/` +6px @1440 vs −108px @390 (a font compression shrinks both widths),
+and the largest shift outliers (426px /about/@390, 414px /saunas/@390).
+
+*Anomalies CLEARED (2026-07-31, investigation at `.visual-diff/wp1a-anomalies.md`)*
+— and the record corrects two orchestrator misreadings: (1) `/privacy/` never
+grew; the +6/−108 were the affine fit's INTERCEPTS, not heights — heights fell
+at both widths, proven three independent ways (monotonic offset-vs-depth, zero
+elements taller, arithmetic reconciling to 1.6px). The divergence gate's
+message ("one width grew while another shrank") reads intercepts as growth —
+**queued instrument-message fix**: report intercept divergence as what it is,
+never as growth language. (2) The model fails on these pages by **piecewise
+geometry**, not re-wrap — line-box counts are near-identical (text re-sets
+without re-wrapping); text regions compress while fixed-height media and tables
+translate rigidly, the vote fits the dominant rigid tail, and every compressing
+row upstream becomes residual (hence shift ≈ |offset| ≈ |heightΔ| on every
+outlier). A piecewise/segmented fit is the theoretical completion; NOT built —
+the DOM-integrity certificate covers this batch, and the pixel model's next
+evolution happens only if a future batch needs it. Safety audit: zero new
+overlap/clip/vanish conditions; the 2–3px h1 ink-rise does not clip and the
+site's only diacritic heading is measured unclipped — doc 11 §9's leading
+remedy deliberately unspent.
+
 ---
 
 ## 6. WP-1b — Colour, shape, spacing, motion
@@ -400,7 +529,10 @@ Governed by doc 21 for tokens and `10-jen-art-direction.md` §4–5 for the syst
 - Section rhythm tokens and container tiers.
 - Grey ramp to three honest tokens. Retire `--color-charcoal` — the name says
   charcoal, the value is `#c0c0c0`, a light silver. 14 call sites, all `color:`
-  declarations, enumerated in doc 21 §6.1.
+  declarations, enumerated in doc 21 §6.1. **Named must-fix in this package
+  (from WP-0b-i, 2026-07-30): `.quote-btn` renders ~1.1:1 contrast
+  (`--color-charcoal` on `--color-warm-wood`) and it is now the SEND button on
+  the money flow — it must not survive the colour pass.**
 - Define `--color-bg`. The stylesheet consumes it twice and never defines it — a
   live bug matching audit finding P0-3. Reconcile with `booking-ops.html`'s own
   definition in the same edit, so the token isn't defined twice differently.
@@ -424,19 +556,25 @@ Governed by doc 21 for tokens and `10-jen-art-direction.md` §4–5 for the syst
 
 Lee's decision: **remove the badge from the nav; it becomes a maker's mark.**
 
-Per `12-saul-visual-photography.md` §5 and `10-jen-art-direction.md` §9:
+**Scope corrected per Lee, 2026-07-30: no redesign, no redraw.** Lee's own files
+are canonical — `~/Downloads/FINAL LOGO TEXT2.0.svg` (+ `...white.svg` variant)
+for the wordmark and `~/Downloads/FINAL LOGO3.0SQBC2025white.svg` for the badge.
+Both wordmark files verified true vector (26 paths, no embedded rasters, text
+outlined) — better source than anything in the repo.
 
-1. Redraw from `~/marvin/content/assets/logo-original.pdf`. The existing
-   `logo.svg` there is Inkscape output with embedded base64 PNG masks — a raster
-   wearing SVG clothing.
-2. Wordmark SVG at 22px for the nav, `currentColor`.
-3. Badge to the footer as a maker's seal at 72px.
-4. Monogram — 2–3 direction exploration — for mobile nav and favicon.
-5. Favicon set.
-6. Assets land in `src/assets/brand/`.
-
-A PNG-at-2x stopgap is sanctioned for the nav if the SVG redraw runs long. **None
-for the favicon.**
+1. **Prepare, don't draw:** copy sources into `src/assets/brand/` with
+   provenance; produce web-ready versions by viewBox crop to content bounds +
+   metadata strip + lossless optimize — never altering path geometry, verified
+   by pixel-diff against the source render.
+2. Wordmark at 22px for the nav — `currentColor` only if the mark is
+   single-color; otherwise the dark/white variant pair serves the themes.
+3. Badge to the footer as the maker's seal at 72px. Its 7 live `<text>` elements
+   convert to outlines only if the exact fonts are present and the rasters
+   pixel-match; otherwise ship unconverted and flag the portability risk.
+4. ~~Monogram exploration~~ **cancelled per Lee.** Favicon derives mechanically
+   from the existing badge's central emblem — proposed to Lee, ships only on his
+   approval.
+5. Assets land in `src/assets/brand/` with a provenance README.
 
 Runs parallel to WP-1; blocks nothing in it.
 
