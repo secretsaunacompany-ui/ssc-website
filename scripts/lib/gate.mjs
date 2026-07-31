@@ -117,6 +117,12 @@ export function loadConfig(file, readFile, now = Date.now()) {
     maxLayoutShiftPx: num('maxLayoutShiftPx', 'No default: state the budget explicitly.'),
     minShiftCoverage: num('minShiftCoverage', 'Fraction of structured baseline rows that must match.'),
     maxChangedPct: num('maxChangedPct', 'No default: state the budget explicitly.'),
+    // How far the two widths of ONE page may disagree about how much that page
+    // translated. Not a precision gate — the desktop and mobile layouts are
+    // genuinely different documents and legitimately compress by different
+    // amounts. This is a "wildly differently" detector.
+    maxOffsetDivergencePx: num('maxOffsetDivergencePx',
+      'How far the widths of one page may disagree about its global offset.'),
   };
   if (budget.minShiftCoverage <= 0 || budget.minShiftCoverage > 1) {
     throw new Error(`${file}: "minShiftCoverage" must be in (0, 1].`);
@@ -378,6 +384,52 @@ export function evaluatePair(config, route, result) {
   if (reasons.length > 0) status = 'FAIL';
   else if (waivedReasons.length > 0) status = 'EXPECTED';
   return { status, reasons, waivedReasons };
+}
+
+/**
+ * Gate the global offset on its own terms, across the widths of one page.
+ *
+ * A page is allowed to compress — that is the whole point of estimating the
+ * offset rather than reading it as chaos. What it is not allowed to do is
+ * compress by 40px at one width and 400px at the other without anyone seeing
+ * it, because that is not a uniform restyle, it is two different things
+ * happening that happen to average out per width.
+ *
+ * Two signals, and the second is the sharp one:
+ *
+ *   magnitude   the widths disagree by more than maxOffsetDivergencePx.
+ *   direction   the widths disagree about the SIGN — one page grew while the
+ *               other shrank. No single leading change does that, so it points
+ *               at content or reflow differences and is worth a look regardless
+ *               of magnitude.
+ *
+ * @param {{width:number, offset:number}[]} perWidth  one entry per captured width
+ * @returns {string[]} human-readable failures, empty when the page is consistent
+ */
+export function evaluateOffsetDivergence(config, route, perWidth) {
+  if (!Array.isArray(perWidth) || perWidth.length < 2) return [];
+  const out = [];
+  const offsets = perWidth.map((p) => p.offset);
+  const lo = Math.min(...offsets);
+  const hi = Math.max(...offsets);
+  const shown = perWidth.map((p) => `${p.width}px: ${p.offset > 0 ? '+' : ''}${p.offset}px`).join(', ');
+
+  if (hi - lo > config.maxOffsetDivergencePx) {
+    out.push(`${route}: the widths disagree about how far this page moved `
+      + `(${shown}) — a spread of ${hi - lo}px, over the `
+      + `${config.maxOffsetDivergencePx}px budget. A uniform restyle moves both widths `
+      + `by comparable amounts; this did not.`);
+  }
+
+  // Sign disagreement, ignoring offsets small enough to be rounding.
+  const NOISE = 4;
+  const grew = perWidth.filter((p) => p.offset > NOISE);
+  const shrank = perWidth.filter((p) => p.offset < -NOISE);
+  if (grew.length > 0 && shrank.length > 0) {
+    out.push(`${route}: one width grew while another shrank (${shown}). No single `
+      + `spacing change does that — something is reflowing differently at the two widths.`);
+  }
+  return out;
 }
 
 /** True when anything at all was over budget — used to decide whether to write a diff image. */

@@ -183,8 +183,13 @@ tests, and each one is a defect it actually shipped with.
 | P | per-page overrides move one budget the way its type allows — ceilings up (capped at 100×), the coverage floor down (bounded to `[0.75, 1)`) — only on the page and metric named, never past a 90-day expiry |
 
 | F5 | invoking the CLI through a **symlinked** path still runs it, rather than exiting 0 in silence |
+| G1–G2 | a uniform 300px translation passes with honest coverage; a 6px local move *inside* it is still caught |
+| G3 | a genuine section **reorder** is not laundered as compression — the estimator stays at ~0 and the swap fails |
+| G4 | an unchanged page reports offset exactly 0 (ties resolve toward zero) |
+| G5 | the cross-width offset gate: wild divergence and opposite directions are reported |
+| G6 | progressive (leading-style) compression reports low confidence and still fails — the documented limit |
 
-Plus the config-validation cases covering the fail-open paths. 91 assertions.
+Plus the config-validation cases covering the fail-open paths. 111 assertions.
 
 **The suite needs an ambient git repository.** O4 and F4e shell out to the real
 CLI against real refs (`HEAD`, `HEAD~1`), so from a `git archive` export or any
@@ -334,6 +339,56 @@ Two numbers come out of that, and **both are gated**:
 
 A page whose shift cannot be measured at all (no structured rows) **fails**. No
 evidence of change is not evidence of no change.
+
+### The Global offset column
+
+Every page pair gets one estimated **global vertical offset** — the single
+translation that best explains where the candidate's rows ended up — and every
+shift number in the report is measured *relative to it*:
+
+```
+localShift(row) = (candidateY - baselineY) - globalOffset
+```
+
+This exists because the matcher used to read uniform movement as chaos. When a
+leading change moved every row on a page past the 240px search window, coverage
+collapsed to 0.171 on content that was provably identical — the instrument
+calling a translation "unmatchable", which is a measurement failure rather than
+a finding.
+
+So the two questions are now separated. **"The whole page slid 300px"** shows up
+as an offset. **"Things moved relative to each other"** shows up as shift. Only
+the second is a layout regression, and a 6px button move inside a page that slid
+300px is still a 6px shift and still fails the 4px budget.
+
+Alongside the offset the report shows **how much of the page agreed on it**. The
+offset is estimated by a vote — every row names the candidate rows carrying its
+signature, and the winning displacement is the one most rows agree on — so the
+agreement percentage is the instrument's own confidence:
+
+| Agreement | Reading |
+|---|---|
+| near 100% | the page genuinely moved as one block; trust the offset |
+| low | no single translation fits this page; the offset is not meaningful and the shift numbers beside it should be read with suspicion |
+
+A vote is used rather than a mean or a plain median precisely so a **reorder**
+cannot be laundered as compression: swapped sections vote for their own
+displacements and are outvoted by the rest of the page, so they surface as large
+local shifts instead of being explained away. There is a fixture for this, and
+breaking the estimator turns it red.
+
+**Known limit, measured not assumed.** A single offset describes a *constant*
+translation. A real line-height change compresses a page *progressively* — the
+first row barely moves, the last moves by the full height delta — and no single
+offset fits that. The instrument reports it honestly (agreement drops to roughly
+3%, versus ~100% for a true translation) and the page still fails. Fixture G6
+locks that behaviour. Certifying a leading change would need an affine fit
+(offset **and** scale); this is not that, and it should not be described as that.
+
+The offset is also gated across the two capture widths of one page — see
+`maxOffsetDivergencePx`. A page may compress; it may not compress by wildly
+different amounts, or in opposite directions, at the two widths without that
+being visible.
 
 A run fails a page when any gated metric is over budget, and fails the *run*
 when the measurement itself is untrustworthy: a failed asset fetch, an

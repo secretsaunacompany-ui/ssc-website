@@ -36,8 +36,8 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { startServer } from './lib/server.mjs';
 import { captureAll } from './lib/capture.mjs';
-import { comparePair } from './lib/diff.mjs';
-import { loadConfig, evaluatePair } from './lib/gate.mjs';
+import { comparePair, estimateGlobalOffset } from './lib/diff.mjs';
+import { loadConfig, evaluatePair, evaluateOffsetDivergence } from './lib/gate.mjs';
 import { resolveRef } from './lib/build-ref.mjs';
 import { comparePairs, tallyFailures, redirectFailures } from './visual-diff.mjs';
 
@@ -110,6 +110,65 @@ const PAGE_BUTTON_MOVED_TAIL = SHELL(
 const PAGE_BASE_TAIL = SHELL(
   `${CONTENT}<div class="block"><a class="btn">Request a quote</a></div>` +
   `<div class="block">Trailing row after the button</div>`);
+
+/**
+ * G-family fixtures: global-offset matching.
+ *
+ * A 300px spacer above the content, present in the baseline and absent in the
+ * candidate, translates every content row up by exactly 300px — further than
+ * the 240px search window, which is the point. Before global-offset matching
+ * this scored near-zero coverage on identical content.
+ */
+const SPACER = '<div style="height:300px"></div>';
+const PAGE_SPACED = SHELL(`${SPACER}<div class="block"><a class="btn">Request a quote</a></div>${CONTENT}`);
+const PAGE_UNSPACED = SHELL(`<div class="block"><a class="btn">Request a quote</a></div>${CONTENT}`);
+
+/** Uniform translation AND a local 6px growth: the local move must survive. */
+const PAGE_UNSPACED_BUTTON_MOVED = SHELL(
+  `<div class="block"><a class="btn">Request a quote</a></div>${CONTENT}`,
+  `.btn { padding-top: 15px; padding-bottom: 15px; }`);
+
+/**
+ * Reorder fixtures. Two sections swap places; nothing else moves.
+ *
+ * Designed so the vote CANNOT absorb it: the swapped rows are a minority, so
+ * the estimator correctly reports an offset of ~0 and the moved sections show
+ * up as large local shifts. If the estimator were a mean, the outliers would
+ * drag it; if it laundered reorders as translation, this fixture goes green and
+ * the harness starts certifying reordered pages as unchanged.
+ */
+const ROW = (i, tag) =>
+  `<div class="block">Section ${tag}${i} &mdash; ${'distinct marker text for this row. '.repeat(1 + (i % 3))}</div>`;
+const REORDER_BASE = SHELL(
+  Array.from({ length: 6 }, (_, i) => ROW(i, 'pre')).join('')
+  + `<div class="block" style="background:#141414">ALPHA one</div>`
+  + `<div class="block" style="background:#141414">ALPHA two</div>`
+  + Array.from({ length: 6 }, (_, i) => ROW(i, 'mid')).join('')
+  + `<div class="block" style="background:#1a1a1a">BETA one</div>`
+  + `<div class="block" style="background:#1a1a1a">BETA two</div>`
+  + Array.from({ length: 6 }, (_, i) => ROW(i, 'post')).join(''));
+/** The same page with ALPHA and BETA swapped. Identical height, identical content. */
+const REORDER_SWAPPED = SHELL(
+  Array.from({ length: 6 }, (_, i) => ROW(i, 'pre')).join('')
+  + `<div class="block" style="background:#1a1a1a">BETA one</div>`
+  + `<div class="block" style="background:#1a1a1a">BETA two</div>`
+  + Array.from({ length: 6 }, (_, i) => ROW(i, 'mid')).join('')
+  + `<div class="block" style="background:#141414">ALPHA one</div>`
+  + `<div class="block" style="background:#141414">ALPHA two</div>`
+  + Array.from({ length: 6 }, (_, i) => ROW(i, 'post')).join(''));
+
+/**
+ * G6: PROGRESSIVE compression — what a real leading change actually does.
+ * Each paragraph shrinks, so displacement accumulates down the page and no
+ * single translation describes it. Distinct from the constant-translation
+ * fixtures above, deliberately.
+ */
+const LEADING_PARAS = Array.from({ length: 60 }, (_, i) =>
+  `<p class="para">Paragraph ${i} &mdash; ${'the quick brown fox jumps over the lazy dog and keeps going. '.repeat(3 + (i % 2))}</p>`
+).join('');
+const LEADING_CSS = '.para { padding: 10px 24px; border-bottom: 1px solid #c4a57b; }';
+const PAGE_LEADING_BASE = SHELL(LEADING_PARAS, `${LEADING_CSS} body { line-height: 1.8; }`);
+const PAGE_LEADING_TIGHT = SHELL(LEADING_PARAS, `${LEADING_CSS} body { line-height: 1.65; }`);
 
 /** F3 candidate: same page furniture, entirely different content. */
 const PAGE_CONTENT_REPLACED = SHELL(
@@ -291,6 +350,222 @@ async function main() {
         placeholder.brokenImages.length === 0,
         `expected no reports, got ${JSON.stringify(placeholder.brokenImages)}`);
     }
+    process.stdout.write('\nG — global-offset matching: uniform movement is not a regression\n');
+    {
+      // These fixtures deliberately do NOT read the shipped expectedToChange
+      // list. That list currently carries the very batch this instrument has to
+      // certify, and a certifier whose fixtures inherit the allowlist of the
+      // work under test proves nothing. Budgets are the shipped ones; the
+      // waivers are stated here.
+      //
+      // A uniformly translated page legitimately changes height, and heightDelta
+      // is gated against the shift budget, so the waiver below is the honest
+      // shape of "this page compressed": changedPct and heightDelta waived,
+      // layoutShiftMaxPx and shiftCoverage still armed and unwaivable.
+      const gcfg = loadConfig('g.json', () => JSON.stringify({
+        ...JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')),
+        expectedToChange: [{
+          route: '/g/',
+          reason: 'uniform translation fixture: page height legitimately changes',
+          waive: ['changedPct', 'heightDelta'],
+        }],
+        pageOverrides: [],
+      }));
+      // Same budgets, no waivers at all, for asserting WHY something failed.
+      const strict = loadConfig('strict.json', () => JSON.stringify({
+        ...JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')),
+        expectedToChange: [], pageOverrides: [],
+      }));
+
+      // G1: a page translated 300px up, content provably identical.
+      const g1 = await renderPair(tmp, PAGE_SPACED, PAGE_UNSPACED, 'g1');
+      check('G1 the offset is estimated at the true -300px translation',
+        Math.abs(g1.globalOffsetPx + 300) <= 2,
+        `expected about -300, got ${g1.globalOffsetPx} `
+        + `(votes ${g1.globalOffsetVotes}, confidence ${g1.globalOffsetConfidence.toFixed(3)})`);
+      check('G1 coverage is honest, not collapsed',
+        g1.shiftMeasurable && g1.shiftCoverage >= 0.95,
+        `expected coverage >= 0.95 on identical content, got `
+        + `${g1.shiftCoverage.toFixed(3)} — this is the WP-1a failure mode`);
+      check('G1 local shift is ~zero: nothing moved RELATIVE to anything',
+        g1.layoutShiftMaxPx <= gcfg.maxLayoutShiftPx,
+        `expected local shift within ${gcfg.maxLayoutShiftPx}px, got ${g1.layoutShiftMaxPx}px`);
+      check('G1 nothing unwaived breached: the run stays green',
+        (() => {
+          const v = evaluatePair(gcfg, '/g/', g1);
+          return v.status !== 'FAIL' && v.reasons.length === 0;
+        })(),
+        `a uniformly translated page with identical content must not fail the run. `
+        + `${JSON.stringify(evaluatePair(gcfg, '/g/', g1))}`);
+      check('G1 contributes nothing to the failure count',
+        tallyFailures({
+          pages: [{ route: '/g/', status: evaluatePair(gcfg, '/g/', g1).status }],
+          structural: [], runFailures: [],
+        }) === 0,
+        'EXPECTED is a green outcome; only FAIL counts against the run');
+      check('G1 the two UNWAIVABLE gates are clean on their own merits',
+        !evaluatePair(strict, '/none/', g1).reasons.some(
+          (x) => x.includes('layout shift') || x.includes('coverage')),
+        `with every waiver removed, a uniform translation must breach only the height `
+        + `budget — never shift or coverage. Got `
+        + `${JSON.stringify(evaluatePair(strict, '/none/', g1).reasons)}`);
+      check('G1 the offset is reported, not hidden inside the shift number',
+        g1.globalOffsetPx !== 0 && g1.layoutShiftMaxPx !== Math.abs(g1.globalOffsetPx),
+        'the translation must appear as an offset and NOT as a local shift');
+
+      // G2: the mixed case. Same 300px translation, plus one 6px local growth.
+      const g2 = await renderPair(tmp, PAGE_SPACED, PAGE_UNSPACED_BUTTON_MOVED, 'g2');
+      check('G2 the offset still resolves to the translation',
+        Math.abs(g2.globalOffsetPx + 300) <= 8,
+        `expected about -300, got ${g2.globalOffsetPx}`);
+      check('G2 a 6px local move inside a translated page is STILL CAUGHT',
+        evaluatePair(gcfg, '/g/', g2).status === 'FAIL',
+        `a local move must not be laundered by the global offset, even with `
+        + `changedPct and heightDelta waived. shiftMax=${g2.layoutShiftMaxPx} `
+        + `offset=${g2.globalOffsetPx} coverage=${g2.shiftCoverage.toFixed(3)}`);
+      check('G2 it fails on the shift gate specifically',
+        evaluatePair(gcfg, '/g/', g2).reasons.some((x) => x.includes('layout shift')),
+        `expected a layout-shift reason, got `
+        + `${JSON.stringify(evaluatePair(gcfg, '/g/', g2).reasons)}`);
+
+      // G3: THE fixture that keeps this honest. A genuine reorder must not be
+      // explained away as a translation.
+      const g3 = await renderPair(tmp, REORDER_BASE, REORDER_SWAPPED, 'g3');
+      check('G3 a reorder is NOT absorbed into the global offset',
+        Math.abs(g3.globalOffsetPx) <= 4,
+        `the page did not translate — two sections swapped. Expected an offset near 0, `
+        + `got ${g3.globalOffsetPx}. A non-zero offset here means the estimator is `
+        + `laundering reordering as compression.`);
+      check('G3 verdict is FAIL even with every waivable metric waived',
+        evaluatePair(gcfg, '/g/', g3).status === 'FAIL',
+        `a swapped page must fail. shiftMax=${g3.layoutShiftMaxPx} `
+        + `offset=${g3.globalOffsetPx} coverage=${g3.shiftCoverage.toFixed(3)} `
+        + `reasons=${JSON.stringify(evaluatePair(gcfg, '/g/', g3).reasons)}`);
+      check('G3 the reorder is visible as displacement or lost coverage, not silence',
+        g3.layoutShiftMaxPx > gcfg.maxLayoutShiftPx
+        || g3.shiftCoverage < gcfg.minShiftCoverage,
+        `the swap must register on a gated metric. shiftMax=${g3.layoutShiftMaxPx} `
+        + `coverage=${g3.shiftCoverage.toFixed(3)}`);
+
+      // G4: control. An unchanged page must report exactly zero offset — the
+      // estimator must not invent a translation out of tie-breaking noise.
+      const g4 = await renderPair(tmp, PAGE_BASE, PAGE_BASE, 'g4');
+      check('G4 an unchanged page reports offset exactly 0',
+        g4.globalOffsetPx === 0,
+        `expected 0, got ${g4.globalOffsetPx} — ties must resolve toward zero`);
+      check('G4 an unchanged page still passes',
+        evaluatePair(config, '/', g4).status === 'PASS', 'control');
+
+      // G6: the honest limit of a SINGLE global offset, locked in a fixture so
+      // nobody later assumes this instrument handles leading changes.
+      //
+      // A real line-height change does not translate a page, it COMPRESSES it
+      // progressively: row 1 barely moves, the last row moves by the full
+      // height delta. No single offset fits that, and the estimator says so —
+      // measured here at confidence 0.034 (3.4% of rows agreeing) against
+      // ~1.000 for the genuine translation in G1. That confidence number is the
+      // instrument reporting its own inapplicability, which is the behaviour
+      // worth locking.
+      //
+      // This fixture asserts what IS true today, not what we wish were true. If
+      // the matcher ever learns an affine fit (offset + scale), this fixture
+      // should be revisited deliberately — it is a behaviour lock, not a target.
+      const g6 = await renderPair(tmp, PAGE_LEADING_BASE, PAGE_LEADING_TIGHT, 'g6');
+      check('G6 progressive compression yields LOW offset confidence',
+        g6.globalOffsetConfidence < 0.5,
+        `a progressively compressed page has no single translation, and the estimator `
+        + `must not pretend otherwise. confidence=${g6.globalOffsetConfidence.toFixed(3)} `
+        + `offset=${g6.globalOffsetPx} — compare G1's near-total agreement`);
+      check('G6 a genuine translation is far more confident than a compression',
+        g1.globalOffsetConfidence > g6.globalOffsetConfidence * 4,
+        `G1 confidence ${g1.globalOffsetConfidence.toFixed(3)} vs `
+        + `G6 ${g6.globalOffsetConfidence.toFixed(3)} — the number must discriminate`);
+      check('G6 progressive compression still FAILS (single offset does not fit it)',
+        evaluatePair(strict, '/none/', g6).status === 'FAIL',
+        `documented limitation: this instrument does not certify a leading change. `
+        + `${JSON.stringify(evaluatePair(strict, '/none/', g6).reasons)}`);
+
+      // G7/G8: the estimator's two robustness rules, driven directly.
+      //
+      // Both of these were found by mutation: breaking the tie-break and
+      // removing the non-distinctive-signature guard each left the whole suite
+      // green, because rendered fixtures do not naturally produce an exact vote
+      // tie or a page of 100 identical rows. Rendering cannot reach these; the
+      // function is exported and takes a signature array plus an index, so the
+      // honest coverage is to hand it the pathological input directly.
+
+      // G7: an exact tie must resolve toward zero. Two baseline rows, each
+      // matching both at displacement 0 and at displacement +50 — two buckets,
+      // two votes apiece. Picking "whichever tied bucket came last" would let
+      // an unchanged page report a phantom translation.
+      {
+        const a = ['sigA', 'sigB'];
+        const index = new Map([['sigA', [0, 50]], ['sigB', [1, 51]]]);
+        const est = estimateGlobalOffset(a, index);
+        check('G7 an exact vote tie resolves toward zero',
+          est.offset === 0,
+          `two buckets tied on ${est.votes} votes; the estimator must prefer the one `
+          + `nearer zero, got offset ${est.offset}. Otherwise an unchanged page can `
+          + `report a translation that never happened.`);
+      }
+      // ...and the same tie in the other direction: a real translation must
+      // still win when it is not a tie, so G7 is not just "always return 0".
+      {
+        const a = ['sigA', 'sigB', 'sigC'];
+        const index = new Map([['sigA', [50]], ['sigB', [51]], ['sigC', [52]]]);
+        const est = estimateGlobalOffset(a, index);
+        check('G7 an unambiguous translation still wins outright',
+          est.offset === 50,
+          `control: preferring zero must only break TIES, not override evidence. `
+          + `got ${est.offset}`);
+      }
+
+      // G8: a signature repeated more often than MAX_SIGNATURE_HITS is
+      // repeating texture, not evidence. Here 100 identical rows would cast
+      // ~10,000 votes clustered at displacement 0, drowning the two distinctive
+      // rows that carry the page's true +100 translation.
+      {
+        const a = [];
+        for (let y = 0; y < 100; y++) a.push('repeat');
+        a[200] = 'unique1';
+        a[201] = 'unique2';
+        for (let y = 100; y < 200; y++) a[y] = null;
+        const index = new Map([
+          ['repeat', Array.from({ length: 100 }, (_, i) => i)],
+          ['unique1', [300]],
+          ['unique2', [301]],
+        ]);
+        const est = estimateGlobalOffset(a, index);
+        check('G8 non-distinctive rows do not drown the real offset',
+          est.offset === 100,
+          `100 identical rows must be excluded from the vote so the two distinctive `
+          + `rows carry the true +100 translation. Got offset ${est.offset} `
+          + `(${est.votes} votes) — repeating texture is matching everywhere and `
+          + `voting for nothing.`);
+      }
+
+      // G5: the offset gate, across widths of one page.
+      check('G5 consistent widths raise nothing',
+        evaluateOffsetDivergence(config, '/a/',
+          [{ width: 1440, offset: -300 }, { width: 390, offset: -340 }]).length === 0,
+        'comparable compression at both widths is normal and must stay quiet');
+      check('G5 wildly divergent widths are reported',
+        evaluateOffsetDivergence(config, '/a/',
+          [{ width: 1440, offset: -40 }, { width: 390, offset: -900 }]).length === 1,
+        'a 860px spread must be reported');
+      check('G5 opposite directions are reported regardless of magnitude',
+        evaluateOffsetDivergence(config, '/a/',
+          [{ width: 1440, offset: 60 }, { width: 390, offset: -60 }]).length >= 1,
+        'one width growing while another shrinks is never a single spacing change');
+      check('G5 sub-noise offsets do not trip the sign check',
+        evaluateOffsetDivergence(config, '/a/',
+          [{ width: 1440, offset: 1 }, { width: 390, offset: -1 }]).length === 0,
+        'rounding must not be reported as a direction conflict');
+      check('G5 a single width cannot diverge from itself',
+        evaluateOffsetDivergence(config, '/a/', [{ width: 1440, offset: -300 }]).length === 0,
+        'one width is not a comparison');
+    }
+
     process.stdout.write('\nO — the orchestration layer (visual-diff.mjs itself)\n');
     {
       // Everything above tests lib/. The layer that decides what gets compared
