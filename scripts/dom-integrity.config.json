@@ -241,6 +241,60 @@
       "range": "198c0bb..c208508",
       "reason": "The reconciled value: --color-bg now equals --ground (#0c0c0c) in booking-ops.html, matching the resolved :root in doc 21 1. The `added` half of the pair above.",
       "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
+    },
+    {
+      "op": "removed",
+      "tag": "BUTTON",
+      "contains": "class=\"mobile-menu-btn\"",
+      "count": 1,
+      "range": "83421b9..dec32ac",
+      "reason": "The mobile menu toggle gains aria-expanded and aria-controls, which arrives as a removed/added pair on a surviving node. Its label never changes, so aria-expanded is the only thing that can tell a screen-reader user whether the menu they just pressed is now open. One per route, all 19.",
+      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
+    },
+    {
+      "op": "added",
+      "tag": "BUTTON",
+      "contains": "aria-expanded=\"false\"",
+      "count": 1,
+      "range": "83421b9..dec32ac",
+      "reason": "The `added` half of the mobile menu toggle pair, keyed on the new state attribute rather than on the class, so it names this change rather than a family of buttons.",
+      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
+    },
+    {
+      "op": "removed",
+      "tag": "SPAN",
+      "contains": "class=\"check\"",
+      "count": 7,
+      "range": "83421b9..dec32ac",
+      "reason": "The seven comparison ticks on /saunas/ become aria-hidden: they are decoration, the sentence beside each already carries the meaning, and a screen reader announcing 'check mark' seven times adds nothing to it. Removed/added pair on surviving nodes; 7 measured in the baseline.",
+      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
+    },
+    {
+      "op": "added",
+      "tag": "SPAN",
+      "contains": "aria-hidden=\"true\" class=\"check\"",
+      "count": 7,
+      "range": "83421b9..dec32ac",
+      "reason": "The `added` half of the seven ticks.",
+      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
+    },
+    {
+      "op": "removed",
+      "tag": "SPAN",
+      "contains": "class=\"x\"",
+      "count": 14,
+      "range": "83421b9..dec32ac",
+      "reason": "The fourteen comparison crosses on /saunas/, same reasoning as the ticks. 14 measured in the baseline.",
+      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
+    },
+    {
+      "op": "added",
+      "tag": "SPAN",
+      "contains": "aria-hidden=\"true\" class=\"x\"",
+      "count": 14,
+      "range": "83421b9..dec32ac",
+      "reason": "The `added` half of the fourteen crosses.",
+      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
     }
   ],
   "_notes": {
@@ -254,6 +308,7 @@
     "scope": "Every entry declares the comparison it belongs to as \"range\": \"<baselineSha>..<candidateSha>\". The file is per-repo but each entry describes ONE batch's change, so without a scope an old batch's declarations sit here forever, reading stale against every later baseline while still being load-bearing. Out-of-scope entries are INERT for a run -- reported so they can be pruned, never consuming a diff they were not written for.",
     "renameMap": "An \"op\": \"rename\" entry declares an old->new CLASS TOKEN pair, applied to the BASELINE's vocabulary before anything is compared. Whole tokens only, never substrings, so renaming `fade-in` cannot touch `fade-in-late`. Everything the map does not explain survives into the comparison and still fails: a rename plus a smuggled extra class fails naming the smuggled token. A rename whose `from` never appears is flagged stale, so dead declarations cannot accumulate. A \"to\" of null declares that the token was REMOVED rather than renamed: the element survives and one of its class tokens goes, which no node entry can express. Same strictness -- an undeclared removal on the same node still fails.",
     "deleteSubtree": "A \"delete-subtree\" entry names a deleted node by tag + ancestry path + a HASH of its own serialized content, and consumes the whole run of removed tokens or nothing. It exists for attribute-less nodes, where the only substrings a `contains` entry could use are exactly the lazy kind the specificity check rejects. The hash cannot be written from memory -- it is measured from the baseline build -- and an entry whose hash matches nothing there is reported before any verdict rests on it. A nested subtree is ONE entry, not one per element.",
-    "kind": "A removed/added entry names an ELEMENT unless it declares kind:\"code\" or kind:\"text\", in which case `contains` is matched against the token's TEXT. Without it an edit to an inline <style> body is undeclarable by construction, which is how booking-ops.html's :root reconciliation had no way to be certified. Kind is part of the entry's identity: a code entry cannot consume an element change even when its substring appears in an attribute."
+    "kind": "A removed/added entry names an ELEMENT unless it declares kind:\"code\" or kind:\"text\", in which case `contains` is matched against the token's TEXT. Without it an edit to an inline <style> body is undeclarable by construction, which is how booking-ops.html's :root reconciliation had no way to be certified. Kind is part of the entry's identity: a code entry cannot consume an element change even when its substring appears in an attribute.",
+    "wp0bi_fix": "WP-0b-i's fix round, range-scoped to 83421b9..dec32ac. Two change classes: aria-expanded and aria-controls on the mobile menu toggle, and aria-hidden on 21 decorative comparison glyphs on /saunas/. NOT DONE, and recorded here rather than quietly dropped: scoping the configurator modal to /saunas/, the only page with anything that opens it. Sitewide it puts a second inert <form> on 18 routes whose empty `configuration`, `model` and `estimated_total` hidden inputs sit in the DOM beside the real contact form -- a behavioural reviewer read the /contact/ one as a live field that had lost its data. The change is right and it was written and measured (one deleted subtree, span 352, hash c3a120b59594b6b1). It cannot be CERTIFIED today: delete-subtree caps its slice search at MAX_SUBTREE_TOKENS = 64, stated in the harness as a real limit whose safe direction is to fail loudly. Raising the cap to make this batch's own change pass is the tuning-until-green move this instrument exists to refuse, and a harness change does not belong in a fix round. Reverted, and handed on as its own small batch that carries the harness change with it. The honeypot's inline padding was left alone for a related reason: it is offscreen and untappable, its 34x34 measurement is an artefact of the global input rule, and its markup is identical to the copy inside the modal, so any declaration naming one would consume the other. The JS RUN FAILURE is expected here and waived nowhere: this instrument certifies delivered markup with scripts disabled, and the batch changes modal.js and navigation.js by design. What the scripts do is certified by scripts/quote-funnel.test.mjs, which drives them in a real browser through every state including the two defects this round fixed. Read the two together."
   }
 }
