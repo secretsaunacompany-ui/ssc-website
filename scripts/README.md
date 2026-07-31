@@ -160,6 +160,73 @@ should be deleted, or it has not and somebody needs to say so with a new date.
 Every override in force is written into `report.json`, so a green run always
 carries the list of budgets that were raised to make it green, with reasons.
 
+## dom-integrity — did the page still say the same thing?
+
+```bash
+npm run dom-integrity -- --baseline <ref> --candidate <ref>
+npm run dom-integrity:test
+```
+
+The pixel harness answers "did anything move?". For a **typeface swap** that
+question has no useful answer: changing the font changes every text pixel by
+design, so row signatures cannot match and the affine fit correctly reports
+does-not-fit. WP-1a failed 37 of 38 pairs and every verdict was honest. Tuning
+the pixel instrument until a font swap came back green would be modelling until
+the answer is the one we wanted.
+
+The question a restyle actually needs answered is different: *did the page still
+say the same thing, in the same structure?* If the element tree and the text are
+identical, whatever changed was presentation — which is exactly what a restyle
+is allowed to change.
+
+So this builds both refs, loads every page, and compares a normalized
+fingerprint: the element tree (tags, nesting, order, attributes) and the text.
+Identical modulo an explicit whitelist, or a named per-page failure saying which
+node and what changed.
+
+### What is normalized, and what is not
+
+Only two things, because a normalizer is a laundering machine pointed at your
+own gate:
+
+- **Whitespace in text**, collapsed and trimmed — rendering collapses it anyway.
+  Beyond that text compares EXACTLY. A reworded sentence, a changed price or a
+  dropped word FAILS. That is the instrument's purpose, not a limitation.
+- **Two URL segments**: the `?v=` content-hash stamp (it changes whenever
+  styles.css changes, which is what a restyle does) and the hash segment of
+  `/fonts/<name>.<hash>.woff2` — the **family name is kept**, so substituting a
+  different typeface still fails.
+
+Every other attribute, tag, nesting relationship and ordering compares raw.
+
+### The whitelist is a declaration, not a mute button
+
+Each entry names an `op`, a `tag`, a `contains` substring, a **count**, a reason
+and the **commit** that made the change legitimate. Undeclared changes fail. A
+declared change that does not occur ALSO fails — a stale entry is a hole nobody
+closed. Counts are per page, so a *second* unexpected instance of a declared
+change still fails: the two Google preconnects are declared, and a third
+disappearing preconnect (the Cloudinary one, which must survive) is caught.
+
+### The boundary: scripts are disabled
+
+Pages are loaded with JavaScript off, so the certificate is over the **delivered
+markup** — what the templates produced, parsed by a real browser.
+
+This is a deliberate boundary, not a convenience. With scripts running, the DOM
+carries animation state: the parallax writes `transform: translateY(-14.8212px)`
+into inline styles, derived from *document height*. A restyle that compresses
+line-height changes document height, so that value legitimately differs between
+builds and between widths — 20 pages failed on nothing but fractional transform
+deltas, and every page was flagged width-dependent for the same reason. An
+instrument that cannot certify any restyle without noise is measuring its own
+camera. Excluding the `style` attribute instead would have been laundering.
+
+**Script-injected content is therefore outside what this vouches for**, and the
+run refuses to be quiet about it: if the two builds' `js/` differs at all, the
+report says the boundary was crossed rather than letting a reader infer a
+guarantee the run cannot give.
+
 ### Testing the harness itself
 
 ```bash

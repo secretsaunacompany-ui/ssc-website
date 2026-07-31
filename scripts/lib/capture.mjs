@@ -165,7 +165,7 @@ const DETERMINISM_CSS = `
   }
 `;
 
-const INIT_SCRIPT = `(() => {
+export const INIT_SCRIPT = `(() => {
   const EPOCH = ${FROZEN_EPOCH};
   const RealDate = Date;
   function FrozenDate(...args) {
@@ -193,7 +193,13 @@ function cachePathFor(cacheDir, url) {
   return { body: path.join(cacheDir, `${hash}.bin`), meta: path.join(cacheDir, `${hash}.json`) };
 }
 
-async function installRouting(context, cacheDir, stats) {
+/**
+ * Exported so dom-integrity.mjs uses the SAME host policy: which third parties
+ * are replayed, which are aborted, and which are unknown-and-therefore-refused.
+ * Two instruments disagreeing about that would be two different definitions of
+ * "the page", and the blocked-host refusal is a safety property in both.
+ */
+export async function installRouting(context, cacheDir, stats) {
   fs.mkdirSync(cacheDir, { recursive: true });
 
   await context.route('**/*', async (route) => {

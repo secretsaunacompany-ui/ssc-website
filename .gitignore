@@ -14,3 +14,6 @@ _site/
 
 # Visual diff harness working directory (builds, screenshots, asset cache)
 .visual-diff/
+
+# DOM-integrity working directory (builds, fingerprints, report)
+.dom-integrity/
