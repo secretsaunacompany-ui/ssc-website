@@ -30,7 +30,7 @@ Verdict: the *taste* is mostly right; the *system* doesn't exist. Everything bel
 
 **Ratio: minor third (1.2) at the text end, stretching toward a perfect fourth at the display end.** Rationale: a dark, photography-led architecture register needs a big jump between text and display (the El Croquis pattern: enormous quiet headline, small dense caption, little in between) but a *gentle* progression among UI sizes so cards and specs don't develop internal hierarchy noise. A single strict ratio can't do both; a two-regime scale can. The mood board already behaves this way (0.62–1rem cluster, then 2.2–4.2rem display) — I am formalizing what Jen's board does by instinct.
 
-Viewport interpolation range 320px → 1440px. All `clamp()` middles are calculated to hit the min at 320 and max at 1440; above 1440 type stops growing (the 1920px `body` max-width already caps layout).
+Viewport interpolation range 320px → 1440px. Every `clamp()` middle is calculated to hit its **min exactly at 320px**; each then reaches its max somewhere between ~670px and ~1030px and holds flat from there (the display steps grow fastest and top out latest). Nothing grows past 1440px in any case — the 1920px `body` max-width already caps layout, and §8's position is that width above 1440 buys whitespace, not point size.
 
 Add to `:root` in `styles.css` (new block, after the color tokens):
 
@@ -70,16 +70,25 @@ Add to `:root` in `styles.css` (new block, after the color tokens):
 |---|---|---|---|
 | `--text-4xl` | Cormorant 400 | h1, hero display | `h1` clamp(2.5rem,5vw,4rem) — near-identical, now tokenized |
 | `--text-3xl` | Cormorant 400 | h2 section heads | `h2` clamp(2rem,4vw,3rem) |
-| `--text-2xl` | Cormorant 500 | h2 in narrow/heavy contexts, pull quotes, `.stat-number` companion | `.model-header h3` 1.8rem (demoted, see below) |
-| `--text-xl` | Cormorant 500 | h3 | `h3` clamp(1.5rem,3vw,2rem) — slightly smaller max; 2rem h3 was crowding h2 |
-| `--text-lg` | Cormorant 600 **or** Outfit 400 | h4, card titles, `.blog-card__title` (was 1.5rem), `.model-header h3` (was 1.8rem — too loud inside a card), `.compare-table thead th` (was 1.4rem) |
-| `--text-md` | Outfit 300 | intro/lead paragraphs, `.page-hero p` (was 1.1rem), `.hero-subtitle` (was clamp→1.5rem), `.info-section__intro` 1.1rem |
-| `--text-base` | Outfit 400 | body, `.faq-answer`, form inputs, `.btn` (was 1.1rem — buttons drop to 1rem), nav links (was 1.1rem) |
-| `--text-sm` | Outfit 400 | card body (`.model-card p`, `.card-content p`, all the 0.9/0.92/0.95rem cluster), specs, prices rows, `.footer-section a`, form labels |
-| `--text-xs` | Outfit 500 | eyebrows/kickers, `.spec-item label` (was 0.75rem — unchanged size, now tokenized), badges, `.blog-card__date`, `.stat-source`, metadata |
-| `--text-2xs` | Outfit 500 | footnotes, `.advisor__disclaimer` (was 0.7rem — raise to 11px), `.compare-badge` (was 0.7rem). **Nothing on the site may be set below 0.6875rem.** The mood board's 0.62–0.68rem swatch labels are below the floor — beautiful in a specimen, unreadable on a phone in sunlight; production uses `--text-2xs`. Flagging this to Jen: the eyebrow *proportions* survive, the absolute size comes up ~1px. |
+| `--text-2xl` | Cormorant 500 | h2 in narrow/heavy contexts, pull quotes, `.stat-number` companion | — new step, no current selector migrates *up* into it. (`.model-header h3` 1.8rem is **demoted**, not promoted: it lands on `--text-lg`.) |
+| `--text-xl` | Cormorant 500 | h3 | `h3` clamp(1.5rem,3vw,2rem) — slightly smaller max; 2rem h3 was crowding h2. Also `.booking-option__price` 1.3rem, if it stays serif (§3) |
+| `--text-lg` | Cormorant 600 (serif contexts) **or** Outfit 400 (UI card titles) | h4, card titles | `.blog-card__title` 1.5rem · `.model-header h3` 1.8rem (too loud inside a card) · `.compare-table thead th` 1.4rem · `.process-step__title` 1.3rem · `.comparison-header h3` 1.3rem |
+| `--text-md` | Outfit 300 | intro/lead paragraphs | `.page-hero p` 1.1rem · `.hero-subtitle` clamp(→1.5rem) · `.info-section__intro` 1.1rem · `.info-section__title` 1.2rem |
+| `--text-base` | Outfit 400 | body copy, `.faq-answer`, form inputs, buttons | `body` 1rem (weight 300→400, leading 1.8→1.65) · `.btn` 1.1rem (buttons drop to 1rem) |
+| `--text-sm` | Outfit 400 (nav: 400, caps) | card body, specs, price rows, footer links, form labels, **nav links** | the whole 0.85/0.875/0.9/0.92/0.95rem cluster (`.model-card p`, `.card-content p`, `.footer-section a`, `label`) · `.nav-links a` 1.1rem → 14px per §4 |
+| `--text-xs` | Outfit 500 | micro-labels: spec labels, badges, dates, metadata | `.spec-item label` 0.75rem (size unchanged, now tokenized) · `.blog-card__date` · `.stat-source` · `.model-capacity` |
+| `--text-2xs` | Outfit 500 | footnotes, disclaimers, **section kickers** (doc 21 R10), plate provenance, index captions, the scroll cue | `.advisor__disclaimer` 0.7rem (raised to 11px) · `.compare-badge` 0.7rem · the mood board's 0.62–0.68rem specimen labels |
+
+**Four rules the table encodes, stated so they are not re-litigated per selector:**
+
+- **The Cormorant floor holds structurally.** No serif row exists below `--text-lg` (1.1875rem = 19px min). Every step from `--text-md` down is Outfit-only. §3's ban list is therefore enforceable by reading the table alone.
+- **The 11px floor is absolute.** Nothing on the site renders below `--text-2xs` (0.6875rem) — doc 21 R4 confirms this with zero exceptions and remaps the four violations (index captions, scroll cue, section-index eyebrows, plate provenance) onto this step. The mood board's specimen labels are specimen-only; the eyebrow *proportions* survive, the absolute size comes up ~1px.
+- **Eyebrows split across two steps** (doc 21 R10, which reconciles inside this system rather than overriding it): the **section kicker** — one per section — is `--text-2xs` / `--tracking-caps-wide` (0.2em) / `--ember`. **All other micro-labels** (spec labels, badges, dates, metadata) take the §4 base spec: `--text-xs` / `--tracking-caps` (0.14em) / `--ink-quiet`.
+- **Numerals:** every price and spec target in the `--text-sm` and `--text-xs` rows also carries the tabular-numeral block in §4. Size token and figure style land together or prices still fail to align.
 
 Delete once migrated: the raw sizes at lines 302, 368, 389, 469, 517, 523, 529, 541, 591, 601, 611, 623, 653, 662, 668, 681, 713, 875, 889, 1019, 1038, 1046, 1058, 1075, 1103, 1133, 1163, 1187, 1196, 1201, 1216, 1231, 1243, 1417, 1440, 1505, 1514, 1543, 1715, 1936, 1948, 1964, 1981, 2013, 2057, 2118, 2128, 2138, 2144, 2160, 2166, 2195, 2251, 2259, 2269, 2281, 2296, 2311, 2340, 2346, 2354, 2360, 2590, 2602, 2635, 2645 — each maps to a token above. This is mechanical for Ted; the table is the law.
+
+**Scope boundary (doc 21 critic T2).** This system governs `styles.css` and the templates in `src/` only. `booking-ops.html` at the repo root — built to `dist/`, routed live at `/ops` — is a self-contained internal ops page with its own inline `:root`, a system-font stack, and its own ad-hoc sizes. It consumes none of these tokens and no web font. **It is deliberately out of scope for WP-1a**, so a type sweep must not touch it and its raw `font-size` values are not a grep-clean failure. (The `--color-bg` value collision between that file and doc 21 is a WP-1b colour matter, not a type one.)
 
 ---
 
@@ -119,9 +128,9 @@ h4 { font-size: var(--text-lg); font-weight: 600; line-height: var(--leading-sub
 Outfit (Rodrigo Fuenzalida / On Brand Investments, OFL, Google Fonts; ships as a variable font 100–900) is a geometric sans with generous apertures — good stamina at small sizes, but geometric sanses at weight 300 on near-black go thin fast.
 
 **Weight policy (the 300 interrogation):**
-- **300 is permitted only at ≥ `--text-md` (17px+) in `--color-off-white` (#e8e6e3, ≈15.9:1 on #0c0c0c).** At that size and contrast it reads as the airy architectural voice Lee likes. This covers lead paragraphs and the hero subtitle.
+- **300 is permitted only at ≥ `--text-md` (17px+) in `--ink` (#e8e6e3, **15.70:1** on #0c0c0c — doc 21 §7/A2; my earlier 15.9 was arithmetic drift).** At that size and contrast it reads as the airy architectural voice Lee likes. This covers lead paragraphs and the hero subtitle.
 - **400 is the body default.** Change `body { font-weight: 300 }` (styles.css:103) → `400`, and set `line-height: var(--leading-body)` (see §5). Reason: most body copy on this site is *not* off-white — it's `--color-charcoal` #c0c0c0 (≈10.9:1, fine) and the muted greys. Weight 300 + #888 + 0.9rem, the current card recipe, is sub-AA in effective legibility even where the ratio technically passes. 400 at `--text-sm` in #aaa or brighter is the floor for card/spec text.
-- **Kill the failing grey:** `--color-text-dim: #666` (3.4:1) may only appear at ≥ `--text-lg` sizes (WCAG large-text 3:1) or decoratively (the comparison-list "x" glyphs, 639–641, are fine). Everywhere it sets running text — `.stat-source` (668) — move to `--color-text-muted` #888 minimum. I'd prefer the palette itself raise #888 → #9a9a9a (7:1 at 400); that's Jen's token to change, flagged.
+- **Kill the failing grey — resolved by doc 21.** `--color-text-dim: #666` measures **3.49:1** and fails AA outright. Doc 21 A1 aliases it to `--ink-quiet` `#9a9590` (**6.59:1**, AA at every size on both surfaces), which is exactly the fix I ordered for `.stat-source` and also raises the palette floor I flagged (my "#888 → #9a9a9a" ask lands as `#9a9590`). Nothing further needed here; the decorative comparison-list "x" glyphs (639–641) are exempt either way.
 - **500** = labels, buttons, nav, prices, eyebrows. **600** = only `.price-row.total` and `.booking-option__title` class of moments. Loaded set stays **300, 400, 500, 600** — but as the variable font (§6), so the weights are free.
 
 **Numerals:** Outfit's figures are lining by default; the Google build exposes `tnum`. Every price and spec column gets tabular:
@@ -149,8 +158,14 @@ Confidence note: `tnum` presence in the current Google-served Outfit build is hi
     line-height: var(--leading-caption);
     color: var(--color-text-muted);
 }
-.eyebrow--wide { letter-spacing: var(--tracking-caps-wide); } /* section kickers only */
+/* Section kicker — one per section (doc 21 R10). Smaller, wider, ember. */
+.eyebrow--wide {
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-caps-wide);   /* 0.2em */
+    color: var(--ember);
+}
 ```
+The base rule above is the micro-label voice: spec labels, badges, dates, metadata. `.eyebrow--wide` is the wayfinding kicker the mood board established and doc 21 R10 preserved inside this system — it passes AA at 11px (`--ember` on ground 8.40:1, on elevated 7.84:1, doc 21 §7).
 
 **Nav, quieted** (UX audit item, resolved): `.nav-links a` → `font-size: var(--text-sm); font-weight: 400; letter-spacing: var(--tracking-caps); text-transform: uppercase;`. Keep caps, shrink to 14px, open the tracking to the caps standard. Small + spaced + quiet is the architecture-studio register; the current 1.1rem was doing hero work in a utility bar.
 
@@ -187,12 +202,17 @@ Current: `head.njk:298`, one Google CSS request, `display=swap`, weights CG 400/
 2. `outfit-variable.woff2` — Outfit ships as a single variable font (wght 100–900); one file replaces four static instances and makes the 300/400/500/600 policy free. Subset with the `wght` axis intact (`glyphhanger --variable`).
 
 ```css
-/* fonts.css — or top of styles.css. Paths: /assets/fonts/ (inherits immutable cache header) */
+/* fonts.css — or top of styles.css.
+   Paths below are illustrative. The Wave A plan is authoritative on delivery:
+   binaries live in src/fonts/ with CONTENT-HASHED filenames under
+   max-age=31536000, immutable. The variable face declares format('woff2') with
+   font-weight: 100 900 — NOT format('woff2-variations'), which is deprecated
+   syntax that silently drops the whole face to Arial. */
 @font-face { font-family: 'Cormorant Garamond'; src: url('/assets/fonts/cormorant-garamond-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; unicode-range: U+0000-00FF, U+2013-2014, U+2018-201E, U+2026; }
 @font-face { font-family: 'Cormorant Garamond'; src: url('/assets/fonts/cormorant-garamond-500.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; unicode-range: U+0000-00FF, U+2013-2014, U+2018-201E, U+2026; }
 @font-face { font-family: 'Cormorant Garamond'; src: url('/assets/fonts/cormorant-garamond-600.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; unicode-range: U+0000-00FF, U+2013-2014, U+2018-201E, U+2026; }
 @font-face { font-family: 'Cormorant Garamond'; src: url('/assets/fonts/cormorant-garamond-400italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; unicode-range: U+0000-00FF, U+2013-2014, U+2018-201E, U+2026; }
-@font-face { font-family: 'Outfit'; src: url('/assets/fonts/outfit-variable.woff2') format('woff2-variations'); font-weight: 100 900; font-style: normal; font-display: swap; unicode-range: U+0000-00FF, U+2013-2014, U+2018-201E, U+2026; }
+@font-face { font-family: 'Outfit'; src: url('/assets/fonts/outfit-variable.woff2') format('woff2'); font-weight: 100 900; font-style: normal; font-display: swap; unicode-range: U+0000-00FF, U+2013-2014, U+2018-201E, U+2026; }
 
 /* Metric-tuned fallbacks — kills the swap reflow */
 @font-face {
