@@ -22,8 +22,10 @@ const ROOT = resolve(import.meta.dirname, '..');
 const CSS = join(ROOT, 'styles.css');
 
 let failures = 0;
+let passes = 0;
 const check = (name, cond, detail = '') => {
     if (cond) {
+        passes += 1;
         console.log(`  PASS  ${name}`);
     } else {
         failures += 1;
@@ -126,5 +128,9 @@ check('the live stylesheet passes the guard', lints(css) === true);
         bare.length === 0, `bare disables: ${bare.length}`);
 }
 
-console.log(failures === 0 ? '\nAll checks passed.\n' : `\n${failures} FAILED\n`);
+// NOTE-2d: the same summary line every sibling suite prints. "All checks passed"
+// hides the one failure mode a count catches for free — a suite that silently
+// stopped running most of its checks still says "All checks passed", and reads
+// as green to a human and to CI alike.
+console.log(`\n${passes} passed, ${failures} failed\n`);
 process.exit(failures === 0 ? 0 : 1);

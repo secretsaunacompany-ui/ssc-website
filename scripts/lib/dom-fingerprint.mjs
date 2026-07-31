@@ -38,6 +38,7 @@
  * Everything else — every tag, every nesting relationship, every attribute,
  * every ordering — compares raw.
  */
+import { createHash } from 'node:crypto';
 
 /**
  * Extracted in the page, so it must be entirely self-contained: Playwright
@@ -240,20 +241,79 @@ export function loadWhitelist(file, raw) {
       if (typeof e.from !== 'string' || !cls.test(e.from)) {
         throw new Error(`${file}: ${where} needs a "from" class token.`);
       }
-      if (typeof e.to !== 'string' || !cls.test(e.to)) {
-        throw new Error(`${file}: ${where} needs a "to" class token.`);
+      // `to: null` is a declared class REMOVAL: the token existed in the
+      // baseline's vocabulary and the batch deleted it outright rather than
+      // renaming it. Same authority as a rename and the same strictness — the
+      // named token is dropped from the baseline's class lists and NOTHING
+      // else is, so an undeclared removal on the same node still fails naming
+      // the token that vanished. Expressed here rather than as a `removed`
+      // node entry because a class deletion changes an attribute on a surviving
+      // element; there is no node to name.
+      if (e.to !== null && (typeof e.to !== 'string' || !cls.test(e.to))) {
+        throw new Error(`${file}: ${where} needs a "to" class token, or null to `
+          + `declare that "${e.from}" was REMOVED rather than renamed.`);
       }
       if (e.from === e.to) {
         throw new Error(`${file}: ${where} renames "${e.from}" to itself.`);
       }
       return { ...e };
     }
+    // DELETE-SUBTREE. A `removed` entry names a node by tag + an attribute
+    // substring, which is exactly the wrong instrument for an attribute-LESS
+    // node: a bare <style> or <noscript> has no `contains` to write, and the
+    // only honest candidates ("style", "") are the lazy kind the specificity
+    // check exists to reject. Worse, a subtree deletion arrives as a RUN of ops
+    // (the element, its text, its descendants), so a node entry would need one
+    // declaration per token and would still not say they belong together.
+    //
+    // So this entry identifies the deleted node three ways at once: its tag,
+    // its ancestry path, and a hash of ITS OWN serialized content (the subtree's
+    // tokens, with the ancestry prefix stripped so the hash is the node's, not
+    // its location's). It consumes the whole run or nothing. The hash is what
+    // makes it impossible to write lazily — you cannot guess it, you measure it,
+    // and two attribute-less siblings of the same tag hash differently the
+    // moment their content differs. An entry whose hash matches nothing in the
+    // baseline is flagged before any verdict rests on it.
+    if (e.op === 'delete-subtree') {
+      if (typeof e.tag !== 'string' || !e.tag) {
+        throw new Error(`${file}: ${where} needs a "tag" (e.g. "STYLE").`);
+      }
+      if (typeof e.path !== 'string' || !e.path.trim()) {
+        throw new Error(`${file}: ${where} needs a "path": the deleted node's ancestry `
+          + `chain of tag names, e.g. "html/body/section/div".`);
+      }
+      if (typeof e.textHash !== 'string' || !/^[0-9a-f]{8,64}$/.test(e.textHash)) {
+        throw new Error(`${file}: ${where} needs a "textHash": the hex subtree hash of the `
+          + `deleted node's own content. Measure it, do not invent it — a wrong hash matches `
+          + `nothing and is reported as a stale declaration.`);
+      }
+      if (!Number.isInteger(e.count) || e.count < 1) {
+        throw new Error(`${file}: ${where} needs an integer "count" >= 1.`);
+      }
+      return { ...e };
+    }
     if (e.op !== 'removed' && e.op !== 'added') {
-      throw new Error(`${file}: ${where} needs "op" of "removed" or "added", got `
-        + `${JSON.stringify(e.op)}.`);
+      throw new Error(`${file}: ${where} needs "op" of "removed", "added", "rename" or `
+        + `"delete-subtree", got ${JSON.stringify(e.op)}.`);
     }
     if (typeof e.tag !== 'string' || !e.tag) {
       throw new Error(`${file}: ${where} needs a "tag" (e.g. "LINK").`);
+    }
+    // KIND. A removed/added entry names an ELEMENT by default, and that was the
+    // only thing it could name — `contains` was tested against the serialized
+    // attributes, and a token with no attributes (a text or inline-code token)
+    // could never match one. Which meant an edit to an inline <style> body was
+    // undeclarable by construction: WP-1b reconciled booking-ops.html's own
+    // `:root` block with the stylesheet's, exactly the change the plan §6 calls
+    // for, and no entry in this vocabulary could say so.
+    //
+    // With an explicit kind, `contains` is tested against the TEXT for "text"
+    // and "code" tokens and against the attributes for elements. Same substring
+    // rule, same count discipline, same specificity check. Defaulting to
+    // "element" keeps every existing entry meaning exactly what it meant.
+    if (e.kind !== undefined && !['element', 'text', 'code'].includes(e.kind)) {
+      throw new Error(`${file}: ${where} has "kind" ${JSON.stringify(e.kind)}; it must be `
+        + `"element" (the default), "text", or "code".`);
     }
     if (typeof e.contains !== 'string' || !e.contains.trim()) {
       throw new Error(`${file}: ${where} needs a "contains" substring identifying the node. `
@@ -263,7 +323,7 @@ export function loadWhitelist(file, raw) {
       throw new Error(`${file}: ${where} needs an integer "count" >= 1. The count is what `
         + `stops a second, unexpected instance of the same change slipping through.`);
     }
-    return { ...e, contains: e.contains };
+    return { ...e, kind: e.kind || 'element', contains: e.contains };
   });
 }
 
@@ -300,14 +360,16 @@ export function loadWhitelist(file, raw) {
 export function checkWhitelistSpecificity(whitelist, baselinePrints, candidatePrints) {
   const problems = [];
   whitelist.forEach((e, idx) => {
-    if (e.op === 'rename' || typeof e.contains !== 'string') return;
+    if (e.op === 'rename' || e.op === 'delete-subtree') return;
+    if (typeof e.contains !== 'string') return;
     const prints = e.op === 'removed' ? baselinePrints : candidatePrints;
+    const wantKind = e.kind || 'element';
     let worstKey = null;
     let worstCount = 0;
     for (const [key, tokens] of prints) {
-      const matches = tokens.filter((t) => t.kind === 'element'
+      const matches = tokens.filter((t) => t.kind === wantKind
         && t.tag === e.tag.toUpperCase()
-        && t.attrs.includes(e.contains)).length;
+        && (wantKind === 'element' ? t.attrs : t.text).includes(e.contains)).length;
       if (matches > worstCount) { worstCount = matches; worstKey = key; }
     }
     if (worstCount > e.count) {
@@ -323,12 +385,205 @@ export function checkWhitelistSpecificity(whitelist, baselinePrints, candidatePr
 }
 
 /**
+ * The span of the subtree rooted at `tokens[i]`, whose path is P.
+ *
+ * The token stream is flat, so a subtree is recovered from the paths: the root
+ * element carries path P, its own text/code children carry P (a text token is
+ * pushed under its PARENT's path), and every descendant carries a path under
+ * `P/`. The run stops at the next ELEMENT token whose path is exactly P — that
+ * is a SIBLING, and merging a sibling in would let a declaration written for one
+ * node quietly describe two.
+ */
+function subtreeSpan(tokens, i) {
+  const P = tokens[i].path;
+  let n = 1;
+  for (let j = i + 1; j < tokens.length; j++) {
+    const t = tokens[j];
+    if (t.path.startsWith(`${P}/`)) { n += 1; continue; }
+    if (t.path === P && t.kind !== 'element') { n += 1; continue; }
+    break;
+  }
+  return n;
+}
+
+/** Cap on how many tokens one delete-subtree entry may claim. See matchSubtreeDeletions. */
+const MAX_SUBTREE_TOKENS = 64;
+
+/**
+ * Hash a subtree's OWN content, relative to the root path P: every token's key
+ * with P's prefix stripped, so the hash describes the node rather than where it
+ * sits. Truncated to 16 hex characters — 64 bits against a handful of candidate
+ * subtrees per page is not a collision anyone will meet, and it stays legible in
+ * a config file a human has to read.
+ *
+ * THE KEYS ARE SORTED, and that is not tidiness — it is the difference between
+ * this primitive working and not. Two attribute-less <style> siblings produce
+ * BYTE-IDENTICAL element tokens, so when one is deleted the LCS is free to match
+ * the survivor's element token against the deleted one's. Measured, on exactly
+ * the hero-intro shape this exists for: deleting <style A> yields the removed
+ * run [A's TEXT, B's ELEMENT] rather than [A's element, A's text]. The multiset
+ * of removed keys is exactly right — indistinguishable tokens are, after all,
+ * indistinguishable — but the ORDER is an artifact of which representative the
+ * matcher happened to pick. Hashing the sorted keys reads the content that
+ * actually went and ignores an alignment nobody chose.
+ *
+ * What this gives up is intra-subtree ORDER: a subtree whose children were
+ * permuted hashes the same. That is not a hole in the gate, because a permuted
+ * subtree is not a DELETED subtree — reordering surfaces as its own
+ * added/removed pair in the diff and fails there, which fixture C1 pins.
+ */
+export function subtreeHash(tokens, path) {
+  const P = path === undefined ? tokens[0].path : path;
+  const rel = (t) => (t.path === P ? '' : t.path.slice(P.length + 1));
+  const line = (t) => (t.kind === 'element'
+    ? `E|${rel(t)}|${t.tag}|${t.attrs}`
+    : `${t.kind === 'code' ? 'C' : 'T'}|${rel(t)}|${t.text}`);
+  return createHash('sha256')
+    .update(tokens.map(line).sort().join('\n')).digest('hex').slice(0, 16);
+}
+
+/** Every subtree hash for nodes of `tag` at `path` in a full token stream. */
+export function findSubtreeHashes(tokens, path, tag) {
+  const out = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (t.kind !== 'element' || t.path !== path || t.tag !== tag.toUpperCase()) continue;
+    const n = subtreeSpan(tokens, i);
+    out.push({ hash: subtreeHash(tokens.slice(i, i + n), path), span: n });
+  }
+  return out;
+}
+
+/**
+ * Does this slice of removed tokens even look like the subtree the entry names?
+ *
+ * Checked BEFORE the hash, so a hash is never computed over tokens from a
+ * different part of the document (where the relative-path arithmetic would be
+ * meaningless). Every token must live at or under the declared path, and exactly
+ * one element must sit AT it, carrying the declared tag — that element is the
+ * deleted root.
+ */
+function sliceFitsEntry(slice, entry) {
+  const P = entry.path;
+  let roots = 0;
+  for (const t of slice) {
+    if (t.path !== P && !t.path.startsWith(`${P}/`)) return false;
+    if (t.kind === 'element' && t.path === P) {
+      if (t.tag !== entry.tag.toUpperCase()) return false;
+      roots += 1;
+    }
+  }
+  return roots === 1;
+}
+
+/**
+ * Consume delete-subtree declarations out of a page's diff, returning the set of
+ * op indices they claimed.
+ *
+ * A subtree deletion arrives as a RUN of `removed` ops, so this runs as a
+ * pre-pass over each maximal block of consecutive removals: within a block, take
+ * the shortest contiguous slice from each position whose content hash matches a
+ * live entry, claim it whole, and move past it. Anything unclaimed falls through
+ * to the ordinary per-op matching and fails there if nothing declares it.
+ *
+ * Budget is spent exactly as everywhere else: an entry with `count: 1` claims
+ * one subtree, and a second identical deletion still fails.
+ *
+ * The MAX_SUBTREE_TOKENS cap bounds the slice search. It is a real limit, stated
+ * rather than hidden: a declared deletion larger than 64 tokens will not match
+ * and will fail loudly as undeclared, which is the safe direction — the entries
+ * this exists for are 2 to 4 tokens.
+ */
+function matchSubtreeDeletions(ops, whitelist, budget, consumed) {
+  const claimed = new Set();
+  const entries = whitelist
+    .map((e, idx) => ({ e, idx }))
+    .filter(({ e }) => e.op === 'delete-subtree');
+  if (entries.length === 0) return claimed;
+
+  let k = 0;
+  while (k < ops.length) {
+    if (ops[k].op !== 'removed') { k += 1; continue; }
+    let end = k;
+    while (end < ops.length && ops[end].op === 'removed') end += 1;
+
+    let i = k;
+    while (i < end) {
+      let hit = null;
+      const maxLen = Math.min(MAX_SUBTREE_TOKENS, end - i);
+      for (let len = 1; len <= maxLen && hit === null; len++) {
+        const slice = ops.slice(i, i + len).map((o) => o.token);
+        for (const { e, idx } of entries) {
+          if (budget[idx] <= 0) continue;
+          if (!sliceFitsEntry(slice, e)) continue;
+          if (subtreeHash(slice, e.path) !== e.textHash) continue;
+          hit = { idx, len };
+          break;
+        }
+      }
+      if (hit === null) { i += 1; continue; }
+      for (let j = i; j < i + hit.len; j++) claimed.add(j);
+      budget[hit.idx] -= 1;
+      consumed.set(hit.idx, (consumed.get(hit.idx) || 0) + 1);
+      i += hit.len;
+    }
+    k = end;
+  }
+  return claimed;
+}
+
+/**
+ * A delete-subtree entry whose hash matches nothing in the baseline is a
+ * declaration about a node that does not exist. Caught before any verdict rests
+ * on it, in the same spirit as the specificity check — and with a specific
+ * message, because "your hash is wrong" and "the deletion did not happen" look
+ * identical from the consumption tally alone.
+ */
+export function checkSubtreeDeclarations(whitelist, baselinePrints) {
+  const problems = [];
+  whitelist.forEach((e, idx) => {
+    if (e.op !== 'delete-subtree') return;
+    let matches = 0;
+    let sameSpot = 0;
+    for (const [, tokens] of baselinePrints) {
+      for (const found of findSubtreeHashes(tokens, e.path, e.tag)) {
+        sameSpot += 1;
+        if (found.hash === e.textHash) matches += 1;
+      }
+    }
+    if (matches === 0) {
+      problems.push(`whitelist[${idx}]: delete-subtree declares <${e.tag.toLowerCase()}> at `
+        + `"${e.path}" with content hash ${e.textHash}, and NO node in the baseline hashes to `
+        + `that (${sameSpot} node(s) of that tag do sit at that path). Either the hash was `
+        + `written by hand instead of measured, or the node this entry was written for is `
+        + `already gone. Re-measure it or delete the entry — a declaration about a node that `
+        + `does not exist cannot certify anything.`);
+    }
+  });
+  return problems;
+}
+
+/** Human-readable identity for a whitelist entry, for reports and logs. */
+export function describeEntry(e) {
+  if (e.op === 'rename') return `rename ${e.from} -> ${e.to === null ? '(removed)' : e.to}`;
+  if (e.op === 'delete-subtree') {
+    return `delete-subtree <${e.tag.toLowerCase()}> at ${e.path} #${e.textHash}`;
+  }
+  const kind = (e.kind || 'element') === 'element' ? '' : `${e.kind} in `;
+  return `${e.op} ${kind}<${e.tag.toLowerCase()}> ${JSON.stringify(e.contains)}`;
+}
+
+/**
  * Apply the whitelist to one page's diff.
  *
  * Consumption is COUNTED and per-page. An entry declaring `count: 1` consumes
  * one matching op and no more: a second, unexpected instance of the very same
  * change still fails, which is the difference between a declaration and a mute
  * button.
+ *
+ * Delete-subtree entries get first refusal on the head of every removed-element
+ * run, because they consume the WHOLE run and a node entry would otherwise eat
+ * its root token and leave the orphaned children failing on their own.
  *
  * @returns {{failures: object[], consumed: Map<number, number>}}
  */
@@ -337,15 +592,20 @@ export function applyWhitelist(ops, whitelist) {
   const consumed = new Map();
   const failures = [];
 
-  for (const op of ops) {
+  const claimed = matchSubtreeDeletions(ops, whitelist, budget, consumed);
+
+  for (let k = 0; k < ops.length; k++) {
+    if (claimed.has(k)) continue;
+    const op = ops[k];
     let matchedIdx = -1;
     for (let i = 0; i < whitelist.length; i++) {
       const e = whitelist[i];
       if (budget[i] <= 0) continue;
       if (e.op !== op.op) continue;
-      if (op.token.kind !== 'element') continue;
+      if (op.token.kind !== (e.kind || 'element')) continue;
       if (op.token.tag !== e.tag.toUpperCase()) continue;
-      if (!op.token.attrs.includes(e.contains)) continue;
+      const haystack = op.token.kind === 'element' ? op.token.attrs : op.token.text;
+      if (!haystack.includes(e.contains)) continue;
       matchedIdx = i;
       break;
     }
@@ -360,15 +620,26 @@ export function applyWhitelist(ops, whitelist) {
  * Split a whitelist into the entries that apply to THIS comparison and those
  * that do not. Non-applicable entries are inert: reported so they can be
  * pruned, never consuming a diff they were not written for.
+ *
+ * ABBREVIATED SHAS, and the bug that hid here (NOTE-1a, fixed 2026-07-31). The
+ * body of this test is deliberately prefix-tolerant in BOTH directions, because
+ * a human writes `198bc0b..c208508` into the config by hand while the runtime
+ * resolves refs to full 40-character shas. It used to be guarded by a ternary
+ * CONDITION that demanded an EXACT match first — `want.startsWith(`${b}..`)`
+ * compares a 7-char abbreviation against a 40-char sha and is false, and
+ * `b === baselineSha` is false for the same reason — so every abbreviated entry
+ * fell straight to the `: false` branch and went INERT. The prefix tolerance
+ * underneath it could never run. Measured consequence: all six of WP-1b's
+ * shipped rename declarations were silently inert in any real run, and the run
+ * reported them as "out of scope" rather than applying them. The condition is
+ * gone; the tolerant body is the whole test. Fixture Y1 pins the abbreviated
+ * case ACTIVE so this cannot regress into politeness again.
  */
 export function partitionByScope(whitelist, baselineSha, candidateSha) {
-  const want = `${baselineSha}..${candidateSha}`;
   const applies = (e) => {
     const [b, c] = e.range.split('..');
-    return want.startsWith(`${b}..`) || b === baselineSha
-      ? (candidateSha.startsWith(c) || c.startsWith(candidateSha))
-        && (baselineSha.startsWith(b) || b.startsWith(baselineSha))
-      : false;
+    return (candidateSha.startsWith(c) || c.startsWith(candidateSha))
+      && (baselineSha.startsWith(b) || b.startsWith(baselineSha));
   };
   const active = whitelist.filter(applies);
   const inert = whitelist.filter((e) => !applies(e));
@@ -399,8 +670,13 @@ export function applyRenameMap(tokens, renames) {
         if (!map.has(tok)) return tok;
         touched = true;
         used.set(tok, (used.get(tok) || 0) + 1);
+        // `to: null` is a declared REMOVAL: the token is dropped from the
+        // baseline's class list rather than rewritten. Filtered out below, so
+        // `class="grid-3 grid-3--mt-2"` becomes `class="grid-3"` — exactly what
+        // the candidate's markup renders. Every OTHER token on the same node
+        // survives untouched and still fails if it changed.
         return map.get(tok);
-      }).join(' ');
+      }).filter((tok) => tok !== null).join(' ');
       return touched ? `class="${rewritten}"` : whole;
     });
     return attrs === t.attrs ? t : { ...t, attrs };
@@ -411,7 +687,8 @@ export function applyRenameMap(tokens, renames) {
 /** Rename entries whose `from` never appeared: dead declarations, flagged. */
 export function staleRenames(renames, used) {
   return renames.filter((r) => !used.has(r.from)).map((r) =>
-    `rename entry "${r.from}" -> "${r.to}" never matched a class token anywhere `
+    `rename entry "${r.from}" -> ${r.to === null ? '(removed)' : `"${r.to}"`} `
+    + `never matched a class token anywhere `
     + `(${r.reason}). A rename that did not happen is a dead declaration; remove it, or `
     + `find out why the class stopped appearing.`);
 }

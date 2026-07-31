@@ -29,7 +29,8 @@ import { startServer } from './lib/server.mjs';
 import { installRouting } from './lib/capture.mjs';
 import {
   extractFingerprint, diffTokens, describeToken, loadWhitelist, applyWhitelist,
-  checkWhitelistSpecificity, partitionByScope, applyRenameMap, staleRenames,
+  checkWhitelistSpecificity, checkSubtreeDeclarations, describeEntry,
+  partitionByScope, applyRenameMap, staleRenames,
 } from './lib/dom-fingerprint.mjs';
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
@@ -204,6 +205,16 @@ async function main() {
 
   runFailures.push(...checkWhitelistSpecificity(
     nodeEntries, baseline.prints, candidate.prints));
+  // The delete-subtree analogue of the specificity check: an entry whose hash
+  // matches no node in the baseline is refused BEFORE it is allowed to consume
+  // anything, and with a message that distinguishes "the hash is wrong" from
+  // "the deletion never happened".
+  //
+  // NOTE, deliberate: this runs AFTER the rename map has been applied to the
+  // baseline, so a subtree hash is measured over the same vocabulary the
+  // comparison uses. A node carrying both a renamed class and a declared
+  // deletion therefore hashes consistently in both places.
+  runFailures.push(...checkSubtreeDeclarations(nodeEntries, baseline.prints));
 
   // The stated boundary, enforced rather than assumed. This certificate covers
   // delivered markup; if the two builds ship different client JS then script-
@@ -258,7 +269,7 @@ async function main() {
         candidateTokens: b.length,
         bulk,
         whitelisted: [...consumed.entries()].map(([idx, n]) => ({
-          entry: nodeEntries[idx].contains, count: n,
+          entry: describeEntry(nodeEntries[idx]), count: n,
         })),
         failures: failures.map((f) => ({ op: f.op, describe: describeToken(f.token) })),
         status: failures.length === 0 ? 'PASS' : 'FAIL',
@@ -307,13 +318,21 @@ async function main() {
     }
   }
 
+  // BUG FIXED 2026-07-31 (found while adding delete-subtree): the message
+  // arm of this map referenced a bare `e` that exists nowhere in its scope, so
+  // the FIRST stale node entry threw a ReferenceError and the whole run exited
+  // 2 — "dom-integrity failed" — instead of reporting a stale declaration. The
+  // one code path whose whole job is to complain about a stale entry could not
+  // run. It was never exercised because the shipped node entries were WP-1a's,
+  // which are inert (not stale) on every current comparison. Destructured now,
+  // and fixture S1 runs the real reporting path over a deliberately stale entry.
   const staleWhitelist = nodeEntries
     .map((e, idx) => ({ e, idx, got: totalConsumed.get(idx) || 0 }))
     .filter(({ got }) => got === 0)
-    .concat(staleRenames(renames, renameUse).map((m) => ({ msg: m })))
-    .map((x) => (x.msg ? x.msg : `whitelist entry never matched anywhere: ${e.op} <${e.tag.toLowerCase()}> `
-      + `containing ${JSON.stringify(e.contains)} (${e.reason}). A declaration that did not `
-      + `happen is a hole someone forgot to close — remove it, or find out why it stopped.`));
+    .map(({ e }) => `whitelist entry never matched anywhere: ${describeEntry(e)} `
+      + `(${e.reason}). A declaration that did not happen is a hole someone forgot to `
+      + `close — remove it, or find out why it stopped.`)
+    .concat(staleRenames(renames, renameUse));
 
   const failedPages = pages.filter((p) => p.status === 'FAIL');
   const failCount = failedPages.length + runFailures.length + staleWhitelist.length;
@@ -332,7 +351,8 @@ async function main() {
       reason: r.reason, commit: r.commit,
     })),
     whitelist: nodeEntries.map((e, idx) => ({
-      op: e.op, tag: e.tag, contains: e.contains, declared: e.count,
+      op: e.op, tag: e.tag, contains: e.contains, path: e.path, textHash: e.textHash,
+      entry: describeEntry(e), declared: e.count,
       consumedAcrossRun: totalConsumed.get(idx) || 0, reason: e.reason, commit: e.commit,
     })),
     comparisons,
@@ -367,15 +387,14 @@ async function main() {
       + `(inert, consuming nothing).`);
   }
   if (renames.length > 0) {
-    log('  Declared class renames applied to the baseline:');
+    log('  Declared class renames/removals applied to the baseline:');
     for (const r of renames) {
-      log(`    ${r.from} -> ${r.to}: ${renameUse.get(r.from) || 0} token(s) rewritten`);
+      log(`    ${describeEntry(r)}: ${renameUse.get(r.from) || 0} token(s) rewritten`);
     }
   }
   log('  Whitelist consumption:');
   for (const w of report.whitelist) {
-    log(`    ${w.consumedAcrossRun} consumed (declared ${w.declared}/page) — ${w.op} `
-      + `<${w.tag.toLowerCase()}> ${JSON.stringify(w.contains)}`);
+    log(`    ${w.consumedAcrossRun} consumed (declared ${w.declared}/page) — ${w.entry}`);
   }
   log('');
   log(`  Report: ${path.join(WORK_DIR, 'report.json')}`);

@@ -25,6 +25,7 @@ import { startServer } from './lib/server.mjs';
 import {
   extractFingerprint, diffTokens, describeToken, loadWhitelist, applyWhitelist,
   checkWhitelistSpecificity, applyRenameMap, staleRenames, partitionByScope,
+  subtreeHash, findSubtreeHashes, checkSubtreeDeclarations,
 } from './lib/dom-fingerprint.mjs';
 import * as realFingerprint from './lib/dom-fingerprint.mjs';
 
@@ -66,6 +67,12 @@ const PAGE = ({
   reordered = false,
   reparent = false,
   inlineJs = 'window.SSC = window.SSC || {};',
+  // The hero-intro shape, and it is built adversarially for delete-subtree: two
+  // ATTRIBUTE-LESS <style> siblings under the same parent at the same ancestry
+  // path, distinguishable only by their content, plus a <noscript> wrapping a
+  // third. This is the real material — a `contains` entry has nothing to grip
+  // here, which is exactly why the primitive exists.
+  heroIntro = '',
 } = {}) => {
   const card = (i) =>
     `<article class="card" data-index="${i}"><h3>Model ${i}</h3><p>Description for model ${i}.</p></article>`;
@@ -90,7 +97,7 @@ ${preloads}
 </head><body>
 <header class="site-header"><h1>${heading}</h1></header>
 <main>
-  <section id="hero">${reordered ? priceEl + intro : intro + priceEl}</section>
+  <section id="hero">${heroIntro}${reordered ? priceEl + intro : intro + priceEl}</section>
   <section id="models">${cards}${extraCard}</section>
 </main>
 <footer><p>Built in Squamish, BC.</p></footer>
@@ -194,7 +201,7 @@ const MUTATIONS = [
     name: 'D-m7  whitelist matches on tag alone (contains ignored)',
     proves: 'a whitelist entry cannot swallow an unrelated node of the same tag',
     edits: { 'dom-fingerprint.mjs': [
-      '      if (!op.token.attrs.includes(e.contains)) continue;', ''] },
+      '      if (!haystack.includes(e.contains)) continue;', ''] },
     probe: (m, f, wl) => m.applyWhitelist(f.unrelatedLinkDeletion, wl).failures.length,
   },
   {
@@ -224,6 +231,50 @@ const MUTATIONS = [
       "  return t.kind === 'element'\n    ? `E|${t.tag}|${t.attrs}`\n"
       + "    : `${t.kind === 'code' ? 'C' : 'T'}|${t.text}`;"] },
     probe: (m, f) => m.diffTokens(f.base, f.reparented).ops.length,
+  },
+  {
+    name: 'D-m12 delete-subtree hash check disabled (tag + path alone)',
+    proves: 'a declaration aimed at the WRONG attribute-less node consumes nothing',
+    edits: { 'dom-fingerprint.mjs': [
+      "          if (subtreeHash(slice, e.path) !== e.textHash) continue;", ''] },
+    probe: (m, f) => m.applyWhitelist(
+      m.diffTokens(f.heroAll, f.heroNoA).ops, f.wrongSubtreeEntry).failures.length,
+  },
+  {
+    name: 'D-m13 class REMOVAL declaration treated as a no-op',
+    proves: 'a declared `to: null` actually drops the token, not just declares it',
+    edits: { 'dom-fingerprint.mjs': [
+      '      }).filter((tok) => tok !== null).join(\' \');',
+      "      }).map((tok) => (tok === null ? 'featured' : tok)).join(' ');"] },
+    probe: (m, f) => m.diffTokens(
+      m.applyRenameMap(f.withUtility, f.removals).tokens, f.withoutUtility).ops.length,
+  },
+  {
+    name: 'D-m15 entry "kind" ignored (a code entry consumes elements too)',
+    proves: 'a declaration written for an inline-code edit cannot swallow a node change',
+    edits: { 'dom-fingerprint.mjs': [
+      "      if (op.token.kind !== (e.kind || 'element')) continue;", ''] },
+    // The entry declares a CODE edit but its substring happens to appear in an
+    // ELEMENT's attributes. Shipped, kind refuses it and the node change fails
+    // as undeclared. With kind ignored, the entry swallows a node it was never
+    // written for -- the exact laundering `contains` specificity exists to stop,
+    // reintroduced through the back door.
+    probe: (m, f) => m.applyWhitelist(
+      m.diffTokens(f.codeBefore, f.codeElementChanged).ops, f.kindConfusable).failures.length,
+  },
+  {
+    name: 'D-m14 scope partitioning ignored (every entry active)',
+    proves: 'an out-of-scope entry cannot top up another batch\'s budget',
+    edits: { 'dom-fingerprint.mjs': [
+      '  const active = whitelist.filter(applies);',
+      '  const active = whitelist.slice();'] },
+    // Two entries with the SAME `contains`, one scoped to this comparison and
+    // one to a different batch, against TWO deletions. Shipped: only the
+    // in-scope entry is active, its count of 1 is spent, and the second deletion
+    // FAILS. Mutated: the stale entry's budget silently absorbs it and the run
+    // goes green. 1 failure vs 0 — the difference is the whole scope mechanism.
+    probe: (m, f) => m.applyWhitelist(f.twoSameShapeDeletions,
+      m.partitionByScope(f.scopedPair, 'aaaaaaa', 'bbbbbbb').active).failures.length,
   },
   {
     name: 'D-m8  document order ignored (tokens sorted)',
@@ -514,6 +565,218 @@ async function main() {
         'dead declarations must not accumulate');
       check('X8 a rename that did occur is not flagged',
         staleRenames(RENAMES, used).length === 0, 'control');
+
+      // ---- class REMOVAL: `to: null` ----
+      // WP-1b deletes rhythm utilities (`grid-3--mt-2`, `heading--mb-2`, ...)
+      // and `section--warm-glow` outright. That is a declared vocabulary change
+      // like a rename, but there is no new name, and no `removed`-node entry can
+      // express it: the ELEMENT survives, only one of its class tokens goes.
+      const REMOVALS = [{ op: 'rename', from: 'featured', to: null,
+        range: 'aaaaaaa..bbbbbbb', reason: 'fixture', commit: 'fixture' }];
+      const withUtility = await fp(PAGE().replace(/class="card"/g, 'class="card featured"'), 'rm-before');
+      const withoutUtility = await fp(PAGE(), 'rm-after');
+      const { tokens: stripped, used: rmUsed } = applyRenameMap(withUtility, REMOVALS);
+      check('X9 a declared class REMOVAL compares clean',
+        diffTokens(stripped, withoutUtility).ops.length === 0,
+        `dropping a declared token must leave the surviving classes intact. got `
+        + `${JSON.stringify(diffTokens(stripped, withoutUtility).ops.map((o) => describeToken(o.token)))}`);
+      check('X10 the removal reports how many tokens it dropped',
+        rmUsed.get('featured') === 3, `expected 3 drops, got ${rmUsed.get('featured')}`);
+
+      // The whole point of a DECLARATION: an UNDECLARED removal on the same
+      // page still fails, and names the node whose class list shrank.
+      const alsoStripped = await fp(PAGE().replace('class="intro"', 'class=""'), 'rm-undeclared');
+      const us = diffTokens(stripped, alsoStripped).ops;
+      check('X11 an undeclared class removal still fails',
+        us.length > 0, 'the map explains one token, not every class that vanishes');
+      check('X12 the failure names the node that lost a class',
+        us.some((o) => describeToken(o.token).includes('intro')),
+        `expected the <p class="intro"> named, got `
+        + `${JSON.stringify(us.map((o) => describeToken(o.token)))}`);
+
+      check('X13 a removal declaration whose token never occurs is flagged stale',
+        staleRenames([{ from: 'ghost-utility', to: null, reason: 'never happens' }],
+          new Map()).length === 1,
+        'a dead removal declaration is as much a hole as a dead rename');
+
+      expectThrows('X14 a non-null, non-token "to" is still rejected',
+        () => loadWhitelist('t.json', { whitelist: [{ op: 'rename', from: 'a', to: 'not a token',
+          range: 'aaaaaaa..bbbbbbb', reason: 'r', commit: 'c' }] }), 'to');
+    }
+
+    process.stdout.write('\nY — scope matching tolerates abbreviated shas (NOTE-1a)\n');
+    {
+      // THE BUG THIS PINS: a human writes 7-character shas into the config; the
+      // runtime resolves refs to full 40-character shas. The guard clause used
+      // to demand an exact match before the prefix-tolerant body could run, so
+      // EVERY abbreviated entry went inert — measured on the shipped config,
+      // where all six WP-1b rename declarations silently stopped applying.
+      const abbrev = [{ op: 'rename', from: 'card', to: 'tile',
+        range: '198bc0b..c208508', reason: 'fixture', commit: 'fixture' }];
+      const full = ['198bc0b1f2a3c4d5e6f708192a3b4c5d6e7f8091',
+        'c2085081f2a3c4d5e6f708192a3b4c5d6e7f8091'];
+      check('Y1 a 7-char config range is ACTIVE against full runtime shas',
+        partitionByScope(abbrev, full[0], full[1]).active.length === 1,
+        'the config is written by a human in abbreviations; if that reads as out-of-scope '
+        + 'the declarations are inert and the run reports them as somebody else\'s batch');
+      check('Y2 a full-sha config range is ACTIVE against the same full shas',
+        partitionByScope([{ ...abbrev[0], range: `${full[0]}..${full[1]}` }], full[0], full[1])
+          .active.length === 1, 'the symmetric case must not regress');
+      check('Y3 a range for a DIFFERENT comparison is still inert',
+        partitionByScope(abbrev, `dead${full[0].slice(4)}`, full[1]).active.length === 0,
+        'tolerance is about sha LENGTH, never about which comparison an entry belongs to');
+      check('Y4 a candidate mismatch alone is enough to make an entry inert',
+        partitionByScope(abbrev, full[0], `beef${full[1].slice(4)}`).active.length === 0,
+        'both ends of the range must match, not just the baseline');
+    }
+
+    process.stdout.write('\nZ — delete-subtree declarations\n');
+    {
+      // Two attribute-less <style> siblings plus a <noscript> wrapping a third:
+      // the hero-intro shape this primitive exists for.
+      const STYLE_A = '<style>.hero-intro{opacity:0}</style>';
+      const STYLE_B = '<style>.hero-mask{transform:none}</style>';
+      const NOSCRIPT = '<noscript><style>.hero-intro{opacity:1}</style></noscript>';
+      const withAll = await fp(PAGE({ heroIntro: STYLE_A + STYLE_B + NOSCRIPT }), 'z-all');
+      const withoutA = await fp(PAGE({ heroIntro: STYLE_B + NOSCRIPT }), 'z-no-a');
+      const withoutB = await fp(PAGE({ heroIntro: STYLE_A + NOSCRIPT }), 'z-no-b');
+      const withoutNoscript = await fp(PAGE({ heroIntro: STYLE_A + STYLE_B }), 'z-no-ns');
+
+      const HERO_PATH = 'html/body/main/section';
+      const styleHashes = findSubtreeHashes(withAll, `${HERO_PATH}/style`, 'STYLE');
+      const nsHashes = findSubtreeHashes(withAll, `${HERO_PATH}/noscript`, 'NOSCRIPT');
+      check('Z0 the two attribute-less <style> siblings hash DIFFERENTLY',
+        styleHashes.length === 2 && styleHashes[0].hash !== styleHashes[1].hash,
+        `this is the whole premise: identical tag, no attributes, distinguishable only by `
+        + `content. got ${JSON.stringify(styleHashes)}`);
+
+      const entry = (hash, tag, p, extra = {}) => loadWhitelist('t.json', { whitelist: [{
+        op: 'delete-subtree', tag, path: p, textHash: hash, count: 1,
+        reason: 'fixture', commit: 'fixture', range: 'aaaaaaa..bbbbbbb', ...extra,
+      }] });
+
+      const declA = entry(styleHashes[0].hash, 'STYLE', `${HERO_PATH}/style`);
+      check('Z1 a DECLARED subtree deletion passes',
+        applyWhitelist(diffTokens(withAll, withoutA).ops, declA).failures.length === 0,
+        `the declared <style> and its text are one deletion, consumed as one. got `
+        + JSON.stringify(applyWhitelist(diffTokens(withAll, withoutA).ops, declA)
+          .failures.map((f) => describeToken(f.token))));
+
+      // THE CASE A `contains` ENTRY CANNOT DISTINGUISH: same tag, same path, no
+      // attributes on either. Only the content hash separates them.
+      const undeclaredSibling = applyWhitelist(diffTokens(withAll, withoutB).ops, declA);
+      check('Z2 an UNDECLARED deletion of an identical-tag sibling still fails',
+        undeclaredSibling.failures.length > 0,
+        `entry A must not swallow sibling B: they differ only in content, which is exactly `
+        + `what the hash reads. got ${undeclaredSibling.failures.length} failures`);
+      // What the failure can and cannot say, stated honestly. The two element
+      // tokens are byte-identical, so the diff is free to report either as the
+      // removed one and the message names whichever it picked — the same
+      // identical-siblings caveat already recorded on checkWhitelistSpecificity.
+      // The load-bearing property is not WHICH node is named; it is that the
+      // declaration could not launder the deletion: entry A consumed NOTHING,
+      // so it is also reported stale, and a reviewer gets two signals.
+      check('Z2b the declaration consumed nothing, so it is also flagged stale',
+        (undeclaredSibling.consumed.get(0) || 0) === 0,
+        `a deletion the entry does not describe must not spend the entry's budget. `
+        + `consumed ${JSON.stringify([...undeclaredSibling.consumed])}`);
+
+      // A hash aimed at the WRONG node is not a near-miss that degrades to a
+      // count check — it matches nothing and the real deletion fails loudly.
+      const wrongHash = entry(styleHashes[1].hash, 'STYLE', `${HERO_PATH}/style`);
+      const wrong = applyWhitelist(diffTokens(withAll, withoutA).ops, wrongHash);
+      check('Z3 a hash aimed at the wrong node fails loudly',
+        wrong.failures.length > 0 && (wrong.consumed.get(0) || 0) === 0,
+        `a delete-subtree entry either matches its node or consumes nothing; there is no `
+        + `"close enough". got ${wrong.failures.length} failures, `
+        + `consumed ${JSON.stringify([...wrong.consumed])}`);
+
+      // NESTED subtree: <noscript> carrying an inner <style>. Deleting it is ONE
+      // declaration, not two, and the inner node must not be left orphaned.
+      const declNs = entry(nsHashes[0].hash, 'NOSCRIPT', `${HERO_PATH}/noscript`);
+      const nsVerdict = applyWhitelist(diffTokens(withAll, withoutNoscript).ops, declNs);
+      check('Z4 a nested subtree is ONE declaration, inner nodes included',
+        nsVerdict.failures.length === 0 && nsVerdict.consumed.get(0) === 1,
+        `the <noscript>, its inner <style> and that style's text are one deletion. got `
+        + `${nsVerdict.failures.length} failures / consumed `
+        + `${JSON.stringify([...nsVerdict.consumed])}`);
+
+      // Count is exact, like every other entry: TWO deletions against a count of
+      // 1 leave the second failing.
+      const bothGone = await fp(PAGE({ heroIntro: NOSCRIPT }), 'z-none');
+      check('Z5 count is exact — a second subtree deletion is not swallowed',
+        applyWhitelist(diffTokens(withAll, bothGone).ops, declA).failures.length > 0,
+        'a count is a budget for the node it names, not a licence for its siblings');
+
+      // STALENESS, checked against the baseline before any verdict rests on it.
+      const prints = new Map([['/@1440', withAll]]);
+      check('Z6 an entry whose hash matches nothing in the baseline is flagged',
+        checkSubtreeDeclarations(entry('deadbeefdeadbeef', 'STYLE', `${HERO_PATH}/style`),
+          prints).length === 1,
+        'a declaration about a node that does not exist cannot certify anything');
+      check('Z6b the flag distinguishes a wrong hash from a wrong path',
+        /node\(s\) of that tag do sit at that path/
+          .test(checkSubtreeDeclarations(
+            entry('deadbeefdeadbeef', 'STYLE', `${HERO_PATH}/style`), prints)[0] || ''),
+        'the message must say whether the tag/path was found, so a reader knows which half '
+        + 'of the declaration is wrong');
+      check('Z7 a correctly measured entry is NOT flagged',
+        checkSubtreeDeclarations(declA, prints).length === 0, 'control');
+
+      // Validation.
+      const okSub = { op: 'delete-subtree', tag: 'STYLE', path: 'html/head/style',
+        textHash: 'abcdef0123456789', count: 1, reason: 'r', commit: 'c',
+        range: 'aaaaaaa..bbbbbbb' };
+      const badSub = (patch) => () => loadWhitelist('t.json', { whitelist: [{ ...okSub, ...patch }] });
+      expectThrows('Z8 a missing path is rejected', badSub({ path: '' }), 'path');
+      expectThrows('Z9 a missing textHash is rejected', badSub({ textHash: '' }), 'textHash');
+      expectThrows('Z10 a non-hex textHash is rejected', badSub({ textHash: 'not-a-hash' }), 'textHash');
+      expectThrows('Z11 a zero count is rejected', badSub({ count: 0 }), 'count');
+      // ---- kind: an inline-code edit is declarable, and still exact ----
+      // WP-1b reconciled booking-ops.html's own `:root` with the stylesheet's.
+      // That is a CODE token changing, and `contains` used to be tested only
+      // against attributes, so no entry in the vocabulary could name it.
+      const codeBefore = await fp(PAGE({ inlineJs: 'window.TOKENS = { bg: "#0f0f0f" };' }), 'z-code-a');
+      const codeAfter = await fp(PAGE({ inlineJs: 'window.TOKENS = { bg: "#0c0c0c" };' }), 'z-code-b');
+      const codeDecl = loadWhitelist('t.json', { whitelist: [
+        { op: 'removed', kind: 'code', tag: 'SCRIPT', contains: '#0f0f0f', count: 1,
+          reason: 'fixture', commit: 'c', range: 'aaaaaaa..bbbbbbb' },
+        { op: 'added', kind: 'code', tag: 'SCRIPT', contains: '#0c0c0c', count: 1,
+          reason: 'fixture', commit: 'c', range: 'aaaaaaa..bbbbbbb' },
+      ] });
+      check('Z13 a declared inline-code edit is consumed',
+        applyWhitelist(diffTokens(codeBefore, codeAfter).ops, codeDecl).failures.length === 0,
+        `an inline <style>/<script> body edit must be declarable, got `
+        + JSON.stringify(applyWhitelist(diffTokens(codeBefore, codeAfter).ops, codeDecl)
+          .failures.map((f) => describeToken(f.token))));
+      check('Z14 an UNDECLARED inline-code edit still fails',
+        applyWhitelist(diffTokens(codeBefore,
+          await fp(PAGE({ inlineJs: 'window.TOKENS = { bg: "#ff0000" };' }), 'z-code-c'),
+        ).ops, codeDecl).failures.length > 0,
+        'the declaration names one value, not any value');
+      check('Z15 a code entry does not consume an ELEMENT change',
+        applyWhitelist(diffTokens(codeBefore,
+          await fp(PAGE({ inlineJs: 'window.TOKENS = { bg: "#0f0f0f" };' })
+            .replace('class="site-header"', 'class="site-header is-compact"'), 'z-code-d'),
+        ).ops, codeDecl).failures.length > 0,
+        'kind is part of the identity, not decoration');
+      expectThrows('Z16 an unknown "kind" is rejected',
+        () => loadWhitelist('t.json', { whitelist: [{ op: 'removed', kind: 'node', tag: 'STYLE',
+          contains: 'x', count: 1, reason: 'r', commit: 'c', range: 'aaaaaaa..bbbbbbb' }] }),
+        'kind');
+      check('Z17 the specificity check reads TEXT for a code entry',
+        checkWhitelistSpecificity(loadWhitelist('t.json', { whitelist: [{
+          op: 'removed', kind: 'code', tag: 'SCRIPT', contains: 'window', count: 1,
+          reason: 'r', commit: 'c', range: 'aaaaaaa..bbbbbbb' }] }),
+        new Map([['/@1440', codeBefore]]), new Map()).length === 0,
+        'a code entry must be checked against the code it names, not against attributes it '
+        + 'does not have — otherwise the laziest possible entry passes the laziness check');
+
+      check('Z12 the specificity check ignores delete-subtree entries',
+        checkWhitelistSpecificity(loadWhitelist('t.json', { whitelist: [okSub] }),
+          prints, new Map()).length === 0,
+        'a delete-subtree entry has no "contains" to be lazy with; the substring check must '
+        + 'not fabricate a verdict about it');
     }
 
     process.stdout.write('\nM — mutation battery (runnable)\n');
@@ -553,7 +816,56 @@ async function main() {
         unrelatedLinkDeletion: [
           { op: 'removed', token: { kind: 'element', tag: 'LINK', path: 'html/head', attrs: 'href="https://secretsaunacompany.ca/" rel="canonical"' } },
         ],
+        // delete-subtree material: the two attribute-less <style> siblings, and
+        // an entry aimed at the WRONG one. Shipped, the hash refuses it and the
+        // real deletion fails; with the hash check gone, tag+path alone let it
+        // consume a node it was never written for.
+        heroAll: null,
+        heroNoA: null,
+        wrongSubtreeEntry: null,
+        // class-removal material
+        withUtility: await fp(PAGE().replace(/class="card"/g, 'class="card featured"'), 'm-wu'),
+        withoutUtility: await fp(PAGE(), 'm-wou'),
+        removals: [{ op: 'rename', from: 'featured', to: null, range: 'a..b',
+          reason: 'fixture', commit: 'fixture' }],
+        // scope material: same shape, different batches.
+        scopedPair: loadWhitelist('t.json', { whitelist: [
+          { op: 'removed', tag: 'LINK', contains: 'fonts.googleapis.com/css', count: 1,
+            reason: 'this batch', commit: 'c', range: 'aaaaaaa..bbbbbbb' },
+          { op: 'removed', tag: 'LINK', contains: 'fonts.googleapis.com/css', count: 1,
+            reason: 'a DIFFERENT batch', commit: 'c', range: 'ccccccc..ddddddd' },
+        ] }),
+        twoSameShapeDeletions: [
+          { op: 'removed', token: { kind: 'element', tag: 'LINK', path: 'html/head', attrs: 'href="https://fonts.googleapis.com/css2?family=Cormorant" rel="stylesheet"' } },
+          { op: 'removed', token: { kind: 'element', tag: 'LINK', path: 'html/head', attrs: 'href="https://fonts.googleapis.com/css2?family=Cormorant" rel="stylesheet"' } },
+        ],
       };
+      f.codeBefore = await fp(PAGE({ inlineJs: 'window.TOKENS = { bg: "#0f0f0f" };' }), 'm-cb');
+      f.codeElementChanged = await fp(PAGE({ inlineJs: 'window.TOKENS = { bg: "#0f0f0f" };' })
+        .replace('class="site-header"', 'class="site-header is-compact"'), 'm-cec');
+      f.kindConfusable = loadWhitelist('t.json', { whitelist: [
+        { op: 'added', kind: 'code', tag: 'HEADER', contains: 'is-compact', count: 1,
+          reason: 'fixture: a code entry whose substring lives in an attribute',
+          commit: 'c', range: 'aaaaaaa..bbbbbbb' },
+      ] });
+      f.codeDecl = loadWhitelist('t.json', { whitelist: [
+        { op: 'removed', kind: 'code', tag: 'SCRIPT', contains: '#0f0f0f', count: 1,
+          reason: 'fixture', commit: 'c', range: 'aaaaaaa..bbbbbbb' },
+        { op: 'added', kind: 'code', tag: 'SCRIPT', contains: '#0c0c0c', count: 1,
+          reason: 'fixture', commit: 'c', range: 'aaaaaaa..bbbbbbb' },
+      ] });
+      {
+        const STYLE_A = '<style>.hero-intro{opacity:0}</style>';
+        const STYLE_B = '<style>.hero-mask{transform:none}</style>';
+        f.heroAll = await fp(PAGE({ heroIntro: STYLE_A + STYLE_B }), 'm-hero-all');
+        f.heroNoA = await fp(PAGE({ heroIntro: STYLE_B }), 'm-hero-noa');
+        const hashes = findSubtreeHashes(f.heroAll, 'html/body/main/section/style', 'STYLE');
+        f.wrongSubtreeEntry = loadWhitelist('t.json', { whitelist: [{
+          op: 'delete-subtree', tag: 'STYLE', path: 'html/body/main/section/style',
+          textHash: hashes[1].hash, count: 1, reason: 'aimed at sibling B on purpose',
+          commit: 'fixture', range: 'aaaaaaa..bbbbbbb',
+        }] });
+      }
       // Extraction-level mutations change the function that runs IN THE PAGE,
       // so they must be re-extracted through a real browser with the mutant's
       // own extractFingerprint. Handing them tokens produced by the real one

@@ -208,6 +208,69 @@ closed. Counts are per page, so a *second* unexpected instance of a declared
 change still fails: the two Google preconnects are declared, and a third
 disappearing preconnect (the Cloudinary one, which must survive) is caught.
 
+### The four entry kinds
+
+A `contains` substring names a node by its attributes. That works for a `<link>`
+and not at all for the other three shapes a real batch produces, so the
+vocabulary has four ops. Each is a declaration with the same authority and the
+same exactness; none is a waiver.
+
+| `op` | Declares | Identified by |
+|---|---|---|
+| `removed` / `added` | one node appeared or disappeared | `tag` + `contains` substring + `count` |
+| `removed` / `added` with `"kind": "code"` (or `"text"`) | an inline `<style>`/`<script>` body, or a text node, changed | `tag` + `contains` substring **of the text** + `count` |
+| `rename` | a class token was renamed sitewide (`from` → `to`) | the token pair |
+| `rename` with `"to": null` | a class token was **removed** sitewide | the token |
+| `delete-subtree` | an attribute-less node and everything under it was deleted | `tag` + `path` + **content hash** + `count` |
+
+**Renames and removals** are applied to the *baseline's* vocabulary before
+anything is compared, so a 158-site collapse reads as the one declared structure
+change it is rather than 158 undeclared attribute deltas. Whole tokens only,
+never substrings, so renaming `fade-in` cannot touch `fade-in-late`. Everything
+the map does not explain survives into the comparison and still fails: a rename
+plus a smuggled extra class fails **naming the smuggled token**. A removal
+(`to: null`) is the same mechanism for the WP-1b rhythm utilities, which were
+deleted rather than renamed — the element survives, one of its class tokens goes,
+and no node entry can express that.
+
+**`kind`** exists because `contains` was tested only against a node's serialized
+attributes, so a token that has none — a text node, or an inline `<style>` body —
+could never match an entry. An edit to inline CSS was undeclarable by
+construction. With an explicit kind the substring is tested against the text
+instead, under the same count and specificity discipline; `kind` is part of the
+entry's identity, so a code declaration cannot consume an element change even
+when its substring happens to appear in an attribute.
+
+**`delete-subtree`** exists for the deletions a `contains` entry physically
+cannot describe: the hero-intro `<style>` and `<noscript>` blocks carry no
+attributes, so the only substrings available (`"style"`, `""`) are exactly the
+lazy kind the specificity check rejects. Instead the entry names the node three
+ways at once — its tag, its ancestry path, and a **hash of its own serialized
+content** — and consumes the whole run of removed tokens or nothing at all. The
+hash is what makes the entry impossible to write lazily: you cannot guess it, you
+measure it, and two attribute-less siblings of the same tag hash differently the
+moment their content differs. An entry whose hash matches nothing in the baseline
+is reported *before* any verdict rests on it, with a message that separates "the
+hash is wrong" from "the deletion never happened".
+
+Two properties of that hash are worth stating because they were chosen, not
+inherited. It is computed over the **sorted** token keys: two identical `<style>`
+siblings produce byte-identical element tokens, so when one is deleted the
+sequence matcher is free to align the survivor's token against the deleted one's
+and the removed run comes back as *[A's text, B's element]* — the right content
+in an order nobody chose. Sorting reads the content and ignores the artifact.
+What that gives up is intra-subtree *order*, which is not a hole: a permuted
+subtree is not a deleted one, and it fails as its own added/removed pair.
+
+**Scope.** Every entry carries a `range` of `<baselineSha>..<candidateSha>` naming
+the comparison it belongs to. The file is per-repo but an entry describes ONE
+batch, so without a scope an old batch's declarations sit here forever, reading
+stale against every later baseline while still being load-bearing. Out-of-scope
+entries are **inert** — reported so they can be pruned, never consuming a diff
+they were not written for. Abbreviated shas in the config match full shas at
+runtime, in both directions; a guard clause that demanded an exact match once
+made every abbreviated entry silently inert, which is fixture Y1's whole job.
+
 ### The boundary: scripts are disabled
 
 Pages are loaded with JavaScript off, so the certificate is over the **delivered
