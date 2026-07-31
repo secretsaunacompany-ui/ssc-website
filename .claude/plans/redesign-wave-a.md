@@ -590,6 +590,16 @@ later baselines — the battery caught the naive removal; scope entries to a
 baseline..candidate range). *[Both landed 2026-07-31 in the fix round, plus
 delete-subtree and kind:'code' vocabulary.]*
 
+**Queued from the behavioral fix round (2026-07-31):** the /contact/ modal-scoping
+cleanup (removes the vestigial empty hidden fields that sent the evaluator
+chasing phantom data loss) deletes a 352-token subtree — beyond dom-integrity's
+`MAX_SUBTREE_TOKENS = 64`, a deliberate loud-fail limit. The implementer wrote
+the fix, then REVERTED it rather than raising the harness cap inside the round
+the cap would certify. It ships as its own small batch carrying the harness
+change explicitly (cap raise + fixture at the new bound), reviewed together.
+The honeypot's 34×34 tap target stays as-is (offscreen, untappable, and any
+whitelist entry naming it consumes its legitimate modal twin).
+
 **Queued from the 1b fix round (2026-07-31):** (1) the mobile gutter — `@media
 (max-width: 768px) { section { padding: … 5% } }` flattens the three
 `--section-pad` tiers at the width most visitors use; found by the rhythm
