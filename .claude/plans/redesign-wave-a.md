@@ -568,7 +568,17 @@ model's jurisdiction, and the instrument's next model evolution happens only if
 a future need justifies it. Instrument follow-up queued: the DOM whitelist is
 per-comparison but its file is per-repo (WP-1a's entries read stale against
 later baselines — the battery caught the naive removal; scope entries to a
-baseline..candidate range).
+baseline..candidate range). *[Both landed 2026-07-31 in the fix round, plus
+delete-subtree and kind:'code' vocabulary.]*
+
+**Queued from the 1b fix round (2026-07-31):** (1) the mobile gutter — `@media
+(max-width: 768px) { section { padding: … 5% } }` flattens the three
+`--section-pad` tiers at the width most visitors use; found by the rhythm
+suite, invisible to every prior instrument; recorded at doc 21 §6.2a; a
+rendered-output change on every page = its own small batch with the full gate
+run, post-Wave-A or as WP-1c. (2) `--ember-dark` survived the warm-wood fold
+(only `-hover` folded) — doc 21 §6.5's flat-ember-vs-keep decision is inherited,
+not made; decide it in the same batch as (1).
 
 ---
 
