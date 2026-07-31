@@ -177,7 +177,13 @@ fails. One Razor review covers both instrument commits before WP-1a re-measures.
 The alternative — demoting the harness to advisory for the wave's largest visual
 batch — is rejected: it is the outcome the Batch 1 repair exists to prevent.
 
-*Instrument follow-ups queued (2026-07-30, Razor's combined instrument review):*
+*Instrument follow-ups queued (2026-07-30/31, Razor's instrument reviews):*
+(0) Flake retirement (NOTE-A, next instrument touch): give mutation predicate
+A-m12 the F1 treatment — assert the mutation *materially shrank* the measured
+value relative to the reference (`v < ref - 2`), not that it landed under a bare
+constant with 1px of render headroom; and make the battery's failure detail
+interpolate the measured number so a one-in-twenty flake self-diagnoses on first
+recurrence. Neither gates anything — the failure mode is false-red only.
 (1) the long-distance small-reorder blind spot — rows displaced beyond the 240px
 search window drop from the residual set, so <5% of rows swapped across a long
 page reports spread 0 and passes coverage (sized: 8 row-pairs on a 400-row page
