@@ -2,6 +2,11 @@
     <!-- Load order matters: data & utils first, then components, then init last -->
     <script src="{{ '/js/data.js' | assetUrl }}" defer></script>
     <script src="{{ '/js/utils.js' | assetUrl }}" defer></script>
+    {# analytics publishes SSC.track, which every other module calls. It has no
+       dependencies of its own and must load before all of them. It does NOT
+       depend on the cross-origin tracker below having loaded first: SSC.track
+       reads window.analyticsTracker at CALL time, not at definition time. #}
+    <script src="{{ '/js/analytics.js' | assetUrl }}" defer></script>
     {# quote-store reads SSC.pricesVersion from data.js and is read by both
        navigation.js (the /contact/ fallback) and modal.js -- it must load after
        data.js and before either of them. #}

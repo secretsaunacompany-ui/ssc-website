@@ -25,6 +25,10 @@
      */
     const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+    /** Debounce and per-open ceiling for `configurator_option_change`. */
+    const OPTION_EVENT_DEBOUNCE_MS = 500;
+    const OPTION_EVENT_CAP = 12;
+
     /** Helper microcopy per site-access answer (doc 33 §3). */
     const ACCESS_HELPERS = {
         tight: 'No problem, tricky sites are normal for us. Anything you can tell us about the spot in the notes below helps.',
@@ -45,6 +49,15 @@
             this.submitting = false;
             /** What had focus before the modal opened, so it can be given back. */
             this.lastFocused = null;
+            /**
+             * Option-change instrumentation state. `configurator_option_change`
+             * is the only high-frequency event in doc 14 §8 and the doc says so
+             * itself: debounced and cheap, because engagement depth is a shape
+             * question, not a per-click ledger.
+             */
+            this.optionTimer = null;
+            this.pendingOption = null;
+            this.optionEventCount = 0;
             this.initEventListeners();
         }
 
@@ -98,7 +111,10 @@
             // Initialize price calculation listeners
             const setupAddonListeners = () => {
                 document.querySelectorAll('.modal-addons input').forEach((input) => {
-                    input.addEventListener('change', () => { this.calculateTotal(); });
+                    input.addEventListener('change', () => {
+                        this.calculateTotal();
+                        this.trackOptionChange(input);
+                    });
                 });
             };
             if (document.readyState === 'loading') {
@@ -133,6 +149,35 @@
 
             const close = this.modal.querySelector('.modal-close');
             if (close) close.focus();
+
+            // Top of the funnel. Fired last, after the modal is actually on
+            // screen, so it counts opens the visitor got rather than opens the
+            // code attempted.
+            this.optionEventCount = 0;
+            window.SSC.track('configurator_open', { model: currentModelId });
+        }
+
+        /**
+         * `configurator_option_change` -- debounced, capped, and payload-free
+         * beyond the model and which option moved.
+         *
+         * Debounced because a radio group fires a change for every arrow-key
+         * step through it; capped because a visitor who plays with the
+         * configurator for ten minutes should register as engaged, not as a
+         * flood of identical rows in a table that costs money to hold.
+         */
+        trackOptionChange(input) {
+            if (!currentModelId) return;
+            if (this.optionEventCount >= OPTION_EVENT_CAP) return;
+            this.pendingOption = input.dataset.addon || input.name || 'option';
+            window.clearTimeout(this.optionTimer);
+            this.optionTimer = window.setTimeout(() => {
+                this.optionEventCount += 1;
+                window.SSC.track('configurator_option_change', {
+                    model: currentModelId,
+                    addon: this.pendingOption
+                });
+            }, OPTION_EVENT_DEBOUNCE_MS);
         }
 
         close() {
@@ -621,6 +666,14 @@
             // "prices" when an option vanished would be a small lie in the one
             // place the visitor is being asked to trust a number. A stale price
             // sheet is the superset, so it wins when both are true.
+            // Validates the preservation design: a restore that never happens
+            // means the storage work is carrying nobody.
+            window.SSC.track('quote_restore', {
+                model: modelId,
+                stale: !!stored.stale,
+                missed: missed
+            });
+
             if (note && (stored.stale || missed > 0)) {
                 note.textContent = stored.stale
                     ? 'Prices have been updated since you saved this, so the total above has been recalculated.'
@@ -652,6 +705,13 @@
             this.transitionTo('send', () => {
                 const first = document.getElementById('quoteName');
                 if (first) first.focus();
+            });
+
+            // Intent. The step1 -> step2 number is the denominator for the only
+            // conversion rate this programme has a target for.
+            window.SSC.track('quote_step2_view', {
+                model: config.modelId,
+                total: window.SSC.trackAmount(config.total)
             });
         }
 
@@ -741,6 +801,19 @@
          * only has one way out is a quote that gets lost when that way breaks.
          */
         showFailure(message, options) {
+            // Every failure path in submitQuote() renders through here, so this
+            // is the one place `quote_submit_error` can be fired exactly once
+            // per failure the visitor actually saw. `error` is a short code,
+            // never the message text: doc 14 calls a STREAK of these the
+            // tripwire that would have caught the original dead funnel in a
+            // day, and a tripwire you have to read prose to count is not one.
+            const totalEl = document.getElementById('summaryTotal');
+            window.SSC.track('quote_submit_error', {
+                model: currentModelId,
+                total: window.SSC.trackAmount(totalEl ? totalEl.textContent : ''),
+                error: (options && options.code) || 'unknown'
+            });
+
             const box = document.getElementById('quoteError');
             if (!box) return;
             box.innerHTML = '';
@@ -789,14 +862,14 @@
             // would produce a generic network error and teach the visitor
             // nothing they can act on.
             if (navigator.onLine === false) {
-                this.showFailure('You are offline right now. Your configuration is saved, so reconnect and send it again.', { mailto: false });
+                this.showFailure('You are offline right now. Your configuration is saved, so reconnect and send it again.', { mailto: false, code: 'offline' });
                 return;
             }
 
             const endpoint = form.getAttribute('action');
             if (!endpoint) {
                 console.error('SSC: quote form has no action; expected site.forms.endpoint');
-                this.showFailure('That didn\'t send. Your configuration is still here; try again, or email it to us.');
+                this.showFailure('That didn\'t send. Your configuration is still here; try again, or email it to us.', { code: 'no_endpoint' });
                 return;
             }
 
@@ -825,6 +898,15 @@
             }
             this.clearErrors();
 
+            // An attempt is a send that reached the wire: past validation, past
+            // the offline check, past the missing-endpoint guard. Counting
+            // blocked clicks here would make the attempt -> success rate lie
+            // about the endpoint, which is the thing this rate exists to watch.
+            window.SSC.track('quote_submit_attempt', {
+                model: config.modelId,
+                total: window.SSC.trackAmount(config.total)
+            });
+
             const settle = () => {
                 this.submitting = false;
                 if (submitBtn) {
@@ -850,7 +932,7 @@
                     // the status. Only response.status can tell us.
                     if (response.status === 429) {
                         settle();
-                        this.showFailure('We are getting a lot of requests right now. Give it a minute and send it again, or email it to us.');
+                        this.showFailure('We are getting a lot of requests right now. Give it a minute and send it again, or email it to us.', { code: 'rate_limited' });
                         return null;
                     }
                     return response.json().catch(() => ({}));
@@ -869,7 +951,7 @@
                             : (body && typeof body.error === 'string' ? body.error : '');
                         this.showFailure(detail
                             ? `That didn't send: ${detail} Your configuration is still here.`
-                            : 'That didn\'t send. Your configuration is still here; try again, or email it to us.');
+                            : 'That didn\'t send. Your configuration is still here; try again, or email it to us.', { code: 'rejected' });
                         return;
                     }
 
@@ -878,7 +960,7 @@
                 })
                 .catch(() => {
                     settle();
-                    this.showFailure('That didn\'t send. Your configuration is still here; try again, or email it to us.');
+                    this.showFailure('That didn\'t send. Your configuration is still here; try again, or email it to us.', { code: 'network' });
                 });
         }
 
@@ -898,18 +980,15 @@
                 }
             });
 
-            // Compact payload only. The tracker's endpoint SILENTLY replaces
-            // any eventData over 5,000 characters with {} and still returns
-            // 200, so sending the configuration blob here would look like
-            // healthy traffic carrying nothing.
-            const tracker = window.analyticsTracker;
-            if (tracker && typeof tracker.trackEvent === 'function') {
-                tracker.trackEvent('quote_submit_success', {
-                    model: config.modelId,
-                    total: config.total,
-                    options: config.selections.length
-                });
-            }
+            // The number that must move off zero. Routed through SSC.track like
+            // every other event: same existence guard, same payload budget, and
+            // `total` as an integer rather than the rendered "$28,500" so the
+            // events table can add it up.
+            window.SSC.track('quote_submit_success', {
+                model: config.modelId,
+                total: window.SSC.trackAmount(config.total),
+                options: config.selections.length
+            });
         }
     }
 

@@ -242,9 +242,14 @@
     }
 
     trackEvent(eventType, data) {
-      // Use existing analytics tracker if available
-      if (window.SSC && window.SSC.trackEvent) {
-        window.SSC.trackEvent(eventType, data);
+      // This used to call `window.SSC.trackEvent`, a global nothing has ever
+      // assigned -- so both call sites were permanent no-ops that read as
+      // careful defensive code. The guard is kept, because the tracker really
+      // can be absent (CSP-blocked, offline), but it now guards a function
+      // that exists. `SSC.track` does the existence check on the real global
+      // and enforces the payload budget.
+      if (window.SSC && typeof window.SSC.track === 'function') {
+        window.SSC.track(eventType, data);
       }
     }
   }

@@ -87,6 +87,30 @@
         switch (action) {
             case 'contact-submit':
                 e.preventDefault();
+                // ONE analytics event per submission.
+                //
+                // The shared tracker (ssc-ops/tracker.js) has its own
+                // document-level submit listener bound to `.contact-form`, and
+                // it reads a field named `sauna` that this form has never had
+                // -- so every form_submit it has ever recorded says
+                // `interest: "not specified"`. It is a broken duplicate of an
+                // event we now send correctly ourselves (contact_submit_success
+                // in forms.js, with the real project_type and the stream
+                // source).
+                //
+                // We cannot remove a listener registered by another origin's
+                // script, so we stop the event before it reaches it. This
+                // listener is registered at init.js eval time, and the tracker
+                // registers during its own later-deferred script, so ours runs
+                // first -- and the site's other handlers are dispatched from
+                // inside this switch, not from separate listeners, so nothing
+                // of ours is suppressed. Deliberately scoped to this one case.
+                //
+                // The root-cause fix belongs in ssc-ops (correct the field
+                // mapping, or stop double-binding a form the site instruments
+                // itself). Until that lands, this is the seam that keeps the
+                // contact-form count honest.
+                e.stopImmediatePropagation();
                 SSC.handleSubmit(e);
                 break;
             // Deliberately NOT routed through handleSubmit: that one navigates

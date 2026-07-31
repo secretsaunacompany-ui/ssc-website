@@ -128,6 +128,14 @@
 
         form.parentNode.insertBefore(banner, form);
 
+        // Is the fallback path still carrying anyone now that the modal
+        // submits on its own? A number close to zero is the evidence that
+        // WP-0b-i worked, not that this code is broken.
+        window.SSC.track('quote_fallback_contact', {
+            model: stored.data.modelId || '',
+            stale: !!stored.stale
+        });
+
         form.scrollIntoView({
             behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
             block: 'start'

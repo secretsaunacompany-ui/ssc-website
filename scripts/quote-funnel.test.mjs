@@ -443,9 +443,14 @@ async function runStates(base, browser) {
       'the honeypot is absent, pre-filled, or in the tab order');
 
     const events = await page.evaluate(() => window.__events);
-    check('events: quote_submit_success fires, compactly',
-      events.length === 1 && events[0].type === 'quote_submit_success'
-      && JSON.stringify(events[0].data).length < 200,
+    // WP-0a wired the rest of the funnel's events, so this walk now emits
+    // configurator_open, an option change, quote_step2_view and
+    // quote_submit_attempt as well. What must stay true here is the one this
+    // package is responsible for: exactly one success event, still compact.
+    // The full inventory is covered by scripts/events.test.mjs.
+    const successes = events.filter((e) => e.type === 'quote_submit_success');
+    check('events: quote_submit_success fires exactly once, compactly',
+      successes.length === 1 && JSON.stringify(successes[0].data).length < 200,
       `events were ${JSON.stringify(events)}`);
     await page.close();
   }

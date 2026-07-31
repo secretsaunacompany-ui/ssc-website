@@ -11,7 +11,8 @@
     "visual-diff:test": "node scripts/visual-diff.test.mjs",
     "build-cache:test": "node scripts/build-cache.test.mjs",
     "package-claim:test": "node scripts/package-claim.test.mjs",
-    "quote-funnel:test": "node scripts/quote-funnel.test.mjs"
+    "quote-funnel:test": "node scripts/quote-funnel.test.mjs",
+    "events:test": "node scripts/events.test.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

@@ -104,6 +104,22 @@
             const body = document.body;
             body.classList.add('hero-locked');
 
+            // doc 14 §8: is the held moment being watched or skipped? Stage 0
+            // IS the hold -- the pure hero photo with scroll locked -- so the
+            // question is answered by which ends it: the visitor's first
+            // gesture (skipped) or the 5s auto-reveal (complete). `ms` is the
+            // time they gave it, which is what decides the hold duration
+            // empirically instead of by taste.
+            const holdStart = Date.now();
+            let holdReported = false;
+            const reportHold = (skipped) => {
+                if (holdReported) return;
+                holdReported = true;
+                window.SSC.track(skipped ? 'hero_hold_skipped' : 'hero_hold_complete', {
+                    ms: Date.now() - holdStart
+                });
+            };
+
             const blockScroll = (e) => {
                 if (stage < 2) e.preventDefault();
             };
@@ -114,6 +130,9 @@
                 lastGestureTime = now;
 
                 if (stage === 0) {
+                    // `e` is absent only on the 5s safety call below, which is
+                    // precisely the "they let it run" case.
+                    reportHold(!!e);
                     body.classList.add('hero-revealed');
                     stage = 1;
                 } else if (stage === 1) {
