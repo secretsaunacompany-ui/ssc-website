@@ -2422,7 +2422,12 @@ footer::before {
 
 .testimonial-card__quote {
     font-family: var(--font-heading);
-    font-size: var(--text-md);
+    /* --text-lg, not --text-md. Doc 11 disagrees with itself here: §5 describes
+       serif quotes as sitting at --text-md, while §2 sets --text-lg as the
+       Cormorant floor with a stated rationale (the hairline serif loses its
+       thins below 19px) and the fonts suite enforces it. The floor wins; §5's
+       point was the LEADING, which is the number it actually gives. */
+    font-size: var(--text-lg);
     font-style: italic;
     margin-bottom: var(--spacing-sm);
     line-height: 1.55;
