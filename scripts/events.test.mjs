@@ -530,6 +530,57 @@ async function runInventory(base, browser) {
     await page.close();
   }
   {
+    // NOTE-2b: the visitor who LOOKS and then LEAVES.
+    //
+    // `visibilitychange` covers tab-switching, and it was the only listener, so
+    // a straight navigation away -- link, back button, closed tab -- could take
+    // the page down without any hidden transition being observed and the metric
+    // never reported at all. That is a silent under-count biased toward exactly
+    // the behaviour this metric exists to measure.
+    //
+    // The fixture is written to have no other way to pass: visibilityState is
+    // asserted 'visible' at the moment pagehide fires, so the visibilitychange
+    // handler is provably not the thing that reported. Measured against the
+    // pre-fix build, this scenario produced ZERO events.
+    const page = await newPage(browser);
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1600);   // past the 1240ms settle
+    const stillVisible = await page.evaluate(() => {
+      window.dispatchEvent(new Event('pagehide'));
+      return document.visibilityState;
+    });
+    await page.waitForTimeout(100);
+    const events = await readEvents(page);
+    const done = one(events, 'hero_hold_complete');
+    check('hero_hold_complete: leaving WITHOUT scrolling reports exactly once (NOTE-2b)',
+      stillVisible === 'visible'
+      && !!done && typeof done.data.ms === 'number' && done.data.ms >= 1240
+      && typeOf(events, 'hero_hold_complete').length === 1
+      && typeOf(events, 'hero_hold_skipped').length === 0,
+      `visibilityState was ${stillVisible}, events were ${JSON.stringify(events)}`);
+    collected.push(...events);
+    await page.close();
+  }
+  {
+    // The latch, from the other direction: a view that scrolls AND then leaves
+    // has two paths into report() and must still emit one event. Two listeners
+    // reporting the same thing is the obvious way to break a metric while making
+    // its numbers look healthier, so it is asserted rather than reasoned about.
+    const page = await newPage(browser);
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.mouse.wheel(0, 600);    // inside the settle: the skip branch
+    await page.waitForTimeout(200);
+    await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+    await page.waitForTimeout(100);
+    const events = await readEvents(page);
+    check('scroll then leave still reports exactly one event, and it is the scroll\'s verdict',
+      typeOf(events, 'hero_hold_skipped').length === 1
+      && typeOf(events, 'hero_hold_complete').length === 0,
+      `events were ${JSON.stringify(events)}`);
+    collected.push(...events);
+    await page.close();
+  }
+  {
     // The scroll lock is gone, and that is a behavioural claim worth asserting
     // rather than assuming: this scenario would have hung or timed out against
     // the old build, which is exactly why it belongs here.

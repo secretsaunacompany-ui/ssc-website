@@ -17,3 +17,6 @@ _site/
 
 # DOM-integrity working directory (builds, fingerprints, report)
 .dom-integrity/
+
+# Rhythm suite working directory (mutant dist copies)
+.rhythm/

@@ -399,7 +399,25 @@ async function main() {
   log('');
   log(`  Report: ${path.join(WORK_DIR, 'report.json')}`);
   if (report.failed) {
-    log(`  FAIL — ${failCount} item(s): the DOM changed in ways nobody declared.`);
+    // Say WHICH of the three failure kinds fired. "The DOM changed in ways
+    // nobody declared" was printed for all of them, which is false whenever the
+    // pages are all clean and the failure is a stale declaration or a boundary
+    // the run refuses to vouch for — and it sends a reader hunting for a DOM
+    // delta that does not exist. (Measured on WP-1b's certification: every one
+    // of 38 comparisons clean, one run failure, and this line still claimed the
+    // DOM changed.)
+    const parts = [];
+    if (failedPages.length > 0) {
+      parts.push(`${failedPages.length} page/width comparison(s) changed in ways nobody declared`);
+    }
+    if (staleWhitelist.length > 0) {
+      parts.push(`${staleWhitelist.length} declared change(s) did not happen`);
+    }
+    if (runFailures.length > 0) {
+      parts.push(`${runFailures.length} run failure(s) — the run could not vouch for what it `
+        + `was asked to`);
+    }
+    log(`  FAIL — ${failCount} item(s): ${parts.join('; ')}.`);
     return 1;
   }
   log(`  PASS — ${comparisons} page/width fingerprint(s) identical modulo the whitelist.`);

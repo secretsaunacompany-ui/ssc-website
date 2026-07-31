@@ -131,8 +131,8 @@
     /* Constraint, 21 §7: small text on an --ember-quiet fill that sits on an
        ELEVATED surface must be --ink or --ember, never --ink-quiet (4.47). */
 
-    --color-warm-wood-hover: #d4b58b;   /* button hover fill; #000 on it = 10.78 */
-    --color-warm-wood-dark:  #a08060;   /* one consumer: .comparison-header.ours */
+    --ember-hover: #d4b58b;   /* button hover fill; #000 on it = 10.78 */
+    --ember-dark:  #a08060;   /* one consumer: .comparison-header.ours */
 
     /* Ember alphas. All five now share ONE base, rgb(196,165,123). Three of them
        were silently built on rgb(184,156,104) -- a different accent (21 R9). */
@@ -905,7 +905,7 @@ nav .container {
 }
 
 .comparison-header.ours {
-    background: linear-gradient(135deg, var(--ember), var(--color-warm-wood-dark));
+    background: linear-gradient(135deg, var(--ember), var(--ember-dark));
 }
 
 .comparison-header.ours h3 {
@@ -1031,7 +1031,7 @@ nav .container {
 }
 
 .btn:hover {
-    background: var(--color-warm-wood-hover);
+    background: var(--ember-hover);
 }
 
 .btn-outline {
@@ -1582,7 +1582,7 @@ textarea {
 }
 
 .quote-btn:hover {
-    background: var(--color-warm-wood-hover);
+    background: var(--ember-hover);
 }
 
 .contact-note {
@@ -1646,7 +1646,7 @@ textarea {
 }
 
 .quote-link-btn:hover {
-    color: var(--color-warm-wood-hover);
+    color: var(--ember-hover);
 }
 
 .quote-storage-note {
@@ -1698,7 +1698,7 @@ textarea {
 .form-error {
     margin: var(--spacing-xs) 0 0;
     font-size: var(--text-sm);
-    color: var(--color-warm-wood-hover);
+    color: var(--ember-hover);
 }
 
 .form-helper {
@@ -1782,8 +1782,8 @@ textarea {
 }
 
 .map-filter-btn.active:hover {
-    background: var(--color-warm-wood-hover);
-    border-color: var(--color-warm-wood-hover);
+    background: var(--ember-hover);
+    border-color: var(--ember-hover);
 }
 
 /* ============================================

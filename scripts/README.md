@@ -393,6 +393,66 @@ reviewed by eye; this harness will pass it silently.
 
 ---
 
+## rhythm — did the spacing system survive the deletions?
+
+```bash
+npm run build && npm run rhythm:test
+```
+
+The two harnesses above answer *did it move?* and *did it still say the same
+thing?*. Between them sits a question neither can reach: **a deleted class and a
+deleted class whose job nobody picked up look identical in a token stream.**
+WP-1b deleted six spacing utilities, consolidated three percentage gutters into
+one token, and relaxed the line-length cap. DOM-integrity happily certifies that
+those class names left the markup. It cannot tell you the pages did not quietly
+collapse.
+
+So this measures **computed style in a real browser at both widths**, against the
+real built stylesheet, and pins three things:
+
+1. **The deletions were safe.** `.grid-3--mt-2/-3/-4`, `.heading--mb-2` and
+   `.section--mt-8` supplied per-instance vertical space. After deletion every
+   `.grid-3` takes the *one* system value (3rem) instead of three ad-hoc ones,
+   and no site collapsed to zero separation — the failure mode that would
+   otherwise surface as a layout bug months later with no failing test.
+2. **`--gutter` really is one value.** 21 R1's premise is that `0 5%` resolved
+   against three different parents and produced three gutters that looked like
+   one rule. A token most elements use and some do not is that same bug wearing
+   the fix's name, so every element in the container/section family is checked
+   and the surviving deviations are **pinned to their rule, not waived**. Three
+   percentage gutters survive WP-1b: `nav` (2.5%), `.page-hero` (5%), and — found
+   by this suite — `@media (max-width: 768px) { section { padding: … 5% } }`,
+   which reverts every bare section to a percentage gutter at the narrow width
+   and flattens the three `--section-pad` tiers to one value. That last one is
+   invisible from the desktop width, invisible to the DOM check (no markup
+   changed) and invisible to the pixel harness (the batch was expected to move
+   things). A *fourth* deviation fails the suite, and the count of three is
+   asserted so that migrating one has to be a deliberate edit here.
+3. **The line length is 70ch.** `.measure-wide` replaced four `text--*` utilities
+   capped at 60ch and 65ch — a real change to how the site reads that no other
+   gate sees (the pixel harness calls it "content moved", the DOM check calls it
+   "a class was renamed"). Asserted at the token's declared value *and* asserted
+   to be measurably wider than the 65ch it replaced, so it cannot pass by having
+   never moved.
+
+The heading-rhythm rules are measured against probe nodes injected into the real
+page. That is deliberate: `* + h2` fires on exactly **one** element in the whole
+built site, because almost every heading is the first child of its container.
+Asserting only on live instances would leave four of the five documented rules
+with no coverage and lose the fifth the moment a template changed. Live instances
+are asserted too, wherever they exist.
+
+Group M is the mutation battery: each mutation patches the **built** stylesheet
+in a throwaway copy of `dist/` under `.rhythm/` (gitignored, never the working
+tree) and must move the probe it aims at — a heading token, the gutter, the cap,
+the grid margin. Anchors are asserted before patching, so an un-applied mutation
+can never look like a pass.
+
+Like `fonts.test.mjs` Group B this needs `npm run build` first, and it **says so
+and exits 2** rather than passing vacuously.
+
+---
+
 ## For developers: how determinism is achieved
 
 Two runs of an unchanged site must produce byte-identical screenshots, or the

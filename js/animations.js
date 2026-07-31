@@ -165,9 +165,29 @@
         // The visitor who never scrolls still answered the question. Reported
         // when the page goes away rather than on a timer, so the number is the
         // time they actually gave it and not a timeout we chose for them.
+        //
+        // TWO listeners, because one of them does not always fire (NOTE-2b).
+        // `visibilitychange` covers tab-switching and most backgrounding, but a
+        // straight NAVIGATION AWAY -- clicking a link, hitting back, closing the
+        // tab -- can take the page down without a hidden transition ever being
+        // observed, and on those views the metric simply never reported. That
+        // is a silent under-count biased toward exactly the visitor the metric
+        // is about: the one who looked at the photograph and then left.
+        //
+        // `pagehide` is the event that does fire on that path, so it reports
+        // unconditionally -- by the time it runs the page IS going away (or into
+        // bfcache, which is the same thing for this question). The
+        // `visibilitychange` handler keeps its state guard, because it also
+        // fires on the way BACK to visible and that is not an answer.
+        //
+        // Double-reporting is not a risk: `reported` is the same latch both
+        // paths already went through, so a view that fires visibilitychange and
+        // then pagehide still emits exactly one event. That invariant is what
+        // the fixtures assert, in both orders.
         const onHide = () => {
             if (document.visibilityState === 'hidden') report();
         };
+        const onPageHide = () => report();
 
         function report() {
             if (reported) return;
@@ -179,10 +199,12 @@
             );
             window.removeEventListener('scroll', onScroll);
             document.removeEventListener('visibilitychange', onHide);
+            window.removeEventListener('pagehide', onPageHide);
         }
 
         window.addEventListener('scroll', onScroll, { passive: true });
         document.addEventListener('visibilitychange', onHide);
+        window.addEventListener('pagehide', onPageHide);
     }
 
     const reveal = new RevealManager();

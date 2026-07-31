@@ -16,6 +16,8 @@
     "events:test": "node scripts/events.test.mjs",
     "//fonts:test": "Group B drives a real Chromium against dist/, so run `npm run build` first. Static checks alone cannot tell you a font actually loaded.",
     "fonts:test": "node scripts/fonts.test.mjs",
+    "//rhythm:test": "Group R drives a real Chromium against dist/, so run `npm run build` first. A token's declared value and the value that reaches the element are different claims.",
+    "rhythm:test": "node scripts/rhythm.test.mjs",
     "dom-integrity": "node scripts/dom-integrity.mjs",
     "dom-integrity:test": "node scripts/dom-integrity.test.mjs",
     "//lint:css": "The guard that keeps the type scale and the radius collapse from drifting back: raw font-size and border-radius literals are rejected outside :root. Six exceptions exist and every one carries a stylelint-disable-next-line with its reason.",
