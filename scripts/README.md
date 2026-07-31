@@ -190,8 +190,11 @@ tests, and each one is a defect it actually shipped with.
 | G6 | progressive (leading-style) compression is now fitted at ~96% confidence with a 1px residual — the capability proof (it began life as a limitation lock under the constant-offset model, at 3% confidence and a 238px residual) |
 | G9 | a local move *inside* an affinely compressed page is still caught as a residual — the case the scale degree of freedom could have laundered |
 | G10 | a low-confidence fit fails with an explicit model-does-not-fit reason, and cannot be waived |
+| R | pages built from **repeating texture**, the way real content is: a byte-identical comparison passes, and a real move inside that texture is still caught |
+| M | the mutation battery itself — 13 deliberate defects, each of which must be detected |
 
-Plus the config-validation cases covering the fail-open paths. 137 assertions.
+Plus the config-validation cases covering the fail-open paths, and a runnable
+mutation battery (below). 157 assertions.
 
 **The suite needs an ambient git repository.** O4 and F4e shell out to the real
 CLI against real refs (`HEAD`, `HEAD~1`), so from a `git archive` export or any
@@ -201,6 +204,28 @@ missing prerequisite, not a harness defect — run the tests from a clone.
 O4 is the slow one: it builds two refs and captures a pass, because it is the
 only way to prove the redirect check is *wired in* rather than merely correct.
 Deleting the one line that calls it leaves every other fixture green.
+
+#### The mutation battery is runnable, not a story
+
+`MUTATIONS` in `visual-diff.test.mjs` breaks the instrument thirteen ways and
+requires each break to be noticed. It mutates **copies** under `.visual-diff/`
+rather than the working tree, so a killed run cannot leave a half-mutated file
+behind, and it reuses screenshots the fixtures already rendered, so the whole
+battery costs seconds. A mutation whose anchor no longer matches is a hard
+failure, never a silent pass.
+
+Two entries are marked **known-undetectable** and assert the reason they are
+acceptable instead of the defect. That is deliberate: a battery that quietly
+dropped the mutations it could not catch would be measuring its own optimism.
+
+**Confidence is measured against ELIGIBLE rows** — those whose row signature is
+distinctive enough to take part in the fit at all. Rows of repeating texture are
+excluded from the fit, so counting them in the denominator measured how
+*distinctive* a page is rather than how well the model fits it. That bug failed
+byte-identical comparisons on five real pages, and because `minFitConfidence` is
+unwaivable the harness could not return a clean run on the site at all. The
+synthetic fixtures could never have caught it — every row of a synthetic page has
+a unique signature. Hence the R family.
 
 **If a fixture and a budget disagree, the fixture is right.** Renegotiate the
 budget in the plan; never edit a fixture to make a run go green.

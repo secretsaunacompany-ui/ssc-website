@@ -34,6 +34,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { startServer } from './lib/server.mjs';
 import { captureAll } from './lib/capture.mjs';
 import { comparePair, estimateAffine } from './lib/diff.mjs';
@@ -185,6 +186,43 @@ const PAGE_LEADING_TIGHT = SHELL(LEADING_PARAS, `${LEADING_CSS} body { line-heig
 const PAGE_LEADING_TIGHT_NUDGED = SHELL(LEADING_PARAS,
   `${LEADING_CSS} body { line-height: 1.65; } .para:nth-of-type(30) { padding-top: 6px; }`);
 
+/**
+ * R-family: pages with REPEATING TEXTURE, which is what real content looks like.
+ *
+ * Every other fixture in this file builds pages whose rows all carry unique
+ * signatures. Real pages do not: navigation, rules, card grids, repeated list
+ * rows and flat borders produce the same row signature dozens or hundreds of
+ * times. Rows like that are deliberately excluded from the affine fit, because
+ * a signature that matches everywhere votes for every offset and decides
+ * nothing.
+ *
+ * That difference hid a CRITICAL defect for an entire review round. Confidence
+ * was computed as inliers / STRUCTURED rows while the excluded texture rows sat
+ * in the denominator and could never be inliers, so on real content the figure
+ * measured how distinctive a page is rather than how well the model fits it.
+ * Five of 38 real page pairs failed a BYTE-IDENTICAL comparison — changedPixels
+ * 0, spread 0, scale 1, offset 0 — and since fitConfidence is unwaivable by
+ * design, the harness could not return a clean run on the real site at all. On
+ * synthetic pages eligible and structured are always equal, so the whole
+ * G-series was structurally incapable of noticing.
+ *
+ * The lesson is the fixture, not the fix: an instrument must be tested against
+ * material with the same texture as the material it measures.
+ */
+const REPEAT_CARD = '<div class="card">Standard card row for texture</div>';
+const PAGE_TEXTURED = SHELL(
+  `<div class="block">Unique heading alpha with its own distinctive measure</div>`
+  + REPEAT_CARD.repeat(100)
+  + `<div class="block">Unique footer omega with a different distinctive measure</div>`,
+  `.card { padding: 8px 24px; border-bottom: 1px solid #3a3a3a; }`);
+/** The same textured page with one card 6px taller: a genuine regression. */
+const PAGE_TEXTURED_MOVED = SHELL(
+  `<div class="block">Unique heading alpha with its own distinctive measure</div>`
+  + REPEAT_CARD.repeat(100)
+  + `<div class="block">Unique footer omega with a different distinctive measure</div>`,
+  `.card { padding: 8px 24px; border-bottom: 1px solid #3a3a3a; }
+   .card:nth-of-type(50) { padding-top: 14px; }`);
+
 /** F3 candidate: same page furniture, entirely different content. */
 const PAGE_CONTENT_REPLACED = SHELL(
   `<div class="block"><a class="btn">Book a consultation</a></div>` +
@@ -236,6 +274,259 @@ async function captureStats(tmp, html, slug) {
     });
   } finally {
     await server.close();
+  }
+}
+
+// ---------------------------------------------------------------- mutations
+
+/**
+ * Mutation battery, executable.
+ *
+ * Every other suite in this repo carries its mutations as a runnable
+ * `MUTATIONS` array. This one carried them as prose in commit messages and a
+ * throwaway script — which meant the module that certifies every downstream
+ * batch was the one module whose safety properties nobody could re-check on
+ * demand. Worse, the throwaway script mutated the WORKING TREE, and twice left
+ * live residue behind when it was killed mid-run.
+ *
+ * This version mutates COPIES. Each mutant is written under `.visual-diff/`
+ * (gitignored, and inside the repo so `node_modules` still resolves), imported
+ * dynamically, and exercised against PNG pairs that were rendered ONCE by the
+ * fixtures above. No working-tree edit, no lockfile, nothing to leave behind if
+ * this process dies, and the whole battery costs seconds rather than an hour
+ * because nothing is re-rendered or re-built per mutation.
+ *
+ * Each entry states what it proves and returns TRUE when the defect is
+ * DETECTED. A mutation whose anchor no longer matches is a hard failure, never
+ * a silent pass: an un-applied mutation reporting "detected" is the one outcome
+ * that would make this whole mechanism a lie.
+ */
+const MUTANT_ROOT = path.join(REPO_ROOT, '.visual-diff', 'mutants');
+
+async function loadMutant(id, edits) {
+  const dir = path.join(MUTANT_ROOT, id);
+  fs.mkdirSync(dir, { recursive: true });
+  for (const file of ['diff.mjs', 'gate.mjs']) {
+    let src = fs.readFileSync(path.join(REPO_ROOT, 'scripts', 'lib', file), 'utf8');
+    const edit = edits[file];
+    if (edit) {
+      if (!src.includes(edit[0])) {
+        throw new Error(`mutation ${id}: anchor not found in ${file}. The code moved; `
+          + `re-aim the mutation. An un-applied mutation must never look like a pass.`);
+      }
+      src = src.replace(edit[0], edit[1]);
+    }
+    fs.writeFileSync(path.join(dir, file), src);
+  }
+  return {
+    diff: await import(pathToFileURL(path.join(dir, 'diff.mjs')).href),
+    gate: await import(pathToFileURL(path.join(dir, 'gate.mjs')).href),
+  };
+}
+
+/** A synthetic correspondence set: y -> scale*y, as signatures and an index. */
+function synthetic(scale, from, to, step) {
+  const sigs = [];
+  const index = new Map();
+  for (let y = from; y <= to; y += step) {
+    sigs[y] = `s${y}`;
+    index.set(`s${y}`, [Math.round(scale * y)]);
+  }
+  return { sigs, index };
+}
+
+const LOW_CONFIDENCE_RESULT = {
+  layoutShiftPx: 0, layoutShiftMaxPx: 0, shiftCoverage: 1, shiftMeasurable: true,
+  heightDeltaPx: 0, changedPct: 0,
+  globalScale: 1, globalOffsetPx: 0, globalOffsetConfidence: 0.2,
+};
+
+const MUTATIONS = [
+  {
+    name: 'A-m1  force scale = 1 always (affine collapses to constant offset)',
+    proves: 'the scale degree of freedom is real and load-bearing',
+    edits: { 'diff.mjs': ['      const idx = Math.round((cys[k] - scale * ys[k]) / OFFSET_BUCKET) + bias;',
+      '      const idx = Math.round((cys[k] - 1 * ys[k]) / OFFSET_BUCKET) + bias;'] },
+    run: (m, pairs) => {
+      const r = m.diff.comparePair(pairs.g6.a, pairs.g6.b, null, () => false);
+      return r.globalScale === 1 || r.layoutShiftMaxPx > 4;
+    },
+  },
+  {
+    name: 'A-m2  refit may leave the scale band',
+    proves: 'the band is enforced AFTER refitting, not only on the vote grid',
+    edits: { 'diff.mjs': ['    if (nextScale < SCALE_MIN || nextScale > SCALE_MAX) break;', ''] },
+    run: (m) => {
+      const { sigs, index } = synthetic(1.15, 0, 60, 5);
+      return m.diff.estimateAffine(sigs, index).scale > 1.05;
+    },
+  },
+  {
+    name: 'A-m3  widen the band to [0.2, 3]',
+    proves: 'out-of-band content is refused rather than fitted',
+    edits: { 'diff.mjs': ['const SCALE_MIN = 0.8;\nconst SCALE_MAX = 1.05;',
+      'const SCALE_MIN = 0.2;\nconst SCALE_MAX = 3;'] },
+    run: (m) => {
+      const { sigs, index } = synthetic(0.5, 100, 2050, 50);
+      return m.diff.estimateAffine(sigs, index).scale < 0.8;
+    },
+  },
+  {
+    name: 'A-m4  residual ignores the fit entirely (raw displacement)',
+    proves: 'shift is measured against the fit, not from a fixed origin',
+    edits: { 'diff.mjs': ['      const local = cy - (fit.scale * y + fit.offset);', '      const local = cy - y;'] },
+    run: (m, pairs) => m.diff.comparePair(pairs.g1.a, pairs.g1.b, null, () => false)
+      .layoutShiftMaxPx > 4,
+  },
+  {
+    name: 'A-m5  residual ignores the SCALE (offset-relative again)',
+    proves: 'the scale term participates in the residual',
+    edits: { 'diff.mjs': ['      const local = cy - (fit.scale * y + fit.offset);',
+      '      const local = cy - (y + fit.offset);'] },
+    run: (m, pairs) => m.diff.comparePair(pairs.g6.a, pairs.g6.b, null, () => false)
+      .layoutShiftMaxPx > 4,
+  },
+  {
+    name: 'A-m6  refit tolerance loosened 2px -> 24px',
+    proves: 'KNOWN UNDETECTABLE, and why — the spread is invariant to the tilt',
+    knownUndetectable: true,
+    edits: { 'diff.mjs': ['const FIT_TOLERANCE = 2;', 'const FIT_TOLERANCE = 24;'] },
+    // Not "we could not be bothered to catch it": the claim is that loosening
+    // the tolerance lets the fit tilt further but CANNOT shrink a spread. Assert
+    // exactly that, so the reasoning is checked rather than asserted.
+    run: (m, pairs, ref) => {
+      const r = m.diff.comparePair(pairs.g9.a, pairs.g9.b, null, () => false);
+      return r.layoutShiftMaxPx >= ref.g9.layoutShiftMaxPx;
+    },
+  },
+  {
+    name: 'A-m7  monotone-improvement guard removed',
+    proves: 'an unchanged page cannot drift off the exact identity',
+    edits: { 'diff.mjs': ['    if (gained <= held) break;', ''] },
+    run: (m, pairs) => m.diff.comparePair(pairs.control.a, pairs.control.b, null, () => false)
+      .globalScale !== 1,
+  },
+  {
+    name: 'A-m8  cross-width scale-divergence gate defanged',
+    proves: 'two widths disagreeing about compression is reported',
+    edits: { 'gate.mjs': ['    if (sHi - sLo > config.maxScaleDivergence) {', '    if (false) {'] },
+    run: (m) => {
+      const cfg = m.gate.loadConfig(CONFIG_FILE, fs.readFileSync);
+      return m.gate.evaluateFitDivergence(cfg, '/a/', [
+        { width: 1440, offset: 0, scale: 0.99 }, { width: 390, offset: 0, scale: 0.82 },
+      ]).length === 0;
+    },
+  },
+  {
+    name: 'A-m9  fit-confidence gate defanged',
+    proves: 'a fit that does not describe the page fails the run',
+    edits: { 'gate.mjs': ['    if (!fitHolds) {', '    if (false) {'] },
+    run: (m) => {
+      const cfg = m.gate.loadConfig(CONFIG_FILE, fs.readFileSync);
+      return m.gate.evaluatePair(cfg, '/none/', LOW_CONFIDENCE_RESULT).status !== 'FAIL';
+    },
+  },
+  {
+    name: 'A-m10 confidence measured at the TIGHT tolerance',
+    proves: 'KNOWN UNDETECTABLE since the denominator fix — tightening only lowers '
+      + 'confidence, and the wholly-unfittable case collapses at either setting',
+    knownUndetectable: true,
+    edits: { 'diff.mjs': ['  const inlierRows = countRows(scale, offset, FIT_CONFIDENCE_TOLERANCE);',
+      '  const inlierRows = countRows(scale, offset, FIT_TOLERANCE);'] },
+    // This mutation WAS detected before the denominator was fixed: measuring
+    // confidence at the tight tolerance dropped a page with one real regression
+    // to 47% and got it dismissed as unfittable. Dividing by eligible rows
+    // instead of structured rows moved every confidence figure up, and the same
+    // page now reads 0.9316 at the tight tolerance and 1.0000 at the loose one
+    // — both comfortably over the floor, so no fixture separates the two
+    // settings any more. Rather than invent one, assert the two properties that
+    // make the shipped value safe either way.
+    run: (m, pairs, ref) => {
+      const g9 = m.diff.comparePair(pairs.g9.a, pairs.g9.b, null, () => false);
+      // 1. Tightening can only ever LOWER confidence, never inflate it, so the
+      //    shipped setting cannot be hiding a fit that the tight one would
+      //    reject as inadequate... beyond what the floor already allows.
+      const monotone = g9.globalOffsetConfidence <= ref.g9.globalOffsetConfidence + 1e-9;
+      // 2. The case the gate actually exists for — a page no affine map
+      //    describes — still collapses far below the floor at the tight
+      //    setting, so the gate has not been disarmed by the change.
+      const { sigs, index } = synthetic(0.5, 100, 2050, 50);
+      const unfittable = m.diff.estimateAffine(sigs, index).confidence < 0.75;
+      return monotone && unfittable;
+    },
+  },
+  {
+    name: 'A-m11 tie-break toward the identity removed',
+    proves: 'a tied vote resolves to the identity, not to whatever came last',
+    edits: { 'diff.mjs': ['        const better = Math.abs(scale - 1) < Math.abs(bestScale - 1)',
+      '        const better = Math.abs(scale - 1) <= Math.abs(bestScale - 1)'] },
+    run: (m) => {
+      const est = m.diff.estimateAffine(['sigA', 'sigB'],
+        new Map([['sigA', [0, 50]], ['sigB', [1, 51]]]));
+      return est.offset !== 0 || est.scale !== 1;
+    },
+  },
+  {
+    name: 'A-m12 shift reverts to max ABSOLUTE residual',
+    proves: 'THE anti-laundering property: a tilt cannot hide a step',
+    edits: { 'diff.mjs': ['  const spread = sorted.length ? sorted[sorted.length - 1] - sorted[0] : 0;',
+      '  const spread = sorted.length ? Math.max(...sorted.map(Math.abs)) : 0;'] },
+    run: (m, pairs) => m.diff.comparePair(pairs.g9.a, pairs.g9.b, null, () => false)
+      .layoutShiftMaxPx <= 4,
+  },
+  {
+    name: 'A-m13 confidence denominator reverts to structuredRows',
+    proves: 'the CRITICAL: byte-identical real-shaped pages stay passable',
+    edits: { 'diff.mjs': ['    confidence: eligibleRows ? inlierRows / eligibleRows : 0,',
+      '    confidence: structuredRows ? inlierRows / structuredRows : 0,'] },
+    run: (m, pairs) => m.diff.comparePair(pairs.r1.a, pairs.r1.b, null, () => false)
+      .globalOffsetConfidence < 0.95,
+  },
+];
+
+async function runMutationBattery(tmp) {
+  const shots = (slug) => ({
+    a: path.join(tmp, slug, 'baseline', 'shots', `home@${WIDTH}.png`),
+    b: path.join(tmp, slug, 'candidate', 'shots', `home@${WIDTH}.png`),
+  });
+  const pairs = {
+    g1: shots('g1'), g6: shots('g6'), g9: shots('g9'),
+    control: shots('control'), r1: shots('r1'), r2: shots('r2'),
+  };
+  for (const [name, p] of Object.entries(pairs)) {
+    if (!fs.existsSync(p.a) || !fs.existsSync(p.b)) {
+      check(`M battery inputs present (${name})`, false,
+        `${p.a} / ${p.b} missing — the battery reuses the fixtures' renders`);
+      return;
+    }
+  }
+  // Reference results from the UNMUTATED module, for comparisons that need one.
+  const ref = { g9: comparePair(pairs.g9.a, pairs.g9.b, null, () => false) };
+
+  fs.rmSync(MUTANT_ROOT, { recursive: true, force: true });
+  try {
+    for (let i = 0; i < MUTATIONS.length; i++) {
+      const mut = MUTATIONS[i];
+      let detected = null;
+      let err = null;
+      try {
+        const mod = await loadMutant(`m${i}`, mut.edits);
+        detected = await mut.run(mod, pairs, ref);
+      } catch (e) { err = e; }
+      if (err) {
+        check(mut.name, false, `mutation could not be applied or run: ${err.message}`);
+      } else if (mut.knownUndetectable) {
+        check(`${mut.name} [known-undetectable: ${mut.proves}]`, detected === true,
+          `this mutation is documented as undetectable, and the assertion is the REASON `
+          + `it is acceptable. That reason no longer holds.`);
+      } else {
+        check(`${mut.name} — ${mut.proves}`, detected === true,
+          `the mutation ran and the instrument did not notice: this safety property `
+          + `has no coverage`);
+      }
+    }
+  } finally {
+    fs.rmSync(MUTANT_ROOT, { recursive: true, force: true });
   }
 }
 
@@ -767,6 +1058,64 @@ async function main() {
         'the offset-only shape must stay callable');
     }
 
+    process.stdout.write('\nR — repeating texture: the material real pages are made of\n');
+    {
+      const strictR = loadConfig('r.json', () => JSON.stringify({
+        ...JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')),
+        expectedToChange: [], pageOverrides: [],
+      }));
+
+      // R0 first: if this page has no excluded texture, the rest of the block
+      // proves nothing. Assert the fixture actually reproduces real content's
+      // shape before asserting anything about behaviour.
+      const r1 = await renderPair(tmp, PAGE_TEXTURED, PAGE_TEXTURED, 'r1');
+      check('R0 the fixture really does have repeating texture',
+        r1.globalEligibleRows < r1.globalStructuredRows * 0.75,
+        `this fixture exists to have rows excluded from the fit. eligible=`
+        + `${r1.globalEligibleRows} structured=${r1.globalStructuredRows} — if these are `
+        + `equal the page is synthetic-shaped and cannot exercise the denominator at all`);
+
+      // R1: the case that was broken in production. Identical bytes in, clean
+      // run out.
+      check('R1 a BYTE-IDENTICAL textured page is byte-identical',
+        r1.changedPixels === 0 && r1.layoutShiftMaxPx === 0,
+        `sanity: ${r1.changedPixels} px changed, spread ${r1.layoutShiftMaxPx}`);
+      check('R1 confidence is measured against ELIGIBLE rows, so it is ~1',
+        r1.globalOffsetConfidence >= 0.95,
+        `an identical page must fit itself perfectly. got `
+        + `${r1.globalOffsetConfidence.toFixed(4)} (inliers ${r1.globalFitInliers} / eligible `
+        + `${r1.globalEligibleRows}; dividing by structured ${r1.globalStructuredRows} instead `
+        + `gives ${(r1.globalFitInliers / r1.globalStructuredRows).toFixed(4)} — which is what `
+        + `failed five real pages)`);
+      check('R1 an identical textured page PASSES with no waivers at all',
+        evaluatePair(strictR, '/none/', r1).status === 'PASS',
+        `the harness must be able to return a clean run on real-shaped content. `
+        + `${JSON.stringify(evaluatePair(strictR, '/none/', r1))}`);
+
+      // R2: and it has not gone blind — a real change in the same texture is
+      // still caught. A fix that made everything pass would be worse than the bug.
+      const r2 = await renderPair(tmp, PAGE_TEXTURED, PAGE_TEXTURED_MOVED, 'r2');
+      check('R2 a real 6px move inside repeating texture is still caught',
+        evaluatePair(strictR, '/none/', r2).status === 'FAIL',
+        `spread=${r2.layoutShiftMaxPx} confidence=${r2.globalOffsetConfidence.toFixed(4)} `
+        + `reasons=${JSON.stringify(evaluatePair(strictR, '/none/', r2).reasons)}`);
+      check('R2 it fails on the shift gate, not by being dismissed as unfittable',
+        evaluatePair(strictR, '/none/', r2).reasons.some((x) => x.includes('layout shift')),
+        `a regression must be reported as a regression. `
+        + `${JSON.stringify(evaluatePair(strictR, '/none/', r2).reasons)}`);
+
+      // R3: the zero-eligible case must fail, not divide into NaN. A NaN
+      // comparison is false, so `NaN < minFitConfidence` would be false and the
+      // gate would silently pass a page nothing is known about.
+      {
+        const none = estimateAffine(['a', 'b'], new Map());
+        check('R3 a page with NO eligible rows reports 0, not NaN',
+          none.confidence === 0 && Number.isFinite(none.confidence),
+          `got ${none.confidence} — NaN compares false against every budget, so a page `
+          + `with nothing matchable would sail through the gate`);
+      }
+    }
+
     process.stdout.write('\nO — the orchestration layer (visual-diff.mjs itself)\n');
     {
       // Everything above tests lib/. The layer that decides what gets compared
@@ -870,6 +1219,8 @@ async function main() {
           .length === 0,
         'control: a correctly declared redirect must not fail the run');
     }
+    process.stdout.write('\nM — mutation battery (runnable, not a prose comment)\n');
+    await runMutationBattery(tmp);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

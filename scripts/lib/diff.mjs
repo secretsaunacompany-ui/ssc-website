@@ -120,6 +120,18 @@ const REFINE_PASSES = 4;
 // would call "a layout shift" still counts as explained by the model, tight
 // enough that a page the model genuinely cannot describe (replaced content, a
 // reorder, an out-of-band scale) still collapses.
+//
+// HONESTY NOTE, same as FIT_TOLERANCE. The 47%-confidence case that motivated
+// splitting these two tolerances was measured while confidence still divided by
+// STRUCTURED rows. With the denominator corrected to eligible rows, the same
+// page reads 0.9316 at the tight tolerance and 1.0000 here, so no current
+// fixture separates the two settings and mutation A-m10 is recorded as
+// known-undetectable. The split is kept because the two constants answer
+// genuinely different questions and collapsing them would be a coincidence of
+// today's numbers, not a design. What the battery does still prove is the pair
+// of properties that make either setting safe: tightening only ever lowers
+// confidence, and a page no affine map describes collapses far below the floor
+// at both.
 const FIT_CONFIDENCE_TOLERANCE = 24;
 
 export function readPng(file) {
@@ -192,19 +204,28 @@ function percentile(sorted, p) {
  *
  * Three properties do the anti-laundering work, and each is fixture-backed:
  *
- *   1. VOTING REWARDS CONCENTRATION. For a fixed scale, every correspondence
- *      contributes `offset = cy - scale*y` to a histogram, and the winner is the
- *      most populous bucket. A page with a 6px step in the middle is two
- *      constant groups; each group concentrates ONLY at its true scale, and
- *      tilting the scale SPREADS a constant group across buckets rather than
- *      merging the two. So the vote prefers the honest scale and the larger
- *      group — it cannot buy inliers by tilting.
- *   2. REFINEMENT USES A HARD, TIGHT TOLERANCE (FIT_TOLERANCE, below the gate's
- *      own budget). This is the important one. A least-squares fit over
- *      everything WOULD tilt to interpolate a 6px step and could drive the
- *      residual under the 4px budget — laundering the exact regression this
- *      harness exists to catch. Refitting only on hard inliers means the
- *      minority group stays an outlier and keeps its full residual.
+ *   1. VOTING REWARDS CONCENTRATION, WITHIN LIMITS. For a fixed scale, every
+ *      correspondence contributes `offset = cy - scale*y` to a histogram and the
+ *      winner is the most populous bucket, so a scattered explanation cannot
+ *      out-poll a concentrated one.
+ *
+ *      This property is WEAKER than it first appears, and the earlier version of
+ *      this comment overstated it — it claimed tilting the scale merely SPREADS
+ *      a constant group and so could never buy inliers. That is false, and a
+ *      fixture disproved it: tilting can also MERGE two groups. A page that
+ *      compressed AND gained a 6px step was fitted 0.0013 off the honest scale
+ *      precisely because that tilt brought its two groups into one bucket.
+ *      The vote is a good estimator; it is NOT the thing that stops laundering.
+ *      What stops laundering is measuring the residual SPREAD (see layoutShift),
+ *      which no tilt can shrink. Do not restore the stronger claim: it reads as
+ *      a safety property and is not one.
+ *   2. THE SHIFT METRIC IS A SPREAD, not a largest-absolute-value. THIS is the
+ *      property that actually prevents laundering, and it is structural rather
+ *      than a tuned constant: a tilt slides every residual by the same linear
+ *      amount, so it can move where the residuals sit but not how far apart
+ *      they are. See the note in layoutShift. Refinement also uses a hard,
+ *      tight FIT_TOLERANCE as a second line of defence, but with the spread
+ *      metric in place that tolerance is defence in depth, not the guarantee.
  *   3. SCALE IS BOUNDED to [0.8, 1.05]. A leading change compresses modestly; a
  *      page that "scaled" to 0.5 is not a leading change, it is different
  *      content, and no fit should be able to claim otherwise.
@@ -228,6 +249,7 @@ export function estimateAffine(sigs, index) {
   const ys = [];
   const cys = [];
   let structuredRows = 0;
+  let eligibleRows = 0;
   let maxY = 1;
   let maxCY = 1;
   for (let y = 0; y < sigs.length; y++) {
@@ -235,13 +257,19 @@ export function estimateAffine(sigs, index) {
     structuredRows += 1;
     const hits = index.get(sigs[y]);
     if (!hits || hits.length > MAX_SIGNATURE_HITS) continue;
+    // Rows that made it into the correspondence set — the only rows that CAN
+    // ever be inliers, and therefore the only honest denominator for
+    // confidence. See the note where confidence is computed.
+    eligibleRows += 1;
     for (const cy of hits) {
       ys.push(y); cys.push(cy);
       if (y > maxY) maxY = y;
       if (cy > maxCY) maxCY = cy;
     }
   }
-  const identity = { scale: 1, offset: 0, inliers: 0, structuredRows, confidence: 0 };
+  const identity = {
+    scale: 1, offset: 0, inliers: 0, structuredRows, eligibleRows: 0, confidence: 0,
+  };
   if (ys.length === 0) return identity;
 
   // Offset accumulator, indexed by bucket. An Int32Array with a touched-list
@@ -342,12 +370,34 @@ export function estimateAffine(sigs, index) {
   // measured at the LOOSE tolerance. See FIT_CONFIDENCE_TOLERANCE.
   const inlierRows = countRows(scale, offset, FIT_CONFIDENCE_TOLERANCE);
 
+  // The denominator is ELIGIBLE rows, not structured rows, and getting this
+  // wrong made the instrument fail byte-identical comparisons on real pages.
+  //
+  // Rows whose signature repeats more than MAX_SIGNATURE_HITS times are
+  // excluded from the correspondence set on purpose — repeating texture matches
+  // everywhere and decides nothing. They can therefore NEVER be inliers. Div-
+  // iding by structuredRows counted them in the denominator anyway, so on real
+  // content the figure measured how DISTINCTIVE a page is, not how well the fit
+  // describes it. Five of 38 real page pairs failed with changedPixels 0,
+  // spread 0, scale 1, offset 0 — identical builds, reported as unfittable —
+  // and because fitConfidence is unwaivable by design, the harness could not
+  // return a clean run on this site at all.
+  //
+  // The synthetic G fixtures never caught it because every row of a synthetic
+  // page has a unique signature, so eligible and structured were always equal.
+  // The fixtures were testing the instrument against pages unlike the ones it
+  // measures; see the repeating-rows fixture, which is built to have the
+  // texture real content has.
+  //
+  // A page with NO eligible rows is a genuine failure (0, not NaN): nothing
+  // about it can be matched, so nothing about it is known.
   return {
     scale,
     offset,
     inliers: inlierRows,
     structuredRows,
-    confidence: structuredRows ? inlierRows / structuredRows : 0,
+    eligibleRows,
+    confidence: eligibleRows ? inlierRows / eligibleRows : 0,
   };
 }
 
@@ -417,6 +467,12 @@ export function layoutShift(basePng, candPng) {
     globalOffset: Math.round(fit.offset),
     globalScale: fit.scale,
     globalFitInliers: fit.inliers,
+    // Both halves of the confidence ratio, so a report (or a fixture) can see
+    // WHY a page's confidence is what it is. On a page of repeating texture
+    // eligible is far below structured, and that gap is exactly what the
+    // denominator bug turned into a false failure.
+    globalEligibleRows: fit.eligibleRows,
+    globalStructuredRows: fit.structuredRows,
     // What fraction of the structured baseline rows the fit actually explains.
     // A confident uniform translation or a clean leading change sits near 1; a
     // page held together by a minority agreement is worth a human look even if
@@ -470,6 +526,8 @@ export function comparePair(baselineFile, candidateFile, diffPath, shouldWriteDi
     globalOffsetPx: shift.globalOffset,
     globalScale: shift.globalScale,
     globalFitInliers: shift.globalFitInliers,
+    globalEligibleRows: shift.globalEligibleRows,
+    globalStructuredRows: shift.globalStructuredRows,
     globalOffsetConfidence: shift.globalOffsetConfidence,
     shiftCoverage: shift.coverage,
     shiftMeasurable: shift.measurable,
