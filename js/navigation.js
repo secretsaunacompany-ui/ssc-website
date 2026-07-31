@@ -10,9 +10,13 @@
     // ============================================
     function toggleMenu() {
         const navLinks = document.getElementById('navLinks');
-        if (navLinks) {
-            navLinks.classList.toggle('active');
-        }
+        if (!navLinks) return;
+        const open = navLinks.classList.toggle('active');
+        // The button's label never changes, so aria-expanded is the only thing
+        // that tells a screen-reader user whether the menu they just toggled is
+        // now open or closed.
+        const btn = document.querySelector('[data-action="toggle-menu"]');
+        if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
 
     // ============================================

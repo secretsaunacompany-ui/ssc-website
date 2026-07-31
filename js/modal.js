@@ -52,6 +52,28 @@
     const OPTION_EVENT_DEBOUNCE_MS = 500;
     const OPTION_EVENT_CAP = 12;
 
+    /**
+     * How long to wait after the last option change before writing the record.
+     * Long enough that a visitor clicking through five options writes once
+     * rather than five times; short enough that closing the tab straight after
+     * a click still saves. localStorage writes are synchronous and block the
+     * main thread, which is the whole reason not to do one per keystroke-speed
+     * click.
+     */
+    const PERSIST_DEBOUNCE_MS = 250;
+
+    /**
+     * The required fields of step 2 and what makes each one valid. Shared by
+     * the submit-time check and the live re-check, so the two can never
+     * disagree about what "valid" means -- the classic way a form starts
+     * clearing an error it would still reject.
+     */
+    const FIELD_CHECKS = [
+        ['quoteName', 'quoteNameError', (v) => v.trim().length > 0],
+        ['quoteEmail', 'quoteEmailError', (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())],
+        ['quoteLocation', 'quoteLocationError', (v) => v.trim().length > 0]
+    ];
+
     /** Helper microcopy per site-access answer (doc 33 §3). */
     const ACCESS_HELPERS = {
         tight: 'No problem, tricky sites are normal for us. Anything you can tell us about the spot in the notes below helps.',
@@ -72,6 +94,15 @@
             this.submitting = false;
             /** What had focus before the modal opened, so it can be given back. */
             this.lastFocused = null;
+            /** Pending debounced persist, so a burst of clicks writes once. */
+            this.persistTimer = null;
+            /**
+             * False until the visitor has tried to submit once. Errors do not
+             * appear before that (nobody wants to be told their name is missing
+             * while they are still walking towards the field), and they
+             * re-check live afterwards.
+             */
+            this.validationArmed = false;
             /**
              * Option-change instrumentation state. `configurator_option_change`
              * is the only high-frequency event in doc 14 §8 and the doc says so
@@ -145,7 +176,28 @@
                     input.addEventListener('change', () => {
                         this.calculateTotal();
                         this.trackOptionChange(input);
+                        // The configuration is saved from the moment it exists,
+                        // not from the moment the visitor reaches step 2. It
+                        // used to be written only by "Request This Quote", so
+                        // anyone who configured a sauna and closed the modal
+                        // lost all of it -- while the panel beside them promised
+                        // their progress was saved on this device for 7 days.
+                        // The promise was on screen; the write was a step away.
+                        this.persistSoon();
                     });
+                });
+
+                // Live re-check of step 2, but only once the visitor has been
+                // told something is wrong. Before this, the three errors sat
+                // unchanged while the visitor corrected every one of them and
+                // only cleared on the next submit -- so at the moment of
+                // conversion the form read as broken while it was working.
+                FIELD_CHECKS.forEach(([fieldId]) => {
+                    const field = document.getElementById(fieldId);
+                    if (!field) return;
+                    const recheck = () => { if (this.validationArmed) this.checkField(fieldId); };
+                    field.addEventListener('input', recheck);
+                    field.addEventListener('blur', recheck);
                 });
             };
             if (document.readyState === 'loading') {
@@ -228,8 +280,57 @@
             });
         }
 
+        /**
+         * Write the configuration shortly after the visitor stops fiddling.
+         *
+         * Deliberately the SAME record `requestQuote` writes, built by the same
+         * serialiser: a step-1-only record is not a lesser shape, so restore,
+         * the stale-version recompute and the `/contact/` fallback all work on
+         * it without knowing where it came from. One shape, one writer, no
+         * second code path to fall out of step.
+         *
+         * Only selections. No contact details are persisted here or anywhere
+         * else -- the step 2 fields have never been written to storage and this
+         * does not change that.
+         */
+        persistSoon() {
+            if (!currentModel || !this.isOpen()) return;
+            window.clearTimeout(this.persistTimer);
+            this.persistTimer = window.setTimeout(() => {
+                this.persistTimer = null;
+                if (!currentModel) return;
+                window.SSC.quoteStore.save(this.buildConfiguration());
+            }, PERSIST_DEBOUNCE_MS);
+        }
+
+        /**
+         * Drop anything the debounce is holding without writing it.
+         *
+         * Used wherever the record is deliberately being removed. Without this
+         * a pending write from a click made 200ms earlier lands AFTER the
+         * clear and resurrects the record -- storage rules that hold everywhere
+         * except in a 250ms window are not rules.
+         */
+        cancelPersist() {
+            window.clearTimeout(this.persistTimer);
+            this.persistTimer = null;
+        }
+
+        /** Write anything the debounce is holding, now. */
+        persistNow() {
+            if (this.persistTimer === null) return;
+            window.clearTimeout(this.persistTimer);
+            this.persistTimer = null;
+            if (!currentModel) return;
+            window.SSC.quoteStore.save(this.buildConfiguration());
+        }
+
         close() {
             if (!this.isOpen()) return;
+            // A close is the most likely moment for the debounce to still be
+            // holding the last click. Flushing it here is the difference
+            // between "your progress is saved" being true and being a slogan.
+            this.persistNow();
             this.modal.classList.remove('active');
             this.modal.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = '';
@@ -815,7 +916,9 @@
          * submit and the 7-day expiry.
          */
         startOver() {
+            this.cancelPersist();
             window.SSC.quoteStore.clear();
+            this.validationArmed = false;
             const form = document.getElementById('quoteForm');
             if (form) form.reset();
             this.clearErrors();
@@ -837,14 +940,40 @@
         clearErrors() {
             const box = document.getElementById('quoteError');
             if (box) { box.hidden = true; box.innerHTML = ''; }
-            ['quoteNameError', 'quoteEmailError', 'quoteLocationError'].forEach((id) => {
-                const el = document.getElementById(id);
-                if (el) el.hidden = true;
+            // Driven off FIELD_CHECKS rather than two hand-kept lists, so a
+            // fourth required field cannot arrive with a working error and no
+            // way to clear it.
+            FIELD_CHECKS.forEach(([fieldId, errorId]) => {
+                const error = document.getElementById(errorId);
+                if (error) error.hidden = true;
+                const field = document.getElementById(fieldId);
+                if (field) field.removeAttribute('aria-invalid');
             });
-            ['quoteName', 'quoteEmail', 'quoteLocation'].forEach((id) => {
-                const el = document.getElementById(id);
-                if (el) el.removeAttribute('aria-invalid');
-            });
+        }
+
+        /**
+         * Re-check one field and show or clear its error accordingly.
+         *
+         * The clearing direction is the one that was missing: the error and its
+         * aria-invalid go the instant the field becomes valid, rather than
+         * surviving until the next submit. Strictness is unchanged -- this is
+         * the same predicate the submit uses, asked more often.
+         *
+         * @returns {boolean} whether the field is currently valid
+         */
+        checkField(fieldId) {
+            const entry = FIELD_CHECKS.find(([id]) => id === fieldId);
+            if (!entry) return true;
+            const [, errorId, ok] = entry;
+            const field = document.getElementById(fieldId);
+            if (!field) return true;
+
+            const valid = ok(field.value);
+            const error = document.getElementById(errorId);
+            if (error) error.hidden = valid;
+            if (valid) field.removeAttribute('aria-invalid');
+            else field.setAttribute('aria-invalid', 'true');
+            return valid;
         }
 
         /**
@@ -856,19 +985,14 @@
          */
         validate() {
             this.clearErrors();
-            const checks = [
-                ['quoteName', 'quoteNameError', (v) => v.trim().length > 0],
-                ['quoteEmail', 'quoteEmailError', (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())],
-                ['quoteLocation', 'quoteLocationError', (v) => v.trim().length > 0]
-            ];
+            // From here on every keystroke re-checks, so a corrected field
+            // stops accusing the visitor the moment it is correct.
+            this.validationArmed = true;
 
             let firstBad = null;
-            checks.forEach(([fieldId, errorId, ok]) => {
+            FIELD_CHECKS.forEach(([fieldId]) => {
+                if (this.checkField(fieldId)) return;
                 const field = document.getElementById(fieldId);
-                if (!field || ok(field.value)) return;
-                const error = document.getElementById(errorId);
-                if (error) error.hidden = false;
-                field.setAttribute('aria-invalid', 'true');
                 if (!firstBad) firstBad = field;
             });
 
@@ -1051,7 +1175,9 @@
         onSubmitSuccess(config) {
             // The one place the stored key is cleared by a send. Not on entering
             // step 2, not on failure -- only when Lee actually has it.
+            this.cancelPersist();
             window.SSC.quoteStore.clear();
+            this.validationArmed = false;
 
             const form = document.getElementById('quoteForm');
             if (form) form.reset();

@@ -1429,7 +1429,10 @@ textarea {
 }
 
 .standard-features li::before {
-    content: '✓';
+    /* Empty alt text: the tick is decoration and the feature name beside it
+       already says everything. Without this some screen readers announce the
+       glyph before every one of six list items. */
+    content: '✓' / '';
     position: absolute;
     left: 0;
     color: var(--ember);
@@ -1643,9 +1646,14 @@ textarea {
    page rather than going anywhere, and a link that does not navigate is a lie
    to anyone driving by keyboard or screen reader. */
 .quote-link-btn {
-    display: inline;
+    /* inline-block with vertical padding so the row is a real 44px target on a
+       phone. These were 15-18px tall: reachable with a mouse, a coin-toss with
+       a thumb, and two of them ("Start over", "Change something") are the only
+       ways back out of a step. */
+    display: inline-block;
     width: auto;
-    padding: 0;
+    min-height: 44px;
+    padding: 0.75rem 0;
     border: none;
     background: none;
     color: var(--ember);
@@ -1735,6 +1743,12 @@ textarea {
     margin-top: var(--spacing-xs);
     font-size: var(--text-sm);
     color: var(--ember);
+}
+
+.quote-privacy-note a {
+    display: inline-block;
+    min-height: 44px;
+    padding: 0.75rem 0;
 }
 
 .quote-privacy-note {

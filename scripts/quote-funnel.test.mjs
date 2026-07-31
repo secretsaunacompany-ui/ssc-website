@@ -68,6 +68,14 @@ const MIME = {
 };
 
 const STORAGE_KEY = 'ssc_quote_config';
+/**
+ * The wood-fired heater as it RENDERS for MODEL -- handleHeaterOptions swaps
+ * the label per model, so this is not what the markup says. Named once: the
+ * repricing batch renamed this option and every hardcoded copy went stale
+ * together, which fails the suite for a reason that has nothing to do with the
+ * funnel.
+ */
+const WOOD_HEATER = 'Mini-IKI (Wood-fired)';
 const MODEL = 's4';
 
 let failures = 0;
@@ -245,7 +253,7 @@ async function runStates(base, browser) {
   {
     const page = await newPage(browser);
     await openModal(page, base);
-    await pick(page, 'Mini-IKI (Wood-fired)');
+    await pick(page, WOOD_HEATER);
     const totalBefore = await page.textContent('#summaryTotal');
     const urlBefore = page.url();
 
@@ -288,11 +296,11 @@ async function runStates(base, browser) {
     await page.click('[data-action="quote-back"]');
     await page.waitForSelector('#configureStep', { state: 'visible' });
     check('send: "Change something" returns with every choice intact',
-      await page.evaluate(() => {
+      await page.evaluate((wanted) => {
         const opt = [...document.querySelectorAll('.modal-addons .addon-option')]
-          .find((o) => o.querySelector('.addon-label')?.textContent.trim() === 'Mini-IKI (Wood-fired)');
+          .find((o) => o.querySelector('.addon-label')?.textContent.trim() === wanted);
         return opt.querySelector('input').checked;
-      }), 'the selection was lost going back to step 1');
+      }, WOOD_HEATER), 'the selection was lost going back to step 1');
     await page.close();
   }
 
@@ -546,11 +554,130 @@ async function runStates(base, browser) {
     await page.close();
   }
 
+  // --- closed mid-step-1, then a return visit --------------------------
+  //
+  // The case this suite structurally could not see, because it was written by
+  // the same hand that chose where the write went. Every storage assertion
+  // reached step 2 first, so the whole battery agreed with the implementation
+  // rather than with the promise on screen: a visitor who configured a sauna
+  // and closed the modal lost all of it, while the panel beside them said
+  // their progress was saved on this device for 7 days.
+  {
+    const page = await newPage(browser);
+    await openModal(page, base);
+    check('mid-step-1: nothing is stored before the visitor chooses anything',
+      await readStore(page) === null, 'a record existed before any choice was made');
+
+    await pick(page, WOOD_HEATER);
+    const total = await page.textContent('#summaryTotal');
+    await page.waitForFunction((k) => !!localStorage.getItem(k), STORAGE_KEY, { timeout: 5000 })
+      .catch(() => {});
+
+    const record = await readStore(page);
+    check('mid-step-1: choosing an option saves it, without reaching step 2',
+      !!record && record.summary.includes(WOOD_HEATER),
+      'the configuration was not written until "Request This Quote"; the on-screen '
+      + 'promise that progress is saved was false for the whole of step 1');
+    check('mid-step-1: the record carries the price-sheet stamp like any other',
+      !!record && typeof record.version === 'number' && typeof record.savedAt === 'number',
+      `a step-1 record must be the same shape as any other or the stale-price `
+      + `recompute cannot run on it: ${JSON.stringify(record)}`);
+    // The claim that this adds no PII, asserted rather than promised.
+    check('mid-step-1: no contact details are persisted, then or ever',
+      !!record && !/quoteName|"name"|"email"|"location"|site_access/.test(JSON.stringify(record)),
+      `contact fields leaked into storage: ${JSON.stringify(record)}`);
+
+    await page.click('.modal-close');
+    await openModal(page, base);
+    check('mid-step-1: a return visit brings the configuration back',
+      await page.textContent('#summaryTotal') === total
+      && await page.evaluate((wanted) => !![...document.querySelectorAll('.modal-addons .addon-option')]
+        .find((o) => o.querySelector('.addon-label').textContent.trim() === wanted)
+        .querySelector('input').checked, WOOD_HEATER),
+      'the step-1 configuration did not survive close and reopen');
+    await page.close();
+  }
+
+  // --- a step-1-only record against a moved price sheet ----------------
+  {
+    const page = await newPage(browser);
+    await openModal(page, base);
+    await pick(page, WOOD_HEATER);
+    await page.waitForFunction((k) => !!localStorage.getItem(k), STORAGE_KEY, { timeout: 5000 })
+      .catch(() => {});
+    const rec = await readStore(page);
+    if (!rec) {
+      // Fail with a sentence rather than throwing on a null. A crash here stops
+      // the whole battery before the mutations run, which is exactly when the
+      // battery is most worth reaching -- and `return` would abandon every
+      // state check below this one.
+      check('mid-step-1: a superseded step-1 record recomputes like any other', false,
+        'there was no step-1 record to age, so this could not be tested at all');
+    } else {
+      await page.evaluate(([k, r]) => {
+        r.version = -1;
+        r.total = '$1';
+        localStorage.setItem(k, JSON.stringify(r));
+      }, [STORAGE_KEY, rec]);
+
+      await openModal(page, base);
+      check('mid-step-1: a superseded step-1 record recomputes like any other',
+        await page.textContent('#summaryTotal') !== '$1'
+        && await page.textContent('#summaryTotal') === rec.total
+        && await page.isVisible('#quoteStaleNote'),
+        'the stale-price machinery does not cover records written before step 2, '
+        + 'which are now the majority of them');
+    }
+    await page.close();
+  }
+
+  // --- validation errors clear as they are fixed -----------------------
+  {
+    const page = await newPage(browser);
+    await stubFormspree(page, 'success');
+    await openModal(page, base);
+    await page.click('[data-action="request-quote"]');
+    await page.click('#quoteSubmit');
+
+    const shown = async (id) => page.isVisible(id);
+    check('error clearing: all three errors show after an empty submit',
+      await shown('#quoteNameError') && await shown('#quoteEmailError') && await shown('#quoteLocationError'),
+      'the empty submit did not produce the errors this test then clears');
+
+    await page.fill('#quoteName', 'Corrected');
+    check('error clearing: fixing one field clears that error immediately',
+      !(await shown('#quoteNameError'))
+      && await page.getAttribute('#quoteName', 'aria-invalid') === null,
+      'the error and aria-invalid survived the field becoming valid; at the moment '
+      + 'of conversion the form reads as broken while it is working');
+    check('error clearing: the fields still wrong keep their errors',
+      await shown('#quoteEmailError') && await shown('#quoteLocationError'),
+      'clearing one error cleared the others, which is worse than not clearing at all');
+
+    await page.fill('#quoteEmail', 'still-bad');
+    check('error clearing: a field that is edited but still invalid keeps its error',
+      await shown('#quoteEmailError'),
+      'strictness changed: an invalid value cleared its own error');
+
+    await page.fill('#quoteEmail', 'fixed@example.com');
+    await page.fill('#quoteLocation', 'Squamish');
+    check('error clearing: correcting everything leaves a clean form',
+      !(await shown('#quoteNameError')) && !(await shown('#quoteEmailError'))
+      && !(await shown('#quoteLocationError')),
+      'errors remained after every field was corrected');
+
+    await page.click('#quoteSubmit');
+    await page.waitForSelector('#successStep', { state: 'visible' });
+    check('error clearing: and the corrected form actually sends',
+      page.__posts.length === 1, `${page.__posts.length} requests were sent`);
+    await page.close();
+  }
+
   // --- closed mid-step-2, then a return visit --------------------------
   {
     const page = await newPage(browser);
     await openModal(page, base);
-    await pick(page, 'Mini-IKI (Wood-fired)');
+    await pick(page, WOOD_HEATER);
     await pick(page, 'Built-in Bluetooth speakers (standard set)');
     const total = await page.textContent('#summaryTotal');
     await page.click('[data-action="request-quote"]');
@@ -562,10 +689,10 @@ async function runStates(base, browser) {
     await openModal(page, base);
     check('closed mid-step-2: a return visit restores the configuration',
       await page.textContent('#summaryTotal') === total
-      && await page.evaluate(() => [...document.querySelectorAll('.modal-addons .addon-option')]
+      && await page.evaluate((wanted) => [...document.querySelectorAll('.modal-addons .addon-option')]
         .filter((o) => o.querySelector('input').checked)
         .map((o) => o.querySelector('.addon-label').textContent.trim())
-        .includes('Mini-IKI (Wood-fired)')),
+        .includes(wanted), WOOD_HEATER),
       'the saved selections did not come back');
     check('closed mid-step-2: it reopens on step 1, not mid-form',
       await page.isVisible('#configureStep') && !(await page.isVisible('#quoteForm')),
@@ -586,7 +713,7 @@ async function runStates(base, browser) {
   {
     const page = await newPage(browser);
     await openModal(page, base);
-    await pick(page, 'Mini-IKI (Wood-fired)');
+    await pick(page, WOOD_HEATER);
     await page.click('[data-action="request-quote"]');
     const fresh = await readStore(page);
 
@@ -611,7 +738,7 @@ async function runStates(base, browser) {
   {
     const page = await newPage(browser);
     await openModal(page, base);
-    await pick(page, 'Mini-IKI (Wood-fired)');
+    await pick(page, WOOD_HEATER);
     await page.click('[data-action="request-quote"]');
     const rec = await readStore(page);
 
@@ -633,9 +760,9 @@ async function runStates(base, browser) {
       && /prices have been updated/i.test(await page.textContent('#quoteStaleNote')),
       'a superseded configuration was restored with no note');
     check('stale stamp: the selections themselves still survive',
-      await page.evaluate(() => !![...document.querySelectorAll('.modal-addons .addon-option')]
-        .find((o) => o.querySelector('.addon-label').textContent.trim() === 'Mini-IKI (Wood-fired)')
-        .querySelector('input').checked),
+      await page.evaluate((wanted) => !![...document.querySelectorAll('.modal-addons .addon-option')]
+        .find((o) => o.querySelector('.addon-label').textContent.trim() === wanted)
+        .querySelector('input').checked, WOOD_HEATER),
       'a stale record was thrown away instead of recomputed');
     await page.close();
   }
@@ -644,7 +771,7 @@ async function runStates(base, browser) {
   {
     const page = await newPage(browser);
     await openModal(page, base);
-    await pick(page, 'Mini-IKI (Wood-fired)');
+    await pick(page, WOOD_HEATER);
     await page.click('[data-action="request-quote"]');
 
     await page.goto(`${base}/contact/`, { waitUntil: 'networkidle' });
@@ -763,7 +890,7 @@ const MUTATIONS = [
     run: async (base, browser) => {
       const page = await newPage(browser);
       await openModal(page, base);
-      await pick(page, 'Mini-IKI (Wood-fired)');
+      await pick(page, WOOD_HEATER);
       await page.click('[data-action="request-quote"]');
       const rec = await readStore(page);
       await page.evaluate(([k, r]) => {
@@ -784,7 +911,7 @@ const MUTATIONS = [
     run: async (base, browser) => {
       const page = await newPage(browser);
       await openModal(page, base);
-      await pick(page, 'Mini-IKI (Wood-fired)');
+      await pick(page, WOOD_HEATER);
       await page.click('[data-action="request-quote"]');
       const rec = await readStore(page);
       await page.evaluate(([k, r]) => {
@@ -837,6 +964,52 @@ const MUTATIONS = [
     },
   },
   {
+    name: 'M7 step-1 persistence',
+    proves: 'a configuration silently discarded before step 2 is detected',
+    // The defect this whole round exists for. Turning persistSoon into a no-op
+    // leaves requestQuote's own explicit save untouched, so the funnel still
+    // works end to end and every pre-existing assertion stays green -- which is
+    // exactly the state the suite was in when a cold reader found the bug.
+    apply: (dir) => mutate(path.join(dir, 'js', 'modal.js'),
+      `        persistSoon() {
+            if (!currentModel || !this.isOpen()) return;`,
+      `        persistSoon() {
+            if (true) return;`),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await openModal(page, base);
+      await pick(page, WOOD_HEATER);
+      await page.waitForTimeout(600);
+      const lostBeforeClose = (await readStore(page)) === null;
+      await page.click('.modal-close');
+      await openModal(page, base);
+      const lostAfterReopen = await page.evaluate((wanted) => ![...document.querySelectorAll('.modal-addons .addon-option')]
+        .find((o) => o.querySelector('.addon-label').textContent.trim() === wanted)
+        .querySelector('input').checked, WOOD_HEATER);
+      await page.close();
+      return lostBeforeClose || lostAfterReopen;
+    },
+  },
+  {
+    name: 'M8 live revalidation',
+    proves: 'errors that never clear as the visitor fixes them are detected',
+    apply: (dir) => mutate(path.join(dir, 'js', 'modal.js'),
+      'const recheck = () => { if (this.validationArmed) this.checkField(fieldId); };',
+      'const recheck = () => {};'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await stubFormspree(page, 'success');
+      await openModal(page, base);
+      await page.click('[data-action="request-quote"]');
+      await page.click('#quoteSubmit');
+      await page.fill('#quoteName', 'Corrected');
+      const stuck = await page.isVisible('#quoteNameError')
+        || await page.getAttribute('#quoteName', 'aria-invalid') === 'true';
+      await page.close();
+      return stuck;
+    },
+  },
+  {
     name: 'M6 restore signature guard',
     proves: 'a restore that checks options the visitor never chose is detected',
     /**
@@ -871,7 +1044,7 @@ const MUTATIONS = [
       // 1. Save a real record through the real UI, on unmutated markup.
       const author = await newPage(browser);
       await openModal(author, baselineBase);
-      await pick(author, 'Mini-IKI (Wood-fired)');
+      await pick(author, WOOD_HEATER);
       await pick(author, 'Built-in Bluetooth speakers (standard set)');
       await author.click('[data-action="request-quote"]');
       const record = await readStore(author);
@@ -962,7 +1135,7 @@ const MUTATIONS = [
           `a renamed option was restored as though it were the saved one: `
           + `${JSON.stringify(afterRelabel)}`);
         check('M6b relabelled option: unaffected selections still come back',
-          afterRelabel.checked.includes('Mini-IKI (Wood-fired)'),
+          afterRelabel.checked.includes(WOOD_HEATER),
           `the heater choice was lost: ${JSON.stringify(afterRelabel.checked)}`);
 
         // 3. Now strip the guard and confirm the above becomes observably wrong.
