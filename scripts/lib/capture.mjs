@@ -77,6 +77,41 @@ const VIDEO_URL = /\/video\/upload\/|\.(?:mp4|webm|m4v|mov|ogv)(?:[?#]|$)/i;
 /** Frozen epoch: 2026-01-01T12:00:00Z. Arbitrary, but fixed forever. */
 const FROZEN_EPOCH = 1767268800000;
 
+/**
+ * The scroll-reveal pin, as selectors, exported so a fixture can assert it still
+ * matches real elements.
+ *
+ * WHY THIS IS A NAMED EXPORT AND NOT AN INLINE STRING. Until now the pin listed
+ * six classes -- .fade-in, .slide-up, .slide-left, .slide-right, .scale-in,
+ * .gallery-item--reveal -- which WP-1b collapsed into a single `.reveal`. Nobody
+ * re-aimed it. Measured in the built site afterwards: those six matched ZERO
+ * elements while `.reveal` matched 206. The pin had been inert since 1b, so
+ * below-fold reveal targets were captured in whatever IntersectionObserver state
+ * the run happened to catch -- precisely the non-determinism it exists to
+ * remove.
+ *
+ * That is the third inert-thing-failing-silently on this branch (sha-abbrev
+ * scoping, stale whitelist entries, now this), and the cure is the same each
+ * time: make inertness LOUD. A fixture asserts these selectors match a nonzero
+ * element count in the real build, and that no reveal-family element escapes
+ * them, so the next rename turns the pin's death into a red test.
+ *
+ * The state inventory this covers:
+ *   .js .reveal              hidden state, resolved before first paint
+ *   .js.reveal-ready .reveal the transition-carrying state added after paint
+ *   .reveal.seen             the settled state the observer grants
+ *   .reveal                  the bare class, so a target still pins if the
+ *                            gating classes are ever restructured again
+ * Specificity matters here: `.js .reveal` is (0,2,0), so pinning only `.reveal`
+ * would lose to it even with !important. Every gating form is listed.
+ */
+export const REVEAL_PIN_SELECTORS = Object.freeze([
+  '.js .reveal',
+  '.js.reveal-ready .reveal',
+  '.reveal.seen',
+  '.reveal',
+]);
+
 const DETERMINISM_CSS = `
   *, *::before, *::after {
     animation: none !important;
@@ -89,11 +124,13 @@ const DETERMINISM_CSS = `
     scroll-behavior: auto !important;
   }
   html { scroll-behavior: auto !important; }
-  /* Force every scroll-reveal target to its settled, visible state. */
-  .fade-in, .slide-up, .slide-left, .slide-right, .scale-in,
-  .gallery-item--reveal {
+  /* Force every scroll-reveal target to its settled, visible state.
+     Selectors live in REVEAL_PIN_SELECTORS so a fixture can check the pin still
+     MATCHES SOMETHING -- see the note there. */
+  ${REVEAL_PIN_SELECTORS.join(',\n  ')} {
     opacity: 1 !important;
     transform: none !important;
+    transition: none !important;
     transition-delay: 0s !important;
   }
   /* Homepage hero intro: skip straight to revealed, unlock scrolling. */

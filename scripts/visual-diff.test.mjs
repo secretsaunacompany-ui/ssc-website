@@ -36,7 +36,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { startServer } from './lib/server.mjs';
-import { captureAll } from './lib/capture.mjs';
+import { captureAll, REVEAL_PIN_SELECTORS } from './lib/capture.mjs';
 import { comparePair, estimateAffine } from './lib/diff.mjs';
 import { loadConfig, evaluatePair, evaluateFitDivergence } from './lib/gate.mjs';
 import { resolveRef } from './lib/build-ref.mjs';
@@ -475,6 +475,19 @@ const MUTATIONS = [
       .layoutShiftMaxPx <= 4,
   },
   {
+    name: 'A-m14 reveal pin reverted to the six pre-WP-1b classes',
+    proves: 'a dead determinism pin is loud, not silently inert',
+    edits: {},
+    // Not a module mutation: the defect is a VOCABULARY drift, so the mutation
+    // is the old selector list run against the real build. If those six ever
+    // match something again the assertion is wrong, not the pin.
+    special: async () => {
+      const { matched } = await revealPinCoverage(['.fade-in', '.slide-up', '.slide-left',
+        '.slide-right', '.scale-in', '.gallery-item--reveal']);
+      return matched === 0;
+    },
+  },
+  {
     name: 'A-m13 confidence denominator reverts to structuredRows',
     proves: 'the CRITICAL: byte-identical real-shaped pages stay passable',
     edits: { 'diff.mjs': ['    confidence: eligibleRows ? inlierRows / eligibleRows : 0,',
@@ -510,8 +523,11 @@ async function runMutationBattery(tmp) {
       let detected = null;
       let err = null;
       try {
-        const mod = await loadMutant(`m${i}`, mut.edits);
-        detected = await mut.run(mod, pairs, ref);
+        if (mut.special) detected = await mut.special();
+        else {
+          const mod = await loadMutant(`m${i}`, mut.edits);
+          detected = await mut.run(mod, pairs, ref);
+        }
       } catch (e) { err = e; }
       if (err) {
         check(mut.name, false, `mutation could not be applied or run: ${err.message}`);
@@ -528,6 +544,81 @@ async function runMutationBattery(tmp) {
   } finally {
     fs.rmSync(MUTANT_ROOT, { recursive: true, force: true });
   }
+}
+
+
+/**
+ * Assert the scroll-reveal pin is still LIVE against the real built site.
+ *
+ * A determinism pin that matches nothing is worse than no pin: it looks like
+ * protection in review and provides none. This one silently died when WP-1b
+ * renamed six reveal classes to one, and every capture since has been racing an
+ * IntersectionObserver. The check is deliberately about the REAL build rather
+ * than a fixture page, because the failure mode is "the site's vocabulary moved
+ * and the harness did not".
+ *
+ * @returns {{matched: number, escaped: string[]}}
+ */
+export async function revealPinCoverage(selectors) {
+  const dist = path.join(REPO_ROOT, 'dist');
+  if (!fs.existsSync(dist)) {
+    throw new Error('dist/ is missing — run `npm run build` first. This check is about the '
+      + 'REAL built site, so there is nothing meaningful to assert without one.');
+  }
+  const routes = ['/', '/about/', '/saunas/', '/locations/', '/faq/'];
+  const server = await startServer(dist);
+  const { chromium } = await import('playwright');
+  const browser = await chromium.launch();
+  let matched = 0;
+  const escaped = [];
+  try {
+    const page = await browser.newPage();
+    for (const route of routes) {
+      await page.goto(`${server.url}${route}`, { waitUntil: 'domcontentloaded' });
+      const r = await page.evaluate((sels) => {
+        const pinned = new Set(document.querySelectorAll(sels.join(',')));
+        // STATE classes, not reveal TARGETS: `reveal-ready` and `reveal-boot`
+        // live on <html> and gate the system rather than being animated by it.
+        // Scanning for them made this check flaky, because init.js adds
+        // `reveal-ready` asynchronously — so the root element sometimes carried
+        // a reveal-ish class and sometimes did not. The scan stays broad enough
+        // to catch a NEW target vocabulary (a future `.reveal-item` would be
+        // flagged) while ignoring the two known state tokens.
+        const STATE = new Set(['reveal-ready', 'reveal-boot']);
+        const escaped = [];
+        for (const el of Array.from(document.querySelectorAll('[class*="reveal"]'))) {
+          if (el === document.documentElement) continue;
+          const tokens = Array.from(el.classList).filter((c) => c.includes('reveal'));
+          if (tokens.length === 0 || tokens.every((t) => STATE.has(t))) continue;
+          if (!pinned.has(el)) {
+            escaped.push(`<${el.tagName.toLowerCase()} class="${el.className}">`);
+          }
+        }
+        return { matched: pinned.size, escaped };
+      }, selectors);
+      matched += r.matched;
+      escaped.push(...r.escaped.map((e) => `${route} ${e}`));
+    }
+    await page.close();
+  } finally {
+    await browser.close();
+    await server.close();
+  }
+  return { matched, escaped };
+}
+
+async function checkRevealPin(selectors, tag) {
+  const { matched, escaped } = await revealPinCoverage(selectors);
+  check(`${tag}1 the reveal pin matches real elements in the built site`,
+    matched > 0,
+    `the pin selectors ${JSON.stringify(selectors)} matched ZERO elements. A determinism `
+    + `pin that matches nothing looks like protection in review and provides none — this is `
+    + `exactly how it died when WP-1b renamed six reveal classes into one.`);
+  check(`${tag}2 no reveal-family element escapes the pin`,
+    escaped.length === 0,
+    `these carry a reveal-ish class but are not pinned, so they are captured in whatever `
+    + `observer state the run catches:\n        ${escaped.slice(0, 8).join('\n        ')}`);
+  return matched;
 }
 
 async function main() {
@@ -1219,6 +1310,9 @@ async function main() {
           .length === 0,
         'control: a correctly declared redirect must not fail the run');
     }
+    process.stdout.write('\nV — the reveal pin still points at something\n');
+    await checkRevealPin(REVEAL_PIN_SELECTORS, 'V');
+
     process.stdout.write('\nM — mutation battery (runnable, not a prose comment)\n');
     await runMutationBattery(tmp);
   } finally {
