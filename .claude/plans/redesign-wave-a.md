@@ -481,6 +481,26 @@ doc 21's T1–T4 (three count corrections **plus T2, the `booking-ops.html` scop
 defect** — it lives outside `src/` and must be inside every sweep; calling all four
 "count corrections" is how it would have been skipped).
 
+**Certification for this batch — DOM integrity, not pixel geometry (2026-07-31).**
+The re-measure under the repaired-and-affine harness failed 37 of 38 pairs, and
+that verdict is HONEST: a typeface replacement changes every text pixel by
+design, so row signatures can't match and no position model applies — coverage
+collapse here is the product, not a defect. Making the pixel instrument certify
+a font swap would be modelling until the answer turns green. The change-class-
+correct certificate: (a) **DOM-integrity check** (new, instrument-adjacent) —
+element tree + text content extracted from both builds must be IDENTICAL modulo
+an explicit whitelist (the deleted Google Fonts link); any structural or textual
+delta fails loudly; (b) the fonts suite's computed-style assertions (faces,
+floors, tabular numerals — already 31 checks); (c) the pixel harness read as
+advisory data (heightDelta direction, cross-width divergence anomalies get
+named investigation, not overrides); (d) Jen's Stage 3 fidelity review against
+docs 11/21 and the behavioral evaluation — the human-shaped checks a wholesale
+re-render always needed. The failing pixel run is RECORDED as the honest
+instrument verdict, not overridden; `expectedToChange`/`pageOverrides` stay
+untouched. Named anomalies owed an explanation before the batch clears:
+`/privacy/` +6px @1440 vs −108px @390 (a font compression shrinks both widths),
+and the largest shift outliers (426px /about/@390, 414px /saunas/@390).
+
 ---
 
 ## 6. WP-1b — Colour, shape, spacing, motion
