@@ -501,6 +501,25 @@ untouched. Named anomalies owed an explanation before the batch clears:
 `/privacy/` +6px @1440 vs −108px @390 (a font compression shrinks both widths),
 and the largest shift outliers (426px /about/@390, 414px /saunas/@390).
 
+*Anomalies CLEARED (2026-07-31, investigation at `.visual-diff/wp1a-anomalies.md`)*
+— and the record corrects two orchestrator misreadings: (1) `/privacy/` never
+grew; the +6/−108 were the affine fit's INTERCEPTS, not heights — heights fell
+at both widths, proven three independent ways (monotonic offset-vs-depth, zero
+elements taller, arithmetic reconciling to 1.6px). The divergence gate's
+message ("one width grew while another shrank") reads intercepts as growth —
+**queued instrument-message fix**: report intercept divergence as what it is,
+never as growth language. (2) The model fails on these pages by **piecewise
+geometry**, not re-wrap — line-box counts are near-identical (text re-sets
+without re-wrapping); text regions compress while fixed-height media and tables
+translate rigidly, the vote fits the dominant rigid tail, and every compressing
+row upstream becomes residual (hence shift ≈ |offset| ≈ |heightΔ| on every
+outlier). A piecewise/segmented fit is the theoretical completion; NOT built —
+the DOM-integrity certificate covers this batch, and the pixel model's next
+evolution happens only if a future batch needs it. Safety audit: zero new
+overlap/clip/vanish conditions; the 2–3px h1 ink-rise does not clip and the
+site's only diacritic heading is measured unclipped — doc 11 §9's leading
+remedy deliberately unspent.
+
 ---
 
 ## 6. WP-1b — Colour, shape, spacing, motion
