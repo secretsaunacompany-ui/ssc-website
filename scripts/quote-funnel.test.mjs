@@ -717,6 +717,12 @@ async function runStates(base, browser) {
     await page.click('[data-action="request-quote"]');
     const fresh = await readStore(page);
 
+    // Outlast the step-1 debounced persist (250ms) before backdating: pick()
+    // starts a pending write, and if it lands AFTER the backdate it refreshes
+    // savedAt and un-expires the record — the one-in-four flake that cost three
+    // reviews an explanation. Same race the product fixed with cancelPersist.
+    await page.waitForTimeout(400);
+
     // Age the record past the window. Eight days, not seven and a bit, so a
     // clock skew of a few seconds cannot decide the outcome.
     await page.evaluate(([k, rec]) => {
@@ -893,6 +899,7 @@ const MUTATIONS = [
       await pick(page, WOOD_HEATER);
       await page.click('[data-action="request-quote"]');
       const rec = await readStore(page);
+      await page.waitForTimeout(400); // outlast the debounced persist — see the expiry fixture's comment
       await page.evaluate(([k, r]) => {
         r.savedAt = Date.now() - (8 * 24 * 60 * 60 * 1000);
         localStorage.setItem(k, JSON.stringify(r));
