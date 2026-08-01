@@ -489,24 +489,36 @@ async function runInventory(base, browser) {
   // used to synchronise on. The question the events answer is unchanged (is the
   // held moment watched or skipped?) but it is now asked of a photograph the
   // visitor is free to leave, so the branch is decided by the choreography's own
-  // settle boundary, 1240ms, rather than by which timer fired.
+  // settle boundary rather than by which timer fired.
   //
   //   hero_hold_skipped   first scroll BEFORE the page finished settling
   //   hero_hold_complete  first scroll after it, or the page going away unscrolled
   //
   // Note both scenarios scroll for real now. Scrolling is the thing that used to
   // be impossible here, which is the whole point of the change.
+  //
+  // ONE settle number in this block, not five literals scattered through it.
+  // B1 moved the boundary from 1240 to 2720 (the hold arrived) and the old
+  // shape meant finding every copy by hand; a copy missed is a fixture that
+  // still passes while measuring the wrong thing. The agreement fixture below
+  // ties this constant to the CSS token it is derived from, so the two cannot
+  // drift apart silently either.
+  //
+  //   SETTLE_MS      = --hero-hold 1600 + reveal 1000 + 1 x stagger 120
+  //   PAST_SETTLE_MS = a wait comfortably past it, for the "watched it" cases
+  const SETTLE_MS = 2720;
+  const PAST_SETTLE_MS = 3100;
   {
     const page = await newPage(browser);
     await page.goto(base, { waitUntil: 'domcontentloaded' });
-    // Immediately: well inside the 1240ms settle, so this is the skip branch.
+    // Immediately: well inside the settle, so this is the skip branch.
     await page.mouse.wheel(0, 600);
     await page.waitForTimeout(200);
     const events = await readEvents(page);
     const skipped = one(events, 'hero_hold_skipped');
     check('hero_hold_skipped: a scroll before the page settles reports the ms given to it',
       !!skipped && typeof skipped.data.ms === 'number'
-      && skipped.data.ms < 1240
+      && skipped.data.ms < SETTLE_MS
       && typeOf(events, 'hero_hold_complete').length === 0,
       `events were ${JSON.stringify(events)}`);
     collected.push(...events);
@@ -516,13 +528,13 @@ async function runInventory(base, browser) {
     const page = await newPage(browser);
     await page.goto(base, { waitUntil: 'domcontentloaded' });
     // Let it settle, THEN scroll. That is the "watched it" case.
-    await page.waitForTimeout(1600);
+    await page.waitForTimeout(PAST_SETTLE_MS);
     await page.mouse.wheel(0, 600);
     await page.waitForTimeout(200);
     const events = await readEvents(page);
     const done = one(events, 'hero_hold_complete');
     check('hero_hold_complete: a scroll after the settle reports as complete, once',
-      !!done && typeof done.data.ms === 'number' && done.data.ms >= 1240
+      !!done && typeof done.data.ms === 'number' && done.data.ms >= SETTLE_MS
       && typeOf(events, 'hero_hold_complete').length === 1
       && typeOf(events, 'hero_hold_skipped').length === 0,
       `events were ${JSON.stringify(events)}`);
@@ -544,7 +556,7 @@ async function runInventory(base, browser) {
     // pre-fix build, this scenario produced ZERO events.
     const page = await newPage(browser);
     await page.goto(base, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(1600);   // past the 1240ms settle
+    await page.waitForTimeout(PAST_SETTLE_MS);   // past the settle boundary
     const stillVisible = await page.evaluate(() => {
       window.dispatchEvent(new Event('pagehide'));
       return document.visibilityState;
@@ -554,7 +566,7 @@ async function runInventory(base, browser) {
     const done = one(events, 'hero_hold_complete');
     check('hero_hold_complete: leaving WITHOUT scrolling reports exactly once (NOTE-2b)',
       stillVisible === 'visible'
-      && !!done && typeof done.data.ms === 'number' && done.data.ms >= 1240
+      && !!done && typeof done.data.ms === 'number' && done.data.ms >= SETTLE_MS
       && typeOf(events, 'hero_hold_complete').length === 1
       && typeOf(events, 'hero_hold_skipped').length === 0,
       `visibilityState was ${stillVisible}, events were ${JSON.stringify(events)}`);
@@ -596,6 +608,76 @@ async function runInventory(base, browser) {
         !document.body.classList.contains('hero-locked')
         && getComputedStyle(document.body).overflow !== 'hidden'),
       'body still carries the lock');
+    await page.close();
+  }
+  {
+    // AGREEMENT. SETTLE_MS is a DERIVED number and it lives in three places:
+    // the --hero-hold token in styles.css, the constant in js/animations.js,
+    // and the constant at the top of this block. Nothing but a person keeps
+    // them equal, and the failure mode when they diverge is silent: the metric
+    // keeps emitting, the branch boundary is simply in the wrong place, and
+    // every hero_hold reading after that day is measuring something other than
+    // what its name says. That is the defect this fixture exists for.
+    //
+    // It is not tautological: it reads the LIVE COMPUTED values off the last
+    // held element in a real browser -- the delay the browser actually resolved
+    // and the duration it actually resolved -- and asserts their sum is
+    // SETTLE_MS. Editing the token without editing the constants fails it.
+    const page = await newPage(browser);
+    await page.goto(base, { waitUntil: 'load' });
+    const m = await page.evaluate(() => {
+      const ms = (v) => (String(v).trim().endsWith('ms')
+        ? parseFloat(v) : parseFloat(v) * 1000);
+      const root = getComputedStyle(document.documentElement);
+      const title = document.querySelector('.hero-content');
+      const cs = getComputedStyle(title);
+      return {
+        hold: ms(root.getPropertyValue('--hero-hold')),
+        step: ms(root.getPropertyValue('--stagger-step')),
+        i: parseFloat(cs.getPropertyValue('--i')),
+        delay: ms(cs.transitionDelay.split(',')[0]),
+        duration: ms(cs.transitionDuration.split(',')[0]),
+        heroHasReveal: document.querySelector('.hero-image').classList.contains('reveal'),
+      };
+    });
+    check('the settle boundary agrees with the CSS the browser actually resolved',
+      m.delay + m.duration === SETTLE_MS
+      && m.delay === m.hold + m.i * m.step
+      && m.hold === 1600 && m.step === 120 && m.i === 1,
+      `computed ${JSON.stringify(m)}; delay+duration was ${m.delay + m.duration}, SETTLE_MS is ${SETTLE_MS}`);
+    check('the LCP hero image is never a reveal target',
+      m.heroHasReveal === false,
+      'the hero <img> carries .reveal -- the largest paint on the page is being withheld');
+    await page.close();
+  }
+  {
+    // TAB DURING THE BEAT.
+    //
+    // For the length of the hold the nav is at opacity 0 and its links are
+    // still in the tab order. Without the escape hatch the first Tab moves
+    // focus onto a link nobody can see and leaves it there for the remainder of
+    // the beat -- invisible focus, which is the accessibility failure the hold
+    // introduces and the reason keydown is one of its cancel triggers.
+    //
+    // Asserted as behaviour rather than as "a listener is attached": Tab early,
+    // then poll for the nav to be fully visible inside 100ms. A cancel
+    // implemented as a shortened delay rather than a snap would miss that
+    // window, which is deliberate -- an interrupted animation must yield.
+    const page = await newPage(browser);
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(200);
+    await page.keyboard.press('Tab');
+    let opacity = null;
+    const deadline = Date.now() + 100;
+    while (Date.now() < deadline) {
+      opacity = await page.evaluate(() =>
+        parseFloat(getComputedStyle(document.querySelector('nav')).opacity));
+      if (opacity === 1) break;
+      await page.waitForTimeout(10);
+    }
+    check('a Tab during the held beat reveals the nav immediately, not eventually',
+      opacity === 1,
+      `nav opacity was ${opacity} 100ms after Tab -- focus is sitting on an invisible link`);
     await page.close();
   }
 
