@@ -150,3 +150,33 @@ Write your output to your assigned file **incrementally** as you go — do not
 hold it all in memory and write once at the end. If you approach a limit, save
 what you have. A partial document on disk is worth more than a complete one that
 never lands.
+
+---
+
+## Post-Wave-A feedback — Lee, 2026-08-01 (FIXED DECISIONS, Wave B scope)
+
+Recorded verbatim-in-substance after Lee reviewed the live Wave A deploy. These
+carry the same authority as the fixed decisions above. The first item corrects a
+capture failure: the preference predates the audits and never made it into this
+brief, so the Wave A motion cleanup deleted the effect along with the janky
+scroll-lock implementation of it.
+
+1. **Homepage hero reveal (restore the effect, not the old code).** The hero
+   image must arrive FIRST — clean, unobstructed, no nav, no title, no overlay —
+   with a beat of time to take in the visual quality of the sauna before the
+   header and hero title come into play and cover it. Lee explicitly stated and
+   deeply enjoyed this effect on the old site. Implementation freedom is total
+   (the old `HeroIntroAnimation` scroll-lock stays dead; a delayed `.reveal`
+   stagger on nav/title with a longer image-first hold is the obvious shape),
+   but the *sequence* — image alone, pause, then chrome — is the fixed decision.
+
+2. **/saunas/ leads with the saunas.** The model index goes to the top of the
+   page; the barrel/infrared comparison and science sections move below the
+   work and shrink. This confirms doc 10 §3.2 exactly as written — Lee
+   independently stated the same order after seeing the live page (which still
+   leads with comparisons). WP-2 executes it; no re-litigation needed.
+
+3. **Spacing of text and containers needs real work.** Lee finds the current
+   spacing/container rhythm "not that well done." This is doc 10's section
+   grammar + `--section-pad` system (WP-2), not yet applied in Wave A. Treat
+   spacing as a first-class WP-2 acceptance criterion, not a side effect.
