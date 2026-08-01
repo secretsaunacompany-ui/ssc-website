@@ -359,6 +359,21 @@ The third is the one worth flagging. It is invisible at desktop width, invisible
 
 Not fixed here: this is a rendered-output change on every page at the mobile width, so it belongs in its own batch under the harness's own eyes, not folded into a certification round. Pinned by rule in `scripts/rhythm.test.mjs` so a fourth deviation fails and so migrating one of the three has to be a deliberate edit.
 
+**AMENDMENT 2026-08-01 (Wave B-1 B0) — the third row's blast radius, corrected, and the deeper finding underneath it.**
+
+The paragraph above is wrong about what the mobile override reaches, and it is wrong in the direction that hides a larger defect. Both corrections are measured, not reasoned:
+
+- **Blast radius is 22 sections, not "every page".** Counted from source: 68 `<section>` elements total, 44 carrying `.container`, 2 carrying `.wide-container`, leaving **22** that the bare-`section` override can reach.
+  ```
+  $ grep -rho '<section class="[^"]*"' src/ | wc -l              -> 68
+  $ grep -rho '<section class="[^"]*"' src/ | grep -c 'wide-container' -> 2
+  $ grep -rho '<section class="[^"]*"' src/ | grep -c '\bcontainer\b'  -> 46   (44 + the 2 wide)
+  ```
+- **The override is INERT for the other 44.** `.container` declares `padding: 0 var(--gutter)` (`styles.css:513-517`) at specificity (0,1,0); the override is `@media (max-width: 768px) { section { padding: var(--spacing-2xl) 5% } }` (`styles.css:3187-3189`) at specificity (0,0,1). **A media query adds no specificity**, so on any `section.container` the class rule wins and the override never applies. It never flattened the rhythm it was blamed for flattening on two-thirds of the site.
+- **The finding this exposes (F-1).** `.container`'s `padding` is a SHORTHAND, so it resets the block axis to `0`. It beats `section`'s tier rule (`padding: var(--section-pad) var(--gutter)`, `styles.css:529-531`, specificity 0,0,1) at every width, desktop included. Therefore **44 of 68 sections have had ZERO vertical section padding all along** — not flattened by the mobile override, never present at all. `.section--pt-6` exists only to hand-patch this by force at 4 call sites.
+
+So Lee's 2026-08-01 "spacing not that well done" is not a tier-misapplication complaint. Two-thirds of the site's sections have never carried a tier. The mechanical fix is `padding` → `padding-inline` on `.container`/`.wide-container`, which stops resetting the block axis and lets the existing tier system reach all 44 — scheduled as Wave B-1 batch B2, whose primary certificate is a ZERO-delta dom-integrity run (the change is CSS-only by construction). The three-row table above stands as written for the nav and `.page-hero` rows.
+
 ### 6.3 Alpha-overlay consumers WP-1b re-homes (tokens stay until their counts hit zero)
 
 `nav` border-bottom (`-10`) → `--rule` · `.contact-form--styled` border (`-08`) → component deleted (Jen §4.2: frosted card dies) · `.map-filter-btn` border/fills (`-05`/`-08`/`-10`) → rule grammar · `.comparison-badge-alt`, `.price-row.total`, `.addon-category`, `.addon-option:hover`, `.spec-item`, `.lightbox-nav` — reviewed against the ruled-surface grammar in WP-1b; any that survive keep the tokens, which is why the tokens are Carried, not Retired.
