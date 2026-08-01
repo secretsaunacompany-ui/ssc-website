@@ -259,6 +259,14 @@
     --transition-reveal: 1000ms cubic-bezier(0.22, 0.61, 0.36, 1);
     --reveal-shift: 28px;
     --stagger-step: 120ms;   /* per-child delay; --i capped at 4 */
+    /* The beat the homepage holds before anything arrives over the photograph.
+       Not a second motion system -- it is a delay added inside .reveal, so the
+       hold and every other reveal on the site are the same transition (21 N2).
+       RETUNE FROM DATA, not taste: the hero_hold_skipped:complete ratio on
+       post-cutover views is the instrument, and N2 pre-authorises the change.
+       Moving it moves SETTLE_MS in js/animations.js, and the events suite's
+       agreement fixture fails until both agree. */
+    --hero-hold: 1600ms;
 
     /* ===== Elevation -- ONE shadow, and it is a hover affordance =====
        --shadow-sm/-md had zero consumers; -lg/-xl unify here (21 A4). No
@@ -2374,12 +2382,79 @@ footer::before {
     transform: none;
 }
 
+/* ---- The held hero (B1) ----------------------------------------------------
+
+   Lee's fixed decision: the photograph arrives alone, and the title comes over
+   it after a beat. The old implementation of that idea was a scroll LOCK and it
+   is not coming back. This one adds a NUMBER to a delay and nothing else --
+   same .reveal, same transition, same observer, no second timer, and the page
+   scrolls from the first frame. That is 21 N2's mechanism ruling honoured; the
+   only clause of N2 superseded is its ban on content over the photograph.
+
+   The hero <img> is deliberately absent from all of this. It carries no reveal
+   class ever: it is the LCP element and it composites on first paint. Only the
+   things ARRIVING over it are held.
+
+   Specificity, checked rather than assumed. The generic delay rule is
+   `.js.reveal-ready .reveal` at (0,3,0), so a held element needs to beat that
+   on its own terms -- source order is not the mechanism here. */
+.js.reveal-ready .reveal.reveal--held {
+    /* (0,4,0) beats (0,3,0). */
+    transition-delay: calc(var(--hero-hold) + var(--i, 0) * var(--stagger-step));
+}
+
+/* animations.js also writes this inline as part of the load-in ordering; the
+   declaration is here so the index is right before a line of JS has run. */
+.hero-content.reveal--held {
+    --i: 1;
+}
+
+/* The nav is held too, at --i:0, but its markup is NOT touched: a bare <nav>
+   cannot be named by a dom-integrity `contains` (empty attributes are rejected,
+   dom-fingerprint.mjs:316-324), so declaring a class on it is impossible and an
+   undeclarable markup change is not a change we make. Instead its hidden state
+   is keyed on body.page-home, which is in the markup already and therefore
+   resolves before first paint -- no flash of a nav that then hides itself.
+
+   Gated on .js so a visitor without JS is never left with an invisible nav.
+   `.js body.page-home nav` is (0,2,2). */
+.js body.page-home nav {
+    opacity: 0;
+    transform: translateY(var(--reveal-shift));
+}
+
+/* (0,3,2) -- more classes than the generic (0,3,0)? No: equal classes, but two
+   more element selectors, so this wins the cascade and the nav gets the HELD
+   delay rather than the bare stagger. This is the rule the plan meant by
+   "specificity checked". */
+.js.reveal-ready body.page-home nav {
+    transition: opacity var(--transition-reveal), transform var(--transition-reveal);
+    transition-delay: calc(var(--hero-hold) + var(--i, 0) * var(--stagger-step));
+}
+
+/* (0,3,2), beating the hidden state's (0,2,2). animations.js grants .seen the
+   same way it grants it to every other reveal target. */
+.js body.page-home nav.seen {
+    opacity: 1;
+    transform: none;
+}
+
 /* Both layers, not just one. The JS bails before constructing the observer, and
    this rule composes the page even if a stale .reveal ships without a .seen --
-   a reduced-motion visitor must never be able to land on invisible content. */
+   a reduced-motion visitor must never be able to land on invisible content.
+
+   EVERY selector introduced above is mirrored here, at its own specificity. A
+   reduced-motion mirror that names only the generic forms is a mirror with a
+   hole in it: the held rules and the body-scoped nav rules would keep their
+   1600ms delay and a visitor who asked for no motion would watch the page
+   arrive anyway. */
 @media (prefers-reduced-motion: reduce) {
     .js .reveal,
-    .js.reveal-ready .reveal {
+    .js.reveal-ready .reveal,
+    .js.reveal-ready .reveal.reveal--held,
+    .js body.page-home nav,
+    .js.reveal-ready body.page-home nav,
+    .js body.page-home nav.seen {
         opacity: 1;
         transform: none;
         transition: none;

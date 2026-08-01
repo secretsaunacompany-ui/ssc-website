@@ -31,11 +31,25 @@
     'use strict';
 
     // The choreography boundary, and the only timing number in this file.
-    // Reveal is 1000ms and the load-in group staggers at 120ms per child with
-    // its last member at --i:2, so 1000 + 2*120 = 1240ms is when the page has
-    // settled. Derived from the tokens rather than chosen: if --transition-reveal
-    // or --stagger-step move, this moves with them.
-    const SETTLE_MS = 1240;
+    //
+    // Derived from the tokens rather than chosen:
+    //
+    //   1600  --hero-hold      the beat the photograph is held alone
+    // + 1000  --transition-reveal
+    // +  120  1 x --stagger-step, the LAST held member's --i
+    // = 2720
+    //
+    // The old comment here asserted the last member sat at --i:2 and derived
+    // 1240 from it. That was wrong on the day it was written: the --i:2 slot
+    // belongs to the scroll cue, which is WP-2 composition and does not exist,
+    // so the real last member has always been --i:1 and the constant has been
+    // 120ms out ever since. Fixed here rather than carried forward.
+    //
+    // The held group is nav (--i:0) and .hero-content (--i:1). If --hero-hold,
+    // --transition-reveal or --stagger-step move, this must move with them, and
+    // the events suite's agreement fixture reads --hero-hold off the live page
+    // and fails until it does.
+    const SETTLE_MS = 2720;
 
     // Uncapped, a twelve-row ledger spends 1.4s of stagger on top of a 1s reveal
     // and its last row lands nearly three seconds after its first.
@@ -60,6 +74,7 @@
     class RevealManager {
         constructor() {
             this.observer = null;
+            this.holdEscapeBound = false;
         }
 
         assignStagger() {
@@ -73,15 +88,21 @@
             });
         }
 
-        // The load-in group: hero image, nav, scroll cue, in that order. Observed
-        // like everything else -- this is what makes load-in and scroll-in one
-        // system. The page settles once, with no separate intro and no lock.
-        // The scroll cue is WP-2 composition and may not exist yet; a missing
-        // member simply does not take a slot.
+        // The load-in group: nav, hero content, scroll cue, in that order.
+        // Observed like everything else -- this is what makes load-in and
+        // scroll-in one system. The page settles once, with no separate intro
+        // and no lock. The scroll cue is WP-2 composition and may not exist
+        // yet; a missing member simply does not take a slot.
+        //
+        // The HERO IMAGE used to lead this list and no longer appears in it at
+        // all. It is the LCP element. Giving it a reveal class meant the
+        // largest paint on the page was deliberately withheld -- the one thing
+        // the choreography must never do. It composites on first paint now and
+        // the group arrives over it.
         initLoadIn() {
             const ordered = [
-                document.querySelector('.hero-image'),
                 document.querySelector('nav'),
+                document.querySelector('.hero-content'),
                 document.querySelector('.scroll-cue')
             ];
             ordered.forEach((el, i) => {
@@ -89,6 +110,47 @@
                 el.classList.add('reveal');
                 el.style.setProperty('--i', i);
             });
+        }
+
+        // The escape hatch on the held beat.
+        //
+        // 1600ms is a long time to ask of someone who has seen the page before,
+        // and for the duration of it the nav is invisible AND focusable -- Tab
+        // lands on links nobody can see. So the first sign of intent ends the
+        // hold: scroll, key (Tab included, which is the point), or pointer.
+        //
+        // It cancels by removing the TRANSITION, not by rewriting the delay.
+        // Rewriting the delay restarts a 1000ms fade from wherever the element
+        // happened to be, which races the gesture that interrupted it. Snapping
+        // is the honest response to "I am already doing something else": an
+        // interrupted animation should yield, not negotiate.
+        //
+        // One-shot, capture phase, passive. Nothing here can block a scroll.
+        initHoldEscape() {
+            const held = [
+                document.querySelector('nav'),
+                ...document.querySelectorAll('.reveal--held')
+            ].filter(Boolean);
+            if (held.length === 0) return;
+
+            const events = ['scroll', 'keydown', 'pointerdown'];
+            let fired = false;
+
+            const cancel = () => {
+                if (fired) return;
+                fired = true;
+                events.forEach((type) =>
+                    window.removeEventListener(type, cancel, { capture: true })
+                );
+                held.forEach((el) => {
+                    el.style.transition = 'none';
+                    el.classList.add('seen');
+                });
+            };
+
+            events.forEach((type) =>
+                window.addEventListener(type, cancel, { capture: true, passive: true })
+            );
         }
 
         init() {
@@ -104,6 +166,14 @@
             if (prefersReducedMotion()) {
                 targets.forEach((el) => el.classList.add('seen'));
                 return;
+            }
+
+            // init() runs twice (see below), so the hatch latches: two sets of
+            // listeners would both fire and the second would find nothing left
+            // to cancel, which is harmless but is not something to rely on.
+            if (!this.holdEscapeBound) {
+                this.holdEscapeBound = true;
+                this.initHoldEscape();
             }
 
             this.assignStagger();
