@@ -302,8 +302,24 @@
 
     <!-- Preconnect & Preload -->
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+    {#- The LCP preload. Two shapes, and the responsive one is OPT-IN
+        (`preload_responsive_sizes`) so the eleven pages that do not opt in emit
+        BYTE-IDENTICAL html -- hence the single-line if/else and the whitespace
+        control on this comment, both of which are load-bearing.
+
+        Default shape: a plain href. Those pages preload a CSS background (the
+        .page-hero overlays); there is no <img> for the preload to agree with,
+        so a responsive preload would describe a selection the browser never
+        makes.
+
+        Responsive shape: the target IS an <img> that cloudinaryResponsive
+        rewrites, so the preload must carry the same candidate list the element
+        will carry. Without it the preload picks one candidate by its href and
+        the element picks another by its srcset, and the LCP photograph is
+        downloaded TWICE (measured: preload w_1200, element w_800). The list
+        comes from the transform's own generator, never hand-authored. #}
     {% if preload_image %}
-    <link rel="preload" as="image" href="{{ preload_image }}">
+    {% if preload_responsive_sizes %}<link rel="preload" as="image" href="{{ preload_image | cloudinaryDefaultSrc }}" imagesrcset="{{ preload_image | cloudinarySrcset }}" imagesizes="{{ preload_responsive_sizes }}">{% else %}<link rel="preload" as="image" href="{{ preload_image }}">{% endif %}
     {% endif %}
 
     <!-- Fonts: self-hosted, so no Google origins and no third-party round trip.

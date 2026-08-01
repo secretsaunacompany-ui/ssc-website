@@ -196,12 +196,37 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy("booking-ops.js");
   eleventyConfig.addPassthroughCopy({ "src/robots.txt": "robots.txt" });
 
-  // Auto-add responsive srcset to Cloudinary images
+  // Auto-add responsive srcset to Cloudinary images.
+  //
+  // ONE generator. The transform below writes the srcset that ships on <img>
+  // elements, and the two filters beside it write the SAME list for a
+  // <link rel="preload" as="image"> so the preload and the element agree
+  // candidate-for-candidate. They agree because they read the same two
+  // constants -- a preload whose list drifts from the element's is not a
+  // preload, it is a second download.
+  var cloudinaryBase = "https://res.cloudinary.com/dlhqdgmih/image/upload/";
+  var widths = [400, 800, 1200, 1920];
+  var CLOUDINARY_BARE = /^https:\/\/res\.cloudinary\.com\/dlhqdgmih\/image\/upload\/q_auto,f_auto\/(.+)$/;
+
+  // The URL the transform puts in `src`: the w_800 candidate. A preload's href
+  // is what a browser without imagesrcset support fetches, so it must be this
+  // exact string or that browser fetches a second file.
+  eleventyConfig.addFilter("cloudinaryDefaultSrc", function(url) {
+    var m = CLOUDINARY_BARE.exec(url || "");
+    if (!m) return url;
+    return cloudinaryBase + "q_auto,f_auto,w_800/" + m[1];
+  });
+
+  eleventyConfig.addFilter("cloudinarySrcset", function(url) {
+    var m = CLOUDINARY_BARE.exec(url || "");
+    if (!m) return "";
+    return widths.map(function(w) {
+      return cloudinaryBase + "q_auto,f_auto,w_" + w + "/" + m[1] + " " + w + "w";
+    }).join(", ");
+  });
+
   eleventyConfig.addTransform("cloudinaryResponsive", function(content, outputPath) {
     if (!outputPath || !outputPath.endsWith(".html")) return content;
-
-    var cloudinaryBase = "https://res.cloudinary.com/dlhqdgmih/image/upload/";
-    var widths = [400, 800, 1200, 1920];
 
     return content.replace(
       /<img([^>]*?)src="https:\/\/res\.cloudinary\.com\/dlhqdgmih\/image\/upload\/q_auto,f_auto\/([^"]+)"([^>]*?)>/g,
@@ -216,9 +241,21 @@ module.exports = function(eleventyConfig) {
         }).join(", ");
 
         var defaultSrc = cloudinaryBase + "q_auto,f_auto,w_800/" + imagePath;
-        var sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px';
 
-        return '<img' + before + 'src="' + defaultSrc + '" srcset="' + srcset + '" sizes="' + sizes + '"' + after + '>';
+        // The default `sizes` describes the site's ordinary case: a card or a
+        // plate inside a contained column, which is why it tops out at 800px.
+        // The hero is not that case -- it renders full-bleed 100vw (styles.css
+        // .hero-image), so the default made the browser resolve w_800 for the
+        // LCP element on a 1440px viewport. A GLOBAL change here would be
+        // wrong in the other direction, so instead the transform now RESPECTS
+        // a `sizes` an author put on the element: per-element override, one
+        // srcset generator, no hand-authored srcset anywhere.
+        var authored = /\ssizes\s*=\s*"([^"]*)"/.exec(before) || /\ssizes\s*=\s*"([^"]*)"/.exec(after);
+        var sizes = authored ? authored[1] : '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px';
+        var strippedBefore = before.replace(/\ssizes\s*=\s*"[^"]*"/, '');
+        var strippedAfter = after.replace(/\ssizes\s*=\s*"[^"]*"/, '');
+
+        return '<img' + strippedBefore + 'src="' + defaultSrc + '" srcset="' + srcset + '" sizes="' + sizes + '"' + strippedAfter + '>';
       }
     );
   });
