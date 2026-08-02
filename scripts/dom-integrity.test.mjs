@@ -25,8 +25,8 @@ import { startServer } from './lib/server.mjs';
 import {
   extractFingerprint, diffTokens, describeToken, loadWhitelist, applyWhitelist,
   checkWhitelistSpecificity, applyRenameMap, staleRenames, partitionByScope,
-  subtreeHash, findSubtreeHashes, checkSubtreeDeclarations, MAX_SUBTREE_TOKENS,
-  fingerprintsIdentical,
+  subtreeHash, findSubtreeHashes, checkSubtreeDeclarations, checkAddedDeclarations,
+  MAX_SUBTREE_TOKENS, fingerprintsIdentical,
 } from './lib/dom-fingerprint.mjs';
 import * as realFingerprint from './lib/dom-fingerprint.mjs';
 
@@ -303,6 +303,53 @@ const MUTATIONS = [
     // identical and the entry activates over markup it never described --
     // which is the whole failure mode descent could have introduced.
     probe: (m, f) => m.fingerprintsIdentical(f.printsA, f.printsReworded).identical,
+  },
+  {
+    name: 'D-m20 cap enforcement bypassed on the ADD path',
+    proves: 'the cap governs additions too, and not merely by sharing a code path',
+    // D-m16 aims at the same enforcement site from the DELETE direction. Both
+    // exist on purpose. The cap is enforced in shared code today, so one
+    // mutation appears to cover both -- but "appears to" is the whole problem:
+    // if the add path is ever given its own matcher (the obvious refactor the
+    // moment the two directions need to differ), D-m16 keeps passing while the
+    // add cap silently becomes a suggestion. This probe is aimed at the add
+    // direction's OWN material so it fails the moment that happens.
+    edits: { 'dom-fingerprint.mjs': [
+      '      const maxLen = Math.min(MAX_SUBTREE_TOKENS, end - i);',
+      '      const maxLen = Math.min(end - i, 100000);'] },
+    // Shipped: the over-cap ADD entry matches nothing, so the whole run of
+    // additions falls through undeclared -- many failures. Mutated: the cap
+    // disappears, the oversized subtree is consumed whole, and 0 failures. An
+    // entry larger than one component would start certifying itself.
+    probe: (m, f) => m.applyWhitelist(
+      m.diffTokens(f.capNone, f.capOver).ops, f.capOverAddEntry).failures.length,
+  },
+  {
+    name: 'D-m21 add-subtree stops checking the hash (tag + path alone)',
+    proves: 'an add declaration aimed at the WRONG node consumes nothing',
+    edits: { 'dom-fingerprint.mjs': [
+      '          if (subtreeHash(slice, e.path) !== e.textHash) continue;',
+      '          if (false) continue;'] },
+    // The add-path twin of D-m12. Shipped, an entry whose hash names subtree A
+    // cannot consume subtree B even though tag and path match exactly -- which
+    // is the only thing separating two attribute-less siblings. Mutated, the
+    // first slice that fits the path is claimed and the declaration means
+    // nothing beyond "something of this tag appeared somewhere under here".
+    probe: (m, f) => m.applyWhitelist(
+      m.diffTokens(f.capNone, f.capOther).ops, f.capAddEntry).failures.length,
+  },
+  {
+    name: 'D-m22 the add-subtree staleness mirror deleted',
+    proves: 'a hand-written add hash is refused before any verdict rests on it',
+    edits: { 'dom-fingerprint.mjs': [
+      "  return checkSubtreeSide(whitelist, candidatePrints, 'add-subtree', 'candidate');",
+      '  return [];'] },
+    // Without the mirror an add entry can name a node the candidate never
+    // contained and simply go quiet: it consumes nothing, and the only signal
+    // left is the generic "never matched anywhere" staleness line, which does
+    // not distinguish "your hash is wrong" from "the addition did not happen".
+    // Shipped: 1 problem, named. Mutated: 0.
+    probe: (m, f) => m.checkAddedDeclarations(f.capBogusAddEntry, f.capPrints).length,
   },
   {
     name: 'D-m19 the vacuity guard removed (empty compares as identical)',
@@ -756,7 +803,8 @@ async function main() {
         'a page that exists on one side only is a difference, not an absence of evidence — '
         + 'fail closed');
 
-      // Y12, the vacuity guard (Razor, B3 review). Every loop in
+      // Y13, the vacuity guard (Razor, B3 review). Y12 was already taken by the
+      // descendant-activation check below it. Every loop in
       // fingerprintsIdentical is over the keys of the maps it was handed, so
       // two EMPTY maps fall straight through all of them and returned
       // identical:true — "I compared nothing and found no difference". In the
@@ -765,11 +813,11 @@ async function main() {
       // direction in a mechanism whose every other error path closes.
       {
         const vacuous = fingerprintsIdentical(new Map(), new Map());
-        check('Y12 two EMPTY fingerprint sets are NOT identical',
+        check('Y13 two EMPTY fingerprint sets are NOT identical',
           vacuous.identical === false && vacuous.differences.length === 1,
           'an empty comparison establishes nothing; it must never read as proof of identity. '
           + `got ${JSON.stringify(vacuous)}`);
-        check('Y12b one empty side is NOT identical either',
+        check('Y13b one empty side is NOT identical either',
           fingerprintsIdentical(new Map(), prints(fpA)).identical === false
           && fingerprintsIdentical(prints(fpA), new Map()).identical === false,
           'the guard has to hold in both directions, or the argument order decides the verdict');
@@ -1007,6 +1055,95 @@ async function main() {
         + `raised from 64 in B3 on a measurement -- the configurator modal at 355 tokens -- `
         + `and 400 is that need plus headroom, still one-component scale. Moving it is a `
         + `reviewed harness change, not a knob. got ${MAX_SUBTREE_TOKENS}`);
+
+      // ---- ADD-SUBTREE: the same battery, the other direction (B4-pre) ----
+      //
+      // The vocabulary was asymmetric. A removed component was one entry; the
+      // IDENTICAL component added was one entry per token, and an attribute-less
+      // added element could not be declared at all. Measured on B4's /saunas/
+      // recomposition: 249 removed tokens coverable by ~7 delete-subtree
+      // entries, against 102 added tokens needing 102 declarations.
+      //
+      // The material is reused deliberately: these are the SAME subtrees as
+      // Z18/Z19 with the diff run the other way round, so any difference in
+      // verdict is a difference in the mechanism and not in the fixture.
+      const addEntry = (hash, tag, p, extra = {}) => loadWhitelist('t.json', { whitelist: [{
+        op: 'add-subtree', tag, path: p, textHash: hash, count: 1,
+        reason: 'fixture', commit: 'fixture', range: 'aaaaaaa..bbbbbbb', ...extra,
+      }] });
+
+      const addDecl = addEntry(underMeasured.hash, 'DIV', BIG_PATH);
+      const addVerdict = applyWhitelist(diffTokens(withoutBig, withUnder).ops, addDecl);
+      check('Z21 a DECLARED subtree ADDITION under the cap is consumed whole',
+        addVerdict.failures.length === 0 && addVerdict.consumed.get(0) === 1,
+        `the mirror of Z18: a ${underMeasured.span}-token addition must be one declaration, `
+        + `not ${underMeasured.span}. got ${addVerdict.failures.length} failures, consumed `
+        + `${JSON.stringify([...addVerdict.consumed])}`);
+
+      // The hash is measured in the CANDIDATE for an addition, and it is the
+      // same hash the baseline yielded for the deletion -- the subtree hash
+      // describes the node, not which side of the diff it sat on. Asserted
+      // because it is the property that lets one hashing primitive serve both.
+      check('Z21b the added subtree hashes identically whichever way it crossed the diff',
+        findSubtreeHashes(withUnder, BIG_PATH, 'DIV')[0].hash === underMeasured.hash,
+        'one subtreeHash serves both directions; if it did not, add-subtree would need its '
+        + 'own hasher and the two would drift');
+
+      const overAddDecl = addEntry(overMeasured.hash, 'DIV', BIG_PATH);
+      const overAddVerdict = applyWhitelist(diffTokens(withoutBig, withOver).ops, overAddDecl);
+      check('Z22 a correctly declared ADDITION over the cap still fails loudly',
+        overMeasured.span > MAX_SUBTREE_TOKENS
+        && overAddVerdict.failures.length > 0 && (overAddVerdict.consumed.get(0) || 0) === 0,
+        `Z19's property on the add path, and it needs its own assertion: the cap is enforced `
+        + `in shared code but nothing proved the add direction reached it. consumed===0 is `
+        + `explicit, because "failed loudly" and "quietly spent its budget on part of the run" `
+        + `look identical from a failure count. got span ${overMeasured.span}, `
+        + `${overAddVerdict.failures.length} failures, consumed `
+        + `${JSON.stringify([...overAddVerdict.consumed])}`);
+
+      // An entry written for one added subtree must not swallow a DIFFERENT one.
+      // Same argument as Z2, and the same shape of node: same tag, same path,
+      // distinguished only by content -- which is exactly what a `contains`
+      // entry cannot see and the hash can.
+      const otherAdd = await fp(PAGE({ heroIntro: bigSubtree(UNDER_N, '<hr>') }), 'z-add-other');
+      const wrongTarget = applyWhitelist(diffTokens(withoutBig, otherAdd).ops, addDecl);
+      check('Z23 an UNDECLARED addition of an identical-tag sibling still fails',
+        wrongTarget.failures.length > 0,
+        `the entry names one subtree by content; a different subtree at the same tag and path `
+        + `must not be absorbed by it. got ${wrongTarget.failures.length} failures`);
+
+      check('Z24 an add-subtree entry whose hash is in NO candidate node is flagged',
+        (() => {
+          const bogus = addEntry('deadbeefdeadbeef', 'DIV', BIG_PATH);
+          const problems = checkAddedDeclarations(bogus, new Map([['/@1440', withUnder]]));
+          return problems.length === 1 && /add-subtree/.test(problems[0])
+            && /candidate/.test(problems[0]);
+        })(),
+        'a hand-written hash must be refused before any verdict rests on it, and the message '
+        + 'must say it looked in the CANDIDATE -- otherwise a reader checks the wrong build');
+
+      // The mirror is NECESSARY, not decorative: the delete-side check reads the
+      // baseline, where an added node is correctly absent, so pointing it at an
+      // add entry would flag every correct declaration. Pinned so nobody
+      // "simplifies" the two calls into one.
+      check('Z25 the two staleness checks read opposite builds',
+        checkAddedDeclarations(addDecl, new Map([['/@1440', withUnder]])).length === 0
+        && checkAddedDeclarations(addDecl, new Map([['/@1440', withoutBig]])).length === 1
+        && checkSubtreeDeclarations(addDecl, new Map([['/@1440', withUnder]])).length === 0,
+        'a correct add entry passes against a candidate that HAS the node and is flagged '
+        + 'against one that does not; and the delete-side check must ignore add entries '
+        + 'entirely rather than judging them against the baseline');
+
+      check('Z26 an add-subtree entry is flagged when the candidate produced NO pages',
+        checkAddedDeclarations(addDecl, new Map()).length === 1,
+        'vacuity, guarded the same way fingerprintsIdentical guards it: a build that '
+        + 'fingerprinted nothing corroborates nothing, and must not read as corroboration');
+
+      check('Z27 the specificity check ignores add-subtree entries',
+        checkWhitelistSpecificity(addDecl, new Map(), new Map([['/@1440', withUnder]]))
+          .length === 0,
+        'an add-subtree entry has no "contains" to be lazy with; the substring check must '
+        + 'not fabricate a verdict about it');
     }
 
     process.stdout.write('\nM — mutation battery (runnable)\n');
@@ -1141,6 +1278,33 @@ async function main() {
           reason: 'a whole component, declared as one deletion — needs the raised cap',
           commit: 'fixture', range: 'aaaaaaa..bbbbbbb',
         }] });
+
+        // ADD-PATH material (B4-pre), for D-m20/21/22. Deliberately its OWN
+        // fixtures rather than a reuse of the delete ones: the point of these
+        // mutations is that the add direction is exercised on add-direction
+        // material, so a future split of the shared matcher cannot leave the
+        // add path unguarded while the delete probes stay green.
+        const addOne = (hash, extra = {}) => loadWhitelist('t.json', { whitelist: [{
+          op: 'add-subtree', tag: 'DIV', path: CAP_PATH, textHash: hash, count: 1,
+          reason: 'a whole component, declared as one addition',
+          commit: 'fixture', range: 'aaaaaaa..bbbbbbb', ...extra,
+        }] });
+        f.capAddEntry = addOne(measured.hash);
+        f.capBogusAddEntry = addOne('deadbeefdeadbeef');
+        f.capPrints = new Map([['/@1440', f.capUnder]]);
+
+        // A different subtree at the same tag and path — for D-m21, the case
+        // only the hash separates.
+        const other = `<div class="big">${Array.from({ length: 60 },
+          (_, i) => `<p>Row ${i}</p>`).join('')}<hr></div>`;
+        f.capOther = await fp(PAGE({ heroIntro: other }), 'm-cap-other');
+
+        // Over the cap, correctly declared — for D-m20.
+        const overN = Math.ceil((MAX_SUBTREE_TOKENS + 40 - 2) / 2);
+        const over = `<div class="big">${Array.from({ length: overN },
+          (_, i) => `<p>Row ${i}</p>`).join('')}<hr></div>`;
+        f.capOver = await fp(PAGE({ heroIntro: over }), 'm-cap-over-add');
+        f.capOverAddEntry = addOne(findSubtreeHashes(f.capOver, CAP_PATH, 'DIV')[0].hash);
       }
       // Extraction-level mutations change the function that runs IN THE PAGE,
       // so they must be re-extracted through a real browser with the mutant's

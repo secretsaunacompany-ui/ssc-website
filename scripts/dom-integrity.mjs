@@ -30,7 +30,7 @@ import { startServer } from './lib/server.mjs';
 import { installRouting } from './lib/capture.mjs';
 import {
   extractFingerprint, diffTokens, describeToken, loadWhitelist, applyWhitelist,
-  checkWhitelistSpecificity, checkSubtreeDeclarations, describeEntry,
+  checkWhitelistSpecificity, checkSubtreeDeclarations, checkAddedDeclarations, describeEntry,
   partitionByScope, applyRenameMap, staleRenames, fingerprintsIdentical,
 } from './lib/dom-fingerprint.mjs';
 
@@ -300,6 +300,11 @@ async function main() {
   // comparison uses. A node carrying both a renamed class and a declared
   // deletion therefore hashes consistently in both places.
   runFailures.push(...checkSubtreeDeclarations(nodeEntries, baseline.prints));
+  // The add-subtree mirror, against the CANDIDATE. An added node is absent from
+  // the baseline by definition, so checking it there would flag every correct
+  // entry; checking it nowhere would let a hand-written hash consume a run it
+  // never described. Same refusal, opposite build.
+  runFailures.push(...checkAddedDeclarations(nodeEntries, candidate.prints));
 
   // The stated boundary, enforced rather than assumed. This certificate covers
   // delivered markup; if the two builds ship different client JS then script-
