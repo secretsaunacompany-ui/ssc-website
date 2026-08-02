@@ -58,12 +58,19 @@
             <span class="eyebrow--wide reveal">Standard Builds</span>
 
             <div class="model-index">
+                <!-- The column labels carry classes rather than nothing, and the
+                     reason is an instrument one found by measuring: a whitelist
+                     entry identifies a node by a `contains` substring of its
+                     ATTRIBUTES, so an attribute-less <span> can never be named
+                     by one. Five bare spans would be undeclarable by
+                     construction -- the same gap delete-subtree exists to close
+                     on the removal side. -->
                 <div class="model-index__head" aria-hidden="true">
-                    <span>Model</span>
-                    <span>Size</span>
-                    <span>Capacity</span>
-                    <span>Price</span>
-                    <span></span>
+                    <span class="model-index__label model-index__label--model">Model</span>
+                    <span class="model-index__label model-index__label--size">Size</span>
+                    <span class="model-index__label model-index__label--capacity">Capacity</span>
+                    <span class="model-index__label model-index__label--price">Price</span>
+                    <span class="model-index__label model-index__label--affordance"></span>
                 </div>
 {%- for key in models.order %}{% set m = models.models[key] %}
                 <div class="model-row reveal" role="button" tabindex="0" data-action="open-modal" data-model="{{ m.id }}" aria-label="{{ m.designation }} — configure and request a quote">

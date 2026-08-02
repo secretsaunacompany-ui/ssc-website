@@ -1069,7 +1069,7 @@ nav .container {
     color: var(--ink-quiet);
 }
 
-.model-index__head > :nth-child(4) {
+.model-index__label--price {
     text-align: right;
 }
 
