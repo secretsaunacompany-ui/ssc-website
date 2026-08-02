@@ -97,8 +97,20 @@
              straight into the compare table), a rule-2 violation. -->
         <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768256591/IMG_3663_pp2juf.jpg" alt="Secret Sauna Company mobile sauna among the trees in British Columbia" class="full-width-image reveal" style="object-position: center 30%;" width="1920" height="1280">
 
-        <!-- 4. Compare table. #compareTable and js/compare.js untouched. -->
-        <section class="container section--tight">
+        <!-- 4. Compare table. #compareTable and js/compare.js untouched.
+             ITS TIER CLASS IS DEFERRED TO B5, and the reason is the same boundary
+             this batch already draws for the two plates and the Our Work mosaic:
+             B4 tiers the sections it AUTHORS, B5 tiers the sections that survive
+             (Jen §3.2 — her §2.1 table is "the assignment of record" for B5).
+             The measurement made the boundary load-bearing rather than tidy.
+             Re-tiering a surviving section changes only its class attribute, so
+             the diff is a removed/added pair on one <section> whose children all
+             match — and neither half can be named: `class="container"` is a
+             substring of four sibling sections in the baseline, so any entry for
+             it is held in check by its count alone, which is exactly the lazy
+             declaration the specificity check exists to reject. Adding the class
+             in B5, where the whole page is re-tiered at once, is declarable. -->
+        <section class="container">
             <h2 class="text-center reveal">Compare Models</h2>
             <p class="text-center reveal measure-wide">All models include three-tier Western Red Cedar benches, full insulation, panoramic windows, and metal exterior cladding.</p>
             <div id="compareTable" class="reveal"></div>
