@@ -2745,6 +2745,49 @@ footer::before {
     background: var(--elevated);
 }
 
+/* The canonical G spends the gutter ONCE (Jen RULING 3).
+ *
+ * The Threshold's shape is a full-width ground with contained content inside it:
+ *
+ *   <section class="surface--elevated">   <- ground, edge to edge
+ *     <div class="container">             <- content, capped and guttered
+ *
+ * Both elements are gutter-bearing by default -- the bare `section` rule sets
+ * `padding: var(--section-pad) var(--gutter)` and `.container` sets
+ * `padding-inline: var(--gutter)` -- so nesting them spent the gutter TWICE and
+ * the content column came out one gutter narrower than every other column on the
+ * site. Measured at 390 before this rule: 294px against the 342px a contained
+ * column is supposed to be. It was not introduced by the B5 fix round; /saunas/
+ * and /about/ had carried it for as long as they have had this shape, and the
+ * conversion of home and service-area to the canonical structure simply spread
+ * the existing defect to six more routes and made it loud enough to measure.
+ *
+ * The ground keeps its padding-BLOCK, because the vertical rhythm belongs to the
+ * section and the tier system sets it. Only the inline axis is surrendered, to
+ * the one element that is actually responsible for horizontal containment.
+ *
+ * SCOPED, and deliberately so. Jen's operative rule was `section.surface--elevated
+ * { padding-inline: 0 }`, and her stated intent was "scoped to the canonical
+ * structure so nothing else moves" -- but written plainly it reaches EVERY
+ * elevated section, including any that has no inner container to put the gutter
+ * back. Such a section would render its text flush to the viewport edge: exactly
+ * the C-1 defect this same round was convened to fix. A census of all seven
+ * elevated sections in src/ (eleven rendered, across /, /about/ x2, /saunas/,
+ * /warranty/, and the five service-area routes) found a direct-child container on
+ * every one and direct text on none, so the plain rule would in fact be safe
+ * TODAY. It is scoped anyway, because "safe today" is precisely the property the
+ * unscoped `.section--bleed` gutter pin had right up until the mosaic put text in
+ * a bleed section (Razor N-4, same round). A rule that happens to be correct is
+ * not the same as a rule that stays correct, and this one now fails SAFE: an
+ * elevated section without a container keeps its gutter rather than losing it.
+ *
+ * `:has()` sets no new browser floor -- `grid-template-columns: subgrid` above
+ * already requires the same Baseline-2023 cohort. */
+section.surface--elevated:has(> .container),
+section.surface--elevated:has(> .wide-container) {
+    padding-inline: 0;
+}
+
 .section--fade-edges {
     position: relative;
 }

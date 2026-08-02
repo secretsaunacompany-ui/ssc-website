@@ -188,6 +188,13 @@ function probeGutter() {
       // question the pin is really asking: would anything VISIBLE touch the
       // viewport edge if this section took no gutter?
       hasText: el.innerText.trim().length > 0,
+      // The canonical G surrenders the inline axis to a direct-child container
+      // (Jen RULING 3). Recorded so the pin below can require the container to
+      // EXIST and to carry the gutter, rather than simply excusing a zero.
+      innerGutter: (() => {
+        const c = el.querySelector(':scope > .container, :scope > .wide-container');
+        return c ? parseFloat(getComputedStyle(c).paddingLeft) : null;
+      })(),
     });
   }
   return { declared, gutterPx, rows };
@@ -409,6 +416,25 @@ const GUTTER_DEVIATIONS = [
   // With the mosaic reverted the video plate is the ONLY consumer left, and it
   // has no rendered text, so this scoping costs nothing today and refuses to
   // excuse the next bleed section that carries copy.
+  //
+  // The canonical G ground (Jen RULING 3). The Threshold is a full-width ground
+  // wrapping a contained column, and both elements are gutter-bearing by
+  // default, so the pair spent the gutter twice and the column came out one
+  // gutter narrow (measured 294px against 342px at 390). The ground now drops
+  // padding-inline and the inner container is the only inline padding, which is
+  // why these sections legitimately measure 0 here.
+  //
+  // Matched on `innerGutter !== null` and not on the class alone, mirroring the
+  // CSS's own `:has(> .container)` scope. An elevated section WITHOUT an inner
+  // container is not excused by this pin: it keeps no gutter from anywhere, its
+  // text would sit on the viewport edge, and R2 should say so. The companion
+  // assertion R2e below goes further and requires the inner container to be
+  // carrying the full gutter, so this pin can never be satisfied by a section
+  // that lost the gutter rather than relocating it.
+  { match: (r) => r.innerGutter !== null, forClasses: ['surface--elevated'], px: () => 0,
+    reason: 'the canonical G ground drops padding-inline so the gutter is spent once, '
+      + 'by the inner .container (Jen RULING 3). Relocated, not deleted -- R2e asserts '
+      + 'the inner container actually carries it.' },
   { match: (r) => !r.hasText, forClasses: ['section--bleed'], px: () => 0,
     // Cited by SELECTOR, not by line number (Razor N-2). The predecessor pin
     // said "styles.css:2174" and this one first said ":640" for a sentence that
@@ -734,6 +760,44 @@ function assertAll(results) {
       `nav (2.5%) and .page-hero (5%) are unmigrated. `
       + `They are pinned by their RULE, not waived: this count is the thing that has to `
       + `shrink, and ${pinned} element(s) matched a pinned rule this run.`);
+
+    // ---- R2e: the canonical G RELOCATED the gutter, it did not lose it -------
+    //
+    // The pin above excuses an elevated ground from carrying the gutter. On its
+    // own that is a hole exactly the shape of C-1: a section measuring zero
+    // inline padding passes either because its container took the gutter over
+    // (correct) or because the gutter simply vanished (text on the viewport
+    // edge). Those are indistinguishable from the ground's own padding, and the
+    // whole reason this round exists is that the second case shipped once.
+    //
+    // So the excuse is paid for here: every elevated ground must have a
+    // direct-child container, and that container must carry the FULL gutter.
+    const grounds = [];
+    for (const [key, r] of pages(results)) {
+      for (const row of r.gutter.rows) {
+        if (!row.classes.split(/\s+/).includes('surface--elevated')) continue;
+        grounds.push({ key, gutterPx: r.gutter.gutterPx, ...row });
+      }
+    }
+    check(`R2e every elevated ground was measured (${grounds.length} found)`,
+      grounds.length > 0,
+      'no section.surface--elevated on any probed page. Jen §3.14 enumerates seven '
+      + 'sitewide and four of the five probed routes carry one, so zero means the '
+      + 'selector is wrong -- and a vacuous pass here would re-open C-1.');
+    const lost = grounds.filter((g) => g.innerGutter === null);
+    check('R2e every elevated ground has the inner container it hands the gutter to',
+      lost.length === 0,
+      `an elevated ground with no direct-child .container has nowhere to put the gutter, `
+      + `so its text renders flush to the viewport edge -- the C-1 defect. `
+      + `Missing: ${JSON.stringify(lost.map((g) => ({ key: g.key, classes: g.classes })))}`);
+    const short = grounds.filter((g) => g.innerGutter !== null
+      && !near(g.innerGutter, g.gutterPx));
+    check('R2e the inner container carries the FULL gutter (relocated, not shrunk)',
+      short.length === 0,
+      `the ground gave up padding-inline and the container did not pick up the whole `
+      + `gutter, so the column is narrower than every other column on the site -- which `
+      + `is the 294px-against-342px defect RULING 3 removed, coming back. `
+      + `Short: ${JSON.stringify(short.slice(0, 4).map((g) => ({ key: g.key, inner: g.innerGutter, want: g.gutterPx })))}`);
   }
 
   // ---- R2b: the section tier reaches the block axis (B2 / F-1) ----
@@ -967,6 +1031,24 @@ const MUTATIONS = [
     patched: 'padding:0 var(--gutter)',
     probe: (r) => [1440, 390].map((w) => r[`/saunas/@${w}`].tier.rows
       .map((x) => `${x.top}/${x.bottom}`).join(',')).join(' | '),
+  },
+  {
+    name: 'R-m10 the canonical G drops the gutter instead of relocating it',
+    proves: 'RULING 3 is asserted as a RELOCATION -- the pin that excuses the ground '
+      + 'cannot be satisfied by a page that simply lost the gutter (C-1)',
+    // The container inside the elevated ground stops carrying inline padding.
+    // The ground is already excused by its pin, so WITHOUT R2e this mutant is
+    // invisible to the whole suite while every threshold's text moves to the
+    // viewport edge -- precisely the defect Razor had to catch by eye. Aimed at
+    // the container rule under the ground rather than at --gutter itself, so it
+    // cannot be confused with R-m2 (which zeroes the token everywhere).
+    anchor: 'section.surface--elevated:has(>.container),'
+      + 'section.surface--elevated:has(>.wide-container){padding-inline:0}',
+    patched: 'section.surface--elevated:has(>.container)>.container,'
+      + 'section.surface--elevated:has(>.wide-container)>.wide-container{padding-inline:0}',
+    probe: (r) => [1440, 390].map((w) => r[`/about/@${w}`].gutter.rows
+      .filter((x) => x.classes.split(/\s+/).includes('surface--elevated'))
+      .map((x) => `${x.left}/${x.innerGutter}`).join(',')).join(' | '),
   },
   {
     name: 'R-m8 .section--tight stops distinguishing itself (tier collapses to standard)',
