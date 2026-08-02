@@ -286,6 +286,27 @@ function probeHeroClearance() {
   };
 }
 
+/**
+ * Resolve --nav-band directly, independent of anything that consumes it.
+ *
+ * A custom property computes to its token stream, so `getPropertyValue` hands
+ * back the literal text `calc(var(--logo-size) + 2 * var(--spacing-sm) + 1px)`.
+ * The only way to learn what it RESOLVES to is to make the browser resolve it,
+ * so a throwaway element is given `height: var(--nav-band)` and measured.
+ */
+function probeNavBandToken() {
+  const nav = document.querySelector('nav');
+  const el = document.createElement('div');
+  el.style.cssText = 'position:absolute;visibility:hidden;width:1px;height:var(--nav-band)';
+  document.body.appendChild(el);
+  const resolved = +el.getBoundingClientRect().height.toFixed(2);
+  el.remove();
+  return {
+    resolved,
+    navHeight: nav ? +nav.getBoundingClientRect().height.toFixed(2) : null,
+  };
+}
+
 function probeMeasure() {
   const decl = (n) => getComputedStyle(document.documentElement)
     .getPropertyValue(n).trim();
@@ -360,6 +381,24 @@ const WIDTHS = [1440, 390];
    gain). 360 is where the h1 wraps to five lines with the real font; 430 is the
    first width that was already clear before the fix. */
 const HERO_WIDTHS = [360, 390, 414, 430];
+
+/* --nav-band is checked at a PHONE and a DESKTOP width, and the second one is
+   the point. The hero only consumes the token at <=768px, so every assertion
+   that reads it through the hero is blind to whether the token is still correct
+   above the breakpoint -- a pasted `91px` literal would be right at every width
+   the hero sweep visits and wrong everywhere else. Resolving the token directly
+   at 1440 is what makes that visible (Razor W2). */
+const TOKEN_WIDTHS = [390, 1440];
+
+/* What "clear" means, as a number rather than as `> 0`. The wrap is sensitive
+   to width and to whether the webfont resolved, so a headline that clears by a
+   pixel is one re-wrap away from not clearing at all; and a first line whose
+   glyphs begin 2px under a blurred, 72%-opaque band is not something anyone
+   would call clear. 8px is the smallest gap that still reads as deliberate
+   space rather than a near miss. Measured margin today is +30 to +50 at every
+   target width in both font states, so this floor is a tripwire, not a
+   constraint the design is pressed against. */
+const MIN_CLEARANCE_PX = 8;
 // Pages chosen for what they CARRY, not for tidiness: /saunas/ and /process/
 // hold the grids that lost `--mt-*`, / and /about/ hold the widest spread of
 // `.measure-wide` elements, /booking-ops.html is the file outside src/.
@@ -378,6 +417,7 @@ async function measureAll(browser, base) {
   const page = await context.newPage();
   const results = {};
   const hero = {};
+  const token = {};
   try {
     for (const width of WIDTHS) {
       await page.setViewportSize({ width, height: 900 });
@@ -401,33 +441,74 @@ async function measureAll(browser, base) {
       await page.waitForTimeout(3400);
       hero[width] = await page.evaluate(probeHeroClearance);
     }
+    for (const width of TOKEN_WIDTHS) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(`${base}/`, { waitUntil: 'networkidle', timeout: 60000 });
+      token[width] = await page.evaluate(probeNavBandToken);
+    }
   } finally { await page.close(); await context.close(); }
-  return { ...results, __hero: hero, __stats: stats };
+
+  // THE FONTS-BLOCKED PASS (Razor W1). The state that produced the -29px the
+  // behavioural eval reported has had no fixture at all: every measurement above
+  // is taken with the webfont resolved, and the h1 wraps to one MORE line
+  // without it, which lifts the centred block by half a line-height. That state
+  // is not hypothetical -- the metric-tuned 'Cormorant Garamond Fallback' is
+  // `src: local('Georgia')`, and Georgia is absent on Android and most Linux, so
+  // those visitors are in it permanently rather than for a swap window. It gets
+  // its own page with /fonts/ aborted, in its own context so the route rule
+  // cannot leak into any other measurement.
+  const noFontCtx = await browser.newContext();
+  await installRouting(noFontCtx, CACHE_DIR, stats);
+  const noFontPage = await noFontCtx.newPage();
+  await noFontPage.route('**/fonts/**', (r) => r.abort());
+  const heroNoFont = {};
+  try {
+    for (const width of HERO_WIDTHS) {
+      await noFontPage.setViewportSize({ width, height: 844 });
+      await noFontPage.goto(`${base}/`, { waitUntil: 'load', timeout: 60000 });
+      await noFontPage.waitForTimeout(3400);
+      heroNoFont[width] = await noFontPage.evaluate(probeHeroClearance);
+    }
+  } finally { await noFontPage.close(); await noFontCtx.close(); }
+
+  return { ...results, __hero: hero, __heroNoFont: heroNoFont, __token: token, __stats: stats };
 }
 
 /** Result rows only — `__stats` is run metadata, not a page. */
 const pages = (results) => Object.entries(results).filter(([k]) => !k.startsWith('__'));
 
-function assertHeroClearance(hero) {
+function assertHeroClearance(hero, heroNoFont, token) {
   console.log('\nN — the nav band, and the hero clearing it');
   const widths = Object.keys(hero).map(Number).sort((a, b) => a - b);
   check('N0 the hero sweep actually measured something',
     widths.length === HERO_WIDTHS.length && widths.every((w) => hero[w]),
     `a vacuous pass is not a pass. measured ${JSON.stringify(widths)}`);
 
+  // The token, resolved on its own at a phone AND a desktop width. Everything
+  // else reads --nav-band through the hero, which only consumes it at <=768px,
+  // so a literal pasted over the derivation could be right at every width the
+  // hero sweep visits and wrong above the breakpoint. This is the assertion
+  // that sees that (Razor W2).
+  for (const w of TOKEN_WIDTHS) {
+    const t = token[w];
+    check(`N1 @${w} --nav-band RESOLVES to the nav's measured height`,
+      t && near(t.resolved, t.navHeight, 0.6),
+      `the token is derived from the logo, the nav's block padding and its rule so that it `
+      + `tracks the nav at every breakpoint. Resolved ${t && t.resolved} vs nav `
+      + `${t && t.navHeight}. A pasted literal is right at one breakpoint and silently short `
+      + `at the other, which is exactly how a hardcoded band rots.`);
+  }
+
   for (const w of widths) {
     const m = hero[w];
     if (!m) continue;
 
-    // The derivation, checked against the browser rather than re-typed: the nav
-    // is its logo, its block padding, and its rule. If someone retunes any of
-    // the three, --nav-band follows automatically and this stays green; if
-    // someone pastes a literal over the token, it goes red.
+    // The derivation restated at the element level: the nav really is its logo,
+    // its block padding and its rule, so the token has something true to track.
     const derived = m.logoSize + m.navPadTop + m.navPadBottom + m.navBorderBottom;
-    check(`N1 @${w} the nav's measured height is its logo + block padding + rule`,
+    check(`N1b @${w} the nav's measured height is its logo + block padding + rule`,
       near(m.navHeight, derived, 0.6),
-      `--nav-band is derived from these and must equal what the nav actually `
-      + `measures: logo ${m.logoSize} + padding ${m.navPadTop}/${m.navPadBottom} + rule `
+      `logo ${m.logoSize} + padding ${m.navPadTop}/${m.navPadBottom} + rule `
       + `${m.navBorderBottom} = ${derived}, nav measured ${m.navHeight}`);
 
     // The reserve equals the thing it reserves. This is the assertion that
@@ -438,12 +519,26 @@ function assertHeroClearance(hero) {
       + `padding-top ${m.heroPadTop} vs nav ${m.navHeight}`);
 
     // The requirement itself, in the terms a reader experiences it: the first
-    // line's glyphs sit below the nav, not behind it.
-    check(`N3 @${w} the h1's first line clears the nav (${m.h1Lines} lines)`,
-      m.glyphClearance !== null && m.glyphClearance > 0,
+    // line's glyphs sit below the nav, not behind it, by a margin that survives
+    // a re-wrap rather than by a pixel.
+    check(`N3 @${w} the h1's first line clears the nav (${m.h1Lines} lines, fonts loaded)`,
+      m.glyphClearance !== null && m.glyphClearance >= MIN_CLEARANCE_PX,
       `first-line glyph top ${m.firstLineTop} vs nav bottom ${m.navBottom} = `
-      + `${m.glyphClearance}px. Negative means the headline is painted under the fixed `
-      + `nav, which is what this whole reserve exists to prevent.`);
+      + `${m.glyphClearance}px, floor ${MIN_CLEARANCE_PX}px. Below zero the headline is `
+      + `painted under the fixed nav; below the floor it is one re-wrap from being there.`);
+
+    // THE STATE THAT PRODUCED THE -29px, which had no fixture until now (W1).
+    // Without the webfont the h1 takes one more line and the centred block
+    // lifts by half a line-height, so this is the case the reserve is really
+    // sized for -- and on Android and most Linux it is not a transient, because
+    // the metric-tuned fallback resolves through `local('Georgia')`.
+    const n = heroNoFont[w];
+    check(`N4 @${w} it clears with the WEBFONT UNRESOLVED too (${n && n.h1Lines} lines)`,
+      n && n.glyphClearance !== null && n.glyphClearance >= MIN_CLEARANCE_PX,
+      `fonts-blocked first-line glyph top ${n && n.firstLineTop} vs nav bottom `
+      + `${n && n.navBottom} = ${n && n.glyphClearance}px, floor ${MIN_CLEARANCE_PX}px. This is `
+      + `the state the behavioural eval measured at -29px, and it is permanent for any `
+      + `visitor whose device has no Georgia to back the fallback.`);
   }
 }
 
@@ -681,9 +776,16 @@ const MUTATIONS = [
     // desktop breakpoint and wrong at <=768, which is exactly how a hardcoded
     // band rots: correct where it was measured, silently short everywhere else.
     anchor: '--nav-band:calc(var(--logo-size) + 2 * var(--spacing-sm) + 1px)',
-    patched: '--nav-band:148px',
-    probe: (r) => Object.keys(r.__hero).sort()
-      .map((w) => `${w}:${r.__hero[w] && r.__hero[w].heroPadTop}`).join(','),
+    // 91px, NOT 148px, and that is the strengthening (Razor W2). 148 is wrong
+    // at every phone width, so the hero sweep alone would catch it and the
+    // mutation would prove almost nothing. 91 is CORRECT at every width the
+    // hero consumes the token at, and wrong only above the breakpoint -- the
+    // realistic shape of a pasted literal, and invisible to anything that reads
+    // the token through the hero. Probing the resolved token at both widths is
+    // what sees it.
+    patched: '--nav-band:91px',
+    probe: (r) => Object.keys(r.__token).sort()
+      .map((w) => `${w}:${r.__token[w] && r.__token[w].resolved}`).join(','),
   },
   {
     name: 'R-m1 heading margin token changed (2.5em -> 1em)',
@@ -769,7 +871,7 @@ async function main() {
   try {
     const results = await measureAll(browser, server.url);
     assertAll(results);
-    assertHeroClearance(results.__hero);
+    assertHeroClearance(results.__hero, results.__heroNoFont, results.__token);
     await runMutations(browser, results);
   } finally {
     await server.close();
