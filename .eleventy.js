@@ -211,17 +211,40 @@ module.exports = function(eleventyConfig) {
   // The URL the transform puts in `src`: the w_800 candidate. A preload's href
   // is what a browser without imagesrcset support fetches, so it must be this
   // exact string or that browser fetches a second file.
-  eleventyConfig.addFilter("cloudinaryDefaultSrc", function(url) {
+  // Both filters REFUSE a URL that already carries a width, loudly, rather than
+  // degrading.
+  //
+  // The shape they reject is the exact shape `src/index.njk` had before this
+  // batch (`.../q_auto,f_auto,w_1200/...`), so it is not hypothetical -- it is
+  // one careless edit away, and it is the shape every other preload page still
+  // uses. Failing soft was the real hazard: `cloudinarySrcset` returning ""
+  // emits `imagesrcset=""`, which no browser reports and which silently
+  // reinstates the double fetch this whole commit exists to remove, while
+  // `cloudinaryDefaultSrc` handing back the URL unchanged makes the page look
+  // correct. A build that throws is a build somebody fixes.
+  function bareCloudinaryPath(url, filterName) {
     var m = CLOUDINARY_BARE.exec(url || "");
-    if (!m) return url;
-    return cloudinaryBase + "q_auto,f_auto,w_800/" + m[1];
+    if (!m) {
+      throw new Error(
+        filterName + ": expected a Cloudinary URL with NO width transform "
+        + '(".../q_auto,f_auto/<path>"), got ' + JSON.stringify(url) + ". "
+        + "A page that sets `preload_responsive_sizes` must give `preload_image` "
+        + "the same widthless src the <img> carries, because the responsive "
+        + "preload's candidate list is generated from it. Hard-coding a width "
+        + "here is what made the homepage fetch its LCP photograph twice.");
+    }
+    return m[1];
+  }
+
+  eleventyConfig.addFilter("cloudinaryDefaultSrc", function(url) {
+    return cloudinaryBase + "q_auto,f_auto,w_800/"
+      + bareCloudinaryPath(url, "cloudinaryDefaultSrc");
   });
 
   eleventyConfig.addFilter("cloudinarySrcset", function(url) {
-    var m = CLOUDINARY_BARE.exec(url || "");
-    if (!m) return "";
+    var imagePath = bareCloudinaryPath(url, "cloudinarySrcset");
     return widths.map(function(w) {
-      return cloudinaryBase + "q_auto,f_auto,w_" + w + "/" + m[1] + " " + w + "w";
+      return cloudinaryBase + "q_auto,f_auto,w_" + w + "/" + imagePath + " " + w + "w";
     }).join(", ");
   });
 
