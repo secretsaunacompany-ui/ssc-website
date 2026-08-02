@@ -474,18 +474,33 @@ rules and flat grounds, one 135° gradient on one card header was the last survi
 different visual system, not a considered exception to this one — and §6.3's standing
 rule is that a token retires when its consumer count reaches zero.
 
-**Verification, by command rather than by claim:**
+**Verification, by command rather than by claim — and read the result exactly:**
 
-- `grep -rn "ember-dark" styles.css src/ js/ booking-ops.html` → **zero matches.**
-  Same grep shape as §6.6's rename gate, run against the same four surfaces.
-- The live rule is `styles.css:1389`, `background: var(--ember)`, carrying a comment
-  that explains the flattening at its call site.
+- `grep -rn "ember-dark" styles.css src/ js/ booking-ops.html` → **exactly ONE match,
+  and it is prose.** The single hit is the retirement comment left behind by B6's
+  dead-CSS sweep, which names the token in order to record that it is gone. There are
+  **zero declarations and zero `var()` call sites**, which is the property this section
+  closes on. An earlier draft of this paragraph claimed the grep returns zero; it does
+  not, and a reader running the command would have found the claim false on its face.
+  The honest gate is "no declaration, no consumer", not "no occurrence of the string".
+- **There is no longer a live `.comparison-header.ours` rule to point at.** B2 flattened
+  it to `background: var(--ember)`, and then B6's dead-CSS sweep deleted the entire
+  `.comparison-header*` family along with `.comparison-card`, `.comparison-badge*` and
+  `.comparison-list*`, because B4 had removed their markup. An earlier draft cited a live
+  rule at `styles.css:1389`; that rule no longer exists, and line 1389 now falls inside
+  unrelated `.btn-outline` commentary. The flattening story is preserved in the sweep's
+  own retirement comment, and the two checks above find the same place: **the single
+  `ember-dark` hit from the first command IS that comment.** `grep -n "last gradient
+  fill" styles.css` reaches it too, and is the better anchor if the token name is ever
+  scrubbed. Cited by content rather than by line because a line number is not a stable
+  address (B5's N-2 ruling) — the same reason the `:1389` citation above went bad.
 - §5's token ledger and §2's `--ember-dark` row are struck through with this section.
 
-**Downstream note:** B4 removed the three comparison cards from `/saunas/` outright, so
-`.comparison-header*` lost its markup consumers too. That is a separate question — dead
-rules, not a live gradient — and it is settled by B6's dead-CSS sweep, not here. §6.5
-closes on the token; the selector's fate is recorded in the ROADMAP harness entry.
+**Downstream note, now resolved rather than deferred:** B4 removed the three comparison
+cards from `/saunas/` outright, so `.comparison-header*` lost its markup consumers too.
+That was a separate question — dead rules, not a live gradient — and B6's dead-CSS sweep
+settled it by deleting them. §6.5 closes on the TOKEN; the selectors' fate is recorded in
+the ROADMAP harness entry and in the retirement comment itself.
 
 ### 6.6 Pure renames — alias-backed, mechanical, selector-independent
 

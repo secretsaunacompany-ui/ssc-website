@@ -127,9 +127,10 @@
             // class landing is NOT the moment the held transition-delays begin
             // counting. Delays start from the style recalculation the class
             // change provokes, which the browser does on the NEXT frame -- so
-            // this clock is anchored roughly 19ms (one frame at 60Hz) BEFORE
-            // the delays actually start spending. `ms` therefore over-credits
-            // the visitor by up to one frame.
+            // this clock is anchored about one frame BEFORE the delays actually
+            // start spending -- one 60Hz frame is 16.7ms, and the gap measured
+            // at ~19ms, i.e. about one frame, not exactly one. `ms` therefore
+            // over-credits the visitor by roughly a frame.
             //
             // That is recorded rather than corrected, and the distinction
             // matters for the size of the error, not for the reading. One

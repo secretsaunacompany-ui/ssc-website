@@ -581,8 +581,9 @@ p {
    bug (P0-3) the colour package existed to fix. WP-1b defines --ember and this
    is now wired to it directly, per 21 R10. */
 /* W5, Jen Stage 3: FIX, not amend. `--wide` is written as a modifier of
-   `.eyebrow` but its one consumer (src/_includes/pages/saunas.njk:58, "Standard
-   Builds") wears it ALONE, so it never inherited the base class's
+   `.eyebrow` but its one consumer -- the "Standard Builds" kicker on /saunas/,
+   which `grep -rn "eyebrow--wide" src/` finds as the single hit -- wears it
+   ALONE, so it never inherited the base class's
    `text-transform` and the site's one section kicker rendered sentence-case
    against a 0.2em caps tracking cut for capitals. Tracking that wide under
    lowercase is not a style, it is a spacing bug you can read. Declared here
