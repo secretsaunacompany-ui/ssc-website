@@ -697,6 +697,144 @@
       "reason": "B3. The configurator modal, deleted from every page that cannot open it. This is the change WP-0b-i wrote, measured and REVERTED rather than ship (see _notes.wp0bi_fix): the include was sitewide, so 16 built pages carried id=\"saunaModal\" and exactly one of them -- /saunas/, the only page with data-action=\"open-modal\" -- could use it, leaving 15 routes shipping a second inert <form> beside their real contact form. It could not be certified then because delete-subtree capped its slice search at MAX_SUBTREE_TOKENS = 64 and this subtree is 355 tokens, and raising a cap to make its own batch go green is the move this instrument exists to refuse. It ships here as its own batch carrying the cap raise (64 -> 400) as a separately reviewed subject, with Z18-Z20 and D-m16 certifying the raised cap independently of this entry. SPAN AND HASH RE-MEASURED against this comparison's own baseline build, not carried forward: WP-0b-i recorded span 352 / hash c3a120b59594b6b1 and BOTH have moved (355 / e379071f602ee944) because the modal markup changed between then and now. The old hash is dead and is not what this entry declares. Measured uniformly -- every route, both widths, identical hash and span -- so the modal is not width- or page-dependent. COUNT is 1 per page/width comparison, and it consumes on 32 of them. That is 16 routes x 2 widths, not the 15 pages the grep finds: /process/ and /gallery/ are meta-refresh redirect stubs (to /about/ and /saunas/), and the browser follows them, so /process/ fingerprints /about/'s DOM and reports /about/'s deletion under its own route name, while /gallery/ fingerprints /saunas/ and reports nothing because /saunas/ keeps the modal. That is a pre-existing property of enumerating redirect stubs as routes, NOT something this batch introduces, and it is recorded rather than smoothed: 32 = the 15 genuinely changed pages + /process/'s duplicate of /about/, at two widths. Post-change route count verified by grep on the real candidate build: exactly 1 page carries id=\"saunaModal\" and it is /saunas/. The JS RUN FAILURE on this run is expected and waived nowhere -- js/modal.js changes by design, and this instrument certifies delivered markup with scripts disabled. scripts/quote-funnel.test.mjs drives the real thing in a real browser through every funnel state, and now also asserts the presence invariant in both directions. Read the two together. RANGE EXTENDED (deploy-1 fix round): 5748de8..24768c6 -> 5748de8..b1576e1. The entry is scope-matched to ONE comparison, so when the fix round advanced the branch tip past B3's markup commit it went inert and all 32 comparisons reported the modal deletion as undeclared -- the scope mechanism behaving exactly as _notes.scope describes, not a fault. The candidate is re-pointed at the real tip rather than the run being aimed at a stale ref, because the run has to certify what is actually shipping. Nothing else about the entry moves: the deletion, its span 355 and its hash e379071f602ee944 are all measured against the SAME baseline (5748de8) and are unchanged. That the extension is honest is checkable from the run it replaces -- against b1576e1 the harness reported 32 comparisons of exactly 355 undeclared tokens each and nothing else, i.e. the modal subtree is still the ONLY markup delta in the range. The deploy-1 fix round is CSS, JS, tests and config only and declares no markup of its own.",
       "commit": "24768c6 relay batch B3: the configurator modal stops shipping to the fifteen pages that cannot open it",
       "range": "5748de8..b1576e1"
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "10-14 person commercial-grade Finnish sauna for resorts and gyms",
+      "count": 1,
+      "reason": "The sitewide OfferCatalog JSON-LD in head.njk, hand-maintained and carrying a capacity that had drifted from canonical: '10-14 person' against models.json's '10-12+ people'. It is now GENERATED from src/_data/models.json, which models-json-roundtrip gates against canonical field by field. Keyed on the wrong string itself, which appears exactly once per page and nowhere else on the site, so the entry names this drift and not the block around it. Consumed on all 17 pages that emit head.njk's LocalBusiness block, at both widths.",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "10-12+ person commercial-grade Finnish sauna for resorts and gyms",
+      "count": 1,
+      "reason": "Its replacement, interpolated from the gated `capacity` field. Same block, same position, one corrected fact.",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "10-14+ person commercial-grade Finnish sauna. 7' x 12'+ exterior",
+      "count": 1,
+      "reason": "The /saunas/ ItemList JSON-LD, the second of the four drifted capacity sites (and a THIRD spelling of it: '10-14+' here against the OfferCatalog's '10-14' and the card's '10-14'). Its size string had drifted too, reversed to 7' x 12'+ against canonical's \"7' x 12' or larger\". Now generated from the same gated data file.",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "10-12+ person commercial-grade Finnish sauna. 7' x 12' or larger exterior",
+      "count": 1,
+      "reason": "Its replacement. Every fact in all five descriptions -- capacity, size, price -- is now interpolated from a canonical-gated field, so prose cannot carry a stale number.",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "74e6d241d3afaefb",
+      "count": 1,
+      "reason": "The three-card comparison section (111 tokens): 'Why Traditional Finnish Saunas?' plus three .comparison-card blocks and their 21 tick/cross bullets. Doc 10 §3.2 demotes the argument to one asymmetric essay of two paragraphs and a link; Jen §2.2 makes the deletion of the checklists explicit ('the 21-bullet checklists die, no tick/cross lists survive'). Declared as ONE deletion because it is one section, and the hash is measured from the baseline rather than written.",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "91f16d3cfedf2a5d",
+      "count": 1,
+      "reason": "The elevated 'Rooted in Science' stat-wall (28 tokens): three stat-cards on a photo-overlay elevated ground. Jen §2.3 reduces it to a single 40% stat on GROUND -- elevation marks a voice register change and belongs to the Threshold on this page, not to a figure. The 66% and 24% claims are deleted from this page, not reworded: no new or altered claim ships (the plan's X3 constraint).",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "55f880f87ca37cfa",
+      "count": 1,
+      "reason": "The 'Standard Builds' section carrying .model-grid (84 tokens): five .model-card blocks with their images, and the centred 'Get Your Quote' button. Replaced by the ledger below. The card grid was where two of the four wrong SC capacities lived -- the visible '10-14 Person' and its image alt text.",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
+    },
+    {
+      "op": "removed",
+      "tag": "IMG",
+      "contains": "alt=\"Secret Sauna Company mobile sauna among the trees in British Columbia\"",
+      "count": 1,
+      "reason": "Plate #1 (IMG_3663) leaves its old seam between the compare table and the commercial section. It is a MOVE, declared as its two halves because that is what the token stream contains; the added half is the next entry.",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
+    },
+    {
+      "op": "added",
+      "tag": "IMG",
+      "contains": "alt=\"Secret Sauna Company mobile sauna among the trees in British Columbia\"",
+      "count": 1,
+      "reason": "Plate #1 arrives at its new seam, between the model index and the compare table. Jen §2.1 gives the reason in rhythm terms rather than taste: without it the page runs E->E, index straight into compare table, a rule-2 violation. Both plates survive; plate #2 did not move and produces no ops.",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "d179d454662a0274",
+      "count": 1,
+      "reason": "The 'Commercial & Custom' section (24 tokens): two .offering-card inquiry links and the commercial advisor container. Removed outright per Jen §2.1 -- its job is the SC row and the threshold now, and its full answer is /commercial/, which does not exist yet (WP-4). /contact/ remains one click away via the threshold's text link.",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "e358f9ac95415f0d",
+      "count": 1,
+      "reason": "THE MODEL INDEX (69 tokens): the page's new spine. A header row and five rule-separated .model-row elements, each ONE Playwright-actionable node carrying data-action=open-modal + data-model + role=button + tabindex=0 + an aria-label, because three suites click that compound selector and init.js synthesises Enter and Space off that role. Rendered from src/_data/models.json. This entry is why add-subtree exists: as 69 individual `added` declarations it was undeclarable inside the plan's ~40-entry tripwire, and five of its nodes -- the bare column labels -- could not be named at all until they were given classes (e009f49).",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "a740566165f2dcf6",
+      "count": 1,
+      "reason": "The comparison essay (14 tokens), archetype D at 40/60 with the text left. Two paragraphs and one link to /faq/ replacing three cards and 21 bullets. Every claim in the prose is a compression of copy that was already on this page -- nothing asserted here is new.",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "0cc395f8e8a8ba95",
+      "count": 1,
+      "reason": "The science thesis (8 tokens), archetype B on ground: one 40% numeral in --ink (the number is the thesis, not a call to action), the existing verified JAMA claim unaltered, and its source line. 34rem, left-aligned.",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "b525cda099d1bd5d",
+      "count": 1,
+      "reason": "The threshold (9 tokens), archetype G and the one elevated ground on the page. Left at the gutter, not centred. 'Get a Quote' anchors to #models rather than opening a preselected model, because inventing a default model would be a business decision wearing design clothes (Jen §2.4).",
+      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
+      "range": "ab83ed6..33b3644"
     }
   ],
   "_notes": {
