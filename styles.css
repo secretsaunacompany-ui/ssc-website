@@ -223,15 +223,38 @@
        One rhythm is a metronome: compression only reads as compression against a
        default, so density needs its own tier rather than a global tightening.
 
-       The preferred arm is min(vh, vw), not vh alone. A phone is short AND
-       narrow, but only the height was being read, so the clamp floor took over
-       below ~700px and the three tiers converged toward their floors -- the
-       compression stopped reading as compression at the width most visitors
-       use. min() lets the narrow viewport speak: the vw arm engages below about
-       700px and the ratios (~0.58 : 1 : 1.28) survive down to 390. Above that
-       width the vh arm still wins, so DESKTOP DOES NOT MOVE -- 72/126/162px at
-       1440 before and after, which keeps this batch's desktop rendering a clean
-       control for the F-1 fix alone.
+       B2 changed two things here, and they bite on different axes. Stated from
+       measurement (computed values, real browser, both scales side by side),
+       because the first draft of this comment argued from a convergence that
+       does not happen and Razor caught it:
+
+       1. THE PREFERRED ARM IS min(vh, vw), NOT vh ALONE. This bites on WIDTH.
+          The old tiers were not broken at 390 -- their RATIOS were fine
+          (390x844 resolved 118/67/152, ratio 0.57 : 1 : 1.29). The problem was
+          absolute: 118px of padding above and below every section is a desktop
+          quantity charged to a 390px screen, and it pushes the content that
+          justifies the space off the first screenful. The vw arm cuts it ~41%
+          (118 -> 70 at 390x844) while the ratios hold (0.58 : 1 : 1.28), so
+          the density suits the screen and compression still reads AS
+          compression. min() only ever takes away, never adds.
+
+       2. THE FLOORS DROPPED (6/3.5/8rem -> 3.5/2/5rem). This bites on HEIGHT,
+          at ANY width, and it is the part worth declaring out loud: a viewport
+          shorter than roughly 686px now gets LESS padding than before, because
+          the old floor used to catch it and the new one sits lower. Measured:
+          1440x640 goes 96 -> 89.6 per edge, 1440x500 goes 96 -> 70. A
+          1366x768 laptop with browser chrome lands near 620px of viewport and
+          sits inside that band. This is a deliberate consequence of letting
+          short viewports scale rather than clamp, not an oversight -- but it
+          is a real rendering change for a real class of screen.
+
+       SHORT-VIEWPORT BEHAVIOR: Jen ratifies or adjusts at Stage 3 (Wave B-1).
+       If she adjusts, only these three clamp floors move.
+
+       "Desktop does not move" is certified at 1440x900 specifically, where the
+       tiers resolve 72/126/162px before and after -- which is what keeps this
+       batch's desktop rendering a clean control for the F-1 fix alone. It also
+       holds at 1440x768. It does NOT hold below the floor crossover; see 2.
 
        vh, deliberately: NOT dvh (padding must not reflow when a mobile URL bar
        hides -- the whole page would jump mid-scroll) and not svh (wrong end of

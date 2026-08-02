@@ -497,8 +497,13 @@ function assertAll(results) {
     // called the vh-only clamp correct.
     for (const width of WIDTHS) {
       const at = measured.filter((m) => m.width === width);
+      // `want > 0` on EVERY element, not on a sampled one. If --section-pad
+      // resolved to 0 the equality above would be satisfied by a page with no
+      // rhythm at all -- the exact defect this group exists to catch, passing
+      // itself. One sampled element cannot carry that clause: it certifies the
+      // sample, and the other sixteen ride for free.
       check(`R2b the tier resolves and lands at ${width} (${at.length} sections)`,
-        at.length > 0 && at.every((m) => near(m.top, m.want)) && at[0].want > 0,
+        at.length > 0 && at.every((m) => near(m.top, m.want) && m.want > 0),
         `resolved --section-pad ${at[0] ? at[0].want : 'n/a'}px at ${width}`);
     }
 
