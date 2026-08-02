@@ -813,7 +813,17 @@ const MUTATIONS = [
     proves: 'a collapsed grid after the utility deletions is caught',
     anchor: 'margin-top:var(--spacing-xl)',
     patched: 'margin-top:0',
-    probe: (r) => r[`/saunas/@1440`].deleted.grids.map((g) => g.marginTop).join(','),
+    // RE-AIMED /saunas/ -> / in B4, and only because the suite said so. B4's
+    // recomposition deletes the stat-wall, which was the ONLY `.grid-3` on
+    // /saunas/, so the probe read an empty string on both sides and the battery
+    // reported, verbatim: "the mutant measured identically to the real build
+    // (both \"\"), so this property has no coverage: the defect would ship
+    // unnoticed". That is the battery working -- a probe pointed at markup that
+    // no longer exists is a silent hole, and it refused to be silent about it.
+    // Home carries two `.grid-3` and is already in PAGES, so the property keeps
+    // its coverage without a new page load. R1b's live assertion is unaffected;
+    // it sweeps every probed page and never named /saunas/.
+    probe: (r) => r[`/@1440`].deleted.grids.map((g) => g.marginTop).join(','),
   },
   {
     name: 'R-m5 .container reverts to the padding shorthand (F-1 restored)',
