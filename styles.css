@@ -2927,10 +2927,19 @@ footer::before {
    bottom: visibly asymmetric, and worse than either the before or the after.
    Deleting the RULE is CSS-only, which is why it lands in this batch; the four
    now-inert class attributes come out with the other markup in B5. */
+/* B5 removed those four class attributes. `grep section--pt-6 src/` is now empty. */
 
-.section--no-padding {
-    padding: 0;
-    margin: 4rem 0;
+/* `.section--no-padding { padding: 0; margin: 4rem 0 }` lived here, on one node:
+   the home video plate. It retired in B5 because it bundled two unrelated claims
+   under a name that only admitted to one. The padding half IS the bleed tier and
+   is now said as `.section--bleed`, which is the vocabulary every other plate on
+   the site already uses. The margin half is the plate's separation from the
+   sections either side -- a real 4rem that would have vanished silently with the
+   class, since `.section--bleed` zeroes padding and says nothing about margin.
+   It is restated below at the same value, as a token rather than the literal
+   `4rem` the old rule hardcoded (--spacing-2xl IS 4rem: no pixel moves). */
+.plate--video {
+    margin-block: var(--spacing-2xl);
 }
 
 /* --- Text Styles --- */
