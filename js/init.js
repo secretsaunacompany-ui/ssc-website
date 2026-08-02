@@ -223,6 +223,27 @@
     window.addEventListener('load', () => {
         // Re-run reveal after all resources load: late images move things into
         // view. init() is idempotent and reuses its observer.
+        //
+        // `reveal-ready` is asserted FIRST, and that ordering is the whole point
+        // of this line rather than tidiness. On the DOMContentLoaded path the
+        // class and the observer start together inside startReveal, two frames
+        // in. But `load` is a SEPARATE entry point, and nothing guarantees it
+        // fires after that double rAF: in a background or otherwise
+        // rAF-starved tab, animation frames are throttled or withheld entirely
+        // while resource loading finishes on its own schedule, so `load` can
+        // arrive first. Calling init() there would hand `.seen` to every
+        // above-fold element while transitions are still disabled -- the
+        // elements would be correct but they would arrive instantly, with the
+        // hero's held beat skipped and no animation at all. Benign in that
+        // nothing breaks, and invisible in testing because a foreground tab
+        // never reproduces it.
+        //
+        // Adding the class immediately before the call makes the two atomic
+        // from the DOM's point of view: no `.seen` can be granted on this path
+        // with transitions unarmed. On the normal path the class is already
+        // present two frames earlier and this is a no-op, so the choreography
+        // and its fixtures are untouched.
+        document.documentElement.classList.add('reveal-ready');
         if (SSC.reveal && SSC.reveal.init) {
             SSC.reveal.init();
         }
