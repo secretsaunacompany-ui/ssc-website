@@ -709,8 +709,8 @@
       "contains": "10-14 person commercial-grade Finnish sauna for resorts and gyms",
       "count": 1,
       "reason": "The sitewide OfferCatalog JSON-LD in head.njk, hand-maintained and carrying a capacity that had drifted from canonical: '10-14 person' against models.json's '10-12+ people'. It is now GENERATED from src/_data/models.json, which models-json-roundtrip gates against canonical field by field. Keyed on the wrong string itself, which appears exactly once per page and nowhere else on the site, so the entry names this drift and not the block around it. Consumed on all 17 pages that emit head.njk's LocalBusiness block, at both widths.",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     },
     {
       "op": "added",
@@ -719,8 +719,8 @@
       "contains": "10-12+ person commercial-grade Finnish sauna for resorts and gyms",
       "count": 1,
       "reason": "Its replacement, interpolated from the gated `capacity` field. Same block, same position, one corrected fact.",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     },
     {
       "op": "removed",
@@ -729,8 +729,8 @@
       "contains": "10-14+ person commercial-grade Finnish sauna. 7' x 12'+ exterior",
       "count": 1,
       "reason": "The /saunas/ ItemList JSON-LD, the second of the four drifted capacity sites (and a THIRD spelling of it: '10-14+' here against the OfferCatalog's '10-14' and the card's '10-14'). Its size string had drifted too, reversed to 7' x 12'+ against canonical's \"7' x 12' or larger\". Now generated from the same gated data file.",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     },
     {
       "op": "added",
@@ -739,8 +739,8 @@
       "contains": "10-12+ person commercial-grade Finnish sauna. 7' x 12' or larger exterior",
       "count": 1,
       "reason": "Its replacement. Every fact in all five descriptions -- capacity, size, price -- is now interpolated from a canonical-gated field, so prose cannot carry a stale number.",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     },
     {
       "op": "delete-subtree",
@@ -749,8 +749,8 @@
       "textHash": "74e6d241d3afaefb",
       "count": 1,
       "reason": "The three-card comparison section (111 tokens): 'Why Traditional Finnish Saunas?' plus three .comparison-card blocks and their 21 tick/cross bullets. Doc 10 §3.2 demotes the argument to one asymmetric essay of two paragraphs and a link; Jen §2.2 makes the deletion of the checklists explicit ('the 21-bullet checklists die, no tick/cross lists survive'). Declared as ONE deletion because it is one section, and the hash is measured from the baseline rather than written.",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     },
     {
       "op": "delete-subtree",
@@ -759,8 +759,8 @@
       "textHash": "91f16d3cfedf2a5d",
       "count": 1,
       "reason": "The elevated 'Rooted in Science' stat-wall (28 tokens): three stat-cards on a photo-overlay elevated ground. Jen §2.3 reduces it to a single 40% stat on GROUND -- elevation marks a voice register change and belongs to the Threshold on this page, not to a figure. The 66% and 24% claims are deleted from this page, not reworded: no new or altered claim ships (the plan's X3 constraint).",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     },
     {
       "op": "delete-subtree",
@@ -769,8 +769,8 @@
       "textHash": "55f880f87ca37cfa",
       "count": 1,
       "reason": "The 'Standard Builds' section carrying .model-grid (84 tokens): five .model-card blocks with their images, and the centred 'Get Your Quote' button. Replaced by the ledger below. The card grid was where two of the four wrong SC capacities lived -- the visible '10-14 Person' and its image alt text.",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     },
     {
       "op": "removed",
@@ -778,8 +778,8 @@
       "contains": "alt=\"Secret Sauna Company mobile sauna among the trees in British Columbia\"",
       "count": 1,
       "reason": "Plate #1 (IMG_3663) leaves its old seam between the compare table and the commercial section. It is a MOVE, declared as its two halves because that is what the token stream contains; the added half is the next entry.",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     },
     {
       "op": "added",
@@ -787,8 +787,8 @@
       "contains": "alt=\"Secret Sauna Company mobile sauna among the trees in British Columbia\"",
       "count": 1,
       "reason": "Plate #1 arrives at its new seam, between the model index and the compare table. Jen §2.1 gives the reason in rhythm terms rather than taste: without it the page runs E->E, index straight into compare table, a rule-2 violation. Both plates survive; plate #2 did not move and produces no ops.",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     },
     {
       "op": "delete-subtree",
@@ -797,18 +797,18 @@
       "textHash": "d179d454662a0274",
       "count": 1,
       "reason": "The 'Commercial & Custom' section (24 tokens): two .offering-card inquiry links and the commercial advisor container. Removed outright per Jen §2.1 -- its job is the SC row and the threshold now, and its full answer is /commercial/, which does not exist yet (WP-4). /contact/ remains one click away via the threshold's text link.",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     },
     {
       "op": "add-subtree",
       "tag": "SECTION",
       "path": "html/body/main/div/section",
-      "textHash": "e358f9ac95415f0d",
+      "textHash": "08ec8b5dd7d1ceb6",
       "count": 1,
-      "reason": "THE MODEL INDEX (69 tokens): the page's new spine. A header row and five rule-separated .model-row elements, each ONE Playwright-actionable node carrying data-action=open-modal + data-model + role=button + tabindex=0 + an aria-label, because three suites click that compound selector and init.js synthesises Enter and Space off that role. Rendered from src/_data/models.json. This entry is why add-subtree exists: as 69 individual `added` declarations it was undeclarable inside the plan's ~40-entry tripwire, and five of its nodes -- the bare column labels -- could not be named at all until they were given classes (e009f49).",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "reason": "THE MODEL INDEX (69 tokens): the page's new spine. A header row and five rule-separated .model-row elements, each ONE Playwright-actionable node carrying data-action=open-modal + data-model + role=button + tabindex=0 + an aria-label, because three suites click that compound selector and init.js synthesises Enter and Space off that role. Rendered from src/_data/models.json. This entry is why add-subtree exists: as 69 individual `added` declarations it was undeclarable inside the plan's ~40-entry tripwire, and five of its nodes -- the bare column labels -- could not be named at all until they were given classes (e009f49). HASH RE-MEASURED in the fix round: the row markup changed (Razor W2 deleted the shadowing aria-label and restored Jen's aria-hidden=false), so the subtree the entry describes is not the one it originally hashed. Re-measured, not adjusted until it matched -- and the old hash going stale is the mechanism working: descendant activation refused to carry the entry past markup it had not seen, and all 14 went inert with every change reporting undeclared. Fail-closed, loudly, exactly as designed.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     },
     {
       "op": "add-subtree",
@@ -817,8 +817,8 @@
       "textHash": "a740566165f2dcf6",
       "count": 1,
       "reason": "The comparison essay (14 tokens), archetype D at 40/60 with the text left. Two paragraphs and one link to /faq/ replacing three cards and 21 bullets. Every claim in the prose is a compression of copy that was already on this page -- nothing asserted here is new.",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     },
     {
       "op": "add-subtree",
@@ -827,8 +827,8 @@
       "textHash": "0cc395f8e8a8ba95",
       "count": 1,
       "reason": "The science thesis (8 tokens), archetype B on ground: one 40% numeral in --ink (the number is the thesis, not a call to action), the existing verified JAMA claim unaltered, and its source line. 34rem, left-aligned.",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     },
     {
       "op": "add-subtree",
@@ -837,8 +837,28 @@
       "textHash": "b525cda099d1bd5d",
       "count": 1,
       "reason": "The threshold (9 tokens), archetype G and the one elevated ground on the page. Left at the gutter, not centred. 'Get a Quote' anchors to #models rather than opening a preselected model, because inventing a default model would be a business decision wearing design clothes (Jen §2.4).",
-      "commit": "33b3644 relay batch 4: /saunas/ recomposed as a ledger (82c3981), label classes (e009f49), compare tier deferred (33b3644)",
-      "range": "ab83ed6..33b3644"
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "removed",
+      "tag": "P",
+      "kind": "text",
+      "contains": "14-person+ commercial units",
+      "count": 1,
+      "reason": "The homepage's offerings copy, the FIFTH capacity site and the one the original census could not see (Razor W4). It read '14-person+ commercial units' -- a third distinct wrong figure for the SC, against the card's 10-14 and the ItemList's 10-14+ -- while canonical says 10-12+. The census grepped for the string '10-14' and this copy never contained it. Keyed on the number phrase itself, which appears once on the site. Corrected to 12-person+; George's sentence shape is untouched, only the figure moved. FLAGGED TO LEE: if the SC really seats 14, canonical is the wrong side and this is his one-line override.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "added",
+      "tag": "P",
+      "kind": "text",
+      "contains": "12-person+ commercial units",
+      "count": 1,
+      "reason": "Its replacement, at the canonical figure.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
     }
   ],
   "_notes": {
