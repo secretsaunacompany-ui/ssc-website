@@ -20,8 +20,8 @@
                 "position": {{ loop.index }},
                 "item": {
                     "@type": "Product",
-                    "name": "{{ m.ldName | safe }}",
-                    "description": "{{ m.capacity | replace(" people", " person") | safe }} {{ m.ldSummary | safe }}. {{ m.size | safe }} {{ m.ldDetail | safe }}",
+                    "name": "{{ m.ldName | jsonld | safe }}",
+                    "description": "{{ m.capacity | replace(" people", " person") | jsonld | safe }} {{ m.ldSummary | jsonld | safe }}. {{ m.size | jsonld | safe }} {{ m.ldDetail | jsonld | safe }}",
                     "brand": {"@type": "Brand", "name": "Secret Sauna Company"},
                     "offers": {
                         "@type": "Offer",
@@ -65,7 +65,7 @@
                      by one. Five bare spans would be undeclarable by
                      construction -- the same gap delete-subtree exists to close
                      on the removal side. -->
-                <div class="model-index__head" aria-hidden="true">
+                <div class="model-index__head" aria-hidden="false">
                     <span class="model-index__label model-index__label--model">Model</span>
                     <span class="model-index__label model-index__label--size">Size</span>
                     <span class="model-index__label model-index__label--capacity">Capacity</span>
@@ -73,7 +73,15 @@
                     <span class="model-index__label model-index__label--affordance"></span>
                 </div>
 {%- for key in models.order %}{% set m = models.models[key] %}
-                <div class="model-row reveal" role="button" tabindex="0" data-action="open-modal" data-model="{{ m.id }}" aria-label="{{ m.designation }} — configure and request a quote">
+                <!-- NO aria-label, deliberately (Razor W2b). One read
+                     "S4 — configure and request a quote", which SHADOWS the row:
+                     an accessible name overrides the content it names, so a
+                     screen-reader user in focus mode met five buttons that
+                     differed only by designation and carried no price at all,
+                     on the page whose whole job is prices. Without it the name
+                     computes from the content and carries every fact the sighted
+                     row carries, from the same gated data file. -->
+                <div class="model-row reveal" role="button" tabindex="0" data-action="open-modal" data-model="{{ m.id }}">
                     <span class="model-row__designation">{{ m.designation }}</span>
                     <span class="model-row__size">{{ m.size | replace(" x ", " × ") | safe }}</span>
                     <span class="model-row__capacity">{{ m.capacity | replace("-", "–") | safe }}</span>
