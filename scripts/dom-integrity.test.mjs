@@ -26,6 +26,7 @@ import {
   extractFingerprint, diffTokens, describeToken, loadWhitelist, applyWhitelist,
   checkWhitelistSpecificity, applyRenameMap, staleRenames, partitionByScope,
   subtreeHash, findSubtreeHashes, checkSubtreeDeclarations, MAX_SUBTREE_TOKENS,
+  fingerprintsIdentical,
 } from './lib/dom-fingerprint.mjs';
 import * as realFingerprint from './lib/dom-fingerprint.mjs';
 
@@ -275,6 +276,33 @@ const MUTATIONS = [
     // goes green. 1 failure vs 0 — the difference is the whole scope mechanism.
     probe: (m, f) => m.applyWhitelist(f.twoSameShapeDeletions,
       m.partitionByScope(f.scopedPair, 'aaaaaaa', 'bbbbbbb').active).failures.length,
+  },
+  {
+    name: 'D-m17 descendant activation disabled (the proven clause ignored)',
+    proves: 'an entry whose tip moved on, with markup PROVEN identical, still certifies',
+    edits: { 'dom-fingerprint.mjs': [
+      '    return descendantOk.has(c);',
+      '    return false;'] },
+    // Shipped: the caller has proven descent and markup identity, so the entry
+    // activates and the run can certify the tip that is actually merging.
+    // Mutated: it goes inert, every comparison it covered reports undeclared,
+    // and we are back to hand re-pointing an entry that is stale on arrival.
+    probe: (m, f) => m.partitionByScope(f.descEntry, f.descBase, f.descTip,
+      { descendantOk: new Set([f.descEnd]) }).active.length,
+  },
+  {
+    name: 'D-m18 fingerprint identity stops comparing token CONTENT',
+    proves: 'identity reads the markup, not just how much of it there is',
+    edits: { 'dom-fingerprint.mjs': [
+      '      if (tokenKey(a[i]) !== tokenKey(b[i])) {',
+      '      if (false) {'] },
+    // The half that makes descent SAFE, and it is probed with a REWORDED page
+    // rather than an added node on purpose: a changed word leaves the token
+    // count untouched, so the cheap length check cannot see it and only real
+    // content comparison can. Mutated, a descendant whose copy changed reads as
+    // identical and the entry activates over markup it never described --
+    // which is the whole failure mode descent could have introduced.
+    probe: (m, f) => m.fingerprintsIdentical(f.printsA, f.printsReworded).identical,
   },
   {
     name: 'D-m16 MAX_SUBTREE_TOKENS collapsed back to a tiny cap',
@@ -650,6 +678,90 @@ async function main() {
       check('Y4 a candidate mismatch alone is enough to make an entry inert',
         partitionByScope(abbrev, full[0], `beef${full[1].slice(4)}`).active.length === 0,
         'both ends of the range must match, not just the baseline');
+
+      // ---- DESCENDANT ACTIVATION (Razor CRITICAL-1) ----
+      //
+      // The problem it solves: an entry names one comparison `B..C`, and the
+      // commit that re-points `..C` can only name its OWN PARENT, so the entry
+      // is stale the instant it lands. Re-pointing by hand forever, always one
+      // commit behind, is not a mechanism.
+      //
+      // The rule gains a second clause with TWO required halves, both supplied
+      // as proof by the caller: the candidate is a git descendant of C, AND the
+      // harness's own fingerprints of C and the candidate are identical. The
+      // git half is environmental and is injected here; the fingerprint half is
+      // a pure function and is tested below on real browser-built markup.
+      const DESC_END = 'c0ffee1';
+      const descEntry = [{ ...abbrev[0], range: `${full[0].slice(0, 7)}..${DESC_END}` }];
+      const laterTip = `dddddd${full[1].slice(6)}`;
+
+      check('Y5 a descendant with IDENTICAL markup activates the entry',
+        partitionByScope(descEntry, full[0], laterTip,
+          { descendantOk: new Set([DESC_END]) }).active.length === 1,
+        'this is the whole mechanism: the tip moved past the range end, the markup did not, '
+        + 'so the declaration still describes the comparison being run');
+
+      check('Y6 a descendant whose MARKUP CHANGED does not activate',
+        partitionByScope(descEntry, full[0], laterTip,
+          { descendantOk: new Set() }).active.length === 0,
+        'the caller proves identity or the entry stays inert. There is no "probably fine".');
+
+      check('Y7 with no proof offered at all, behaviour is exactly as before',
+        partitionByScope(descEntry, full[0], laterTip).active.length === 0,
+        'the default path must be the old, strict one — a caller that does not opt in '
+        + 'cannot be silently widened');
+
+      check('Y8 descent NEVER relaxes the BASELINE end',
+        partitionByScope(descEntry, `beef${full[0].slice(4)}`, laterTip,
+          { descendantOk: new Set([DESC_END]) }).active.length === 0,
+        'every measurement an entry carries — a subtree hash, a count — was taken against '
+        + 'ONE baseline. Reading it against another is describing a document it never saw.');
+
+      // The fingerprint half, on real markup rather than on a stub, because
+      // this is the half that makes the mechanism self-verifying.
+      const fpA = await fp(PAGE(), 'desc-a');
+      const fpAgain = await fp(PAGE(), 'desc-a2');
+      const fpMoved = await fp(PAGE({ extraCard: '<article class="card" data-index="9"></article>' }), 'desc-b');
+      const prints = (t) => new Map([['/@1440', t], ['/about/@390', t]]);
+
+      check('Y9 identical builds fingerprint identical',
+        fingerprintsIdentical(prints(fpA), prints(fpAgain)).identical === true,
+        `two builds of the same markup must compare identical, or the mechanism refuses `
+        + `everything. got ${JSON.stringify(
+          fingerprintsIdentical(prints(fpA), prints(fpAgain)).differences)}`);
+
+      const moved = fingerprintsIdentical(prints(fpA), prints(fpMoved));
+      check('Y10 one added node makes them NOT identical, and it says where',
+        moved.identical === false && moved.differences.length > 0
+        && /@/.test(moved.differences[0]),
+        `a markup change between the range end and the tip is exactly what must block `
+        + `activation, and the message must name the page. got `
+        + `${JSON.stringify(moved.differences)}`);
+
+      check('Y11 a page missing on one side is NOT identical',
+        fingerprintsIdentical(prints(fpA), new Map([['/@1440', fpA]])).identical === false,
+        'a page that exists on one side only is a difference, not an absence of evidence — '
+        + 'fail closed');
+
+      // (b) from the reviewer's list, end to end: the entry is inert AND the
+      // deletion it would have covered reports as undeclared.
+      {
+        const withModal = await fp(PAGE({ heroIntro: '<style>.x{color:red}</style>' }), 'desc-live');
+        const withoutModal = await fp(PAGE(), 'desc-gone');
+        const hash = findSubtreeHashes(withModal, 'html/body/main/section/style', 'STYLE')[0].hash;
+        const decl = loadWhitelist('t.json', { whitelist: [{
+          op: 'delete-subtree', tag: 'STYLE', path: 'html/body/main/section/style',
+          textHash: hash, count: 1, reason: 'fixture', commit: 'fixture',
+          range: `${full[0].slice(0, 7)}..${DESC_END}`,
+        }] });
+        const inert = partitionByScope(decl, full[0], laterTip, { descendantOk: new Set() });
+        const verdict = applyWhitelist(diffTokens(withModal, withoutModal).ops, inert.active);
+        check('Y12 an unactivated entry lets its own deletion fail as undeclared',
+          inert.active.length === 0 && verdict.failures.length > 0,
+          `inert must mean LOUD, not silent: the change the entry would have covered has to `
+          + `surface as undeclared. got ${inert.active.length} active, `
+          + `${verdict.failures.length} failures`);
+      }
     }
 
     process.stdout.write('\nZ — delete-subtree declarations\n');
@@ -917,6 +1029,16 @@ async function main() {
         capUnder: null,
         capNone: null,
         capEntry: null,
+        // Descendant-activation material (D-m17/D-m18). The shas are fixtures,
+        // not repo history: the git half is the CALLER's to prove, and what is
+        // under test here is what partitionByScope does with that proof.
+        descBase: 'aaaaaaa1111111111111111111111111111aaaa',
+        descEnd: 'c0ffee1',
+        descTip: 'dddddd11111111111111111111111111111dddd',
+        descEntry: null,
+        printsA: null,
+        printsMoved: null,
+        printsReworded: null,
         // class-removal material
         withUtility: await fp(PAGE().replace(/class="card"/g, 'class="card featured"'), 'm-wu'),
         withoutUtility: await fp(PAGE(), 'm-wou'),
@@ -959,6 +1081,20 @@ async function main() {
           textHash: hashes[1].hash, count: 1, reason: 'aimed at sibling B on purpose',
           commit: 'fixture', range: 'aaaaaaa..bbbbbbb',
         }] });
+      }
+      {
+        f.descEntry = loadWhitelist('t.json', { whitelist: [{
+          op: 'removed', tag: 'LINK', contains: 'rel="canonical"', count: 1,
+          reason: 'fixture', commit: 'fixture', range: `${f.descBase.slice(0, 7)}..${f.descEnd}`,
+        }] });
+        const a = await fp(PAGE(), 'm-desc-a');
+        const moved = await fp(PAGE({ extraCard: '<article class="card" data-index="9"></article>' }), 'm-desc-b');
+        // Same token COUNT, one changed word: the case only content comparison
+        // can see, and therefore the one that proves it happens.
+        const reworded = await fp(PAGE({ bodyCopy: 'Hand-built saunas for the Sea to Sky region.' }), 'm-desc-c');
+        f.printsA = new Map([['/@1440', a]]);
+        f.printsMoved = new Map([['/@1440', moved]]);
+        f.printsReworded = new Map([['/@1440', reworded]]);
       }
       {
         const CAP_PATH = 'html/body/main/section/div';

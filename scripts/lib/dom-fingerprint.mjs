@@ -661,15 +661,69 @@ export function applyWhitelist(ops, whitelist) {
  * gone; the tolerant body is the whole test. Fixture Y1 pins the abbreviated
  * case ACTIVE so this cannot regress into politeness again.
  */
-export function partitionByScope(whitelist, baselineSha, candidateSha) {
+export function partitionByScope(whitelist, baselineSha, candidateSha, opts = {}) {
+  const descendantOk = opts.descendantOk || new Set();
   const applies = (e) => {
     const [b, c] = e.range.split('..');
-    return (candidateSha.startsWith(c) || c.startsWith(candidateSha))
-      && (baselineSha.startsWith(b) || b.startsWith(baselineSha));
+    // The BASELINE end is always exact-prefix. It is not negotiable and gets no
+    // descendant tolerance: every measurement an entry carries -- a subtree
+    // hash, a count -- was taken against that specific baseline, so an entry
+    // read against a different one is describing a document it never saw.
+    const baseOk = baselineSha.startsWith(b) || b.startsWith(baselineSha);
+    if (!baseOk) return false;
+    if (candidateSha.startsWith(c) || c.startsWith(candidateSha)) return true;
+    // DESCENDANT ACTIVATION. Only the candidate end moves, and only when the
+    // caller has PROVEN two things about it (see resolveDescendantScope): the
+    // candidate is a git descendant of the range end, and the harness's own
+    // built-markup fingerprints of the two are identical on every page and
+    // width. Absent that proof this is exactly the old behaviour.
+    return descendantOk.has(c);
   };
   const active = whitelist.filter(applies);
   const inert = whitelist.filter((e) => !applies(e));
   return { active, inert };
+}
+
+/**
+ * Are two builds' fingerprints the same markup, page for page and width for
+ * width?
+ *
+ * This is the self-verifying half of descendant activation. An entry says "this
+ * deletion happens between baseline B and candidate C". If the branch tip has
+ * moved past C to some descendant D, that claim still holds for D if and only if
+ * D's delivered markup is identical to C's -- and this instrument already knows
+ * how to answer that question, because comparing delivered markup is the only
+ * thing it does. So the check is made with the harness's own primitive rather
+ * than with a rule about which files are "allowed" to change between C and D.
+ * A commit that touches only a config file passes; a commit that quietly moves
+ * a <div> does not, and the entry goes inert, and the change it no longer covers
+ * reports as undeclared. Fail-closed: any doubt -- a missing page, a differing
+ * token -- is a NO.
+ *
+ * @returns {{identical: boolean, differences: string[]}}
+ */
+export function fingerprintsIdentical(aPrints, bPrints) {
+  const differences = [];
+  const aKeys = [...aPrints.keys()].sort();
+  const bKeys = [...bPrints.keys()].sort();
+  for (const k of aKeys) if (!bPrints.has(k)) differences.push(`${k}: missing from the descendant`);
+  for (const k of bKeys) if (!aPrints.has(k)) differences.push(`${k}: present only in the descendant`);
+  for (const k of aKeys) {
+    if (!bPrints.has(k)) continue;
+    const a = aPrints.get(k);
+    const b = bPrints.get(k);
+    if (a.length !== b.length) {
+      differences.push(`${k}: ${a.length} tokens vs ${b.length}`);
+      continue;
+    }
+    for (let i = 0; i < a.length; i++) {
+      if (tokenKey(a[i]) !== tokenKey(b[i])) {
+        differences.push(`${k}: token ${i} differs (${describeToken(a[i])})`);
+        break;
+      }
+    }
+  }
+  return { identical: differences.length === 0, differences };
 }
 
 /**

@@ -22,6 +22,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { buildRef, enumeratePages, resolveRef } from './lib/build-ref.mjs';
@@ -30,7 +31,7 @@ import { installRouting } from './lib/capture.mjs';
 import {
   extractFingerprint, diffTokens, describeToken, loadWhitelist, applyWhitelist,
   checkWhitelistSpecificity, checkSubtreeDeclarations, describeEntry,
-  partitionByScope, applyRenameMap, staleRenames,
+  partitionByScope, applyRenameMap, staleRenames, fingerprintsIdentical,
 } from './lib/dom-fingerprint.mjs';
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
@@ -81,6 +82,66 @@ function loadConfig(file, widthsOverride) {
     if (!Number.isInteger(w) || w <= 0) throw new Error(`${file}: bad width ${JSON.stringify(w)}.`);
   }
   return { widths, whitelist: loadWhitelist(file, raw) };
+}
+
+/**
+ * Which range-ends may be activated by descent, PROVEN, not assumed.
+ *
+ * For each distinct range-end that the exact rule leaves inert (and whose
+ * baseline end does match this run), ask two questions in the cheap-first order:
+ *
+ *   1. is the candidate a git descendant of that range-end?  `merge-base
+ *      --is-ancestor` -- and an UNKNOWN ref, a shallow clone, or any git error
+ *      answers NO, because this whole mechanism only ever widens what an entry
+ *      may consume and so every uncertain path has to close it.
+ *   2. is the delivered markup identical?  Build the range-end and fingerprint
+ *      it with the same code path the run already uses, then compare page for
+ *      page and width for width.
+ *
+ * Only a range-end that passes BOTH is returned. The build in (2) is the
+ * expensive step and it is why (1) is asked first.
+ */
+async function resolveDescendantScope(config, baseSha, candSha, candPrints) {
+  const ok = new Set();
+  const needed = new Set();
+  for (const e of config.whitelist) {
+    const [b, c] = String(e.range || '').split('..');
+    if (!b || !c) continue;
+    if (!(baseSha.startsWith(b) || b.startsWith(baseSha))) continue;     // wrong baseline
+    if (candSha.startsWith(c) || c.startsWith(candSha)) continue;        // already exact
+    needed.add(c);
+  }
+  if (needed.size === 0) return ok;
+
+  for (const rangeEnd of needed) {
+    let isDescendant = false;
+    try {
+      execFileSync('git', ['merge-base', '--is-ancestor', rangeEnd, candSha.replace(/\+dirty$/, '')],
+        { cwd: REPO_ROOT, stdio: 'pipe' });
+      isDescendant = true;
+    } catch {
+      isDescendant = false;   // non-zero exit = not an ancestor, or the ref is unknown
+    }
+    if (!isDescendant) {
+      log(`  scope: ${rangeEnd} is not an ancestor of the candidate — entries stay inert`);
+      continue;
+    }
+    const probe = await fingerprintBuild(`scope-${rangeEnd.slice(0, 12)}`, rangeEnd, config);
+    if (probe.failures.length > 0) {
+      log(`  scope: ${rangeEnd} could not be fingerprinted cleanly — entries stay inert`);
+      continue;
+    }
+    const { identical, differences } = fingerprintsIdentical(probe.prints, candPrints);
+    if (identical) {
+      ok.add(rangeEnd);
+      log(`  scope: ${rangeEnd} activated by descent — candidate is a descendant and the `
+        + `delivered markup is identical on all ${probe.prints.size} page/width fingerprints`);
+    } else {
+      log(`  scope: ${rangeEnd} NOT activated — markup differs from the candidate in `
+        + `${differences.length} place(s), first: ${differences[0]}`);
+    }
+  }
+  return ok;
 }
 
 /** Load every route at every width and return fingerprints keyed `route@width`. */
@@ -186,7 +247,31 @@ async function main() {
   // load-time check in the only sense that matters: before a single verdict is
   // issued on the strength of that entry.
   // Scope first: only entries written for THIS comparison may consume anything.
-  const scoped = partitionByScope(config.whitelist, baseline.built.sha, candidate.built.sha);
+  //
+  // DESCENDANT ACTIVATION (reviewer-ordered, Razor CRITICAL-1). An entry names
+  // one comparison, `B..C`. That was unworkable for an entry whose own
+  // re-pointing commit changes the tip: the commit that writes `..C` can only
+  // name its own parent, so the entry is stale the instant it lands, and the
+  // only remedy was to re-point it again by hand, forever, one commit behind.
+  //
+  // The rule now has a second clause, and it is proven rather than assumed: an
+  // entry is also active when the candidate is a git DESCENDANT of C and the
+  // harness's OWN fingerprints of C and the candidate are identical on every
+  // page and width. Both halves are required. The git half establishes that the
+  // candidate contains C's history; the fingerprint half establishes that
+  // nothing about the delivered markup moved in between -- checked with the
+  // instrument's own primitive rather than by a rule about which files may
+  // change, so a commit that touches a config passes and a commit that quietly
+  // moves a node does not. When it does not, the entry stays inert, the change
+  // it no longer covers reports as undeclared, and the run fails loudly. Every
+  // failure path here resolves to "inert", which is the fail-closed direction.
+  //
+  // The extra build is paid for only when an entry would otherwise be inert,
+  // and memoised per range-end, so the common case costs nothing.
+  const descendantOk = await resolveDescendantScope(
+    config, baseline.built.sha, candidate.built.sha, candidate.prints);
+  const scoped = partitionByScope(
+    config.whitelist, baseline.built.sha, candidate.built.sha, { descendantOk });
   const renames = scoped.active.filter((e) => e.op === 'rename');
   const nodeEntries = scoped.active.filter((e) => e.op !== 'rename');
 
