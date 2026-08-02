@@ -145,7 +145,6 @@
        --ember (34.5deg) so it is not a darker ember; and it never carries the
        message alone -- an invalid field gets a border AND text. */
     --error: #c9695e;
-    --ember-dark:  #a08060;   /* one consumer: .comparison-header.ours */
 
     /* Ember alphas. All five now share ONE base, rgb(196,165,123). Three of them
        were silently built on rgb(184,156,104) -- a different accent (21 R9). */
@@ -222,10 +221,24 @@
 
     /* ===== Section rhythm -- three tiers, not one metronome (Jen 10 §2.0; 21 R3)
        One rhythm is a metronome: compression only reads as compression against a
-       default, so density needs its own tier rather than a global tightening. */
-    --section-pad:       clamp(6rem, 14vh, 10rem);
-    --section-pad-tight: clamp(3.5rem, 8vh, 5rem);
-    --section-pad-open:  clamp(8rem, 18vh, 13rem);
+       default, so density needs its own tier rather than a global tightening.
+
+       The preferred arm is min(vh, vw), not vh alone. A phone is short AND
+       narrow, but only the height was being read, so the clamp floor took over
+       below ~700px and the three tiers converged toward their floors -- the
+       compression stopped reading as compression at the width most visitors
+       use. min() lets the narrow viewport speak: the vw arm engages below about
+       700px and the ratios (~0.58 : 1 : 1.28) survive down to 390. Above that
+       width the vh arm still wins, so DESKTOP DOES NOT MOVE -- 72/126/162px at
+       1440 before and after, which keeps this batch's desktop rendering a clean
+       control for the F-1 fix alone.
+
+       vh, deliberately: NOT dvh (padding must not reflow when a mobile URL bar
+       hides -- the whole page would jump mid-scroll) and not svh (wrong end of
+       the same tradeoff, and no more stable here). */
+    --section-pad:       clamp(3.5rem, min(14vh, 18vw), 10rem);
+    --section-pad-tight: clamp(2rem, min(8vh, 10.5vw), 5rem);
+    --section-pad-open:  clamp(5rem, min(18vh, 23vw), 13rem);
 
     /* ===== Layout -- container tiers (21 R1/R2/R8) =====
        ONE contained tier. Jen's 72rem and the live 1200px would have coexisted
@@ -518,16 +531,24 @@ p {
    silently produced a different gutter on a section, on the body, and inside a
    nav -- three gutters that looked like one rule. --gutter is one value, viewport
    -relative, and it is the same everywhere it appears (21 R1). */
+/* padding-INLINE, not the `padding` shorthand. The shorthand also wrote the
+   BLOCK axis to 0, and at (0,1,0) it beat `section`'s tier rule (0,0,1) at every
+   width -- so 44 of the 68 sections in the source carried a container class and
+   therefore no vertical rhythm at all, desktop included (F-1, doc 21 §6.2a
+   amendment 2026-08-01). Naming only the axis this rule has an opinion about
+   lets the tier system reach them for the first time. Nested non-section
+   `.container` divs are unaffected: they had 0 block padding because no
+   `section` rule applies to them, and they still do. */
 .container {
     max-width: var(--hold);
     margin: 0 auto;
-    padding: 0 var(--gutter);
+    padding-inline: var(--gutter);
 }
 
 .wide-container {
     max-width: var(--hold-wide);
     margin: 0 auto;
-    padding: 0 var(--gutter);
+    padding-inline: var(--gutter);
 }
 
 /* Section rhythm. Was a flat --spacing-3xl (8rem) on every section: a metronome.
@@ -538,11 +559,6 @@ section {
     padding: var(--section-pad) var(--gutter);
 }
 
-section.wide-container {
-    padding-top: var(--section-pad);
-    padding-bottom: var(--section-pad);
-}
-
 .section--tight {
     padding-block: var(--section-pad-tight);
 }
@@ -551,11 +567,12 @@ section.wide-container {
     padding-block: var(--section-pad-open);
 }
 
-/* Elevated ground marks a REGISTER CHANGE, not decoration -- Voice sections and
-   the Threshold only, never two in a row, and never per-card (Jen 10 §4.3). */
-.section--elevated {
-    background: var(--elevated);
-}
+/* `.section--elevated` lived here and was deleted in B2: zero consumers in the
+   markup, and byte-identical to `.surface--elevated` (7 consumers), which is the
+   name that survived. Two names for one declaration is a vocabulary that has to
+   be looked up before it can be used. The register-change rule it documented
+   (Voice sections and the Threshold only, never two in a row, never per-card --
+   Jen 10 §4.3) belongs to `.surface--elevated`. */
 
 /* Full-bleed figures sit BETWEEN sections and carry no rhythm of their own. */
 .section--bleed {
@@ -948,8 +965,14 @@ nav .container {
     text-align: center;
 }
 
+/* Flat, not a gradient. This was the only gradient fill left on a site built
+   from rules and flat grounds, and it existed to give its second, darker token
+   a consumer rather than the other way round; that token is retired with the
+   gradient and its declaration is gone from :root (Jen confirmed
+   at her Wave B-1 spec gate -- "the sole gradient consumer dies with the
+   cards"). doc 21 §6.5 closes in B6. */
 .comparison-header.ours {
-    background: linear-gradient(135deg, var(--ember), var(--ember-dark));
+    background: var(--ember);
 }
 
 .comparison-header.ours h3 {
@@ -2482,9 +2505,14 @@ footer::before {
 }
 
 /* --- Section Spacing --- */
-.section--pt-6 {
-    padding-top: 6rem;
-}
+/* `.section--pt-6 { padding-top: 6rem }` lived here. It was a hand-patch for
+   F-1: four `section.container` sites where somebody noticed the missing top
+   padding and forced it back one call site at a time. B2 fixes the cause, but
+   the patch does not fall away on its own -- at (0,1,0) it still outranks the
+   tier rule, so it would have rendered 6rem on top against --section-pad on the
+   bottom: visibly asymmetric, and worse than either the before or the after.
+   Deleting the RULE is CSS-only, which is why it lands in this batch; the four
+   now-inert class attributes come out with the other markup in B5. */
 
 .section--no-padding {
     padding: 0;
@@ -3259,9 +3287,12 @@ footer::before {
         display: none;
     }
 
-    section {
-        padding: var(--spacing-2xl) 5%;
-    }
+    /* `section { padding: var(--spacing-2xl) 5% }` lived here and is gone. It
+       was the third percentage gutter 21 R1 was written to delete, and a media
+       query adds no specificity, so it only ever reached 8 of 68 sections --
+       never the 44 containers whose rhythm it was blamed for flattening (doc 21
+       §6.2a amendment). The three tiers now compress on their own, through the
+       min(vh, vw) arm in --section-pad, at every width and with no breakpoint. */
 
     .logo img {
         height: 58px;

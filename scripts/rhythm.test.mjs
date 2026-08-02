@@ -183,6 +183,58 @@ function probeGutter() {
   return { declared, gutterPx, rows };
 }
 
+/**
+ * The section tier system, on the BLOCK axis (B2 / F-1).
+ *
+ * Until B2 this could not be measured, because there was nothing to measure:
+ * `.container`'s `padding` shorthand wrote the block axis to 0 and outranked
+ * `section`'s tier rule, so 44 of the site's sections rendered with no vertical
+ * rhythm at all (doc 21 §6.2a amendment). R2 above measures the INLINE axis and
+ * is structurally blind to that -- a section with a perfect gutter and zero top
+ * padding passes every assertion in this file up to here.
+ *
+ * Resolution is read from a probe element rather than from the declared string:
+ * `clamp(3.5rem, min(14vh, 18vw), 10rem)` is a value only the viewport can
+ * compute, and the whole point of the min() arm is that it resolves DIFFERENTLY
+ * at 390 than the vh-only version did.
+ *
+ * The tight and open tiers are read here but NOT asserted against consumers:
+ * no element carries `.section--tight` or `.section--open` yet (tier classes are
+ * B5's markup batch). Asserting a tier with zero consumers is a fixture proving
+ * itself. Those assertions land in B5, where the consumers do.
+ */
+function probeSectionTier() {
+  const resolve = (token) => {
+    const probe = document.createElement('div');
+    probe.style.cssText = `position:absolute;visibility:hidden;padding-block:var(${token})`;
+    document.body.appendChild(probe);
+    const px = parseFloat(getComputedStyle(probe).paddingTop);
+    probe.remove();
+    return px;
+  };
+  // A tier class or an explicit padding rule means the element is not claiming
+  // the standard tier, so it is not evidence for or against it.
+  const NOT_STANDARD = ['section--tight', 'section--open', 'section--bleed',
+    'section--no-padding', 'page-hero'];
+  const rows = [];
+  for (const el of document.querySelectorAll('section.container, section.wide-container')) {
+    const classes = el.className || '';
+    if (NOT_STANDARD.some((c) => classes.split(/\s+/).includes(c))) continue;
+    const cs = getComputedStyle(el);
+    rows.push({
+      classes,
+      top: parseFloat(cs.paddingTop),
+      bottom: parseFloat(cs.paddingBottom),
+    });
+  }
+  return {
+    standard: resolve('--section-pad'),
+    tight: resolve('--section-pad-tight'),
+    open: resolve('--section-pad-open'),
+    rows,
+  };
+}
+
 /** `.measure-wide`, in the only unit that means anything: rendered pixels. */
 function probeMeasure() {
   const decl = (n) => getComputedStyle(document.documentElement)
@@ -239,30 +291,14 @@ const GUTTER_DEVIATIONS = [
   { match: (r) => r.classes.split(/\s+/).includes('page-hero'), px: (w) => 0.05 * w,
     reason: '.page-hero keeps `padding: 12rem 5% 6rem` (styles.css:712) — the '
       + 'literal `0 5%` pattern 21 R1 names as the bug. Unmigrated.' },
-  // FOUND BY THIS SUITE, 2026-07-31, and the reason it exists.
-  //
-  // `@media (max-width: 768px) { section { padding: var(--spacing-2xl) 5%; } }`
-  // (styles.css:2936). At 390 every BARE section — one without .container or
-  // .wide-container to out-specify the element rule — reverts to a PERCENTAGE
-  // gutter, which is precisely the construct 21 R1 was written to delete. It is
-  // invisible from the desktop width, invisible to the DOM check (no markup
-  // changed), and invisible to the pixel harness (the batch was expected to
-  // move things). Nothing else in the repo was looking at the narrow width's
-  // computed padding.
-  //
-  // It also flattens the section rhythm: --section-pad's three tiers (Jen
-  // §2.0/§2.2) collapse to a flat --spacing-2xl below 768px, so the compression
-  // that is supposed to read AS compression does not exist on a phone.
-  //
-  // Pinned, not waived, and pinned to the RULE rather than to the number it
-  // happens to produce: if the override is removed the measurement stops
-  // matching 5% and this entry goes stale, which is the outcome we want.
-  { match: (r, w) => w <= 768 && r.tag === 'SECTION'
-      && !r.classes.split(/\s+/).some((c) => c === 'container' || c === 'wide-container'),
-    px: (w) => 0.05 * w,
-    reason: 'styles.css:2936 — the mobile `section { padding: var(--spacing-2xl) 5% }` '
-      + 'override. A third percentage gutter, unmigrated, and it also flattens the '
-      + 'three --section-pad tiers to one value below 768px.' },
+  // A THIRD entry lived here, for the mobile `section { padding:
+  // var(--spacing-2xl) 5% }` override this suite found on 2026-07-31 — the
+  // deviation it was written to catch. B2 deleted the override, so the pin came
+  // out in the same commit: it was pinned to the RULE rather than to the number
+  // the rule produced, and once the rule is gone the pin is a waiver for
+  // nothing. The bare sections it used to reach now take --gutter from the
+  // element rule like everything else, so they are asserted as CONFORMING here
+  // rather than excused, which is a stronger claim than the pin ever made.
 ];
 const MEASURE_WIDE_CH = 70;              // doc 11 §5 / --measure-wide
 
@@ -293,6 +329,7 @@ async function measureAll(browser, base) {
           heading: await page.evaluate(probeHeadingSystem),
           deleted: await page.evaluate(probeDeletedUtilitySites),
           gutter: await page.evaluate(probeGutter),
+          tier: await page.evaluate(probeSectionTier),
           measure: await page.evaluate(probeMeasure),
         };
       }
@@ -416,16 +453,63 @@ function assertAll(results) {
       `a token most elements use and some do not is 21 R1's bug wearing the fix's name. `
       + `Unexpected: ${JSON.stringify(deviations.slice(0, 6))}`);
     // The count of unmigrated percentage gutters is itself the finding, and it
-    // is asserted so that it can only be changed deliberately. THREE survive
-    // WP-1b: nav (2.5%), .page-hero (5%), and the mobile section override (5%).
-    // This number is supposed to go DOWN. If a future batch migrates one and
-    // does not update this line, the suite fails and says so.
+    // is asserted so that it can only be changed deliberately. THREE survived
+    // WP-1b; B2 deleted the mobile section override, so TWO survive: nav (2.5%)
+    // and .page-hero (5%). This number is supposed to go DOWN. If a future batch
+    // migrates one and does not update this line, the suite fails and says so.
     const pctGutters = GUTTER_DEVIATIONS.filter((d) => !d.forClasses).length;
     check(`R2 exactly ${pctGutters} percentage gutters survive the consolidation`,
-      pctGutters === 3 && pinned > 0,
-      `nav (2.5%), .page-hero (5%) and the mobile section override (5%) are unmigrated. `
+      pctGutters === 2 && pinned > 0,
+      `nav (2.5%) and .page-hero (5%) are unmigrated. `
       + `They are pinned by their RULE, not waived: this count is the thing that has to `
       + `shrink, and ${pinned} element(s) matched a pinned rule this run.`);
+  }
+
+  // ---- R2b: the section tier reaches the block axis (B2 / F-1) ----
+  console.log('\nR2b — the standard section tier, on the block axis (B2 / F-1)');
+  {
+    const measured = [];
+    for (const [key, r] of pages(results)) {
+      const width = Number(key.split('@')[1]);
+      const want = r.tier.standard;
+      for (const row of r.tier.rows) {
+        measured.push({ key, width, want, ...row });
+      }
+    }
+    check('R2b at least one standard-tier section.container was measured',
+      measured.length > 0,
+      'no untiered section.container on any probed page — either the templates changed '
+      + 'or the selector is wrong. A vacuous pass is not a pass, and this assertion '
+      + 'exists precisely because the thing it measures was 0 for the site\'s whole life.');
+
+    const off = measured.filter((m) => !near(m.top, m.want) || !near(m.bottom, m.want));
+    check(`R2b every standard section.container takes --section-pad on BOTH edges `
+      + `(${measured.length} measured)`,
+      off.length === 0,
+      `THE F-1 defect, and the one no other gate in this repo can see: .container's `
+      + `padding shorthand reset the block axis to 0 and outranked the tier rule, so `
+      + `these sections rendered with no vertical rhythm at any width. dom-integrity `
+      + `reads a token stream and the pixel harness reads a fit model; neither can say `
+      + `whether a tier ARRIVED. Off-tier: ${JSON.stringify(off.slice(0, 6))}`);
+
+    // Both widths, separately, because the whole mobile scale change lives in
+    // the difference between them: a suite that only measured 1440 would have
+    // called the vh-only clamp correct.
+    for (const width of WIDTHS) {
+      const at = measured.filter((m) => m.width === width);
+      check(`R2b the tier resolves and lands at ${width} (${at.length} sections)`,
+        at.length > 0 && at.every((m) => near(m.top, m.want)) && at[0].want > 0,
+        `resolved --section-pad ${at[0] ? at[0].want : 'n/a'}px at ${width}`);
+    }
+
+    // The tiers are read at both widths and REPORTED, not asserted against
+    // consumers — .section--tight/--open have none until B5 assigns them.
+    for (const width of WIDTHS) {
+      const t = results[`/saunas/@${width}`].tier;
+      console.log(`        @${width}: --section-pad ${t.standard}px · tight ${t.tight}px `
+        + `· open ${t.open}px (ratios ${(t.tight / t.standard).toFixed(2)} : 1 : `
+        + `${(t.open / t.standard).toFixed(2)})`);
+    }
   }
 
   // ---- R3: the 70ch cap ----
@@ -494,6 +578,15 @@ const MUTATIONS = [
     anchor: 'margin-top:var(--spacing-xl)',
     patched: 'margin-top:0',
     probe: (r) => r[`/saunas/@1440`].deleted.grids.map((g) => g.marginTop).join(','),
+  },
+  {
+    name: 'R-m5 .container reverts to the padding shorthand (F-1 restored)',
+    proves: 'the block-axis tier is measured where it lands, so the defect that '
+      + 'shipped for the site\'s whole life cannot ship again unseen',
+    anchor: 'padding-inline:var(--gutter)',
+    patched: 'padding:0 var(--gutter)',
+    probe: (r) => [1440, 390].map((w) => r[`/saunas/@${w}`].tier.rows
+      .map((x) => `${x.top}/${x.bottom}`).join(',')).join(' | '),
   },
 ];
 
