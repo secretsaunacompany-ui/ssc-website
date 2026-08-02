@@ -1053,8 +1053,11 @@ nav .container {
     border-bottom: 1px solid var(--rule);
 }
 
-/* Jen §1.2, literal: the same grid holds at 768, at the tighter gap. */
-@media (width: 768px) {
+/* Jen §1.2, as ruled 2026-08-02. The grid holds from 768 up; the tighter gap
+   belongs to the TABLET BAND, not to a single pixel. Her reasoning: the spec's
+   breakpoints are 1440/768/390, and a one-pixel rule would leave 769-1439 with
+   no defined gap at all — which contradicts "the same grid holds". */
+@media (min-width: 768px) and (max-width: 1439px) {
     .model-index__head,
     .model-row {
         column-gap: var(--spacing-md);
