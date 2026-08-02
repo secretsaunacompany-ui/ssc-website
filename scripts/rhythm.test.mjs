@@ -378,8 +378,19 @@ const GUTTER_PX = { 1440: 86.4, 390: 24 };   // clamp(1.5rem, 6vw, 7rem) → 21 
 // are recorded here with their measured values so the deviation is visible in a
 // diff and so a THIRD one cannot appear unnoticed.
 const GUTTER_DEVIATIONS = [
-  { match: () => true, forClasses: ['section--no-padding'], px: () => 0,
-    reason: '.section--no-padding sets `padding: 0` by intent (styles.css:2174). '
+  // RE-AIMED in B5, from `.section--no-padding` to `.section--bleed`. The old
+  // pin named a class that B5 retired, so it had stopped matching anything and
+  // would have sat here as a waiver for a node that no longer exists. Its
+  // successor makes the same claim for the same reason: the bleed tier sets
+  // `padding-inline: 0` BY INTENT -- a full-bleed plate that took the gutter
+  // would not be full-bleed -- so zero is the correct value here, not a
+  // deviation from --gutter. This fired the moment B5 gave `.section--bleed`
+  // its first two consumers (the home video plate and the /saunas/ mosaic);
+  // before that the class existed in the stylesheet with nothing wearing it,
+  // which is exactly why R2c/R2d had to wait for this batch too.
+  { match: () => true, forClasses: ['section--bleed'], px: () => 0,
+    reason: '.section--bleed sets `padding-inline: 0` by intent (styles.css:640, '
+      + '"full-bleed figures sit BETWEEN sections and carry no rhythm of their own"). '
       + 'A modifier that says what it does; not a gutter deviation.' },
   { match: (r) => r.tag === 'NAV', px: (w) => 0.025 * w,
     reason: 'nav keeps `padding: var(--spacing-sm) 2.5%` (styles.css:579). '
