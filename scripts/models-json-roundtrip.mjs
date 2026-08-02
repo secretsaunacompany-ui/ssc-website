@@ -76,8 +76,14 @@ const GATED_FIELDS = ['name', 'size', 'capacity', 'basePrice'];
  * rather than imported from the template, deliberately: an assertion that reads
  * its expectation from the thing it is testing proves nothing.
  */
-const displaySize = (s) => s.replace(' x ', ' × ');
-const displayCapacity = (s) => s.replace('-', '–');
+// replaceAll, not replace (Razor N3). Nunjucks' `replace` filter is GLOBAL, so
+// String.prototype.replace -- which stops at the first match -- was a quieter
+// expectation than the thing it was checking. It happened to agree on today's
+// five strings because each contains one match; a canonical size of
+// "5' x 7' x 7'" would have made the gate disagree with the page and blame the
+// page. An assertion must not be laxer than what it asserts about.
+const displaySize = (s) => s.replaceAll(' x ', ' × ');
+const displayCapacity = (s) => s.replaceAll('-', '–');
 
 /** Where the tools that quote customers actually read from. */
 const CANONICAL_PATH = process.env.SSC_MODELS_JSON
@@ -261,6 +267,80 @@ const spec = JSON.parse(inRepoRaw);
 checkCanonicalParity(inRepoRaw);
 const canonicalDoc = checkSiteDataParity();
 
+/**
+ * HALF FOUR (B4 fix round, Razor W3) -- the COMPARE TABLE.
+ *
+ * `#compareTable` is rendered by js/compare.js from js/data.js and states Size,
+ * Capacity and Base Price for all five models: the exact three fields the
+ * historical defect corrupted, on the same page as the ledger, and until now
+ * touched by no assertion in this file or any other. The ledger could be
+ * perfect and the table beneath it could disagree with canonical, and the only
+ * detector would be somebody reading both.
+ *
+ * TWO RENDERING CONVENTIONS, asserted separately and on purpose. The ledger
+ * applies Jen's two sanctioned glyph substitutions; compare.js does not, so the
+ * table prints "5' x 7'" and "2-3 people" where the ledger prints "5' × 7'" and
+ * "2–3 people". Each is compared to canonical in its OWN convention rather than
+ * being normalised into agreement here -- normalising would hide the divergence
+ * instead of asserting it. The divergence itself is Razor N2 and is recorded for
+ * B6: harmonising it means teaching compare.js the substitutions, which is a
+ * js/ change, and a js/ change flips dom-integrity's stated boundary
+ * ("client JavaScript differs ... do not read a PASS here as covering it") for a
+ * typographic nicety. Not worth the certificate.
+ */
+async function checkCompareTable(page, canonical) {
+  console.log('\n--- compare table vs canonical (#compareTable, rendered by js/compare.js) ---');
+  if (!canonical) { skip('canonical not readable; the compare table is UNVERIFIED against it.'); return; }
+
+  await page.waitForSelector('#compareTable table', { state: 'attached' });
+  const table = await page.evaluate(() => {
+    const out = { headers: [], rows: {} };
+    const t = document.querySelector('#compareTable table');
+    out.headers = [...t.querySelectorAll('thead th')].map((th) => th.textContent.trim());
+    for (const tr of t.querySelectorAll('tbody tr')) {
+      const label = tr.querySelector('th').textContent.trim();
+      out.rows[label] = [...tr.querySelectorAll('td')].map((td) => td.textContent.trim());
+    }
+    return out;
+  });
+
+  // The column ORDER is load-bearing: every cell assertion below indexes by it,
+  // so a reordered table would compare the S2 column against the S4 spec and
+  // could pass while being wrong about both.
+  const order = Object.keys(canonical.models);
+  const cols = table.headers.slice(1).map((h) => h.replace(/Most Popular/i, '').trim());
+  ok(JSON.stringify(cols) === JSON.stringify(order),
+    `compare table column order ${JSON.stringify(cols)} === canonical ${JSON.stringify(order)}`);
+  if (JSON.stringify(cols) !== JSON.stringify(order)) return;
+
+  for (const [i, key] of order.entries()) {
+    const c = canonical.models[key];
+    const cell = (row) => (table.rows[row] || [])[i];
+
+    // RAW canonical strings: compare.js applies no substitutions.
+    ok(cell('Size') === c.size,
+      `${key} compare-table size: "${cell('Size')}" === canonical "${c.size}"`);
+    ok(cell('Capacity') === c.capacity,
+      `${key} compare-table capacity: "${cell('Capacity')}" === canonical "${c.capacity}"`);
+    ok(money(cell('Base Price')) === c.basePrice,
+      `${key} compare-table base price: "${cell('Base Price')}" carries canonical ${c.basePrice}`);
+    ok(cell('Heater') === c.heater,
+      `${key} compare-table heater: "${cell('Heater')}" === canonical "${c.heater}"`);
+  }
+
+  // Razor N1, folded in because it turned out to be one line: the ledger's
+  // price and the table's price are two renderings of one number and must not
+  // disagree with each other either.
+  const ledger = await page.evaluate(() => Object.fromEntries(
+    [...document.querySelectorAll('.model-row')].map((r) => [r.dataset.model,
+      r.querySelector('.model-row__price').textContent.trim()])));
+  for (const [i, key] of order.entries()) {
+    ok(money(ledger[IDS[key]]) === money((table.rows['Base Price'] || [])[i]),
+      `${key}: the ledger row (${ledger[IDS[key]]}) and the compare table `
+      + `(${(table.rows['Base Price'] || [])[i]}) print the same number`);
+  }
+}
+
 console.log('\n--- site parity, per model ---');
 
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ssc-roundtrip-'));
@@ -363,6 +443,11 @@ for (const [key, id] of Object.entries(IDS)) {
   ok(sum - pkg.pricePerModel[key] === pkg.savings,
     `${key} json is internally true: components ${sum} - package ${pkg.pricePerModel[key]} = ${sum - pkg.pricePerModel[key]} === savings ${pkg.savings}`);
 }
+
+// Half four. Runs once, on a clean load of the page rather than on whatever
+// state the modal walk left behind.
+await page.goto(`${server.url}/saunas/`, { waitUntil: 'networkidle' });
+await checkCompareTable(page, canonicalDoc);
 
 await browser.close();
 await server.close();

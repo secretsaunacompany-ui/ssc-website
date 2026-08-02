@@ -13,12 +13,14 @@
     "package-claim:test": "node scripts/package-claim.test.mjs",
     "prices-version:test": "node scripts/prices-version.test.mjs",
     "models-json:roundtrip": "node scripts/models-json-roundtrip.mjs",
+    "//models-json:selftest": "The round-trip gate's mutation battery. Mutates real source files IN PLACE (src/_data/models.json, the saunas template, js/data.js), runs the gate, restores, and verifies the restore byte for byte. Run it after touching any assertion in models-json-roundtrip.mjs.",
+    "models-json:selftest": "node scripts/models-json-selftest.mjs",
     "quote-funnel:test": "node scripts/quote-funnel.test.mjs",
     "//events:test": "Requires a sibling ../ssc-ops checkout: the stream-separation scenarios load the REAL shared tracker from it. Without it the suite fails with that message rather than passing on a stub.",
     "events:test": "node scripts/events.test.mjs",
     "//fonts:test": "Group B drives a real Chromium against dist/, so run `npm run build` first. Static checks alone cannot tell you a font actually loaded.",
     "fonts:test": "node scripts/fonts.test.mjs",
-    "//rhythm:test": "Group R drives a real Chromium against dist/, so run `npm run build` first. A token's declared value and the value that reaches the element are different claims \u2014 and an edit (or mutation probe) made to styles.css WITHOUT a rebuild never reaches the measured page: it reports as 'suite did not notice', a coverage gap that isn't there.",
+    "//rhythm:test": "Group R drives a real Chromium against dist/, so run `npm run build` first. A token's declared value and the value that reaches the element are different claims — and an edit (or mutation probe) made to styles.css WITHOUT a rebuild never reaches the measured page: it reports as 'suite did not notice', a coverage gap that isn't there.",
     "rhythm:test": "node scripts/rhythm.test.mjs",
     "dom-integrity": "node scripts/dom-integrity.mjs",
     "dom-integrity:test": "node scripts/dom-integrity.test.mjs",
@@ -26,7 +28,7 @@
     "lint:css": "npx stylelint styles.css",
     "lint:css:test": "node scripts/stylelint-gate.test.mjs",
     "csp-hash:test": "node scripts/csp-inline-hash.test.mjs",
-    "//csp-hash:test": "Requires a build first. Recomputes every inline script hash from dist/ and asserts each is declared in netlify.toml script-src \u2014 CSP headers exist only on Netlify, so a blocked inline script is invisible to every local instrument (learned when the reveal-boot shipped blocked)."
+    "//csp-hash:test": "Requires a build first. Recomputes every inline script hash from dist/ and asserts each is declared in netlify.toml script-src — CSP headers exist only on Netlify, so a blocked inline script is invisible to every local instrument (learned when the reveal-boot shipped blocked)."
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
