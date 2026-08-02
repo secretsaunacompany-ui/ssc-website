@@ -227,11 +227,36 @@ function probeSectionTier() {
       bottom: parseFloat(cs.paddingBottom),
     });
   }
+
+  // B5 gave the compressed and open tiers their first consumers. Until then the
+  // two tokens were REPORTED by this probe and asserted by nothing -- a tier
+  // that resolves in :root and never reaches an element is indistinguishable
+  // from a tier that does not exist, and B2 shipped both classes with zero
+  // markup behind them for exactly that reason.
+  //
+  // Selected on the TIER CLASS rather than on `.container`, deliberately: two of
+  // B5's consumers are not containers (`.hero-overlay.section--tight` on the
+  // service-area feature list, `.wide-container.section--bleed` on the /saunas/
+  // mosaic), and a selector that quietly skipped them would assert the tier on
+  // the sections that were easy to find. Every element wearing the class is
+  // measured, or the claim is not "the tier lands".
+  const tierRows = (cls) => Array.from(document.querySelectorAll(`section.${cls}`))
+    .map((el) => {
+      const cs = getComputedStyle(el);
+      return {
+        classes: el.className || '',
+        top: parseFloat(cs.paddingTop),
+        bottom: parseFloat(cs.paddingBottom),
+      };
+    });
+
   return {
     standard: resolve('--section-pad'),
     tight: resolve('--section-pad-tight'),
     open: resolve('--section-pad-open'),
     rows,
+    tightRows: tierRows('section--tight'),
+    openRows: tierRows('section--open'),
   };
 }
 
@@ -708,13 +733,77 @@ function assertAll(results) {
         `resolved --section-pad ${at[0] ? at[0].want : 'n/a'}px at ${width}`);
     }
 
-    // The tiers are read at both widths and REPORTED, not asserted against
-    // consumers — .section--tight/--open have none until B5 assigns them.
     for (const width of WIDTHS) {
       const t = results[`/saunas/@${width}`].tier;
       console.log(`        @${width}: --section-pad ${t.standard}px · tight ${t.tight}px `
         + `· open ${t.open}px (ratios ${(t.tight / t.standard).toFixed(2)} : 1 : `
         + `${(t.open / t.standard).toFixed(2)})`);
+    }
+  }
+
+  // ---- R2c/R2d: the compressed and open tiers, now that they have consumers --
+  //
+  // These two groups could not exist before B5. B2 shipped `.section--tight` and
+  // `.section--open` with ZERO elements wearing them, so the only true thing the
+  // suite could say was the console line above: the tokens resolve. A tier that
+  // resolves in :root and reaches no element is not a tier, and the difference
+  // was invisible to every gate in the repo -- dom-integrity reads a token
+  // stream and would report the class arriving as a class arriving, and the
+  // pixel harness reads a fit model that whole-page padding changes fall outside
+  // of. B5 assigned the classes from Jen's §3 tables; this is the certificate
+  // that the assignment MOVED PIXELS in the direction the tier names claim.
+  //
+  // The claim is deliberately two-part per tier, because either half alone
+  // passes for the wrong reason: (1) every consumer computes the tier's own
+  // token on BOTH block edges, and (2) that token is measurably distinct from
+  // the standard tier -- compression that does not compress and openness that
+  // does not open are the failure modes a value-equality check cannot see. If
+  // --section-pad-tight were edited to equal --section-pad, part (1) would still
+  // pass on every element and the site would have silently reverted to the
+  // metronome B2 set out to kill.
+  for (const [label, key, want, dir] of [
+    ['R2c', 'tightRows', 'tight', 'compresses'],
+    ['R2d', 'openRows', 'open', 'opens'],
+  ]) {
+    console.log(`\n${label} — the ${want} tier, on its B5 consumers`);
+    const measured = [];
+    for (const [pkey, r] of pages(results)) {
+      const width = Number(pkey.split('@')[1]);
+      for (const row of r.tier[key]) {
+        measured.push({ pkey, width, want: r.tier[want], standard: r.tier.standard, ...row });
+      }
+    }
+    // A vacuous pass here is the exact failure this group was written against:
+    // for B2's whole life the honest answer was zero, and zero must never read
+    // as green now that the batch whose job was to supply consumers has run.
+    check(`${label} the ${want} tier has consumers at all (${measured.length} measured)`,
+      measured.length > 0,
+      `no <section> on any probed page wears .section--${want}. B5 assigned this tier `
+      + `from Jen §3; if the count is zero either the assignment did not ship or the `
+      + `probe's selector missed it. Reporting "no failures" against no elements is how `
+      + `a tier with no consumers passed for two batches.`);
+
+    const off = measured.filter((m) => !near(m.top, m.want) || !near(m.bottom, m.want));
+    check(`${label} every .section--${want} consumer takes --section-pad-${want} on BOTH edges`,
+      off.length === 0,
+      `the tier class is on the element but the padding that arrives is not the tier's. `
+      + `Off-tier: ${JSON.stringify(off.slice(0, 6))}`);
+
+    // Per width, and `.every` rather than a sampled element -- the B2 lesson:
+    // one sampled consumer certifies the sample and lets every other element
+    // ride for free, which is how a partially-applied tier ships green.
+    for (const width of WIDTHS) {
+      const at = measured.filter((m) => m.width === width);
+      if (at.length === 0) continue;
+      check(`${label} the ${want} tier resolves and lands at ${width} (${at.length} consumers)`,
+        at.every((m) => near(m.top, m.want) && near(m.bottom, m.want) && m.want > 0),
+        `resolved --section-pad-${want} ${at[0].want}px at ${width}`);
+      check(`${label} the ${want} tier measurably ${dir} against standard at ${width}`,
+        at.every((m) => (want === 'tight' ? m.want < m.standard : m.want > m.standard)),
+        `--section-pad-${want} ${at[0].want}px vs --section-pad ${at[0].standard}px at `
+        + `${width}. A tier whose value equals the standard is a class name, not a tier: `
+        + `the three-tier system exists because compression only reads as compression `
+        + `against a default (Jen 10 §2.0/§2.2).`);
     }
   }
 
@@ -833,6 +922,37 @@ const MUTATIONS = [
     patched: 'padding:0 var(--gutter)',
     probe: (r) => [1440, 390].map((w) => r[`/saunas/@${w}`].tier.rows
       .map((x) => `${x.top}/${x.bottom}`).join(',')).join(' | '),
+  },
+  {
+    name: 'R-m8 .section--tight stops distinguishing itself (tier collapses to standard)',
+    proves: 'B5\'s tier ASSIGNMENT is asserted on its consumers, not just its token',
+    // The stylesheet-side equivalent of stripping the class off every consumer:
+    // the rule stays, the selector stays, and the value it delivers becomes the
+    // standard tier. This is the realistic rot -- nobody deletes a tier class,
+    // somebody "simplifies" its value -- and it is invisible to dom-integrity
+    // (no token moved) and to the pixel harness (whole-page geometry). If R2c
+    // did not exist this would ship green, and the site would be back to the
+    // metronome with three class names still in the markup insisting otherwise.
+    anchor: '.section--tight{padding-block:var(--section-pad-tight)}',
+    patched: '.section--tight{padding-block:var(--section-pad)}',
+    probe: (r) => [1440, 390].map((w) => r[`/saunas/@${w}`].tier.tightRows
+      .map((x) => `${x.top}/${x.bottom}`).join(',')).join(' | '),
+  },
+  {
+    name: 'R-m9 --section-pad-open zeroed at the token',
+    proves: 'the open tier is measured where it LANDS, so a dead token cannot pass '
+      + 'as an applied one',
+    // The other direction: the consumers keep their class and the token behind
+    // it goes to zero. Aimed at the open tier specifically because its only
+    // probed consumers are one section on /about/ and one on /saunas/ -- if the
+    // assertion had been written against a sampled element it would measure the
+    // wrong page and report nothing, which is the shape of the coverage hole
+    // R-m4 found the hard way when B4 deleted the only .grid-3 on /saunas/.
+    anchor: '--section-pad-open:clamp(5rem, min(18vh, 23vw), 13rem)',
+    patched: '--section-pad-open:0px',
+    probe: (r) => [1440, 390].map((w) => ['/about/', '/saunas/']
+      .map((p) => r[`${p}@${w}`].tier.openRows.map((x) => `${x.top}/${x.bottom}`).join(','))
+      .join(';')).join(' | '),
   },
 ];
 

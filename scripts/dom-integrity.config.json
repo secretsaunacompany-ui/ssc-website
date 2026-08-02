@@ -859,6 +859,132 @@
       "reason": "Its replacement, at the canonical figure.",
       "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
       "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "removed",
+      "tag": "SECTION",
+      "contains": "class=\"container\"",
+      "count": 12,
+      "reason": "B5 tier assignment, removed half. Every plain `section.container` that Jen's §3 tables move OFF the standard tier: privacy's twelve body sections (§3.10, the one-long-Ledger exemption -- uniform E density is the honest form for a legal document), warranty's six (§3.6), plus one each on home (:14 offerings), /saunas/ (compare table), faq, blog, service-area (sibling links) and the three utility pages that go to --open. Count is 12 because the budget is per PAGE and privacy is the worst page; specificity is satisfied at exactly 12, so the entry cannot absorb a thirteenth container change on any page without failing. These sections carry no identifying class -- `container` is all they have ever worn -- which is why this is one counted entry per TRANSITION rather than one per node; the instrument's own note on identical-looking siblings says naming them uniquely would need identity, not substring.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
+    },
+    {
+      "op": "removed",
+      "tag": "SECTION",
+      "contains": "class=\"container section--pt-6\"",
+      "count": 1,
+      "reason": "The four inert `.section--pt-6` attributes, removed sitewide (about :11, warranty :12, privacy :10, service-area :9). The RULE died in B2 -- at (0,1,0) it outranked the tier rule and would have rendered 6rem on top against --section-pad on the bottom -- and B2's comment explicitly deferred these attributes to B5. One per page, so count 1.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
+    },
+    {
+      "op": "removed",
+      "tag": "SECTION",
+      "contains": "class=\"surface--elevated hero-overlay\"",
+      "count": 2,
+      "reason": "The two sections that LOSE elevation: home :69 and service-area :21. Jen §3.1 row 5 and §3.13 row 3 -- rule 4 says elevation marks a VOICE register change, and a feature grid wearing story clothes (home) and a feature list (service-area) have not earned it. Count is 2, not 1, because /about/ carries two sections with this exact class that do NOT change (:44 and :68, genuine voice register, kept); the specificity gate measures the worst page in the BASELINE and refuses an entry narrower than that. The unused budget on /about/ consumes nothing, because /about/ produces no ops for it.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
+    },
+    {
+      "op": "removed",
+      "tag": "SECTION",
+      "contains": "class=\"section--no-padding\"",
+      "count": 1,
+      "reason": "The home video plate, the class's only consumer. `.section--no-padding` retired with its rule: it bundled padding and margin under a name admitting to one. See the added-side entry for what replaced it.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
+    },
+    {
+      "op": "removed",
+      "tag": "SECTION",
+      "contains": "class=\"container text-center\"",
+      "count": 1,
+      "reason": "The two Thresholds that GAIN elevation: home :148 and service-area :45, archetype G (§3.1 row 10, §3.13 row 5). On service-area this replaces the retired `section--warm-glow` register. One per page.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
+    },
+    {
+      "op": "removed",
+      "tag": "SECTION",
+      "contains": "class=\"wide-container\"",
+      "count": 1,
+      "reason": "The /saunas/ \"Our Work\" mosaic, taking the C/--bleed row B4 left unapplied (Jen §2.1 row 8). /locations/ also has a `wide-container` section and it does NOT change -- Jen §3.7 keeps the contained map at standard tier, contained-preferred per §2.3 -- but both pages have exactly one, so count 1 stays tight.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
+    },
+    {
+      "op": "added",
+      "tag": "SECTION",
+      "contains": "class=\"container section--tight\"",
+      "count": 13,
+      "reason": "The compressed tier's new consumers, archetype E. Privacy is 13 (its twelve body sections plus :10, which arrives from `section--pt-6` rather than from bare `container`) and is the worst page, so the count is 13. Before this batch `.section--tight` had ZERO elements wearing it: a tier that resolves in :root and reaches no element is indistinguishable from a tier that does not exist. rhythm.test.mjs R2c now measures it on every consumer at both widths.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
+    },
+    {
+      "op": "added",
+      "tag": "SECTION",
+      "contains": "class=\"container section--open\"",
+      "count": 1,
+      "reason": "The open tier's new consumers, archetype B: about :11 intro, warranty :12 summary, book status, 404, thank-you. The two utility pages are Jen's §3.11/§3.12 ruling that a single quiet statement wants air, not density. One per page. Asserted by R2d.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
+    },
+    {
+      "op": "added",
+      "tag": "SECTION",
+      "contains": "class=\"hero-overlay\"",
+      "count": 1,
+      "reason": "Home :69 after losing `.surface--elevated`. The overlay background image stays -- it is §2.3 work, later; B5 removes only the ground class.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
+    },
+    {
+      "op": "added",
+      "tag": "SECTION",
+      "contains": "class=\"hero-overlay section--tight\"",
+      "count": 1,
+      "reason": "Service-area :21 after losing elevation and gaining the compressed tier in the same edit (Jen §3.13 row 3). Shared include, so this lands on all five area routes; the budget is per page, so count is 1.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
+    },
+    {
+      "op": "added",
+      "tag": "SECTION",
+      "contains": "class=\"section--bleed plate--video\"",
+      "count": 1,
+      "reason": "The home video plate's replacement for `.section--no-padding`. Two classes because the retired one made two claims: `.section--bleed` is the padding half and the vocabulary every other plate already uses, `.plate--video` restates the margin half at --spacing-2xl, which IS 4rem -- the same value the old rule hardcoded. Measured at 0/0 padding and 64px margin on both edges: no pixel moves. Without the second class the 4rem would have vanished silently, since `.section--bleed` says nothing about margin.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
+    },
+    {
+      "op": "added",
+      "tag": "SECTION",
+      "contains": "class=\"container text-center surface--elevated\"",
+      "count": 1,
+      "reason": "The two Thresholds gaining their G ground: home :148 and service-area :45. On home this puts elevation on :120 and :148 both, separated by the full-bleed video plate -- sanctioned in §3.1 row 10 because alternation stays legible across a full-viewport plate.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
+    },
+    {
+      "op": "added",
+      "tag": "SECTION",
+      "contains": "class=\"wide-container section--bleed\"",
+      "count": 1,
+      "reason": "The /saunas/ mosaic at its C tier. The inner grid keeps --hold-wide containment, so the mosaic still caps at 1400px; what changes is the section's own padding going to zero, which is what `--bleed` means.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
+    },
+    {
+      "op": "added",
+      "tag": "SECTION",
+      "contains": "class=\"container\"",
+      "count": 2,
+      "reason": "Service-area :9, which loses `section--pt-6` and lands at standard tier with no class -- Jen §3.13 row 2, archetype D, \"none\" in the tier column meaning standard. Count is 2 because home and about each render two plain `container` sections in the CANDIDATE build and the specificity gate measures the worst page there; neither produces an added op, so the spare budget consumes nothing.",
+      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
+      "range": "9747e25..e9a2c9f"
     }
   ],
   "_notes": {

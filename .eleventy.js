@@ -30,7 +30,18 @@ module.exports = function(eleventyConfig) {
         + `(${JSON.stringify(value)}). A JSON-LD hole must be filled by a string from the `
         + `data file; anything else means the template names a field that does not exist.`);
     }
-    return JSON.stringify(value).slice(1, -1);
+    // `<` is escaped on top of JSON's own alphabet, because JSON.stringify does
+    // not escape it and the medium here is not JSON -- it is JSON inside an HTML
+    // <script>. The HTML parser looks for the literal `</script` before any JSON
+    // parser sees a byte, so a data value containing `</script>` closes the block
+    // early and everything after it is parsed as MARKUP. That is script injection
+    // through a data file, and it fails open: the page still builds, still
+    // renders, and the only symptom is structured data that stops working.
+    // < is valid JSON and reads back as `<`, so no consumer sees a
+    // difference. Measured across all 19 routes at the time of the change: zero
+    // JSON-LD blocks contain a `<`, so this moves no byte today -- it is the
+    // guard for the day a product name or FAQ answer contains one. (Razor N1.)
+    return JSON.stringify(value).slice(1, -1).replace(/</g, "\\u003c");
   });
 
   // Content-hashed asset URLs (P-A).
