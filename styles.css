@@ -1039,15 +1039,33 @@ nav .container {
    batch: its markup is gone, so it is provably inert, and deleting dead rules
    is B6's hygiene pass where it can be swept as a class rather than one
    instance at a time. */
+/* ONE grid, and it has to be ONE grid OBJECT, not two with matching track lists
+   (Razor W1). The first version gave the header and each row their own
+   `grid-template-columns`, which reads as shared and is not: track 4 is
+   `max-content`, and max-content resolves against the contents of ITS OWN
+   container. The header's fourth track sized to the word "PRICE" (38.7px) while
+   the rows' sized to "From $22,500" (~89px), so the capacity column stood 25.1px
+   out of register at 1440 and 768 -- a misalignment in the one component whose
+   entire argument is that its columns line up. The comment above claimed the
+   shared grid; the CSS did not deliver it.
+
+   Subgrid is the fix that keeps Jen's track list verbatim rather than trading it
+   for a fixed width: the tracks are defined ONCE here, and `max-content` now
+   resolves across every subgrid item at once -- header and all five rows -- so
+   the price track fits the widest price and every column shares one register by
+   construction. */
 .model-index {
     margin-top: var(--spacing-lg);
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr) minmax(0, 1fr) max-content 7.5rem;
+    column-gap: var(--spacing-lg);
 }
 
 .model-index__head,
 .model-row {
     display: grid;
-    grid-template-columns: 7rem minmax(0, 1fr) minmax(0, 1fr) max-content 7.5rem;
-    column-gap: var(--spacing-lg);
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
     align-items: baseline;
     padding-inline: 0;
     border-bottom: 1px solid var(--rule);
@@ -1056,10 +1074,11 @@ nav .container {
 /* Jen §1.2, as ruled 2026-08-02. The grid holds from 768 up; the tighter gap
    belongs to the TABLET BAND, not to a single pixel. Her reasoning: the spec's
    breakpoints are 1440/768/390, and a one-pixel rule would leave 769-1439 with
-   no defined gap at all — which contradicts "the same grid holds". */
+   no defined gap at all — which contradicts "the same grid holds".
+   Set on the parent now: a subgrid item inherits the parent's gap, so one
+   declaration moves header and rows together and they cannot drift apart. */
 @media (min-width: 768px) and (max-width: 1439px) {
-    .model-index__head,
-    .model-row {
+    .model-index {
         column-gap: var(--spacing-md);
     }
 }
@@ -1162,11 +1181,21 @@ nav .container {
    so the right-hand items stay flush -- which is the property her --spacing-md
    column-gap was buying. Same rendered line, no extra element. */
 @media (max-width: 767.98px) {
+    /* The shared register is a DESKTOP property. Below 768 each row is its own
+       two-line block, so the parent stops being a grid and the rows stop being
+       subgrid items -- otherwise they would inherit five desktop tracks they no
+       longer use. */
+    .model-index {
+        display: block;
+        column-gap: normal;
+    }
+
     .model-index__head {
         display: none;
     }
 
     .model-row {
+        grid-column: auto;
         grid-template-columns: auto auto 1fr;
         grid-template-rows: auto auto;
         row-gap: 0.25rem;
@@ -1198,8 +1227,14 @@ nav .container {
         grid-column: 2;
     }
 
+    /* `content: "·" / ""` — the slash gives the generated content ALTERNATIVE
+       TEXT, here empty, so the separator is drawn and not announced. Measured
+       via the CDP accessibility tree, which is where it showed up: without the
+       alt the row's computed name read "5' × 7' ·2–3 people", the dot glued to
+       the capacity as though it were part of the figure. A separator is
+       punctuation for the eye. */
     .model-row__capacity::before {
-        content: "·";
+        content: "·" / "";
         margin-inline: 0.5ch;
         color: var(--ink-quiet);
     }
