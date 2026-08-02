@@ -107,61 +107,19 @@
             "@type": "OfferCatalog",
             "name": "Finnish Saunas",
             "itemListElement": [
+{%- for key in models.order %}{% set m = models.models[key] %}
                 {
                     "@type": "Offer",
                     "itemOffered": {
                         "@type": "Product",
-                        "name": "S2 Finnish Sauna",
-                        "description": "2-3 person compact Finnish sauna with three-tier benches",
+                        "name": "{{ m.ldName | safe }}",
+                        "description": "{{ m.capacity | replace(" people", " person") | safe }} {{ m.ldShort | safe }}",
                         "brand": "Secret Sauna Company"
                     },
-                    "price": "22500",
+                    "price": "{{ m.basePrice }}",
                     "priceCurrency": "CAD"
-                },
-                {
-                    "@type": "Offer",
-                    "itemOffered": {
-                        "@type": "Product",
-                        "name": "S4 Finnish Sauna",
-                        "description": "4-5 person Finnish sauna with Western Red Cedar interior",
-                        "brand": "Secret Sauna Company"
-                    },
-                    "price": "29000",
-                    "priceCurrency": "CAD"
-                },
-                {
-                    "@type": "Offer",
-                    "itemOffered": {
-                        "@type": "Product",
-                        "name": "S6 Finnish Sauna",
-                        "description": "6-7 person Finnish sauna, available as mobile or semi-permanent",
-                        "brand": "Secret Sauna Company"
-                    },
-                    "price": "35500",
-                    "priceCurrency": "CAD"
-                },
-                {
-                    "@type": "Offer",
-                    "itemOffered": {
-                        "@type": "Product",
-                        "name": "S8 Finnish Sauna",
-                        "description": "8-10 person luxury Finnish sauna with full customization",
-                        "brand": "Secret Sauna Company"
-                    },
-                    "price": "44000",
-                    "priceCurrency": "CAD"
-                },
-                {
-                    "@type": "Offer",
-                    "itemOffered": {
-                        "@type": "Product",
-                        "name": "SC Commercial Sauna",
-                        "description": "10-14 person commercial-grade Finnish sauna for resorts and gyms",
-                        "brand": "Secret Sauna Company"
-                    },
-                    "price": "57000",
-                    "priceCurrency": "CAD"
-                }
+                }{{ "," if not loop.last }}
+{%- endfor %}
             ]
         }
     }

@@ -46,6 +46,39 @@ const { chromium } = require('playwright');
 const JSON_FILE = path.join(REPO_ROOT, 'docs', 'redesign-2026-07', '41-models-v2.json');
 const IDS = { S2: 's2', S4: 's4', S6: 's6', S8: 's8', SC: 'sc' };
 
+/**
+ * HALF THREE (B4) -- the Eleventy data file the SITE renders from.
+ *
+ * `src/_data/models.json` is what the /saunas/ ledger rows, the /saunas/
+ * ItemList and the sitewide OfferCatalog are all generated from. It exists to
+ * collapse four hand-maintained copies of the same facts into one, and without
+ * an assertion against canonical it would simply be the seventh copy -- a fix
+ * in shape and a drift source in substance.
+ *
+ * So it is gated on both sides. Against CANONICAL, statically: the four fact
+ * fields must be byte-equal per model. Against the RENDERED PAGE, in a real
+ * browser: each row's capacity, size and price cell must read what canonical
+ * says, modulo the two glyph substitutions Jen's Stage 0.7 spec sanctions as
+ * pure typography. The second half is the one no suite carried, and it is the
+ * one that would have caught the actual defect -- the SC's capacity was wrong
+ * in the markup, in four places, while every JSON file in the repo was right.
+ */
+const SITE_DATA_FILE = path.join(REPO_ROOT, 'src', '_data', 'models.json');
+
+/** The fields the canonical sheet is authoritative for. Nothing else is gated. */
+const GATED_FIELDS = ['name', 'size', 'capacity', 'basePrice'];
+
+/**
+ * The two substitutions Jen's spec sanctions, and their exact scope: `x` -> `×`
+ * between the two dimensions of a size, and the range hyphen -> en dash in a
+ * capacity. They are applied at RENDER time and never stored, so the stored
+ * string and the canonical string stay directly comparable. Written out here
+ * rather than imported from the template, deliberately: an assertion that reads
+ * its expectation from the thing it is testing proves nothing.
+ */
+const displaySize = (s) => s.replace(' x ', ' × ');
+const displayCapacity = (s) => s.replace('-', '–');
+
 /** Where the tools that quote customers actually read from. */
 const CANONICAL_PATH = process.env.SSC_MODELS_JSON
   || '/home/leesalo/marvin/content/reference/operations/models.json';
@@ -163,12 +196,70 @@ function checkCanonicalParity(inRepoRaw) {
     + `${JSON_FILE} over ${CANONICAL_PATH} (file write only -- that repo is not this batch's to commit).`);
 }
 
+/**
+ * Half three, static side. Returns the parsed canonical document when it is
+ * readable, so the browser half can assert the rendered page against CANONICAL
+ * rather than against the file it is checking.
+ */
+function checkSiteDataParity() {
+  console.log('\n--- site data file vs canonical ---');
+  console.log(`  site data ${SITE_DATA_FILE}`);
+  console.log(`  canonical ${CANONICAL_PATH}`);
+
+  let canonical;
+  try {
+    canonical = JSON.parse(fs.readFileSync(CANONICAL_PATH, 'utf8'));
+  } catch (err) {
+    skip(`canonical copy not readable (${err.code}): ${CANONICAL_PATH}. The site data file is `
+      + 'therefore UNVERIFIED against it -- not confirmed. Set SSC_MODELS_JSON to assert it.');
+    return null;
+  }
+
+  const site = JSON.parse(fs.readFileSync(SITE_DATA_FILE, 'utf8'));
+
+  // The roster itself is gated. A model quietly dropped from `order` would
+  // vanish from the rows, the ItemList and the OfferCatalog at once, and every
+  // remaining per-model assertion would still pass.
+  const canonicalKeys = Object.keys(canonical.models);
+  ok(JSON.stringify(site.order) === JSON.stringify(canonicalKeys),
+    `roster: site order ${JSON.stringify(site.order)} === canonical models `
+    + `${JSON.stringify(canonicalKeys)}`);
+
+  for (const key of canonicalKeys) {
+    const m = site.models[key];
+    if (!m) { ok(false, `${key}: canonical has this model, src/_data/models.json does not`); continue; }
+
+    const pick = (o) => Object.fromEntries(GATED_FIELDS.map((f) => [f, o[f]]));
+    const d = firstDifference(pick(canonical.models[key]), pick(m));
+    ok(d === null, d === null
+      ? `${key} facts: name/size/capacity/basePrice byte-equal to canonical`
+      : `${key} facts DRIFTED from canonical at "${d.field}": canonical `
+        + `${JSON.stringify(d.canonical)} vs site data ${JSON.stringify(d.inRepo)}. The site would `
+        + `print the second one. Copy the canonical value into ${SITE_DATA_FILE}.`);
+
+    // priceDisplay is the string a visitor reads. It is presentational in shape
+    // and load-bearing in content, so it is gated on its DIGITS: "From $22,500"
+    // must carry exactly basePrice, and a typo'd separator or a stale figure is
+    // a wrong price in front of a customer.
+    ok(money(m.priceDisplay) === canonical.models[key].basePrice,
+      `${key} priceDisplay "${m.priceDisplay}" carries basePrice `
+      + `${canonical.models[key].basePrice}`);
+
+    ok(m.id === IDS[key],
+      `${key} id "${m.id}" === the configurator's model id "${IDS[key]}" (the data-model the `
+      + `row must carry, or the row opens nothing)`);
+  }
+
+  return canonical;
+}
+
 const inRepoRaw = fs.readFileSync(JSON_FILE, 'utf8');
 const spec = JSON.parse(inRepoRaw);
 
 // Half two runs first: it needs no browser, and a drifted canonical copy is
 // worth knowing about before spending two minutes on a build.
 checkCanonicalParity(inRepoRaw);
+const canonicalDoc = checkSiteDataParity();
 
 console.log('\n--- site parity, per model ---');
 
@@ -180,6 +271,42 @@ const page = await browser.newPage();
 
 for (const [key, id] of Object.entries(IDS)) {
   await page.goto(`${server.url}/saunas/`, { waitUntil: 'networkidle' });
+
+  // THE ROW, before the modal. The assertion no suite carried: what the page
+  // actually PRINTS about a model, compared against canonical. Every earlier
+  // check in this file reads the configurator, and the configurator was always
+  // right -- the wrong capacity was sitting in the markup beside it.
+  if (canonicalDoc) {
+    const row = await page.evaluate((sel) => {
+      const el = document.querySelector(sel);
+      if (!el) return null;
+      const cell = (c) => el.querySelector(c)?.textContent.trim() ?? null;
+      return {
+        designation: cell('.model-row__designation'),
+        size: cell('.model-row__size'),
+        capacity: cell('.model-row__capacity'),
+        price: cell('.model-row__price'),
+      };
+    }, `[data-action="open-modal"][data-model="${id}"]`);
+
+    if (!row) {
+      ok(false, `${key}: no ledger row matched [data-action="open-modal"][data-model="${id}"] on `
+        + '/saunas/. The row contract is broken and three suites click that selector.');
+    } else {
+      const c = canonicalDoc.models[key];
+      ok(row.capacity === displayCapacity(c.capacity),
+        `${key} rendered capacity: page "${row.capacity}" === canonical "${c.capacity}" `
+        + `(rendered "${displayCapacity(c.capacity)}")`);
+      ok(row.size === displaySize(c.size),
+        `${key} rendered size: page "${row.size}" === canonical "${c.size}" `
+        + `(rendered "${displaySize(c.size)}")`);
+      ok(money(row.price) === c.basePrice,
+        `${key} rendered price: page "${row.price}" carries canonical basePrice ${c.basePrice}`);
+      ok(row.designation === key,
+        `${key} rendered designation: page "${row.designation}" === "${key}"`);
+    }
+  }
+
   await page.click(`[data-action="open-modal"][data-model="${id}"]`);
   await page.waitForSelector('.modal-addons .addon-option', { state: 'visible' });
 

@@ -1,97 +1,38 @@
-    <!-- Schema.org - Product listings -->
+    <!-- Schema.org - Product listings.
+         Generated from src/_data/models.json, which is gated against the
+         canonical price sheet by scripts/models-json-roundtrip.mjs. Every fact
+         in these strings -- capacity, size, price -- is interpolated from a
+         gated field, so the structured data cannot drift from the rows a
+         visitor reads (it had: the SC said "10-14+" here, "10-14" in the card,
+         and "10-14" again in the sitewide OfferCatalog, against a canonical
+         "10-12+"). -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "ItemList",
         "name": "Secret Sauna Company Models",
         "description": "Handcrafted Finnish sauna models from residential to commercial",
-        "numberOfItems": 5,
+        "numberOfItems": {{ models.order | length }},
         "itemListElement": [
+{%- for key in models.order %}{% set m = models.models[key] %}
             {
                 "@type": "ListItem",
-                "position": 1,
+                "position": {{ loop.index }},
                 "item": {
                     "@type": "Product",
-                    "name": "S2 Finnish Sauna",
-                    "description": "2-3 person compact Finnish sauna. 7' x 5' exterior with three-tier benches, Western Red Cedar interior, full insulation, and metal exterior cladding.",
+                    "name": "{{ m.ldName | safe }}",
+                    "description": "{{ m.capacity | replace(" people", " person") | safe }} {{ m.ldSummary | safe }}. {{ m.size | safe }} {{ m.ldDetail | safe }}",
                     "brand": {"@type": "Brand", "name": "Secret Sauna Company"},
                     "offers": {
                         "@type": "Offer",
-                        "price": "22500",
+                        "price": "{{ m.basePrice }}",
                         "priceCurrency": "CAD",
                         "availability": "https://schema.org/InStock",
                         "url": "https://www.secretsaunacompany.ca/saunas/"
                     }
                 }
-            },
-            {
-                "@type": "ListItem",
-                "position": 2,
-                "item": {
-                    "@type": "Product",
-                    "name": "S4 Finnish Sauna",
-                    "description": "4-5 person Finnish sauna. 7' x 7' exterior with Western Red Cedar interior, full insulation, choice of bench configuration, and one large window.",
-                    "brand": {"@type": "Brand", "name": "Secret Sauna Company"},
-                    "offers": {
-                        "@type": "Offer",
-                        "price": "29000",
-                        "priceCurrency": "CAD",
-                        "availability": "https://schema.org/InStock",
-                        "url": "https://www.secretsaunacompany.ca/saunas/"
-                    }
-                }
-            },
-            {
-                "@type": "ListItem",
-                "position": 3,
-                "item": {
-                    "@type": "Product",
-                    "name": "S6 Finnish Sauna",
-                    "description": "6-7 person Finnish sauna. 7' x 9' exterior, available as mobile or semi-permanent. Western Red Cedar interior with full customization options.",
-                    "brand": {"@type": "Brand", "name": "Secret Sauna Company"},
-                    "offers": {
-                        "@type": "Offer",
-                        "price": "35500",
-                        "priceCurrency": "CAD",
-                        "availability": "https://schema.org/InStock",
-                        "url": "https://www.secretsaunacompany.ca/saunas/"
-                    }
-                }
-            },
-            {
-                "@type": "ListItem",
-                "position": 4,
-                "item": {
-                    "@type": "Product",
-                    "name": "S8 Finnish Sauna",
-                    "description": "8-10 person luxury Finnish sauna. 7' x 11' exterior with full customization, premium interior options, and commercial-grade construction.",
-                    "brand": {"@type": "Brand", "name": "Secret Sauna Company"},
-                    "offers": {
-                        "@type": "Offer",
-                        "price": "44000",
-                        "priceCurrency": "CAD",
-                        "availability": "https://schema.org/InStock",
-                        "url": "https://www.secretsaunacompany.ca/saunas/"
-                    }
-                }
-            },
-            {
-                "@type": "ListItem",
-                "position": 5,
-                "item": {
-                    "@type": "Product",
-                    "name": "SC Commercial Sauna",
-                    "description": "10-14+ person commercial-grade Finnish sauna. 7' x 12'+ exterior, built for resorts, spas, and commercial facilities. Fully custom specifications.",
-                    "brand": {"@type": "Brand", "name": "Secret Sauna Company"},
-                    "offers": {
-                        "@type": "Offer",
-                        "price": "57000",
-                        "priceCurrency": "CAD",
-                        "availability": "https://schema.org/InStock",
-                        "url": "https://www.secretsaunacompany.ca/saunas/"
-                    }
-                }
-            }
+            }{{ "," if not loop.last }}
+{%- endfor %}
         ]
     }
     </script>
@@ -107,223 +48,89 @@
             </div>
         </section>
 
-        <section class="container">
-            <h2 class="text-center reveal">Why Traditional Finnish Saunas?</h2>
-            <p class="text-center reveal measure-wide">Not all saunas are created equal. Here's why our construction method delivers a superior experience that lasts decades.</p>
+        <!-- 2. THE MODEL INDEX (Jen Stage 0.7 §1) -- archetype E, tight tier.
+             Five rule-separated rows replace the card grid: the page's new
+             spine. No images in the rows; the plates carry the evidence, the
+             ledger carries the facts. Each row is ONE actionable element
+             carrying the data-action/data-model pair the configurator, the
+             price-hash suite and the round-trip all click. -->
+        <section id="models" class="container section--tight">
+            <span class="eyebrow--wide reveal">Standard Builds</span>
 
-            <div class="comparison-grid">
-                <div class="comparison-card reveal">
-                    <div class="comparison-header ours">
-                        <h3>Our Finnish Saunas</h3>
-                        <span class="comparison-badge">Built Like Your Home</span>
-                    </div>
-                    <ul class="comparison-list">
-                        <li><span class="check" aria-hidden="true">✓</span> Fully insulated envelope (R-13+ walls)</li>
-                        <li><span class="check" aria-hidden="true">✓</span> 2x4 framing with vapor barrier</li>
-                        <li><span class="check" aria-hidden="true">✓</span> Interior cedar cladding + exterior metal</li>
-                        <li><span class="check" aria-hidden="true">✓</span> Proper löyly (steam) at 80-100°C</li>
-                        <li><span class="check" aria-hidden="true">✓</span> Heats evenly, retains heat efficiently</li>
-                        <li><span class="check" aria-hidden="true">✓</span> Built to last 25+ years outdoors</li>
-                        <li><span class="check" aria-hidden="true">✓</span> Proven health benefits over millennia</li>
-                    </ul>
+            <div class="model-index">
+                <div class="model-index__head" aria-hidden="true">
+                    <span>Model</span>
+                    <span>Size</span>
+                    <span>Capacity</span>
+                    <span>Price</span>
+                    <span></span>
                 </div>
-
-                <div class="comparison-card reveal">
-                    <div class="comparison-header barrels">
-                        <h3>Barrel Saunas</h3>
-                        <span class="comparison-badge-alt">Common Alternative</span>
-                    </div>
-                    <ul class="comparison-list">
-                        <li><span class="x" aria-hidden="true">✗</span> No insulation (single-wall construction)</li>
-                        <li><span class="x" aria-hidden="true">✗</span> Stave construction with metal bands</li>
-                        <li><span class="x" aria-hidden="true">✗</span> Exposed wood inside and out</li>
-                        <li><span class="x" aria-hidden="true">✗</span> Difficult to achieve proper heat</li>
-                        <li><span class="x" aria-hidden="true">✗</span> Loses heat quickly in cold weather</li>
-                        <li><span class="x" aria-hidden="true">✗</span> 5-10 year lifespan typical</li>
-                        <li><span class="x" aria-hidden="true">✗</span> Higher energy costs to operate</li>
-                    </ul>
+{%- for key in models.order %}{% set m = models.models[key] %}
+                <div class="model-row reveal" role="button" tabindex="0" data-action="open-modal" data-model="{{ m.id }}" aria-label="{{ m.designation }} — configure and request a quote">
+                    <span class="model-row__designation">{{ m.designation }}</span>
+                    <span class="model-row__size">{{ m.size | replace(" x ", " × ") | safe }}</span>
+                    <span class="model-row__capacity">{{ m.capacity | replace("-", "–") | safe }}</span>
+                    <span class="model-price model-row__price">{{ m.priceDisplay | safe }}</span>
+                    <span class="model-row__affordance">Configure</span>
                 </div>
-
-                <div class="comparison-card reveal">
-                    <div class="comparison-header infrared">
-                        <h3>Infrared "Saunas"</h3>
-                        <span class="comparison-badge-alt">Not a True Sauna</span>
-                    </div>
-                    <ul class="comparison-list">
-                        <li><span class="x" aria-hidden="true">✗</span> Heats your body, not the air</li>
-                        <li><span class="x" aria-hidden="true">✗</span> No steam (löyly) possible</li>
-                        <li><span class="x" aria-hidden="true">✗</span> Max temp ~60°C (not hot enough)</li>
-                        <li><span class="x" aria-hidden="true">✗</span> No authentic sauna experience</li>
-                        <li><span class="x" aria-hidden="true">✗</span> Unproven long-term health claims</li>
-                        <li><span class="x" aria-hidden="true">✗</span> Often made with cheap materials</li>
-                        <li><span class="x" aria-hidden="true">✗</span> Indoor use only</li>
-                    </ul>
-                </div>
+{%- endfor %}
             </div>
-        </section>
-
-        <section class="surface--elevated hero-overlay">
-            <div class="container hero-overlay__content">
-                <h2 class="text-center reveal">Rooted in Science</h2>
-                <p class="text-center reveal measure-wide">Traditional Finnish sauna bathing isn't just relaxing—it's backed by decades of peer-reviewed research.</p>
-
-                <div class="grid-3">
-                    <div class="reveal stat-card">
-                        <span class="stat-number">40%</span>
-                        <p>Lower risk of cardiovascular disease with regular sauna use (4-7x/week)</p>
-                        <span class="stat-source">— JAMA Internal Medicine</span>
-                    </div>
-                    <div class="reveal stat-card">
-                        <span class="stat-number">66%</span>
-                        <p>Reduction in dementia risk for frequent sauna bathers</p>
-                        <span class="stat-source">— University of Eastern Finland</span>
-                    </div>
-                    <div class="reveal stat-card">
-                        <span class="stat-number">24%</span>
-                        <p>Lower all-cause mortality for those who sauna 4+ times weekly</p>
-                        <span class="stat-source">— 20-year Finnish study</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="container">
-            <h2 class="text-center reveal">Standard Builds</h2>
-            <p class="text-center reveal measure-wide">Handcrafted in Squamish, B.C. Every model features three-tier Western Red Cedar benches, panoramic windows, and accent walls as standard. Speakers and integrated lighting available across the range.</p>
 
 {% if site.features.advisor %}
-            <div class="advisor-container reveal"
+            <div class="advisor-container advisor-container--after-index reveal"
                  data-advisor-type="product"
                  data-advisor-placeholder="Describe your space and how you'd use it"
                  data-advisor-multi-turn="true"
                  data-advisor-starters='["I have a 10x12 deck for 4-6 people","Wood-fired vs electric — which is better?","What fits in a small backyard?"]'>
             </div>
 {% endif %}
-
-            <div class="model-grid">
-                <div class="model-card reveal" role="button" tabindex="0" data-action="open-modal" data-model="s2">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768486096/20250610_124511_dtirpu.jpg" alt="S2 Finnish Sauna - 2-3 person compact outdoor sauna with Western Red Cedar interior" class="model-card-image" width="1445" height="1920">
-                    <div class="model-card-content">
-                        <div class="model-header">
-                            <h3>S2</h3>
-                            <span class="model-capacity">2–3 Person</span>
-                        </div>
-                        <p>Our most compact build. Full Finnish performance in a 7x5 footprint. Two layout options: maximize seating or dedicate more space to the upper bench.</p>
-                        <div class="model-specs">
-                            <span>7' × 5'</span>
-                            <span class="model-price">From $22,500</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="model-card reveal" role="button" tabindex="0" data-action="open-modal" data-model="s4">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768272416/PXL_20240808_173352968.MP_yhb9bq.jpg" alt="S4 Finnish Sauna - 4-5 person traditional cedar sauna with three-tier bench system" class="model-card-image" width="1920" height="1536">
-                    <div class="model-card-content">
-                        <div class="model-header">
-                            <h3>S4</h3>
-                            <span class="model-capacity">4–5 Person</span>
-                        </div>
-                        <p>Our most popular residential model. Flexible bench configuration with room to find your preferred heat level across all three tiers.</p>
-                        <div class="model-specs">
-                            <span>7' × 7'</span>
-                            <span class="model-price">From $29,000</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="model-card reveal" role="button" tabindex="0" data-action="open-modal" data-model="s6">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768272421/20250313_124032-EDIT_uu36i8.jpg" alt="S6 Finnish Sauna - 6-7 person mobile sauna available in wood-fired or electric" class="model-card-image" width="1440" height="1920">
-                    <div class="model-card-content">
-                        <div class="model-header">
-                            <h3>S6</h3>
-                            <span class="model-capacity">6–7 Person</span>
-                        </div>
-                        <p>Room for a proper group session. Wood-burning or electric. Available with front deck. Built as mobile on a trailer or semi-permanent on skids.</p>
-                        <div class="model-specs">
-                            <span>7' × 9'</span>
-                            <span class="model-price">From $35,500</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="model-card reveal" role="button" tabindex="0" data-action="open-modal" data-model="s8">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,a_-90/v1768256585/IMG_7704_tliztu.jpg" alt="S8 Finnish Sauna - 8-10 person luxury outdoor sauna with full customization options" class="model-card-image" width="1280" height="1920">
-                    <div class="model-card-content">
-                        <div class="model-header">
-                            <h3>S8</h3>
-                            <span class="model-capacity">8–10 Person</span>
-                        </div>
-                        <p>Our largest standard build. Full three-tier benching with room to move. Wood-burning or electric, with optional front deck.</p>
-                        <div class="model-specs">
-                            <span>7' × 11'</span>
-                            <span class="model-price">From $44,000</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="model-card reveal" role="button" tabindex="0" data-action="open-modal" data-model="sc">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250659/PXL_20250605_233559063.MP-EDIT_zvmio8.jpg" alt="SC Commercial Finnish Sauna - 10-14 person commercial-grade sauna for resorts and wellness centers" class="model-card-image" width="1920" height="1446">
-                    <div class="model-card-content">
-                        <div class="model-header">
-                            <h3>SC</h3>
-                            <span class="model-capacity">10–14 Person</span>
-                        </div>
-                        <p>Commercial-grade performance. Durable epoxy flooring, reinforced benches, upgraded trim. Optional changing room and front deck. Built for resorts, gyms, and wellness centers. Custom sizes available.</p>
-                        <div class="model-specs">
-                            <span>12' × 7'+</span>
-                            <span class="model-price">From $57,000</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="center-wrapper">
-                <a href="/contact/" class="btn">Get Your Quote</a>
-            </div>
         </section>
 
-        <section class="container">
+        <!-- 3. Plate #1. Jen §2.1: without this seam the page runs E->E (index
+             straight into the compare table), a rule-2 violation. -->
+        <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768256591/IMG_3663_pp2juf.jpg" alt="Secret Sauna Company mobile sauna among the trees in British Columbia" class="full-width-image reveal" style="object-position: center 30%;" width="1920" height="1280">
+
+        <!-- 4. Compare table. #compareTable and js/compare.js untouched. -->
+        <section class="container section--tight">
             <h2 class="text-center reveal">Compare Models</h2>
             <p class="text-center reveal measure-wide">All models include three-tier Western Red Cedar benches, full insulation, panoramic windows, and metal exterior cladding.</p>
             <div id="compareTable" class="reveal"></div>
         </section>
 
-        <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768256591/IMG_3663_pp2juf.jpg" alt="Secret Sauna Company mobile sauna among the trees in British Columbia" class="full-width-image reveal" style="object-position: center 30%;" width="1920" height="1280">
+        <!-- 5. Plate #2. Jen §2.1: without it the page runs E->D, and after a
+             Ledger the next section must be B, C or G. -->
+        <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768256600/PXL_20241206_001021963.MP_g6jdgp.jpg" alt="Sauna detail" class="full-width-image reveal" width="1446" height="1920">
 
+        <!-- 6. Comparison essay (Jen §2.2) -- archetype D, demoted. The three
+             comparison cards and their 21 tick/cross bullets are gone: two
+             paragraphs a confident builder would say out loud, then a link for
+             the reader who wants the receipts. Every claim below is a
+             compression of copy that was already on this page. -->
         <section class="container">
-            <h2 class="text-center reveal">Commercial &amp; Custom</h2>
-            <p class="text-center reveal measure-wide">From wellness centers and hotel spas to event venues and rental fleets. We design and build commercial-grade saunas for businesses across British Columbia and beyond.</p>
-
-{% if site.features.advisor %}
-            <div class="advisor-container reveal"
-                 data-advisor-type="commercial"
-                 data-advisor-placeholder="Tell us about your commercial project"
-                 data-advisor-multi-turn="true"
-                 data-advisor-starters='["I\u0027m opening a wellness center","What regulations apply to commercial saunas in BC?","Can you build for a hotel spa?"]'>
-            </div>
-{% endif %}
-
-            <div class="grid-2">
-                <div class="offering-card reveal">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409618/PXL_20251217_180620919_et8wbi.jpg" alt="Custom Sauna" class="card-image" width="1920" height="1446">
-                    <div class="card-content">
-                        <h3>Custom Builds</h3>
-                        <p>Designed for your property, built to your vision. From intimate backyard saunas to commercial installations, each custom build begins with understanding how you'll use the space.</p>
-                        <a href="/contact/" class="link--accent">Inquire about custom →</a>
-                    </div>
+            <div class="essay essay--text-left">
+                <div class="essay__text reveal">
+                    <h2 class="essay__heading">Why Traditional Finnish Saunas?</h2>
+                    <p>Ours are built the way a house is built. A framed envelope, insulated to R-13 or better, sealed behind a vapour barrier, clad in Western Red Cedar inside and metal outside. That construction is what makes proper löyly possible at 80 to 100°C, holds the heat once it is there instead of pouring it into the yard, and keeps the whole thing standing outdoors for twenty-five years and more.</p>
+                    <p>The usual alternatives cannot do that. A barrel sauna is single-wall stave construction with no insulation at all, which makes real heat hard to reach and quick to lose, and five to ten years is a typical life outdoors. An infrared cabin is not a sauna: it warms your body rather than the air, tops out around 60°C, and cannot make steam.</p>
+                    <p class="essay__link"><a href="/faq/" class="link--accent">The full comparison →</a></p>
                 </div>
-                <div class="offering-card reveal">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250652/DSC03363-EDIT_mdrrrs.jpg" alt="Mobile Sauna" class="card-image" width="1919" height="1920">
-                    <div class="card-content">
-                        <h3>Mobile Builds</h3>
-                        <p>Fully equipped, road-ready saunas for hospitality partners and rental operators. Designed for durability and ease of use. Available for lease, rental partnerships, or purchase.</p>
-                        <a href="/contact/" class="link--accent">Inquire about mobile →</a>
-                    </div>
+                <div class="essay__plate reveal">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409618/PXL_20251217_180620919_et8wbi.jpg" alt="Custom-built Finnish sauna sited on a British Columbia property" width="1920" height="1446">
                 </div>
             </div>
         </section>
 
-        <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768256600/PXL_20241206_001021963.MP_g6jdgp.jpg" alt="Sauna detail" class="full-width-image reveal" width="1446" height="1920">
+        <!-- 7. Science thesis (Jen §2.3) -- archetype B, one stat, on ground.
+             The 66% and 24% stats and the elevated photo-overlay treatment are
+             deleted from this page. No claim is reworded: the 40% line is the
+             copy that was already here. -->
+        <section class="container section--open">
+            <div class="thesis reveal">
+                <p class="thesis__stat">40%</p>
+                <p class="thesis__claim">Lower risk of cardiovascular disease with regular sauna use (4–7×/week)</p>
+                <p class="thesis__source">JAMA Internal Medicine</p>
+            </div>
+        </section>
 
         <section class="wide-container">
             <h2 class="text-center reveal">Our Work</h2>
@@ -376,5 +183,19 @@
                 </div>
             </div>
         </section>
-    </div>
 
+        <!-- 9. Threshold (Jen §2.4) -- archetype G, the one elevated ground on
+             this page. Left-aligned at the gutter; centred CTAs are the
+             template gesture this system retired. "Get a Quote" walks back to
+             the index because the configurator entry IS the row -- inventing a
+             default model would be a business decision, not a design one. -->
+        <section class="surface--elevated">
+            <div class="container threshold">
+                <p class="threshold__line reveal">Configure yours.</p>
+                <div class="threshold__actions reveal">
+                    <a href="#models" class="btn">Get a Quote</a>
+                    <a href="/contact/" class="threshold__aside">or write to us →</a>
+                </div>
+            </div>
+        </section>
+    </div>

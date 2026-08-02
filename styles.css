@@ -552,7 +552,8 @@ p {
    without its figure style still fails to align, so the two travel together. */
 .model-price, .price-row, .price-summary, .addon-price,
 .booking-option__price, .booking-summary__row, .compare-table td,
-.spec-item span, .lightbox-counter {
+.spec-item span, .lightbox-counter,
+.model-row__size, .model-row__capacity {
     font-variant-numeric: lining-nums tabular-nums;
     font-feature-settings: "tnum" 1;
 }
@@ -1019,6 +1020,302 @@ nav .container {
 .model-price {
     color: var(--ember);
     font-weight: 500;
+}
+
+/* ── THE MODEL INDEX ──────────────────────────────────────────────────────
+   Jen Stage 0.7 §1. Archetype E: an El Croquis credits block, not a card grid.
+   One CSS grid is shared by the header row and the data rows, which is the
+   whole point of the register -- the five prices form a single flush column
+   with their thousands separators stacked. Ruled, never filled: radius 0, no
+   side borders, no fill and no shadow at rest. It is a table.
+
+   HOVER IS THE COLOUR HALF ONLY, and that is a recorded AMENDMENT to Jen 10
+   §5.2 rather than an omission of it (her §1.6). The sitewide surface-hover
+   grammar lifts a card and drops a shadow under it; a row that lifts tears the
+   hairline it shares with its neighbours. Background, border colour and text
+   colour move. Nothing translates, nothing scales, nothing glows.
+
+   The card CSS above (.model-grid/.model-card/...) is left in place by this
+   batch: its markup is gone, so it is provably inert, and deleting dead rules
+   is B6's hygiene pass where it can be swept as a class rather than one
+   instance at a time. */
+.model-index {
+    margin-top: var(--spacing-lg);
+}
+
+.model-index__head,
+.model-row {
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr) minmax(0, 1fr) max-content 7.5rem;
+    column-gap: var(--spacing-lg);
+    align-items: baseline;
+    padding-inline: 0;
+    border-bottom: 1px solid var(--rule);
+}
+
+/* Jen §1.2, literal: the same grid holds at 768, at the tighter gap. */
+@media (width: 768px) {
+    .model-index__head,
+    .model-row {
+        column-gap: var(--spacing-md);
+    }
+}
+
+.model-index__head {
+    padding-block: var(--spacing-sm);
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--ink-quiet);
+}
+
+.model-index__head > :nth-child(4) {
+    text-align: right;
+}
+
+.model-row {
+    padding-block: var(--spacing-md);
+    line-height: var(--leading-ui);
+    cursor: pointer;
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast),
+                color var(--transition-fast);
+}
+
+.model-row__designation {
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    font-weight: 500;
+    color: var(--ink);
+    transition: color var(--transition-fast);
+}
+
+.model-row__size,
+.model-row__capacity {
+    font-size: var(--text-sm);
+    color: var(--ink-quiet);
+}
+
+/* --ink, not --ember, and the override is deliberate: .model-price above paints
+   the card's price ember. Ember is this site's one ACTION colour, and the
+   action here is the row, not the number. The number is a fact. */
+.model-row__price {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--ink);
+    text-align: right;
+}
+
+/* The affordance -- how a row says "opens the configurator". Present at rest,
+   because discoverability is not a hover reward, and identical on touch. One
+   small ember label: no button chrome, no border, no chevron. */
+.model-row__affordance {
+    font-size: var(--text-2xs);
+    font-weight: 500;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--ember);
+    text-align: right;
+    transition: color var(--transition-fast);
+}
+
+.model-row:hover {
+    background: var(--color-white-alpha-03);
+    border-bottom-color: var(--rule-hover);
+}
+
+.model-row:hover .model-row__designation,
+.model-row:hover .model-row__affordance {
+    color: var(--ember-hover);
+}
+
+.model-row:focus-visible {
+    background: var(--color-white-alpha-03);
+    outline: 1px solid var(--ember);
+    outline-offset: -1px;
+}
+
+.model-row:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.model-row:active {
+    background: var(--color-white-alpha-05);
+}
+
+.advisor-container--after-index {
+    margin-top: var(--spacing-xl);
+}
+
+/* Two lines below 768: designation + price, then "size · capacity" +
+   affordance. The header row is hidden -- the stacked form is self-labelling.
+
+   THREE columns, not Jen's two, and the reason is structural rather than
+   aesthetic: her line 2 joins size and capacity into ONE cell separated by a
+   middle dot, and they are two sibling grid items with no wrapper to share a
+   cell with. Adding a wrapper would put a div into the desktop grid that the
+   desktop layout does not want. So they keep their own auto-width columns, the
+   dot is generated between them at exactly ` · `, and the third column is 1fr
+   so the right-hand items stay flush -- which is the property her --spacing-md
+   column-gap was buying. Same rendered line, no extra element. */
+@media (max-width: 767.98px) {
+    .model-index__head {
+        display: none;
+    }
+
+    .model-row {
+        grid-template-columns: auto auto 1fr;
+        grid-template-rows: auto auto;
+        row-gap: 0.25rem;
+        column-gap: 0;
+        padding-block: var(--spacing-sm);
+    }
+
+    .model-row__designation {
+        grid-row: 1;
+        grid-column: 1 / 3;
+    }
+
+    .model-row__price {
+        grid-row: 1;
+        grid-column: 3;
+        justify-self: end;
+    }
+
+    .model-row__size {
+        grid-row: 2;
+        grid-column: 1;
+    }
+
+    /* The middle dot is GENERATED, never typed into the markup, so the capacity
+       cell's text content stays the canonical string that the round-trip gate
+       reads back out of the rendered page. */
+    .model-row__capacity {
+        grid-row: 2;
+        grid-column: 2;
+    }
+
+    .model-row__capacity::before {
+        content: "·";
+        margin-inline: 0.5ch;
+        color: var(--ink-quiet);
+    }
+
+    .model-row__affordance {
+        grid-row: 2;
+        grid-column: 3;
+        justify-self: end;
+    }
+}
+
+/* ── THE COMPARISON ESSAY ─────────────────────────────────────────────────
+   Jen §2.2. Archetype D, 40/60, text LEFT -- the first and only Essay on the
+   page, so text-left under her §2.4 strict alternation. Heading at --text-2xl,
+   not --text-3xl: the section defends, it no longer leads. */
+.essay {
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+    gap: var(--spacing-2xl);
+    align-items: start;
+}
+
+.essay__text {
+    max-width: var(--measure);
+}
+
+.essay__heading {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    color: var(--ink);
+}
+
+.essay__text p {
+    color: var(--ink);
+}
+
+.essay__link {
+    margin-bottom: 0;
+}
+
+.essay__plate img {
+    display: block;
+    width: 100%;
+    height: var(--plate-pair-h);
+    object-fit: cover;
+}
+
+@media (max-width: 767.98px) {
+    .essay {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    /* Image first, text second (Jen §2.2). */
+    .essay__plate {
+        order: -1;
+    }
+}
+
+/* ── THE SCIENCE THESIS ───────────────────────────────────────────────────
+   Jen §2.3. Archetype B, ONE stat, 34rem, left-aligned, on GROUND. The
+   elevated photo-overlay stat-wall is gone: elevation marks a voice register
+   change and belongs to the Threshold on this page, not to a figure. The
+   numeral is --ink, because the number is the thesis, not a call to action. */
+.thesis {
+    max-width: var(--measure-narrow);
+}
+
+.thesis__stat {
+    font-family: var(--font-heading);
+    font-size: var(--text-4xl);
+    font-weight: 500;
+    line-height: var(--leading-display);
+    color: var(--ink);
+    font-variant-numeric: lining-nums tabular-nums;
+    margin-bottom: var(--spacing-sm);
+}
+
+.thesis__claim {
+    font-size: var(--text-md);
+    line-height: var(--leading-subhead);
+    color: var(--ink);
+    max-width: var(--measure-narrow);
+    margin-bottom: var(--spacing-sm);
+}
+
+.thesis__source {
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--ink-quiet);
+    margin-bottom: 0;
+}
+
+/* ── THE THRESHOLD ────────────────────────────────────────────────────────
+   Jen §2.4. Archetype G, elevated ground, left-aligned AT THE GUTTER. Centred
+   CTAs are the template gesture this system retired. */
+.threshold__line {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    color: var(--ink);
+    max-width: var(--measure-thesis);
+    margin-bottom: var(--spacing-lg);
+}
+
+.threshold__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.threshold__aside {
+    color: var(--ink-quiet);
+    transition: color var(--transition-fast);
+}
+
+.threshold__aside:hover {
+    color: var(--ember);
 }
 
 /* Comparison Cards */

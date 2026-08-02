@@ -704,6 +704,18 @@ export function partitionByScope(whitelist, baselineSha, candidateSha, opts = {}
  */
 export function fingerprintsIdentical(aPrints, bPrints) {
   const differences = [];
+  // VACUITY GUARD (Razor, B3 review). Two empty maps agree about nothing, and
+  // the loops below would return identical:true for them -- which in the one
+  // caller that matters would activate an entry on the strength of a build that
+  // produced no pages at all. "I measured nothing and found no difference" is
+  // the fail-OPEN direction for a mechanism whose every other error path closes.
+  if (aPrints.size === 0 || bPrints.size === 0) {
+    return {
+      identical: false,
+      differences: [`no fingerprints to compare (${aPrints.size} vs ${bPrints.size}); `
+        + 'an empty comparison cannot establish identity'],
+    };
+  }
   const aKeys = [...aPrints.keys()].sort();
   const bKeys = [...bPrints.keys()].sort();
   for (const k of aKeys) if (!bPrints.has(k)) differences.push(`${k}: missing from the descendant`);

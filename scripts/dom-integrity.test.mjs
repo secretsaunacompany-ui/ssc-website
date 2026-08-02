@@ -305,6 +305,19 @@ const MUTATIONS = [
     probe: (m, f) => m.fingerprintsIdentical(f.printsA, f.printsReworded).identical,
   },
   {
+    name: 'D-m19 the vacuity guard removed (empty compares as identical)',
+    proves: 'a comparison that measured nothing cannot certify identity',
+    edits: { 'dom-fingerprint.mjs': [
+      '  if (aPrints.size === 0 || bPrints.size === 0) {',
+      '  if (false) {'] },
+    // Shipped: false. Mutated: true — and a `true` here activates a whitelist
+    // entry against a build that produced no pages at all. Cheap to probe and
+    // it needs no fixture, which is the point: the guard is one line and
+    // without this the one line could be deleted by anyone and nothing would
+    // go red.
+    probe: (m) => m.fingerprintsIdentical(new Map(), new Map()).identical,
+  },
+  {
     name: 'D-m16 MAX_SUBTREE_TOKENS collapsed back to a tiny cap',
     proves: 'the raised cap is what actually lets a whole component be declared as one deletion',
     // Aimed at the ENFORCEMENT site, not at the constant's declaration. An
@@ -742,6 +755,25 @@ async function main() {
         fingerprintsIdentical(prints(fpA), new Map([['/@1440', fpA]])).identical === false,
         'a page that exists on one side only is a difference, not an absence of evidence — '
         + 'fail closed');
+
+      // Y12, the vacuity guard (Razor, B3 review). Every loop in
+      // fingerprintsIdentical is over the keys of the maps it was handed, so
+      // two EMPTY maps fall straight through all of them and returned
+      // identical:true — "I compared nothing and found no difference". In the
+      // one caller that matters that answer activates a whitelist entry on the
+      // strength of a build that produced no pages, which is the fail-OPEN
+      // direction in a mechanism whose every other error path closes.
+      {
+        const vacuous = fingerprintsIdentical(new Map(), new Map());
+        check('Y12 two EMPTY fingerprint sets are NOT identical',
+          vacuous.identical === false && vacuous.differences.length === 1,
+          'an empty comparison establishes nothing; it must never read as proof of identity. '
+          + `got ${JSON.stringify(vacuous)}`);
+        check('Y12b one empty side is NOT identical either',
+          fingerprintsIdentical(new Map(), prints(fpA)).identical === false
+          && fingerprintsIdentical(prints(fpA), new Map()).identical === false,
+          'the guard has to hold in both directions, or the argument order decides the verdict');
+      }
 
       // (b) from the reviewer's list, end to end: the entry is inert AND the
       // deletion it would have covered reports as undeclared.
