@@ -34,16 +34,25 @@
         </div>
     </footer>
 
-    {# NOTE, deliberate: this include is sitewide although only /saunas/ can open
-       the modal, so 18 routes ship a second, inert <form> whose empty
-       `configuration`, `model` and `estimated_total` hidden inputs sit in the
-       DOM beside the real contact form. A behavioural reviewer read the
-       /contact/ one as a live field that had lost its data, and the fix -- a
-       `configurator` page flag around this include -- was written, measured and
-       then REVERTED: it deletes a 352-token subtree, and dom-integrity's
-       delete-subtree op caps its slice search at 64 tokens by design. Raising
-       that cap to make this change certify is tuning the instrument until it
-       gives the wanted answer. Handed on as its own batch, carrying the harness
-       change with it. #}
-    {% include "modals/sauna.njk" %}
+    {# The configurator modal is emitted on the `configurator` page flag alone,
+       which today only src/saunas.njk sets -- the only page carrying anything
+       that opens it (five data-action="open-modal" sites, pages/saunas.njk).
+       Before this guard the include was sitewide: 16 built pages carried
+       `id="saunaModal"` and 15 of them could not open it, each shipping a
+       second, inert <form> whose empty `configuration`, `model` and
+       `estimated_total` hidden inputs sat in the DOM beside the real contact
+       form. A behavioural reviewer read the /contact/ one as a live field that
+       had lost its data.
+
+       The fix was written and measured once before, in WP-0b-i's fix round, and
+       REVERTED there rather than shipped: the deletion is a ~350-token subtree
+       and dom-integrity's delete-subtree op capped its slice search at 64, so
+       certifying it required raising the cap -- and raising a limit to make the
+       batch that needs it go green is the tuning-until-green move that
+       instrument exists to refuse. It ships here instead, as its own batch that
+       carries the harness change with it as a separately reviewed subject.
+
+       The lightbox include stays UNGUARDED: it is opened from image grids on
+       several routes, not from the configurator. #}
+    {% if configurator %}{% include "modals/sauna.njk" %}{% endif %}
     {% include "modals/lightbox.njk" %}

@@ -208,6 +208,12 @@
         }
 
         open(modelId) {
+            // Defence in depth. initModalManager() refuses to construct without
+            // a #saunaModal, so a manager reaching here should always have one;
+            // this catches the case where the root is removed after
+            // construction, and it means open() can never proceed to bind focus
+            // and paint against a null root.
+            if (!this.modal) return;
             const saunaModels = window.SSC.saunaModels;
             currentModel = saunaModels[modelId];
             currentModelId = modelId;
@@ -1216,7 +1222,24 @@
     // ============================================
     let modalManager = null;
 
+    /**
+     * Returns null on any page that does not carry the modal.
+     *
+     * The include is now scoped to pages setting `configurator: true` (today
+     * /saunas/ alone), so on the other 15 routes this script still loads -- it
+     * is in the shared bundle -- and finds no #saunaModal. Constructing a
+     * ModalManager against a null root would bind listeners and query elements
+     * that are not there, so the manager is simply never created and
+     * `window.SSC.modalManager` stays undefined.
+     *
+     * That is safe because EVERY dispatch site already guards on it before
+     * calling: js/init.js lines 25, 28, 31, 34, 37, 75 and 121 each read
+     * `if (SSC.modalManager) SSC.modalManager.<method>(...)`. Those seven
+     * guards were written for the deferred-construction window and hold
+     * unchanged for permanent absence -- verified site by site, not assumed.
+     */
     function initModalManager() {
+        if (!document.getElementById('saunaModal')) return null;
         if (!modalManager) {
             modalManager = new ModalManager();
             window.SSC.modalManager = modalManager;
