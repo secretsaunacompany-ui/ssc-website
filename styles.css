@@ -168,6 +168,27 @@
     --nav-scrim:  rgba(12, 12, 12, 0.72);   /* nav bg; the ONE sanctioned blur */
     --hero-scrim: linear-gradient(transparent 40%, rgba(12, 12, 12, 0.72));
 
+    /* ===== The fixed nav's own height =====
+       DERIVED from the three things that actually build it, so it cannot drift
+       away from the nav the way a pasted literal would: the logo image, the
+       nav's block padding (`nav { padding: var(--spacing-sm) 2.5% }`), and its
+       1px bottom rule. Verified against a real browser at both breakpoints --
+       115 + 32 + 1 = 148px desktop, 58 + 32 + 1 = 91px at <=768px, both matching
+       getBoundingClientRect to the pixel (measured 2026-08-02).
+
+       This exists because the nav is `position: fixed`: it is painted over the
+       top --nav-band of every page while occupying no space in flow. Anything
+       that centres content in a full-viewport box is therefore centring inside
+       a box whose top --nav-band is covered. The hero does exactly that, which
+       is what put the h1 behind the nav at phone widths.
+
+       scripts/rhythm.test.mjs asserts the token against the nav's measured
+       height at both breakpoints, so this derivation is machine-checked rather
+       than trusted. NOT to be confused with the queued `--nav-clear` token
+       (ROADMAP), which is about .page-hero's 12rem and is a separate question. */
+    --logo-size: 115px;
+    --nav-band: calc(var(--logo-size) + 2 * var(--spacing-sm) + 1px);
+
     /* Typography */
     --font-primary: 'Outfit', 'Outfit Fallback', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-heading: 'Cormorant Garamond', 'Cormorant Garamond Fallback', Georgia, serif;
@@ -668,8 +689,8 @@ nav .container {
 }
 
 .logo img {
-    height: 115px;
-    width: 115px;
+    height: var(--logo-size);
+    width: var(--logo-size);
     object-fit: contain;
     display: block;
     flex-shrink: 0;
@@ -3317,13 +3338,73 @@ footer::before {
        §6.2a amendment). The three tiers now compress on their own, through the
        min(vh, vw) arm in --section-pad, at every width and with no breakpoint. */
 
-    .logo img {
-        height: 58px;
-        width: 58px;
+    /* Drives .logo img AND --nav-band together, so the reserved band below can
+       never disagree with the nav that is actually painted. */
+    :root {
+        --logo-size: 58px;
     }
 
+    /* THE HERO RESERVES THE NAV BAND.
+
+       The hero centres its content with flex `align-items: center` inside a box
+       that starts at y=0 -- but the top --nav-band of that box is covered by the
+       fixed nav, which is opaque enough to swallow text (--nav-scrim is
+       rgba(12,12,12,0.72) over an 8px blur). So the geometry was always centring
+       into an occluded strip, and how far the h1 intruded into it was decided by
+       one thing: how many lines the h1 happened to wrap to. Every extra line
+       adds a full line-height to the content block and, because the block is
+       CENTRED, lifts its top edge by HALF a line-height (~23.7px here).
+
+       Measured on the real built page, first-line glyph box vs nav bottom,
+       settled state (2026-08-02):
+
+                     webfont loaded        webfont unresolved
+           360px     5 lines   -28.1       5 lines   -39.3
+           390px     4 lines    -7.5       5 lines   -29.3
+           414px     4 lines    -9.6       4 lines    -7.6
+           430px     4 lines    +2.2       4 lines    +5.2
+
+       Two triggers, one geometry. At 360 the h1 wraps to five lines with the
+       real font and is already behind the nav on a shipped page. At 390 it
+       wraps to five only when the webfont has not resolved -- which is not
+       hypothetical: the metric-tuned 'Cormorant Garamond Fallback' is
+       `src: local('Georgia')`, and Georgia does not exist on Android or on most
+       Linux, so on those devices the override never applies and the h1 renders
+       in an untuned serif for the whole swap window (or forever). That is the
+       -29px the behavioural eval recorded, reproduced here exactly by blocking
+       /fonts/ (-29.3 at 390).
+
+       Padding on .hero-content could not have fixed this and it is worth saying
+       why, because it is the obvious move: for a centred block the h1's top is
+       `(boxH - contentH)/2 + paddingTop`, and contentH already includes both
+       paddings, so symmetric padding CANCELS. Only an asymmetric pad or a change
+       to the box itself moves a centred child.
+
+       So the box changes: reserve exactly the band the nav occupies, and centre
+       in what is left. `min-height` rather than `height` because at 360 with an
+       unresolved font the content plus the reserved band exceeds 80vh, and a
+       fixed height there would trade text-behind-nav for text clipped by
+       `overflow: hidden` -- a worse bug and a silent one. The box grows instead;
+       page height is already a waived metric on `/`.
+
+       This is Jen's "clearance, not type-size" ruling, applied to the box that
+       actually controls the clearance.
+
+       One more thing had to be said explicitly rather than inherited. `.hero` is
+       a <section>, so it picks up the section rhythm tier's block padding --
+       70.2px on both edges in this build (64px before B2 retuned the tier; that
+       is the "padding-top 70.2 vs 64" the eval reported, and it is real, but it
+       is SYMMETRIC and the box height was fixed, so by the cancellation above it
+       moved the h1 by exactly nothing). Rhythm padding is meaningful for a
+       section that sits in the document flow between its neighbours; it is not
+       meaningful for a full-bleed hero whose content is optically centred over a
+       photograph. Left alone it would stack under the reserved band and push the
+       box 54px taller at every phone width. So both edges are stated here:
+       the band on top, nothing on the bottom. */
     .hero {
-        height: 80vh;
+        height: auto;
+        min-height: 80vh;
+        padding-block: var(--nav-band) 0;
     }
 
     .gallery-mosaic {
