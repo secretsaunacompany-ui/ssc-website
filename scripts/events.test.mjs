@@ -180,6 +180,55 @@ const RECORDER = `
   };
 `;
 
+/**
+ * Marks, INSIDE the page, the two instants the hero-hold clock fixture compares:
+ * when `.reveal-ready` actually appeared, and when the metric's own trigger
+ * condition (a scroll event seeing a non-zero pageYOffset) first became true.
+ *
+ * Both are marked here rather than from the test side because a CDP round trip
+ * is tens of milliseconds and the tolerance being asserted is two frames. An
+ * earlier version of this fixture noted the ready instant with an
+ * `await page.evaluate(() => Date.now())` after waitForFunction, and the round
+ * trip alone put it over the line in roughly one run in three -- it was
+ * measuring its own instrumentation.
+ *
+ * A MutationObserver on the class attribute, not a poll: it observes the DOM
+ * fact the transition-delays key off, it fires in the same task as the class
+ * lands, and it is independent of the page's own bookkeeping, which is what
+ * keeps the comparison from being tautological.
+ *
+ * The attach step retries: an init script runs at document-creation time, when
+ * `document.documentElement` can still be null, and observing null throws --
+ * which killed the whole script and hung the fixture on a wait that could never
+ * resolve. Found by this suite going red, which is the correct way to find it.
+ */
+const HERO_CLOCK_PROBE = `
+  window.__tReady = null;
+  window.__tTrigger = null;
+  (function () {
+    var mark = function () {
+      if (window.__tReady === null
+          && document.documentElement
+          && document.documentElement.classList.contains('reveal-ready')) {
+        window.__tReady = Date.now();
+      }
+    };
+    var attach = function () {
+      if (!document.documentElement) { setTimeout(attach, 0); return; }
+      new MutationObserver(mark).observe(document.documentElement, {
+        attributes: true, attributeFilter: ['class'],
+      });
+      mark();
+    };
+    attach();
+    window.addEventListener('scroll', function () {
+      if (window.__tTrigger === null && window.pageYOffset > 0) {
+        window.__tTrigger = Date.now();
+      }
+    }, { passive: true, capture: true });
+  })();
+`;
+
 const readEvents = (page) => page.evaluate(
   () => JSON.parse(sessionStorage.getItem('__ssc_events') || '[]'));
 
@@ -719,18 +768,9 @@ async function runInventory(base, browser) {
     // assertion does not depend on how long an animation takes.
     const TWO_FRAMES_MS = 34;
     const page = await newPage(browser);
+    await page.addInitScript(HERO_CLOCK_PROBE);
     await page.goto(base, { waitUntil: 'domcontentloaded' });
-    await page.waitForFunction(
-      () => document.documentElement.classList.contains('reveal-ready'));
-    await page.evaluate(() => {
-      window.__tReady = Date.now();
-      window.__tTrigger = null;
-      window.addEventListener('scroll', () => {
-        if (window.__tTrigger === null && window.pageYOffset > 0) {
-          window.__tTrigger = Date.now();
-        }
-      }, { passive: true });
-    });
+    await page.waitForFunction(() => window.__tReady !== null);
     await page.waitForTimeout(400);
     await page.evaluate(() => window.scrollTo({ top: 600, behavior: 'instant' }));
     await page.waitForTimeout(200);
@@ -1151,6 +1191,122 @@ const MUTATIONS = [
       });
       await page.close();
       return !!(payload && 'detail' in payload);
+    },
+  },
+  // ---- B1, the held hero ------------------------------------------------
+  //
+  // These five were run by hand during review and discriminate; encoded here
+  // because this section's own contract is that EVERY assertion above has a
+  // mutation proving it can fail, and five fixtures had arrived without one.
+  // A fixture nobody has ever seen go red is a decoration with a green tick.
+  {
+    name: 'M9 hero hold token changed without its constants',
+    proves: 'a --hero-hold that no longer agrees with SETTLE_MS is detected',
+    apply: (dir) => mutate(path.join(dir, 'styles.css'),
+      '--hero-hold: 1600ms;', '--hero-hold: 1200ms;'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.goto(base, { waitUntil: 'load' });
+      await page.waitForFunction(
+        () => document.documentElement.classList.contains('reveal-ready'));
+      const agrees = await page.evaluate(() => {
+        const ms = (v) => (String(v).trim().endsWith('ms')
+          ? parseFloat(v) : parseFloat(v) * 1000);
+        const cs = getComputedStyle(document.querySelector('.hero-content'));
+        return ms(cs.transitionDelay.split(',')[0])
+          + ms(cs.transitionDuration.split(',')[0]) === 2720;
+      });
+      await page.close();
+      return !agrees;
+    },
+  },
+  {
+    name: 'M10 hero image put back in the load-in group',
+    proves: 'the LCP element being withheld behind a reveal is detected',
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      "                document.querySelector('nav'),\n"
+      + "                document.querySelector('.hero-content'),",
+      "                document.querySelector('.hero-image'),\n"
+      + "                document.querySelector('nav'),"),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.goto(base, { waitUntil: 'load' });
+      await page.waitForFunction(
+        () => document.documentElement.classList.contains('reveal-ready'));
+      const hasReveal = await page.evaluate(
+        () => document.querySelector('.hero-image').classList.contains('reveal'));
+      await page.close();
+      return hasReveal;
+    },
+  },
+  {
+    name: 'M11 escape hatch never bound',
+    proves: 'a held beat that cannot be interrupted by Tab is detected',
+    apply: (dir) => mutate(path.join(dir, 'js', 'init.js'),
+      'SSC.initHoldEscape();', 'void SSC.initHoldEscape;'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(200);
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(100);
+      const opacity = await page.evaluate(
+        () => parseFloat(getComputedStyle(document.querySelector('nav')).opacity));
+      await page.close();
+      return opacity !== 1;
+    },
+  },
+  {
+    name: 'M12 choreography clock origin displaced',
+    proves: 'the branch boundary drifting off the choreography clock is detected',
+    // The historical bug was the metric timing from DOMContentLoaded, and that
+    // is NOT what this mutation reproduces -- deliberately. The DCL-to-
+    // reveal-ready gap is environment-dependent (53-168ms measured; the low end
+    // is barely three frames), so mutating to the literal old behaviour
+    // discriminates on a slow machine and not on a fast one: it failed 2 runs
+    // in 3 here. A mutation that only sometimes fires is worse than none,
+    // because it teaches the next person to re-run until it is quiet.
+    //
+    // So the clock ORIGIN is displaced by a flat quarter second instead. That
+    // is the general defect the fixture claims to catch -- the metric counting
+    // from an instant that is not the one the delays count from -- tested at a
+    // magnitude that cannot hide inside the tolerance. The specific historical
+    // instance is a member of that class.
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      'this.startedAt = Date.now();',
+      'this.startedAt = Date.now() - 250;'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.addInitScript(HERO_CLOCK_PROBE);
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => window.__tReady !== null);
+      await page.waitForTimeout(400);
+      await page.evaluate(() => window.scrollTo({ top: 600, behavior: 'instant' }));
+      await page.waitForTimeout(200);
+      const marks = await page.evaluate(
+        () => ({ ready: window.__tReady, trigger: window.__tTrigger }));
+      const events = await readEvents(page);
+      const ev = one(events, 'hero_hold_skipped') || one(events, 'hero_hold_complete');
+      await page.close();
+      if (!ev || marks.trigger === null) return true;
+      return Math.abs(ev.data.ms - (marks.trigger - marks.ready)) > 34;
+    },
+  },
+  {
+    name: 'M13 reduced-motion abstention removed',
+    proves: 'a visitor who was never held voting on the hold is detected',
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      '        if (prefersReducedMotion()) return;\n\n        let reported = false;',
+      '        if (false) return;\n\n        let reported = false;'),
+    run: async (base, browser) => {
+      const { page, close } = await newEmulatedPage(browser, { reducedMotion: 'reduce' });
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(300);
+      const events = await readEvents(page);
+      await close();
+      return typeOf(events, 'hero_hold_skipped').length
+        + typeOf(events, 'hero_hold_complete').length > 0;
     },
   },
 ];
