@@ -236,6 +236,56 @@ function probeSectionTier() {
 }
 
 /** `.measure-wide`, in the only unit that means anything: rendered pixels. */
+/**
+ * The nav band, and whether the hero actually clears it.
+ *
+ * The nav is `position: fixed`: it paints over the top of every page while
+ * occupying no space in flow. The hero centres its content in a box starting at
+ * y=0, so without a reserved band it centres into a strip the nav covers, and
+ * how far the h1 intrudes is decided by how many lines it happens to wrap to --
+ * each extra line lifts the centred block by HALF a line-height. That is how the
+ * h1 ended up behind the nav at 360-430.
+ *
+ * Three things are read, and the FIRST LINE's glyph box is used rather than the
+ * h1's element box, because a element box that starts above the nav bottom can
+ * still have its visible text below it (half-leading), and the question is what
+ * a reader sees.
+ */
+function probeHeroClearance() {
+  const nav = document.querySelector('nav');
+  const hero = document.querySelector('.hero');
+  const h1 = document.querySelector('.hero h1');
+  if (!nav || !hero || !h1) return null;
+  const navRect = nav.getBoundingClientRect();
+  const rootCS = getComputedStyle(document.documentElement);
+  const px = (v) => parseFloat(v) || 0;
+  const range = document.createRange();
+  range.selectNodeContents(h1);
+  const lines = [...range.getClientRects()].filter((r) => r.height > 1);
+  return {
+    navHeight: +navRect.height.toFixed(2),
+    navBottom: +navRect.bottom.toFixed(2),
+    heroPadTop: +px(getComputedStyle(hero).paddingTop).toFixed(2),
+    // The inputs --nav-band is derived from, read as USED VALUES off the
+    // elements rather than as custom-property token text. A custom property
+    // resolves to its token stream, so `--spacing-sm` reads back as the string
+    // "1rem" and parses to 1, not 16 -- reading the token here would have
+    // compared a real height against nonsense. The nav's own computed padding is
+    // the same declaration after the browser has resolved it.
+    logoSize: (() => {
+      const img = nav.querySelector('.logo img');
+      return img ? +img.getBoundingClientRect().height.toFixed(2)
+        : +px(rootCS.getPropertyValue('--logo-size')).toFixed(2);
+    })(),
+    navPadTop: +px(getComputedStyle(nav).paddingTop).toFixed(2),
+    navPadBottom: +px(getComputedStyle(nav).paddingBottom).toFixed(2),
+    navBorderBottom: +px(getComputedStyle(nav).borderBottomWidth).toFixed(2),
+    h1Lines: lines.length,
+    firstLineTop: lines.length ? +lines[0].top.toFixed(2) : null,
+    glyphClearance: lines.length ? +(lines[0].top - navRect.bottom).toFixed(2) : null,
+  };
+}
+
 function probeMeasure() {
   const decl = (n) => getComputedStyle(document.documentElement)
     .getPropertyValue(n).trim();
@@ -303,6 +353,13 @@ const GUTTER_DEVIATIONS = [
 const MEASURE_WIDE_CH = 70;              // doc 11 §5 / --measure-wide
 
 const WIDTHS = [1440, 390];
+
+/* The hero clearance is a PHONE-WIDTH property and its worst case is 360, which
+   is not one of the two capture widths, so it gets its own narrow sweep rather
+   than widening WIDTHS (which would triple every other probe's runtime for no
+   gain). 360 is where the h1 wraps to five lines with the real font; 430 is the
+   first width that was already clear before the fix. */
+const HERO_WIDTHS = [360, 390, 414, 430];
 // Pages chosen for what they CARRY, not for tidiness: /saunas/ and /process/
 // hold the grids that lost `--mt-*`, / and /about/ hold the widest spread of
 // `.measure-wide` elements, /booking-ops.html is the file outside src/.
@@ -320,6 +377,7 @@ async function measureAll(browser, base) {
   await installRouting(context, CACHE_DIR, stats);
   const page = await context.newPage();
   const results = {};
+  const hero = {};
   try {
     for (const width of WIDTHS) {
       await page.setViewportSize({ width, height: 900 });
@@ -334,12 +392,60 @@ async function measureAll(browser, base) {
         };
       }
     }
+    for (const width of HERO_WIDTHS) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto(`${base}/`, { waitUntil: 'networkidle', timeout: 60000 });
+      // Past the held beat, so this is the SETTLED state and not a frame of the
+      // arrival choreography (during the hold the nav and the hero content are
+      // both translated, and they move together).
+      await page.waitForTimeout(3400);
+      hero[width] = await page.evaluate(probeHeroClearance);
+    }
   } finally { await page.close(); await context.close(); }
-  return { ...results, __stats: stats };
+  return { ...results, __hero: hero, __stats: stats };
 }
 
 /** Result rows only — `__stats` is run metadata, not a page. */
-const pages = (results) => Object.entries(results).filter(([k]) => k !== '__stats');
+const pages = (results) => Object.entries(results).filter(([k]) => !k.startsWith('__'));
+
+function assertHeroClearance(hero) {
+  console.log('\nN — the nav band, and the hero clearing it');
+  const widths = Object.keys(hero).map(Number).sort((a, b) => a - b);
+  check('N0 the hero sweep actually measured something',
+    widths.length === HERO_WIDTHS.length && widths.every((w) => hero[w]),
+    `a vacuous pass is not a pass. measured ${JSON.stringify(widths)}`);
+
+  for (const w of widths) {
+    const m = hero[w];
+    if (!m) continue;
+
+    // The derivation, checked against the browser rather than re-typed: the nav
+    // is its logo, its block padding, and its rule. If someone retunes any of
+    // the three, --nav-band follows automatically and this stays green; if
+    // someone pastes a literal over the token, it goes red.
+    const derived = m.logoSize + m.navPadTop + m.navPadBottom + m.navBorderBottom;
+    check(`N1 @${w} the nav's measured height is its logo + block padding + rule`,
+      near(m.navHeight, derived, 0.6),
+      `--nav-band is derived from these and must equal what the nav actually `
+      + `measures: logo ${m.logoSize} + padding ${m.navPadTop}/${m.navPadBottom} + rule `
+      + `${m.navBorderBottom} = ${derived}, nav measured ${m.navHeight}`);
+
+    // The reserve equals the thing it reserves. This is the assertion that
+    // catches --nav-band drifting away from the nav it is named for.
+    check(`N2 @${w} the hero reserves exactly the nav's band`,
+      near(m.heroPadTop, m.navHeight, 0.6),
+      `the hero's padding-top is the reserved band and must match the nav's height: `
+      + `padding-top ${m.heroPadTop} vs nav ${m.navHeight}`);
+
+    // The requirement itself, in the terms a reader experiences it: the first
+    // line's glyphs sit below the nav, not behind it.
+    check(`N3 @${w} the h1's first line clears the nav (${m.h1Lines} lines)`,
+      m.glyphClearance !== null && m.glyphClearance > 0,
+      `first-line glyph top ${m.firstLineTop} vs nav bottom ${m.navBottom} = `
+      + `${m.glyphClearance}px. Negative means the headline is painted under the fixed `
+      + `nav, which is what this whole reserve exists to prevent.`);
+  }
+}
 
 function assertAll(results) {
   // ---- R1: the heading rhythm system that replaced the deleted utilities ----
@@ -557,6 +663,29 @@ function assertAll(results) {
 
 const MUTATIONS = [
   {
+    name: 'R-m6 the hero stops reserving the nav band',
+    proves: 'the clearance is measured, not merely declared in a comment',
+    // The reserve removed, which is the pre-fix state: the hero centres its
+    // content in a box whose top the fixed nav paints over, and the h1 goes
+    // back behind it at phone widths. Probing the clearances (not the padding)
+    // means this fails for the reason a reader would notice.
+    anchor: 'padding-block:var(--nav-band) 0',
+    patched: 'padding-block:0 0',
+    probe: (r) => Object.keys(r.__hero).sort()
+      .map((w) => `${w}:${r.__hero[w] && r.__hero[w].glyphClearance}`).join(','),
+  },
+  {
+    name: 'R-m7 --nav-band decoupled from the logo that sizes the nav',
+    proves: 'the band is DERIVED from the nav, not a literal that can drift from it',
+    // A pasted literal instead of the derivation. It happens to be right at the
+    // desktop breakpoint and wrong at <=768, which is exactly how a hardcoded
+    // band rots: correct where it was measured, silently short everywhere else.
+    anchor: '--nav-band:calc(var(--logo-size) + 2 * var(--spacing-sm) + 1px)',
+    patched: '--nav-band:148px',
+    probe: (r) => Object.keys(r.__hero).sort()
+      .map((w) => `${w}:${r.__hero[w] && r.__hero[w].heroPadTop}`).join(','),
+  },
+  {
     name: 'R-m1 heading margin token changed (2.5em -> 1em)',
     proves: 'the em-relative heading rhythm is asserted, not assumed',
     anchor: 'margin-block-start:2.5em',
@@ -640,6 +769,7 @@ async function main() {
   try {
     const results = await measureAll(browser, server.url);
     assertAll(results);
+    assertHeroClearance(results.__hero);
     await runMutations(browser, results);
   } finally {
     await server.close();
