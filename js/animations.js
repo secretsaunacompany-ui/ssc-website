@@ -74,7 +74,9 @@
     class RevealManager {
         constructor() {
             this.observer = null;
-            this.holdEscapeBound = false;
+            // The origin of the CHOREOGRAPHY's clock, and the only clock the
+            // hero-hold metric is allowed to measure against. See init().
+            this.startedAt = null;
         }
 
         assignStagger() {
@@ -112,48 +114,31 @@
             });
         }
 
-        // The escape hatch on the held beat.
-        //
-        // 1600ms is a long time to ask of someone who has seen the page before,
-        // and for the duration of it the nav is invisible AND focusable -- Tab
-        // lands on links nobody can see. So the first sign of intent ends the
-        // hold: scroll, key (Tab included, which is the point), or pointer.
-        //
-        // It cancels by removing the TRANSITION, not by rewriting the delay.
-        // Rewriting the delay restarts a 1000ms fade from wherever the element
-        // happened to be, which races the gesture that interrupted it. Snapping
-        // is the honest response to "I am already doing something else": an
-        // interrupted animation should yield, not negotiate.
-        //
-        // One-shot, capture phase, passive. Nothing here can block a scroll.
-        initHoldEscape() {
-            const held = [
-                document.querySelector('nav'),
-                ...document.querySelectorAll('.reveal--held')
-            ].filter(Boolean);
-            if (held.length === 0) return;
-
-            const events = ['scroll', 'keydown', 'pointerdown'];
-            let fired = false;
-
-            const cancel = () => {
-                if (fired) return;
-                fired = true;
-                events.forEach((type) =>
-                    window.removeEventListener(type, cancel, { capture: true })
-                );
-                held.forEach((el) => {
-                    el.style.transition = 'none';
-                    el.classList.add('seen');
-                });
-            };
-
-            events.forEach((type) =>
-                window.addEventListener(type, cancel, { capture: true, passive: true })
-            );
-        }
-
         init() {
+            // THE CHOREOGRAPHY CLOCK, and the reason it is recorded here.
+            //
+            // Every held element's transition-delay starts counting the moment
+            // `.reveal-ready` lands on <html>, and init.js adds that class in
+            // the same synchronous block that calls this method (its
+            // startReveal). So this timestamp IS the origin the 1600ms hold is
+            // measured from, to within the statements between them.
+            //
+            // It is recorded because the hero-hold METRIC used to start its own
+            // clock at DOMContentLoaded instead, which is 53-168ms earlier (the
+            // double rAF init.js waits out before enabling transitions). Every
+            // view was therefore credited with time the choreography had not
+            // begun to spend, and a visitor who watched the entire arrival and
+            // scrolled at the end of it could be recorded as having SKIPPED it.
+            // The metric now reads this value, so the branch boundary and the
+            // thing it is a boundary of cannot be on different clocks. The
+            // events suite asserts they agree within two frames.
+            //
+            // Set once: init() runs again on window load and the second call
+            // must not restart the clock.
+            if (this.startedAt === null) {
+                this.startedAt = Date.now();
+            }
+
             this.initLoadIn();
 
             const targets = document.querySelectorAll('.reveal');
@@ -166,14 +151,6 @@
             if (prefersReducedMotion()) {
                 targets.forEach((el) => el.classList.add('seen'));
                 return;
-            }
-
-            // init() runs twice (see below), so the hatch latches: two sets of
-            // listeners would both fire and the second would find nothing left
-            // to cancel, which is harmless but is not something to rely on.
-            if (!this.holdEscapeBound) {
-                this.holdEscapeBound = true;
-                this.initHoldEscape();
             }
 
             this.assignStagger();
@@ -222,11 +199,93 @@
      * `ms` is the time they gave it, in both branches, which is what makes the
      * median usable for tuning the settle duration. Exactly one event per view.
      */
+    /**
+     * The escape hatch on the held beat.
+     *
+     * 1600ms is a long time to ask of someone who has seen the page before, and
+     * for the duration of it the nav is invisible AND focusable -- Tab lands on
+     * links nobody can see. So the first sign of intent ends the hold: scroll,
+     * key (Tab included, which is the point), or pointer.
+     *
+     * It cancels by removing the TRANSITION, not by rewriting the delay.
+     * Rewriting the delay restarts a 1000ms fade from wherever the element
+     * happened to be, which races the gesture that interrupted it. Snapping is
+     * the honest response to "I am already doing something else": an
+     * interrupted animation should yield, not negotiate.
+     *
+     * TWO scoping decisions, both learned the hard way:
+     *
+     * 1. page-home ONLY, exactly like the metric beside it. The hold exists on
+     *    the homepage and nowhere else, but `nav` exists on all sixteen built
+     *    pages -- so bound sitewide this listener fired on every interior page
+     *    and wrote a PERMANENT inline `transition: none` onto the nav of a page
+     *    that was never held. A cancel for something that is not happening is
+     *    not free; it silently disables the nav's transitions for the rest of
+     *    that visit.
+     *
+     * 2. Bound at DOMContentLoaded, not from inside RevealManager.init(). init()
+     *    runs after a double rAF, so binding there left a two-frame window in
+     *    which the beat was already resolving under CSS while nothing was
+     *    listening for the gesture that should cancel it. Two frames is small
+     *    and it is also exactly when an impatient returning visitor acts. It is
+     *    correct to bind before the choreography starts: the snap adds `.seen`,
+     *    which wins the cascade against the hidden state whether or not
+     *    `.reveal-ready` has landed yet.
+     *
+     * Reduced motion never gets here -- there is no hold to escape, and binding
+     * would mean writing an inline transition override onto a page that already
+     * composed itself instantly.
+     *
+     * One-shot, capture phase, passive. Nothing here can block a scroll.
+     */
+    function initHoldEscape() {
+        if (!document.body.classList.contains('page-home')) return;
+        if (prefersReducedMotion()) return;
+
+        const held = [
+            document.querySelector('nav'),
+            ...document.querySelectorAll('.reveal--held')
+        ].filter(Boolean);
+        if (held.length === 0) return;
+
+        const events = ['scroll', 'keydown', 'pointerdown'];
+        let fired = false;
+
+        const cancel = () => {
+            if (fired) return;
+            fired = true;
+            events.forEach((type) =>
+                window.removeEventListener(type, cancel, { capture: true })
+            );
+            held.forEach((el) => {
+                el.style.transition = 'none';
+                el.classList.add('seen');
+            });
+        };
+
+        events.forEach((type) =>
+            window.addEventListener(type, cancel, { capture: true, passive: true })
+        );
+    }
+
     function initHeroHoldMetric() {
         if (!document.body.classList.contains('page-home')) return;
         if (!window.SSC || typeof window.SSC.track !== 'function') return;
 
-        const start = Date.now();
+        // A reduced-motion visitor is never held. The CSS mirror and the JS
+        // guard both compose the page immediately for them, so they see the
+        // whole homepage at once and scroll whenever they like -- which lands
+        // them in the `skipped` branch essentially always.
+        //
+        // That is not a skip. It is a visitor answering a question they were
+        // never asked, and the answer is indistinguishable from the one this
+        // metric exists to collect. Since the skipped:complete ratio is the
+        // instrument for RETUNING --hero-hold, every such view would have been
+        // a vote to shorten a beat that visitor never saw. Bail before binding
+        // anything: no event at all is the honest reading, and it mirrors the
+        // guard RevealManager.init already applies to the motion itself.
+        if (prefersReducedMotion()) return;
+
         let reported = false;
 
         const onScroll = () => {
@@ -262,7 +321,13 @@
         function report() {
             if (reported) return;
             reported = true;
-            const ms = Date.now() - start;
+            // Measured from the CHOREOGRAPHY's clock, not this function's own.
+            // See RevealManager.init for why. If the choreography never started
+            // -- the visitor acted before the double rAF resolved, or the
+            // reveal system failed outright -- they gave the held moment
+            // nothing, and 0 is both the true answer and the skipped branch.
+            const startedAt = reveal.startedAt;
+            const ms = startedAt === null ? 0 : Math.max(0, Date.now() - startedAt);
             window.SSC.track(
                 ms < SETTLE_MS ? 'hero_hold_skipped' : 'hero_hold_complete',
                 { ms }
@@ -281,6 +346,7 @@
 
     window.SSC = window.SSC || {};
     window.SSC.reveal = reveal;
+    window.SSC.initHoldEscape = initHoldEscape;
     window.SSC.initHeroHoldMetric = initHeroHoldMetric;
 
 })();

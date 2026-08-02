@@ -188,7 +188,28 @@ const readEvents = (page) => page.evaluate(
  * scenarios: it observes what the site asks the tracker to send.
  */
 async function newPage(browser) {
-  const page = await browser.newPage();
+  return instrumentPage(await browser.newPage());
+}
+
+/**
+ * The same instrumented page, but inside a context carrying emulation options
+ * (reducedMotion, and whatever a later fixture needs).
+ *
+ * It exists so an emulated fixture cannot accidentally become tautological. A
+ * page opened WITHOUT the recorder and the analyticsTracker stub records no
+ * events for any reason whatsoever, so a fixture asserting "no events were
+ * emitted" would pass against a completely broken site. Both fixtures share one
+ * instrumentation path so that cannot drift apart.
+ *
+ * Returns { page, close } -- the context must be closed too, not just the page.
+ */
+async function newEmulatedPage(browser, contextOptions) {
+  const ctx = await browser.newContext(contextOptions);
+  const page = await instrumentPage(await ctx.newPage());
+  return { page, close: async () => { await page.close(); await ctx.close(); } };
+}
+
+async function instrumentPage(page) {
   // The real tracker must not load here: it is cross-origin, it would publish
   // its own window.analyticsTracker over the recorder, and a passing suite
   // would then be posting test events at the production endpoint.
@@ -625,6 +646,15 @@ async function runInventory(base, browser) {
     // SETTLE_MS. Editing the token without editing the constants fails it.
     const page = await newPage(browser);
     await page.goto(base, { waitUntil: 'load' });
+    // WAIT FOR THE CLASS THAT CARRIES THE TRANSITION, not for `load`.
+    // `.reveal-ready` is added behind a double rAF, and `load` can resolve
+    // before it -- more often when Cloudinary is blocked and there is no image
+    // traffic to wait on. Read one frame early and transitionDelay computes to
+    // "0s" and the fixture reports a false RED: measured 11 of 12 runs with the
+    // CDN blocked, 1 of 12 with it reachable, which is the worst possible shape
+    // for a fixture (green on the developer's machine, red in CI).
+    await page.waitForFunction(
+      () => document.documentElement.classList.contains('reveal-ready'));
     const m = await page.evaluate(() => {
       const ms = (v) => (String(v).trim().endsWith('ms')
         ? parseFloat(v) : parseFloat(v) * 1000);
@@ -640,15 +670,122 @@ async function runInventory(base, browser) {
         heroHasReveal: document.querySelector('.hero-image').classList.contains('reveal'),
       };
     });
+    // Note what is NOT asserted here: the literal values 1600 and 120. Those
+    // were a fourth and fifth copy of tokens the ROADMAP retune note promises
+    // are single-sourced ("the token is the only value that needs to move"),
+    // and a fixture that hard-codes them makes that promise false -- a
+    // legitimate retune would have gone red for the wrong reason. Everything is
+    // DERIVED from the computed read instead: the delay the browser resolved
+    // must equal the hold plus this element's own stagger, and the delay plus
+    // the duration must equal the boundary the metric branches on. A consistent
+    // retune passes; a token moved without its constants does not.
     check('the settle boundary agrees with the CSS the browser actually resolved',
       m.delay + m.duration === SETTLE_MS
       && m.delay === m.hold + m.i * m.step
-      && m.hold === 1600 && m.step === 120 && m.i === 1,
+      && m.hold > 0 && m.step > 0 && m.i === 1,
       `computed ${JSON.stringify(m)}; delay+duration was ${m.delay + m.duration}, SETTLE_MS is ${SETTLE_MS}`);
     check('the LCP hero image is never a reveal target',
       m.heroHasReveal === false,
       'the hero <img> carries .reveal -- the largest paint on the page is being withheld');
     await page.close();
+  }
+  {
+    // ONE CLOCK.
+    //
+    // The metric brands a view `skipped` or `complete` by comparing the time
+    // the visitor gave the page against SETTLE_MS -- a number derived entirely
+    // from the choreography's own delays. That comparison is only meaningful if
+    // both sides start counting at the same instant, and for a while they did
+    // not: the metric started at DOMContentLoaded while the delays start when
+    // `.reveal-ready` lands, two rAFs later. The gap measured 53-168ms, so a
+    // visitor who watched the entire 2720ms arrival and scrolled at the end of
+    // it was recorded as having skipped it -- the metric's own headline branch,
+    // wrong, silently, for the visitor it most cares about.
+    //
+    // Asserted end to end rather than by inspection: note the wall-clock inside
+    // the page the moment `.reveal-ready` appears, scroll at a known later
+    // moment, and require the `ms` the metric REPORTS to match the elapsed time
+    // since that instant to within two frames. Nothing here reads the
+    // implementation, so any future re-plumbing that puts the two back on
+    // different clocks fails this.
+    // Both instants are marked INSIDE the page, because the two things being
+    // compared are both page-side clocks and a CDP round trip is not one of
+    // them. The second instant is the metric's own trigger condition -- the
+    // first scroll event that sees a non-zero pageYOffset -- rather than the
+    // moment the scroll was requested: `html { scroll-behavior: smooth }` means
+    // those are ~100ms apart, and timing from the request would measure the
+    // easing curve and call it clock drift. (It did, on the first run of this
+    // fixture.) The scroll itself is issued as 'instant' as well, so the
+    // assertion does not depend on how long an animation takes.
+    const TWO_FRAMES_MS = 34;
+    const page = await newPage(browser);
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(
+      () => document.documentElement.classList.contains('reveal-ready'));
+    await page.evaluate(() => {
+      window.__tReady = Date.now();
+      window.__tTrigger = null;
+      window.addEventListener('scroll', () => {
+        if (window.__tTrigger === null && window.pageYOffset > 0) {
+          window.__tTrigger = Date.now();
+        }
+      }, { passive: true });
+    });
+    await page.waitForTimeout(400);
+    await page.evaluate(() => window.scrollTo({ top: 600, behavior: 'instant' }));
+    await page.waitForTimeout(200);
+    const marks = await page.evaluate(
+      () => ({ ready: window.__tReady, trigger: window.__tTrigger }));
+    const events = await readEvents(page);
+    const ev = one(events, 'hero_hold_skipped') || one(events, 'hero_hold_complete');
+    const expected = marks.trigger === null ? null : marks.trigger - marks.ready;
+    const drift = (ev && expected !== null) ? Math.abs(ev.data.ms - expected) : null;
+    check('the metric and the choreography count from the same instant',
+      !!ev && drift !== null && drift <= TWO_FRAMES_MS,
+      `reported ms ${ev && ev.data.ms}, elapsed since .reveal-ready ${expected}, `
+      + `drift ${drift}ms > ${TWO_FRAMES_MS}ms — the branch boundary is measuring `
+      + `a different clock than the delays it is a boundary of`);
+    collected.push(...events);
+    await page.close();
+  }
+  {
+    // REDUCED MOTION ABSTAINS.
+    //
+    // A visitor who asked for no motion is never held: both the CSS mirror and
+    // the JS guard compose the page immediately. They then scroll whenever they
+    // like, which lands in the `skipped` branch essentially always -- and since
+    // the skipped:complete ratio is the instrument for retuning --hero-hold,
+    // every one of those views was a vote to shorten a beat that visitor never
+    // saw. The metric is supposed to answer "is the held moment watched or
+    // skipped?"; from someone who was never held, there is no answer to give.
+    //
+    // Emitting nothing is the honest reading, and it is asserted rather than
+    // assumed because the failure is invisible in production: the events keep
+    // arriving and simply mean something else.
+    const { page, close } = await newEmulatedPage(browser, { reducedMotion: 'reduce' });
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(300);
+    await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+    await page.waitForTimeout(100);
+    // NOT vacuous, and this half is load-bearing: the homepage's ONLY event is
+    // the hero_hold verdict, so "no events" is the expected result whether the
+    // metric abstained or the recorder was never wired up at all. A probe event
+    // is pushed through the same window.SSC.track path the metric uses, and the
+    // recorder must have caught it -- otherwise this fixture would pass against
+    // a site whose analytics are entirely broken.
+    await page.evaluate(() => window.SSC.track('probe_recorder_live', { ok: 1 }));
+    await page.waitForTimeout(50);
+    const events = await readEvents(page);
+    check('a reduced-motion visitor emits no hero_hold verdict at all',
+      typeOf(events, 'probe_recorder_live').length === 1
+      && typeOf(events, 'hero_hold_skipped').length === 0
+      && typeOf(events, 'hero_hold_complete').length === 0,
+      `events were ${JSON.stringify(events)} — either a visitor who was never `
+      + `held is voting on the length of the hold, or the probe event is missing `
+      + `and this page recorded nothing at all, in which case the fixture proves `
+      + `nothing`);
+    await close();
   }
   {
     // TAB DURING THE BEAT.

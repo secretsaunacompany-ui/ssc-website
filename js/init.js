@@ -161,8 +161,26 @@
             startReveal();
         }
 
-        // Arrival instrumentation (doc 14 §8). Must run AFTER reveal.init so the
-        // hero has settled into its own choreography before we time it.
+        // The held beat's escape hatch, and the arrival instrumentation that
+        // measures it. BOTH bind here, at DOMContentLoaded, and both are two
+        // frames EARLIER than startReveal above -- deliberately.
+        //
+        // The old comment here claimed the metric "must run AFTER reveal.init so
+        // the hero has settled into its own choreography before we time it".
+        // That was never what happened: startReveal sits behind a double rAF, so
+        // these have always run first. Worse, the claim licensed the metric to
+        // start its own clock at this moment, 53-168ms before the choreography's
+        // delay actually begins counting -- so a visitor who watched the whole
+        // arrival could be recorded as having skipped it. The metric now reads
+        // SSC.reveal.startedAt instead of timing from here, which makes the
+        // ordering below a non-issue rather than a dependency.
+        //
+        // The hatch binds here for the opposite reason: it must be listening
+        // BEFORE the beat starts resolving, or the two frames it was missing are
+        // exactly the ones an impatient visitor acts in.
+        if (SSC.initHoldEscape) {
+            SSC.initHoldEscape();
+        }
         if (SSC.initHeroHoldMetric) {
             SSC.initHeroHoldMetric();
         }
