@@ -279,9 +279,14 @@ const MUTATIONS = [
   {
     name: 'D-m16 MAX_SUBTREE_TOKENS collapsed back to a tiny cap',
     proves: 'the raised cap is what actually lets a whole component be declared as one deletion',
+    // Aimed at the ENFORCEMENT site, not at the constant's declaration. An
+    // anchor of `const MAX_SUBTREE_TOKENS = 400;` would be a third functional
+    // copy of the number -- it would have to be edited in lockstep with any
+    // future retune, and the cap value is supposed to live in exactly two
+    // places: the constant and Z20.
     edits: { 'dom-fingerprint.mjs': [
-      'const MAX_SUBTREE_TOKENS = 400;',
-      'const MAX_SUBTREE_TOKENS = 4;'] },
+      '      const maxLen = Math.min(MAX_SUBTREE_TOKENS, end - i);',
+      '      const maxLen = Math.min(4, end - i);'] },
     // Z18's material: a subtree of ~121 tokens, correctly declared and hashed.
     // Shipped, the cap is 400 and it is consumed whole -- 0 failures. Mutated
     // to 4, the slice search can never reach the subtree's length, the entry
