@@ -580,9 +580,20 @@ p {
    deliberately, rather than reference an undefined token and reproduce the exact
    bug (P0-3) the colour package existed to fix. WP-1b defines --ember and this
    is now wired to it directly, per 21 R10. */
+/* W5, Jen Stage 3: FIX, not amend. `--wide` is written as a modifier of
+   `.eyebrow` but its one consumer (src/_includes/pages/saunas.njk:58, "Standard
+   Builds") wears it ALONE, so it never inherited the base class's
+   `text-transform` and the site's one section kicker rendered sentence-case
+   against a 0.2em caps tracking cut for capitals. Tracking that wide under
+   lowercase is not a style, it is a spacing bug you can read. Declared here
+   rather than fixed in the markup because the kicker IS all-caps by definition
+   -- the wayfinding element the mood board established -- and a class whose
+   whole job is a voice should carry that voice without a second class present
+   to supply it. */
 .eyebrow--wide {
     font-size: var(--text-2xs);
     letter-spacing: var(--tracking-caps-wide);
+    text-transform: uppercase;
     color: var(--ember);
 }
 
@@ -945,36 +956,14 @@ nav .container {
     gap: var(--spacing-md);
 }
 
-.model-card {
-    background: var(--elevated);
-    border: 1px solid var(--rule);
-    transition: transform var(--transition-fast),
-                border-color var(--transition-fast),
-                box-shadow var(--transition-fast);
-    overflow: hidden;
-    cursor: pointer;
-}
-
-.model-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--rule-hover);
-    box-shadow: var(--shadow-hover);
-}
-
-.model-card-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    transition: transform var(--transition-image);
-}
-
-.model-card:hover .model-card-image {
-    transform: scale(1.03);
-}
-
-.model-card-content {
-    padding: var(--spacing-md);
-}
+/* `.model-card*` DELETED in B6's dead-CSS sweep -- B4 replaced the card grid
+   with the Ledger and took the markup with it. Inertness measured, not assumed:
+   the class appears in no built page, no template and no script. NOT swept with
+   them, deliberately: `.model-grid` above still has a live reference in
+   js/animations.js's GROUP_SELECTOR, and `.model-price` below is LIVE on
+   /saunas/ and asserted by scripts/fonts.test.mjs -- a region-wide sweep here
+   would have deleted a rule the type suite depends on. See the ROADMAP harness
+   entry for the held pair. */
 
 .model-header {
     display: flex;
@@ -995,13 +984,6 @@ nav .container {
     font-size: var(--text-xs);
     color: var(--ink-quiet);
     letter-spacing: var(--tracking-caps);
-}
-
-.model-card p {
-    font-size: var(--text-sm);
-    color: var(--ink-quiet);
-    line-height: var(--leading-ui);
-    margin-bottom: var(--spacing-md);
 }
 
 .model-specs {
@@ -1363,136 +1345,27 @@ nav .container {
     gap: var(--spacing-md);
 }
 
-.comparison-card {
-    background: var(--elevated);
-    border: 1px solid var(--rule);
-    overflow: hidden;
-    transition: transform var(--transition-fast);
-}
+/* `.comparison-card`, `.comparison-header*`, `.comparison-badge`,
+   `.comparison-badge-alt` and `.comparison-list*` DELETED in B6's dead-CSS
+   sweep. B4 removed the three comparison cards and all 21 tick/cross bullets
+   from /saunas/, which were their only markup; measured inert here (no built
+   page, no template, no script references any of them). `.comparison-grid`
+   above SURVIVES the sweep on purpose -- js/animations.js's GROUP_SELECTOR
+   still names it, and deleting a rule while leaving its reference standing is
+   half a change; the pair retires together in the post-wave harness pass.
 
-.comparison-card:hover {
-    transform: translateY(-5px);
-}
+   `.comparison-header.ours` was the site's last gradient fill and the sole
+   consumer of `--ember-dark`; B2 flattened it to `var(--ember)` and retired the
+   token, and it is now gone entirely with its markup. doc 21 §6.5 is CLOSED.
 
-.comparison-header {
-    padding: var(--spacing-md);
-    text-align: center;
-}
-
-/* Flat, not a gradient. This was the only gradient fill left on a site built
-   from rules and flat grounds, and it existed to give its second, darker token
-   a consumer rather than the other way round; that token is retired with the
-   gradient and its declaration is gone from :root (Jen confirmed
-   at her Wave B-1 spec gate -- "the sole gradient consumer dies with the
-   cards"). doc 21 §6.5 closes in B6. */
-.comparison-header.ours {
-    background: var(--ember);
-}
-
-.comparison-header.ours h3 {
-    color: var(--color-black);
-}
-
-.comparison-header.barrels,
-.comparison-header.infrared {
-    background: var(--rule);
-}
-
-.comparison-header h3 {
-    margin: 0 0 var(--spacing-xs) 0;
-    font-size: var(--text-lg);
-}
-
-.comparison-badge {
-    display: inline-block;
-    background: var(--color-black-alpha-30);
-    color: var(--color-white);
-    padding: 0.25rem 0.75rem;
-    border-radius: var(--radius-lg);
-    font-size: var(--text-xs);
-    letter-spacing: var(--tracking-caps);
-}
-
-.comparison-badge-alt {
-    display: inline-block;
-    background: var(--color-white-alpha-10);
-    color: var(--ink-quiet);
-    padding: 0.25rem 0.75rem;
-    border-radius: var(--radius-lg);
-    font-size: var(--text-xs);
-    letter-spacing: var(--tracking-caps);
-}
-
-.comparison-list {
-    list-style: none;
-    padding: var(--spacing-md);
-    margin: 0;
-}
-
-.comparison-list li {
-    padding: 0.6rem 0;
-    border-bottom: 1px solid var(--rule);
-    font-size: var(--text-sm);
-    color: var(--ink-quiet);
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-}
-
-.comparison-list li:last-child {
-    border-bottom: none;
-}
-
-.comparison-list .check {
-    color: var(--ember);
-    font-weight: bold;
-}
-
-.comparison-list .x {
-    color: var(--ink-quiet);
-}
-
-/* Stat Cards */
-.stat-card {
-    background: var(--elevated);
-    padding: var(--spacing-lg);
-    text-align: center;
-    border: 1px solid var(--rule);
-}
-
-.stat-number {
-    display: block;
-    /* CLOSED by Jen at Stage 3, ruling (d): display-by-function. The raw 3.5rem
-       was held open on the argument that this figure's size is a display
-       decision rather than a hierarchy one -- and that is exactly the argument
-       FOR --text-4xl, which is the display step. A number that exists to be read
-       across a room is display type; it does not need a step of its own between
-       two existing ones. The stylelint exception retires with it. */
-    font-size: var(--text-4xl);
-    line-height: var(--leading-display);
-    /* It is a FIGURE, and figures in a column must align. Cormorant ships tnum;
-       without asking for it the numerals are proportional and a stack of stats
-       reads ragged down its left edge. */
-    font-variant-numeric: lining-nums tabular-nums;
-    font-weight: 400;
-    color: var(--ember);
-    font-family: var(--font-heading);
-    margin-bottom: var(--spacing-sm);
-}
-
-.stat-card p {
-    font-size: var(--text-sm);
-    color: var(--ink-quiet);
-    margin-bottom: var(--spacing-sm);
-}
-
-.stat-source {
-    font-size: var(--text-xs);
-    color: var(--ink-quiet);
-    /* No italic. Outfit ships no italic face, so this was a synthesized
-       oblique -- a mechanically slanted roman, which is the tell this program
-       exists to remove. Metadata carries its quietness with size and colour. */
-}
+   `.stat-*` DELETED in the same sweep -- B4 removed the 66% and 24% stat cards
+   and the surviving 40% figure is not built from them. Note for anyone
+   grepping: booking-ops.html defines its OWN `.stat-card`/`.stat-label`/
+   `.stat-value` in an inline <style> and does not link styles.css at all (its
+   only <link> is a favicon), so those rules were never serving it. The
+   `.stat-number` stylelint exception had already retired at Jen's Stage 3
+   ruling (d), so this deletion does not move stylelint-gate's exception count,
+   which stays at 5. */
 
 /* ============================================
    Buttons

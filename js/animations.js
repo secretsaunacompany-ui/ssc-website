@@ -117,11 +117,29 @@
         init() {
             // THE CHOREOGRAPHY CLOCK, and the reason it is recorded here.
             //
-            // Every held element's transition-delay starts counting the moment
-            // `.reveal-ready` lands on <html>, and init.js adds that class in
-            // the same synchronous block that calls this method (its
-            // startReveal). So this timestamp IS the origin the 1600ms hold is
-            // measured from, to within the statements between them.
+            // `.reveal-ready` lands on <html> and init.js calls this method in
+            // the same synchronous block (its startReveal), so this timestamp
+            // is the instant the CLASS landed, to within the statements
+            // between them.
+            //
+            // PRECISION, because the earlier wording here conflated two
+            // instants that are one frame apart (Razor, B1 re-review). The
+            // class landing is NOT the moment the held transition-delays begin
+            // counting. Delays start from the style recalculation the class
+            // change provokes, which the browser does on the NEXT frame -- so
+            // this clock is anchored roughly 19ms (one frame at 60Hz) BEFORE
+            // the delays actually start spending. `ms` therefore over-credits
+            // the visitor by up to one frame.
+            //
+            // That is recorded rather than corrected, and the distinction
+            // matters for the size of the error, not for the reading. One
+            // frame against a 1600ms hold is ~1.2%, two orders of magnitude
+            // below the DOMContentLoaded anchor it replaced (53-168ms, and
+            // unbounded in a rAF-starved tab). It is bounded and always in the
+            // same direction, so it cannot flip a branch that was not already
+            // within a frame of the boundary. The events suite pins the bound
+            // by asserting the two clocks agree within TWO frames -- that
+            // fixture is what would notice this gap growing.
             //
             // It is recorded because the hero-hold METRIC used to start its own
             // clock at DOMContentLoaded instead, which is 53-168ms earlier (the
