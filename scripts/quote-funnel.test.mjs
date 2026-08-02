@@ -141,7 +141,7 @@ async function bootSite(mutator) {
     quietMode: true,
   }).write();
   const served = await serve(dist);
-  return { dir, ...served };
+  return { dir, dist, ...served };
 }
 
 /**
@@ -883,6 +883,75 @@ function runEndpointCheck() {
     + 'before this package; every extra one can drift independently.');
 }
 
+/**
+ * The presence invariant, asserted in BOTH directions over the real built site.
+ *
+ * B3 scoped the configurator modal to pages setting `configurator: true`, which
+ * today is /saunas/ alone. Before that the include was sitewide and 15 routes
+ * carried a modal nothing on them could open, each shipping a second inert
+ * <form> beside their real contact form.
+ *
+ * A one-directional check is not enough, and which direction you leave out
+ * decides which failure ships silently:
+ *
+ *   triggers => modal.  Without this, someone adds an open-modal button to a
+ *   page that has no modal and the button does nothing. This is the funnel
+ *   breaking outright.
+ *
+ *   modal => triggers.  Without this, someone sets `configurator: true` on a
+ *   page with no triggers -- or the guard breaks and reverts to sitewide
+ *   emission -- and the exact defect B3 removed comes back with nothing
+ *   objecting. dom-integrity would catch the markup change on the next run, but
+ *   only until its baseline advances past this batch; after that the inert
+ *   forms are just what the site looks like. This half is the durable one.
+ *
+ * Scanned over built HTML rather than templates on purpose: the guard is a
+ * template conditional, and what matters is what it actually emitted.
+ */
+function runPresenceInvariant(dist) {
+  const pages = [];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) { walk(full); continue; }
+      if (!entry.name.endsWith('.html')) continue;
+      const html = fs.readFileSync(full, 'utf8');
+      // Redirect stubs are meta-refresh shells with no content of their own.
+      if (/http-equiv="refresh"/.test(html)) continue;
+      pages.push({
+        route: path.relative(dist, full),
+        modal: html.includes('id="saunaModal"'),
+        triggers: (html.match(/data-action="open-modal"/g) || []).length,
+      });
+    }
+  };
+  walk(dist);
+
+  check('presence: the built site was actually scanned',
+    pages.length > 10,
+    `the invariant is vacuous if it walked nothing. found ${pages.length} pages`);
+
+  const triggersNoModal = pages.filter((p) => p.triggers > 0 && !p.modal);
+  check('presence: every page with an open-modal trigger also ships the modal',
+    triggersNoModal.length === 0,
+    `these pages carry a button that cannot open anything: `
+    + `${triggersNoModal.map((p) => p.route).join(', ')}`);
+
+  const modalNoTriggers = pages.filter((p) => p.modal && p.triggers === 0);
+  check('presence: every page shipping the modal also has something that opens it',
+    modalNoTriggers.length === 0,
+    `these pages ship the configurator modal -- a second, inert <form> with empty `
+    + `configuration/model/estimated_total inputs sitting beside the real contact form -- `
+    + `with nothing on the page able to open it: ${modalNoTriggers.map((p) => p.route).join(', ')}. `
+    + `Either the page should not set \`configurator: true\`, or the footer guard has `
+    + `reverted to emitting sitewide. This is the exact defect B3 removed.`);
+
+  const carriers = pages.filter((p) => p.modal).map((p) => p.route);
+  check('presence: exactly one page ships the modal, and it is /saunas/',
+    carriers.length === 1 && carriers[0].startsWith(`saunas${path.sep}`),
+    `the configurator lives on one route. got ${carriers.length}: ${carriers.join(', ')}`);
+}
+
 // ============================================================
 // Mutations -- each removes a mechanism whose absence is invisible
 // ============================================================
@@ -1193,6 +1262,7 @@ const MUTATIONS = [
     sites.push(baseline);
     await runStates(baseline.base, browser);
     runEndpointCheck();
+    runPresenceInvariant(baseline.dist);
 
     process.stdout.write('\nB. mutations -- each of these MUST be detectable\n\n');
     for (const m of MUTATIONS) {

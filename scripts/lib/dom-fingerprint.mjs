@@ -406,8 +406,32 @@ function subtreeSpan(tokens, i) {
   return n;
 }
 
-/** Cap on how many tokens one delete-subtree entry may claim. See matchSubtreeDeletions. */
-const MAX_SUBTREE_TOKENS = 64;
+/**
+ * Cap on how many tokens one delete-subtree entry may claim. See
+ * matchSubtreeDeletions for what the cap does and why failing loudly past it is
+ * the safe direction.
+ *
+ * 64 → 400, and the number is chosen from a measurement rather than picked to
+ * clear one entry. The configurator modal -- the largest single component on
+ * the site, and the thing that made this cap bite -- measures 352-355 tokens
+ * depending on build (WP-0b-i recorded 352; re-measured for this batch against
+ * its own baseline). 400 is that need plus enough headroom that the component
+ * can grow a row or two without a harness change, and it is still ONE-COMPONENT
+ * scale: a modal, a nav, a card grid. It is deliberately nowhere near the size
+ * of a page section or a template.
+ *
+ * The property the cap protects is unchanged and must stay unchanged: a
+ * declared deletion LARGER than the cap does not match and fails loudly as
+ * undeclared. It never degrades to a looser check. Raising the ceiling changes
+ * where "too big to declare in one line" starts; it does not change what
+ * happens past it. Anything larger than one component is a human conversation
+ * about whether that really is one change, not a number to raise again.
+ *
+ * Exported READ-ONLY so the fixtures can assert the value and size their
+ * subtrees relative to it, rather than hard-coding 400 a second time.
+ */
+const MAX_SUBTREE_TOKENS = 400;
+export { MAX_SUBTREE_TOKENS };
 
 /**
  * Hash a subtree's OWN content, relative to the root path P: every token's key
@@ -490,9 +514,11 @@ function sliceFitsEntry(slice, entry) {
  * one subtree, and a second identical deletion still fails.
  *
  * The MAX_SUBTREE_TOKENS cap bounds the slice search. It is a real limit, stated
- * rather than hidden: a declared deletion larger than 64 tokens will not match
- * and will fail loudly as undeclared, which is the safe direction — the entries
- * this exists for are 2 to 4 tokens.
+ * rather than hidden: a declared deletion larger than the cap will not match and
+ * will fail loudly as undeclared, which is the safe direction. Most entries this
+ * exists for are 2 to 4 tokens; the cap is set at one-component scale so that a
+ * whole component — the configurator modal at ~355 — can be declared as one
+ * deletion. See the constant for the measurement behind the number.
  */
 function matchSubtreeDeletions(ops, whitelist, budget, consumed) {
   const claimed = new Set();

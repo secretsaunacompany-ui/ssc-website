@@ -25,7 +25,7 @@ import { startServer } from './lib/server.mjs';
 import {
   extractFingerprint, diffTokens, describeToken, loadWhitelist, applyWhitelist,
   checkWhitelistSpecificity, applyRenameMap, staleRenames, partitionByScope,
-  subtreeHash, findSubtreeHashes, checkSubtreeDeclarations,
+  subtreeHash, findSubtreeHashes, checkSubtreeDeclarations, MAX_SUBTREE_TOKENS,
 } from './lib/dom-fingerprint.mjs';
 import * as realFingerprint from './lib/dom-fingerprint.mjs';
 
@@ -275,6 +275,23 @@ const MUTATIONS = [
     // goes green. 1 failure vs 0 — the difference is the whole scope mechanism.
     probe: (m, f) => m.applyWhitelist(f.twoSameShapeDeletions,
       m.partitionByScope(f.scopedPair, 'aaaaaaa', 'bbbbbbb').active).failures.length,
+  },
+  {
+    name: 'D-m16 MAX_SUBTREE_TOKENS collapsed back to a tiny cap',
+    proves: 'the raised cap is what actually lets a whole component be declared as one deletion',
+    edits: { 'dom-fingerprint.mjs': [
+      'const MAX_SUBTREE_TOKENS = 400;',
+      'const MAX_SUBTREE_TOKENS = 4;'] },
+    // Z18's material: a subtree of ~121 tokens, correctly declared and hashed.
+    // Shipped, the cap is 400 and it is consumed whole -- 0 failures. Mutated
+    // to 4, the slice search can never reach the subtree's length, the entry
+    // matches nothing and the whole run of removals falls through as
+    // undeclared. This is the mutation that stops the cap being a number
+    // nobody's tests touch: without it, 400 could be edited to anything and
+    // only Z20's equality assertion would notice, which proves the constant is
+    // written down rather than that it does anything.
+    probe: (m, f) => m.applyWhitelist(
+      m.diffTokens(f.capUnder, f.capNone).ops, f.capEntry).failures.length,
   },
   {
     name: 'D-m8  document order ignored (tokens sorted)',
@@ -777,6 +794,70 @@ async function main() {
           prints, new Map()).length === 0,
         'a delete-subtree entry has no "contains" to be lazy with; the substring check must '
         + 'not fabricate a verdict about it');
+
+      // ---- THE CAP, at both bounds ----
+      //
+      // MAX_SUBTREE_TOKENS went 64 -> 400 in B3, because the configurator modal
+      // is a 355-token subtree and could not be declared at all under 64. A cap
+      // raised to let one batch through is exactly the tuning-until-green move
+      // this instrument exists to refuse, so the raised cap is proven here on
+      // its own material rather than on that batch's: one subtree comfortably
+      // UNDER the cap must certify, one OVER it must still fail loudly, and the
+      // number itself is asserted so it cannot drift silently.
+      //
+      // These subtrees are sized RELATIVE to the constant, not to the literal
+      // 400. Change the cap and the fixtures follow it; the only place the
+      // number is written down is the constant and Z20's assertion.
+      const bigSubtree = (n, tail = '') =>
+        `<div class="big">${Array.from({ length: n }, (_, i) => `<p>Row ${i}</p>`).join('')}${tail}</div>`;
+      const BIG_PATH = `${HERO_PATH}/div`;
+      // span = 1 (the div) + 2 per <p> (element + text) + 1 per bare <hr>.
+      const UNDER_N = 60;                                   // span 121
+      const OVER_N = Math.ceil((MAX_SUBTREE_TOKENS + 40 - 2) / 2);
+      const underHtml = bigSubtree(UNDER_N);
+      const overHtml = bigSubtree(OVER_N, '<hr>');
+      const withUnder = await fp(PAGE({ heroIntro: underHtml }), 'z-cap-under');
+      const withOver = await fp(PAGE({ heroIntro: overHtml }), 'z-cap-over');
+      const withoutBig = await fp(PAGE({ heroIntro: '' }), 'z-cap-none');
+      const underMeasured = findSubtreeHashes(withUnder, BIG_PATH, 'DIV')[0];
+      const overMeasured = findSubtreeHashes(withOver, BIG_PATH, 'DIV')[0];
+
+      check('Z18 a subtree well under the cap is declarable and certifies',
+        (() => {
+          const decl = entry(underMeasured.hash, 'DIV', BIG_PATH);
+          const v = applyWhitelist(diffTokens(withUnder, withoutBig).ops, decl);
+          return underMeasured.span > 64 && underMeasured.span < MAX_SUBTREE_TOKENS
+            && v.failures.length === 0 && v.consumed.get(0) === 1;
+        })(),
+        `a ${underMeasured.span}-token deletion, over the OLD cap of 64 and under the new `
+        + `${MAX_SUBTREE_TOKENS}, must be consumed whole as one declaration. This is the `
+        + `property the raise buys, and it is what the modal entry rests on. got span `
+        + `${underMeasured.span}, `
+        + JSON.stringify(applyWhitelist(diffTokens(withUnder, withoutBig).ops,
+          entry(underMeasured.hash, 'DIV', BIG_PATH)).failures.length) + ' failures');
+
+      // The cap did not become a suggestion. Past it the entry matches NOTHING
+      // -- it does not degrade to a looser tag+path check, and it does not
+      // half-consume. consumed===0 is asserted explicitly rather than inferred
+      // from the failure count, because "failed loudly" and "quietly spent its
+      // budget on part of the run" look the same from failures alone.
+      const overDecl = entry(overMeasured.hash, 'DIV', BIG_PATH);
+      const overVerdict = applyWhitelist(diffTokens(withOver, withoutBig).ops, overDecl);
+      check('Z19 a correctly declared subtree OVER the cap still fails loudly',
+        overMeasured.span > MAX_SUBTREE_TOKENS
+        && overVerdict.failures.length > 0 && (overVerdict.consumed.get(0) || 0) === 0,
+        `the entry is correct in every way -- right tag, right path, hash measured from the `
+        + `real baseline -- and is refused purely for size. Raising the ceiling must not turn `
+        + `the ceiling into a soft one. got span ${overMeasured.span} (cap ${MAX_SUBTREE_TOKENS}), `
+        + `${overVerdict.failures.length} failures, consumed `
+        + `${JSON.stringify([...overVerdict.consumed])}`);
+
+      check('Z20 the cap is 400',
+        MAX_SUBTREE_TOKENS === 400,
+        `the number is load-bearing and is asserted so it cannot drift unreviewed. It was `
+        + `raised from 64 in B3 on a measurement -- the configurator modal at 355 tokens -- `
+        + `and 400 is that need plus headroom, still one-component scale. Moving it is a `
+        + `reviewed harness change, not a knob. got ${MAX_SUBTREE_TOKENS}`);
     }
 
     process.stdout.write('\nM — mutation battery (runnable)\n');
@@ -823,6 +904,14 @@ async function main() {
         heroAll: null,
         heroNoA: null,
         wrongSubtreeEntry: null,
+        // Cap material for D-m16, the same shape as Z18: a subtree of ~121
+        // tokens -- over the OLD cap of 64, under the new 400 -- correctly
+        // declared with a hash measured from the fixture itself. Built here
+        // rather than shared with the Z block because that block is scoped;
+        // the shape is what matters, not the identity of the object.
+        capUnder: null,
+        capNone: null,
+        capEntry: null,
         // class-removal material
         withUtility: await fp(PAGE().replace(/class="card"/g, 'class="card featured"'), 'm-wu'),
         withoutUtility: await fp(PAGE(), 'm-wou'),
@@ -863,6 +952,20 @@ async function main() {
         f.wrongSubtreeEntry = loadWhitelist('t.json', { whitelist: [{
           op: 'delete-subtree', tag: 'STYLE', path: 'html/body/main/section/style',
           textHash: hashes[1].hash, count: 1, reason: 'aimed at sibling B on purpose',
+          commit: 'fixture', range: 'aaaaaaa..bbbbbbb',
+        }] });
+      }
+      {
+        const CAP_PATH = 'html/body/main/section/div';
+        const big = `<div class="big">${Array.from({ length: 60 },
+          (_, i) => `<p>Row ${i}</p>`).join('')}</div>`;   // span 121
+        f.capUnder = await fp(PAGE({ heroIntro: big }), 'm-cap-under');
+        f.capNone = await fp(PAGE({ heroIntro: '' }), 'm-cap-none');
+        const measured = findSubtreeHashes(f.capUnder, CAP_PATH, 'DIV')[0];
+        f.capEntry = loadWhitelist('t.json', { whitelist: [{
+          op: 'delete-subtree', tag: 'DIV', path: CAP_PATH,
+          textHash: measured.hash, count: 1,
+          reason: 'a whole component, declared as one deletion — needs the raised cap',
           commit: 'fixture', range: 'aaaaaaa..bbbbbbb',
         }] });
       }
