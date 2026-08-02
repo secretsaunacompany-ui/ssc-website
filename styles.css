@@ -166,7 +166,24 @@
 
     /* ===== Scrims ===== */
     --nav-scrim:  rgba(12, 12, 12, 0.72);   /* nav bg; the ONE sanctioned blur */
-    --hero-scrim: linear-gradient(transparent 40%, rgba(12, 12, 12, 0.72));
+    /* Jen, Stage 3, specified verbatim. The previous value was
+       `linear-gradient(transparent 40%, rgba(12,12,12,0.72))` and it was never
+       applied to anything -- the token was declared here and referenced only in
+       a COMMENT on .hero-content claiming "contrast is carried by the scrim".
+       Nothing painted it, so contrast was carried by `filter: brightness(0.7)`
+       on the photograph alone, which is why the h1 and subtitle read thin over
+       the bright cedar band. The rule that paints it is on .hero::after below.
+
+       Shape: light at the very top so the photograph is not crushed under the
+       nav, a long even 0.55 plateau from 28% to 72% where the type actually
+       sits, and a slightly heavier foot at 100%. */
+    --hero-scrim: linear-gradient(
+        180deg,
+        rgba(12, 12, 12, 0.2) 0%,
+        rgba(12, 12, 12, 0.55) 28%,
+        rgba(12, 12, 12, 0.55) 72%,
+        rgba(12, 12, 12, 0.7) 100%
+    );
 
     /* ===== The fixed nav's own height =====
        DERIVED from the three things that actually build it, so it cannot drift
@@ -766,6 +783,24 @@ nav .container {
     height: 100%;
     object-fit: cover;
     filter: brightness(0.7);
+}
+
+/* The scrim, finally painted (Jen Stage 3). It sits between the photograph and
+   the type by DOCUMENT ORDER rather than by a z-index of its own: .hero-image
+   and this pseudo-element are both positioned at z-index auto, so the later one
+   wins, and .hero-content is already z-index 1 so it stays above both. Adding a
+   third z-index here would be a number to keep in sync for no benefit.
+
+   `pointer-events: none` because it covers the whole hero including the two
+   call-to-action buttons, and a full-bleed overlay that eats clicks on the
+   primary CTA is the classic way to ship this. brightness(0.7) on the image is
+   UNCHANGED -- the scrim is added to it, not traded against it. */
+.hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--hero-scrim);
+    pointer-events: none;
 }
 
 .hero-content {
