@@ -865,9 +865,9 @@
       "tag": "SECTION",
       "contains": "class=\"container\"",
       "count": 12,
-      "reason": "B5 tier assignment, removed half. Every plain `section.container` that Jen's §3 tables move OFF the standard tier: privacy's twelve body sections (§3.10, the one-long-Ledger exemption -- uniform E density is the honest form for a legal document), warranty's six (§3.6), plus one each on home (:14 offerings), /saunas/ (compare table), faq, blog, service-area (sibling links) and the three utility pages that go to --open. Count is 12 because the budget is per PAGE and privacy is the worst page; specificity is satisfied at exactly 12, so the entry cannot absorb a thirteenth container change on any page without failing. These sections carry no identifying class -- `container` is all they have ever worn -- which is why this is one counted entry per TRANSITION rather than one per node; the instrument's own note on identical-looking siblings says naming them uniquely would need identity, not substring.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
+      "reason": "B5 tier assignment, removed half. Every plain `section.container` that Jen's §3 tables move OFF the standard tier: privacy's twelve body sections (§3.10, the one-long-Ledger exemption -- uniform E density is the honest form for a legal document), warranty's six (§3.6), plus one each on home (:14 offerings), /saunas/ (compare table), faq, blog, service-area (sibling links) and the three utility pages that go to --open. SCOPE OF THIS DECLARATION, stated precisely (Razor W-1): the count is a PER-PAGE budget, and 12 is the number /privacy/ needs. On the other seventeen routes only one or two `class=\"container\"` sections change, so this entry carries 10-11 unused budget there, and an unrelated container removal on one of those pages WOULD be absorbed silently. The exactly-12 tightness holds on /privacy/ alone. That is a property of an instrument whose budget resets per page and whose entries cannot be page-scoped -- duplicate entries are unreachable, because the matcher takes the first -- not something this entry can fix by being worded more confidently. What actually protects the shipped run is the range scoping: the entry is inert outside 9747e25..<range end>, and the descendant-scope check re-activates it for a later candidate only when the harness's OWN fingerprints of the range end and the candidate are identical on every page and width. The slack is real; the guard is elsewhere, and naming it here is the point. These sections carry no identifying class -- `container` is all they have ever worn -- which is why this is one counted entry per TRANSITION rather than one per node; the instrument's own note on identical-looking siblings says naming them uniquely would need identity, not substring.",
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
     },
     {
       "op": "removed",
@@ -875,8 +875,8 @@
       "contains": "class=\"container section--pt-6\"",
       "count": 1,
       "reason": "The four inert `.section--pt-6` attributes, removed sitewide (about :11, warranty :12, privacy :10, service-area :9). The RULE died in B2 -- at (0,1,0) it outranked the tier rule and would have rendered 6rem on top against --section-pad on the bottom -- and B2's comment explicitly deferred these attributes to B5. One per page, so count 1.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
     },
     {
       "op": "removed",
@@ -884,8 +884,8 @@
       "contains": "class=\"surface--elevated hero-overlay\"",
       "count": 2,
       "reason": "The two sections that LOSE elevation: home :69 and service-area :21. Jen §3.1 row 5 and §3.13 row 3 -- rule 4 says elevation marks a VOICE register change, and a feature grid wearing story clothes (home) and a feature list (service-area) have not earned it. Count is 2, not 1, because /about/ carries two sections with this exact class that do NOT change (:44 and :68, genuine voice register, kept); the specificity gate measures the worst page in the BASELINE and refuses an entry narrower than that. The unused budget on /about/ consumes nothing, because /about/ produces no ops for it.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
     },
     {
       "op": "removed",
@@ -893,8 +893,8 @@
       "contains": "class=\"section--no-padding\"",
       "count": 1,
       "reason": "The home video plate, the class's only consumer. `.section--no-padding` retired with its rule: it bundled padding and margin under a name admitting to one. See the added-side entry for what replaced it.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
     },
     {
       "op": "removed",
@@ -902,17 +902,8 @@
       "contains": "class=\"container text-center\"",
       "count": 1,
       "reason": "The two Thresholds that GAIN elevation: home :148 and service-area :45, archetype G (§3.1 row 10, §3.13 row 5). On service-area this replaces the retired `section--warm-glow` register. One per page.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
-    },
-    {
-      "op": "removed",
-      "tag": "SECTION",
-      "contains": "class=\"wide-container\"",
-      "count": 1,
-      "reason": "The /saunas/ \"Our Work\" mosaic, taking the C/--bleed row B4 left unapplied (Jen §2.1 row 8). /locations/ also has a `wide-container` section and it does NOT change -- Jen §3.7 keeps the contained map at standard tier, contained-preferred per §2.3 -- but both pages have exactly one, so count 1 stays tight.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
     },
     {
       "op": "added",
@@ -920,8 +911,8 @@
       "contains": "class=\"container section--tight\"",
       "count": 13,
       "reason": "The compressed tier's new consumers, archetype E. Privacy is 13 (its twelve body sections plus :10, which arrives from `section--pt-6` rather than from bare `container`) and is the worst page, so the count is 13. Before this batch `.section--tight` had ZERO elements wearing it: a tier that resolves in :root and reaches no element is indistinguishable from a tier that does not exist. rhythm.test.mjs R2c now measures it on every consumer at both widths.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
     },
     {
       "op": "added",
@@ -929,8 +920,8 @@
       "contains": "class=\"container section--open\"",
       "count": 1,
       "reason": "The open tier's new consumers, archetype B: about :11 intro, warranty :12 summary, book status, 404, thank-you. The two utility pages are Jen's §3.11/§3.12 ruling that a single quiet statement wants air, not density. One per page. Asserted by R2d.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
     },
     {
       "op": "added",
@@ -938,8 +929,8 @@
       "contains": "class=\"hero-overlay\"",
       "count": 1,
       "reason": "Home :69 after losing `.surface--elevated`. The overlay background image stays -- it is §2.3 work, later; B5 removes only the ground class.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
     },
     {
       "op": "added",
@@ -947,8 +938,8 @@
       "contains": "class=\"hero-overlay section--tight\"",
       "count": 1,
       "reason": "Service-area :21 after losing elevation and gaining the compressed tier in the same edit (Jen §3.13 row 3). Shared include, so this lands on all five area routes; the budget is per page, so count is 1.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
     },
     {
       "op": "added",
@@ -956,26 +947,17 @@
       "contains": "class=\"section--bleed plate--video\"",
       "count": 1,
       "reason": "The home video plate's replacement for `.section--no-padding`. Two classes because the retired one made two claims: `.section--bleed` is the padding half and the vocabulary every other plate already uses, `.plate--video` restates the margin half at --spacing-2xl, which IS 4rem -- the same value the old rule hardcoded. Measured at 0/0 padding and 64px margin on both edges: no pixel moves. Without the second class the 4rem would have vanished silently, since `.section--bleed` says nothing about margin.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
     },
     {
       "op": "added",
       "tag": "SECTION",
-      "contains": "class=\"container text-center surface--elevated\"",
+      "contains": "class=\"text-center surface--elevated\"",
       "count": 1,
-      "reason": "The two Thresholds gaining their G ground: home :148 and service-area :45. On home this puts elevation on :120 and :148 both, separated by the full-bleed video plate -- sanctioned in §3.1 row 10 because alternation stays legible across a full-viewport plate.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
-    },
-    {
-      "op": "added",
-      "tag": "SECTION",
-      "contains": "class=\"wide-container section--bleed\"",
-      "count": 1,
-      "reason": "The /saunas/ mosaic at its C tier. The inner grid keeps --hold-wide containment, so the mosaic still caps at 1400px; what changes is the section's own padding going to zero, which is what `--bleed` means.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
+      "reason": "The two Thresholds' section element after Jen RULING 2 (Razor W-3): home :148 and service-area :45. B5 first wrote `container text-center surface--elevated` -- ground and containment on ONE element -- and `.container` caps at 1200px, so the dark ground was capped with it and the Threshold rendered as a slab floating in the page background instead of a full-width band. The canonical G puts the ground on the full-width <section> and the content in an inner contained <div>; this is the outer half. `text-center` stays where it was. Measured on all eight thresholds @1440: ground x=0 w=1440, inner 1200px at x=120, zero elements carrying both classes.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
     },
     {
       "op": "added",
@@ -983,8 +965,128 @@
       "contains": "class=\"container\"",
       "count": 2,
       "reason": "Service-area :9, which loses `section--pt-6` and lands at standard tier with no class -- Jen §3.13 row 2, archetype D, \"none\" in the tier column meaning standard. Count is 2 because home and about each render two plain `container` sections in the CANDIDATE build and the specificity gate measures the worst page there; neither produces an added op, so the spare budget consumes nothing.",
-      "commit": "e9a2c9f relay batch 5: the tiers get consumers, and the two bundled classes retire",
-      "range": "9747e25..e9a2c9f"
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "9e849cdce8ee7551",
+      "count": 1,
+      "reason": "Home :148 Threshold, old depth (14 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 30 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "389d24370ab83657",
+      "count": 1,
+      "reason": "Home :148 Threshold, new depth inside `<div class=\"container\">` (15 tokens: the container itself plus the 14 re-parented). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 30 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "289f8cc67c186a74",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /squamish/, old depth (10 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "1fe5884c592cf9ca",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /squamish/, new depth inside `<div class=\"container\">` (11 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "3cdc3c0d9727d1eb",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /whistler/, old depth (10 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "933707aa60ffc859",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /whistler/, new depth inside `<div class=\"container\">` (11 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "4c2e34aeee4f6007",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /vancouver/, old depth (10 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "9976e0355ac6c0d7",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /vancouver/, new depth inside `<div class=\"container\">` (11 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "880cf52fb578102e",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /north-shore/, old depth (10 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "7a0dbeb45d27f8c1",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /north-shore/, new depth inside `<div class=\"container\">` (11 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "3cf02747e426a309",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /sea-to-sky/, old depth (10 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "1b1411159c630d00",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /sea-to-sky/, new depth inside `<div class=\"container\">` (11 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
     }
   ],
   "_notes": {

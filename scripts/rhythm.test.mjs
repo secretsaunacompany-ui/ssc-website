@@ -178,6 +178,16 @@ function probeGutter() {
       classes: el.className || '',
       left: parseFloat(cs.paddingLeft),
       right: parseFloat(cs.paddingRight),
+      // RENDERED text, for the `.section--bleed` pin to scope itself against
+      // (Razor N-4). `innerText` and not `textContent`, deliberately: the only
+      // bleed consumer on the site is the home video plate, whose textContent
+      // is "Your browser does not support the video tag." -- <video> fallback
+      // content, which no visitor ever sees. textContent would call that a text
+      // child and the scoped pin would refuse to excuse the one element it was
+      // written for. innerText reports what is actually laid out, which is the
+      // question the pin is really asking: would anything VISIBLE touch the
+      // viewport edge if this section took no gutter?
+      hasText: el.innerText.trim().length > 0,
     });
   }
   return { declared, gutterPx, rows };
@@ -388,10 +398,26 @@ const GUTTER_DEVIATIONS = [
   // its first two consumers (the home video plate and the /saunas/ mosaic);
   // before that the class existed in the stylesheet with nothing wearing it,
   // which is exactly why R2c/R2d had to wait for this batch too.
-  { match: () => true, forClasses: ['section--bleed'], px: () => 0,
-    reason: '.section--bleed sets `padding-inline: 0` by intent (styles.css:640, '
-      + '"full-bleed figures sit BETWEEN sections and carry no rhythm of their own"). '
-      + 'A modifier that says what it does; not a gutter deviation.' },
+  //
+  // SCOPED to bleed sections with no rendered text (Razor N-4). The pin as first
+  // written excused ANY `.section--bleed` from the gutter assertion, which is
+  // wider than the thing it is defending. Zero gutter is correct for a
+  // photograph or a video that is meant to run edge to edge; it is a real defect
+  // for a section with a paragraph in it, because the words would touch the
+  // viewport edge -- and that is not hypothetical, it is precisely what the
+  // /saunas/ mosaic did for one commit before Jen ruled it back to contained.
+  // With the mosaic reverted the video plate is the ONLY consumer left, and it
+  // has no rendered text, so this scoping costs nothing today and refuses to
+  // excuse the next bleed section that carries copy.
+  { match: (r) => !r.hasText, forClasses: ['section--bleed'], px: () => 0,
+    // Cited by SELECTOR, not by line number (Razor N-2). The predecessor pin
+    // said "styles.css:2174" and this one first said ":640" for a sentence that
+    // was actually on 639 -- off by one on the day it was written, and wronger
+    // every time anything above it is edited. A stylesheet line number is not a
+    // stable address; the selector is.
+    reason: '.section--bleed sets `padding-inline: 0` by intent -- the rule\'s own '
+      + 'comment in styles.css says full-bleed figures sit BETWEEN sections and carry '
+      + 'no rhythm of their own. A modifier that says what it does; not a gutter deviation.' },
   { match: (r) => r.tag === 'NAV', px: (w) => 0.025 * w,
     reason: 'nav keeps `padding: var(--spacing-sm) 2.5%` (styles.css:579). '
       + 'Unmigrated: 21 R1 replaced the percentage gutters and this one survived.' },
@@ -667,9 +693,17 @@ function assertAll(results) {
     for (const [key, r] of pages(results)) {
       const width = Number(key.split('@')[1]);
       for (const row of r.gutter.rows) {
-        const known = GUTTER_DEVIATIONS.find((d) => (d.forClasses
-          ? d.forClasses.some((c) => row.classes.split(/\s+/).includes(c))
-          : d.match(row, width)));
+        // `forClasses` and `match` are ANDed when both are present. They used to
+        // be alternatives -- `forClasses` short-circuited and `match` was never
+        // consulted -- which was invisible while every class-scoped pin carried
+        // `match: () => true`, and would have silently discarded the N-4 scoping
+        // the moment it was written. A pin that ignores half its own definition
+        // is a waiver pretending to be a rule.
+        const known = GUTTER_DEVIATIONS.find((d) => {
+          if (d.forClasses
+            && !d.forClasses.some((c) => row.classes.split(/\s+/).includes(c))) return false;
+          return d.match ? d.match(row, width) : true;
+        });
         if (known) {
           const want = known.px(width);
           if (!near(row.left, want, 1)) {
