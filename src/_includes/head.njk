@@ -112,8 +112,8 @@
                     "@type": "Offer",
                     "itemOffered": {
                         "@type": "Product",
-                        "name": "{{ m.ldName | safe }}",
-                        "description": "{{ m.capacity | replace(" people", " person") | safe }} {{ m.ldShort | safe }}",
+                        "name": "{{ m.ldName | jsonld | safe }}",
+                        "description": "{{ m.capacity | replace(" people", " person") | jsonld | safe }} {{ m.ldShort | jsonld | safe }}",
                         "brand": "Secret Sauna Company"
                     },
                     "price": "{{ m.basePrice }}",

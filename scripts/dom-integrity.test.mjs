@@ -1139,6 +1139,38 @@ async function main() {
         'vacuity, guarded the same way fingerprintsIdentical guards it: a build that '
         + 'fingerprinted nothing corroborates nothing, and must not read as corroboration');
 
+      // Z28 — WIRING (Razor N5). Every other add-subtree fixture imports the lib
+      // and exercises it directly, which proves the mirror WORKS and says nothing
+      // about whether the gate ever calls it. Delete the one line in
+      // dom-integrity.mjs that invokes it and all of Z21-Z27 stay green while a
+      // hand-written hash sails through: the exact shape of inertness this repo
+      // has now hit five times (sha-abbrev scoping, stale entries, the reveal
+      // pin, VIDEO_URL, the reveal-boot).
+      //
+      // ITS LIMIT, STATED: this reads the runner's SOURCE. It proves the call
+      // exists and is handed the CANDIDATE prints; it does not execute the
+      // runner, because doing so needs two real git refs and a pair of builds.
+      // A source check is weaker than a mutation and stronger than the nothing
+      // that was here before. If it ever fires falsely, replace it with an
+      // end-to-end run rather than loosening the pattern.
+      {
+        const runner = fs.readFileSync(path.join(REPO_ROOT, 'scripts', 'dom-integrity.mjs'), 'utf8');
+        check('Z28 the runner CALLS checkAddedDeclarations, against the candidate prints',
+          /checkAddedDeclarations\(\s*nodeEntries\s*,\s*candidate\.prints\s*\)/.test(runner)
+          && /checkSubtreeDeclarations\(\s*nodeEntries\s*,\s*baseline\.prints\s*\)/.test(runner)
+          // The import is read from the dom-fingerprint block SPECIFICALLY. A
+          // first draft of this line split on the first `} from` in the file,
+          // which is the node:child_process import, and reported "not imported"
+          // about a runner that imports it fine. A wiring check that can be
+          // wrong about the wiring is worse than none.
+          && /import\s*\{[^}]*checkAddedDeclarations[^}]*\}\s*from\s*'\.\/lib\/dom-fingerprint\.mjs'/s
+            .test(runner),
+          'the add-subtree staleness mirror must be imported AND invoked AND handed the '
+          + 'candidate build. Written-but-unwired is how five things on this branch went '
+          + 'silently inert; the delete-side call is asserted alongside it so a copy-paste '
+          + 'that points both at the same build is caught too.');
+      }
+
       check('Z27 the specificity check ignores add-subtree entries',
         checkWhitelistSpecificity(addDecl, new Map(), new Map([['/@1440', withUnder]]))
           .length === 0,

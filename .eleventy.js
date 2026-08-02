@@ -1,6 +1,38 @@
 module.exports = function(eleventyConfig) {
   eleventyConfig.addFilter("currentYear", () => new Date().getFullYear());
 
+  /**
+   * Interpolate a data-file string into a JSON-LD document body, safely.
+   *
+   * The JSON-LD blocks on /saunas/ and in head.njk are hand-written JSON with
+   * `{{ ... }}` holes in it, and Nunjucks autoescaping is HTML escaping, which
+   * is the wrong alphabet for the inside of a <script type="application/ld+json">
+   * -- it would turn an apostrophe in "7' x 12'" into `&#39;` and leave a double
+   * quote free to terminate the string it sits in. So every hole carried `| safe`,
+   * which is correct for today's data and a loaded gun for tomorrow's: one
+   * product name with a quote in it ("Sauna 7\" clearance") silently emits
+   * structured data that no parser can read, on nineteen pages, and nothing
+   * fails. Google would just stop seeing the products.
+   *
+   * Not hypothetical. Writing this batch's own census note into
+   * src/_data/models.json with a quoted string in it broke that file the same
+   * way -- caught only because a suite happened to JSON.parse it.
+   *
+   * JSON.stringify does the escaping the medium actually requires; slicing the
+   * surrounding quotes leaves a fragment that drops into an existing pair. It
+   * FAILS CLOSED on anything that is not a string, because a stray object or
+   * undefined reaching a JSON-LD hole means the template is wrong, and emitting
+   * "undefined" as structured data is worse than not building.
+   */
+  eleventyConfig.addFilter("jsonld", (value) => {
+    if (typeof value !== "string") {
+      throw new Error(`jsonld filter: expected a string, got ${typeof value} `
+        + `(${JSON.stringify(value)}). A JSON-LD hole must be filled by a string from the `
+        + `data file; anything else means the template names a field that does not exist.`);
+    }
+    return JSON.stringify(value).slice(1, -1);
+  });
+
   // Content-hashed asset URLs (P-A).
   //
   // styles.css and js/* are served with `max-age=31536000, immutable`
