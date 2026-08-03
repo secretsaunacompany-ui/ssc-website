@@ -1367,27 +1367,35 @@ nav .container {
 
    The 1px box with a -1px margin is the part people delete as superstition: a
    zero-size clipped element is skipped by some AT, and an unclipped absolute
-   one can still extend the scroll region. Nothing here is decorative. */
-@media (min-width: 768px) {
-    .compare-ledger__source {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        clip-path: inset(50%);
-        white-space: nowrap;
-        border: 0;
-    }
+   one can still extend the scroll region. Nothing here is decorative.
 
-    /* A space, inside the clipped box, so the label and the claim are not run
-       together into "OursFully insulated" by anything that concatenates text
-       nodes. Invisible by construction -- it is inside the clip. */
-    .compare-ledger__source::after {
-        content: " ";
-    }
+   UNCONDITIONAL, not `@media (min-width: 768px)` (Razor N3). Pairing a
+   min-width:768 block against the stacked form's max-width:767.98 left a 0.02px
+   band matching NEITHER, and a viewport can land in it -- fractional widths are
+   ordinary on scaled displays. In that band the label had no rule at all, so it
+   fell back to a plain inline span and DREW ITSELF beside every value. The fix
+   is not a narrower sliver, it is no sliver: the clip is the base state at every
+   width, and the stacked form below undoes it explicitly. Complementary media
+   queries cannot be made gapless; a base rule plus one override has no gap to
+   begin with. */
+.compare-ledger__source {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* A space, inside the clipped box, so the label and the claim are not run
+   together into "OursFully insulated" by anything that concatenates text nodes.
+   Invisible by construction -- it is inside the clip. */
+.compare-ledger__source::after {
+    content: " ";
 }
 
 .compare-ledger__link {
@@ -1424,7 +1432,21 @@ nav .container {
         display: block;
     }
 
+    /* The stacked form SHOWS the label, so every clipping declaration from the
+       base rule is undone here -- explicitly, property by property. A partial
+       reset (display alone, as this block used to carry) leaves the element
+       absolutely positioned inside a 1px clip and the label stays invisible on
+       exactly the form that depends on it most. */
     .compare-ledger__source {
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0;
+        padding: 0;
+        overflow: visible;
+        clip: auto;
+        clip-path: none;
+        white-space: normal;
         display: inline;
         font-size: var(--text-2xs);
         letter-spacing: var(--tracking-caps);
@@ -1432,12 +1454,16 @@ nav .container {
         color: var(--ink-quiet);
     }
 
-    /* `content: "·" / ""` -- the slash gives the separator empty ALTERNATIVE
-       TEXT, so it is drawn and not announced. Same reasoning as the model
-       index's capacity separator: punctuation for the eye, silence for the
-       screen reader, which would otherwise read "Barrel ·No insulation". */
+    /* `content: "·" / " "` -- the slash gives the separator its ALTERNATIVE
+       TEXT, and that text is a SPACE rather than empty (Razor N4). Empty was
+       the wrong call: it silenced the dot, but it also removed the only
+       boundary between the label and the claim, so a linear read ran them
+       together as "BARRELNo insulation". A space is punctuation for the eye and
+       a word boundary for the ear, which is what was actually wanted -- and it
+       matches the trailing space the clipped desktop form already carries, so
+       both forms now read the same way aloud. */
     .compare-ledger__source::after {
-        content: "·" / "";
+        content: "·" / " ";
         margin-inline: 0.5ch;
     }
 }
