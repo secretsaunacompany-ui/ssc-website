@@ -98,18 +98,39 @@ Lee agrees curated packages directly with Clarke, Emmanuel and Mountain Life.
 
 Order is not a priority ranking.
 
-## B7 rides (recorded 2026-08-03)
+## B7 rides (recorded 2026-08-02)
 
 **Hero graceful-cancel — SHIPPED 2026-08-02**, on the fifth mechanism and the first one
 that did not fight the browser. Lee's decision was never in doubt: an early scroll/key/tap
 during the held beat gently fades the nav and title in rather than snapping them.
 
-The four failed attempts all tried to RETIME a transition that already existed. The root
-cause, identified and reproducible, is that they could not: the held beat left a PENDING
-CSS transition on the nav (opacity + transform, delay 1600ms, duration 1000ms), created
-because `animations.js` adds the `reveal` class to the nav *after* transitions are enabled,
-so the nav's hidden state arrives as a value change under a live transition. When a cancel
-then changed the target value, Chrome UPDATED that pending transition rather than creating
+COUNTING, because the earlier wording made these look like contradictions and they are
+not. FOUR mechanisms were tried and failed (inline longhand overrides; rAF-separated
+retiming; pin-and-release; cancel-then-retime). They live in THREE commits, one of which
+— abfcc75 — was amended away rather than reverted, so it does not appear in the log and
+the reverted range reads shorter than the work. The "two-strike rule" that stopped the
+work is the name of the policy, not a count of attempts: it fired after the second
+strike, by which point four mechanisms had been tried across them.
+
+ROOT CAUSE — corrected 2026-08-02 (Razor W-3), and the correction matters because the
+old story sent readers to the wrong place. This paragraph used to say the pending
+transition was "created because `animations.js` adds the `reveal` class to the nav after
+transitions are enabled, so the nav's hidden state arrives as a value change under a live
+transition." That is wrong. Traced against the pre-B7 build (93fab50) by snapshotting
+`nav.getAnimations()` on every class mutation:
+
+    t=427  nav class -> "reveal"          anims=[]        <- no live transition
+    t=430  .reveal-ready landed           anims=[]        <- still none
+    t=484  nav class -> "reveal seen"     anims=[opacity dur=1000 delay=1600 running,
+                                                 transform dur=1000 delay=1600 running]
+
+The hidden state never arrived as a value change under a live transition; there was no
+transition to arrive under. The real cause is the pair that `js/animations.js:190-197`
+and `styles.css:344-349` already described correctly: the IntersectionObserver granted
+`.seen` almost immediately (the nav is above the fold — 54ms after `.reveal-ready`, not
+1600ms), and the CSS carried `transition-delay: 1600ms`, so the transition created at
+that moment sat in its DELAY PHASE for the length of the beat. When a cancel then changed
+the target value, Chrome UPDATED that delay-phase transition rather than creating
 a new one, and the fade inherited the hold's timing no matter what the computed
 `transition-delay` said. Measured directly: computed `0s / 0.35s`, actual running animation
 `1600 / 1000`. Cancelling the pending animation first removed the hijack and the transition
@@ -135,6 +156,31 @@ path grants at 0ms from the input and composes in 329–382ms; reduced motion co
 instantly. Covered by four new fixtures and three new mutations (M14–M16) in the events
 suite, including the behavioural hold check that a computed style can no longer make.
 
+**The pre-ready window (Razor W-1, fixed 2026-08-02).** The first cut still snapped in one
+place, and it was the place the feature is most about. Both `.reveal--quick` rules are
+gated on `.js.reveal-ready`, but the escape hatch binds one double-rAF EARLIER — 53–168ms
+in the field, unbounded in a rAF-starved tab — deliberately, because that gap is when an
+impatient returning visitor acts. An input inside it composed elements no transition rule
+matched. Measured: zero intermediate frames at 0–40ms, fades only from 80ms on.
+
+A pre-ready release now LATCHES and composes on the first frame in which a fade is
+possible (one frame after `.reveal-ready`, not zero — composing in the same task the class
+lands in does not transition, because the property becomes applicable in the same style
+change as the value). Rejected alternatives are recorded in `js/animations.js`: a
+`.js:not(.reveal-ready)` quick rule arms a transition before the double rAF has committed
+the hidden state, which is the visible-to-hidden bug that ordering exists to prevent.
+
+That fix then exposed a SECOND instance of this batch's own hijack, worth recording
+because it will regrow the same way: `init()` runs twice (DOMContentLoaded and window
+load), the second call raced the deferred compose, `.seen` landed alone with a 1000ms
+transition and `.reveal--quick` arrived a frame later into a transition already running.
+Chrome updated it rather than replacing it — computed duration `0.35s`, actual fade 914ms.
+The general rule this batch keeps re-learning: **the held pair must have exactly one
+writer.** `pendingQuick` is now never cleared and `quickScheduled` makes the scheduling
+idempotent. Guarded by a fixture that FORCES the window (rAF throttled to 150ms — the
+starved tab the code names) and asserts it landed there before asserting anything else,
+plus mutations M17 and M18.
+
 **Booking subdomain.** `book.secretsaunacompany.ca`, a separate Next.js app, fire-ban
 gated. Session photos get the same imaging discipline the site now has (angle in the
 source URL, width left to the generator) when it reopens. Session price is **$45** —
@@ -149,6 +195,36 @@ the next photograph added to a model will have the same problem. Post-wave unifi
 candidate; `models.json` is the precedent for moving a second source of truth into the
 build. Until then, any URL added to `js/data.js` is sized by hand (w_1200 for modal
 galleries, w_400 for map popups) and carries its own angle.
+
+Two things ride with that unification when it happens. First, C-1 proved the class is
+still live: `IMG_2891` was 90° off in `js/data.js` AND in the template, and the template
+copy was passed over in B7 stream 1 on the assumption it was already right. Hand-sized,
+hand-rotated URLs in two inventories cannot be kept in agreement by attention. Second,
+**`w_400` is too thin for the map popups** (Razor N-7). It is a hand-picked width serving
+a box that is not 400px on a 2x display, so the popup photographs are soft. It is not
+worth a hand-edit now — changing it by hand is another instance of the very thing this
+item says to stop doing — but the unification should let the generator choose the width
+from the rendered box, as it already does everywhere the Eleventy transform reaches.
+
+**The homepage video is 59MB and dwarfs everything else on the site** (Razor N-9). Its own
+named post-wave item, because it is pre-existing, it is NOT this wave's to fix, and it is
+large enough that leaving it inside a performance bullet would understate it by an order of
+magnitude. Measured on the wire 2026-08-02, the exact URL in `home.njk:143`
+(`.../video/upload/q_auto,f_auto,ac_none,w_1920/v1768415312/ambleside_beach_zqywgc.mp4`):
+**59,184,462 bytes**. Recorded as measured rather than as remembered — an earlier note put
+it near 32MB, and the two numbers should not be averaged into a vague one.
+
+The element is `<video autoplay muted loop playsinline>` with no `preload` and no `poster`,
+so a browser fetches the whole asset on every homepage view and then loops it. For scale:
+every byte B7 saved across the entire site is roughly one percent of this file. Nothing
+else on the route is in the same class.
+
+Not fixed here and deliberately not half-fixed — the options trade against each other and
+one of them is Jen's call, not an engineer's: a poster frame plus `preload="none"`;
+a much shorter loop; a lower bitrate or a smaller `w_`; `ac_none` is already dropping the
+audio track so that lever is spent; or dropping the video plate. The first is the obvious
+floor and would cost nothing visually above the fold, but the plate is a composition
+decision and shortening or removing it is a design change.
 
 **WETT policy ruling.** All future wood-fired builds are to be designed WETT-certifiable.
 This is insurer-driven, not a preference. Flagged for the pricing owner: it has

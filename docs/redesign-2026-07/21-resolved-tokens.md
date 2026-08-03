@@ -74,7 +74,14 @@ Canonical names follow the mood board's vocabulary (`--ground`, `--ink`, `--rule
     --hold:           75rem;     /* 1200px — the one contained tier, see R8 */
     --hold-wide:      87.5rem;   /* 1400px — .wide-container, unchanged */
     --width-frame:    120rem;    /* 1920px — body frame, unchanged */
-    --overflow-reach: 4rem;      /* Essay image outward overflow — Jen §2.4, Saul caps at 769–1024px */
+    /* --overflow-reach: 4rem;   DELETED 2026-08-02 (Razor N-6). Jen §2.4 tokenized
+       the Essay image's outward overflow, but the rule that implements the gesture
+       (.feature-image--overflow, styles.css:3230) never consumed it — it hard-codes
+       `width: 160%; margin-left: -60%`, which is not 4rem and never was. The token
+       had ZERO consumers, verified by grep across styles.css, src/, js/ and scripts/.
+       A token nothing reads is a value that looks retunable and is not; changing it
+       would have moved nothing while reading as though it had. The gesture itself is
+       unchanged and still ships. */
 
     /* ===== Section rhythm — three tiers (Jen §2.0; see R3) ===== */
     --section-pad:       clamp(6rem, 14vh, 10rem);

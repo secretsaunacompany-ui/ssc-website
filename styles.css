@@ -310,7 +310,6 @@
     --hold:           75rem;      /* 1200px -- the contained tier */
     --hold-wide:      87.5rem;    /* 1400px -- .wide-container */
     --width-frame:    120rem;     /* 1920px -- body frame */
-    --overflow-reach: 4rem;       /* essay image outward overflow */
 
     /* Measures -- reading widths, not containers */
     --measure:        65ch;    /* prose; law for p */
