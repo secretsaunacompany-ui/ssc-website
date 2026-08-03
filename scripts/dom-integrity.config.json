@@ -1553,7 +1553,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The heater group's heading. It read 'Heater Upgrade' when everything below it except a placeholder cost money; the group now opens with two INCLUDED builds, so 'Upgrade' had become the wrong noun for the category.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "added",
@@ -1563,7 +1563,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The heater group's heading. It read 'Heater Upgrade' when everything below it except a placeholder cost money; the group now opens with two INCLUDED builds, so 'Upgrade' had become the wrong noun for the category.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "removed",
@@ -1573,7 +1573,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The included ELECTRIC row's label, which now NAMES the heater instead of standing in for whichever one the model shipped (modal.js repaints it to the Revive 9kW on SC). The row itself is untouched -- same <label>, same <span>, no ids -- precisely so this is a text change and not an undeclarable attribute change on nodes that have no attributes to key on.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "added",
@@ -1583,7 +1583,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The included ELECTRIC row's label, which now NAMES the heater instead of standing in for whichever one the model shipped (modal.js repaints it to the Revive 9kW on SC). The row itself is untouched -- same <label>, same <span>, no ids -- precisely so this is a text change and not an undeclarable attribute change on nodes that have no attributes to key on.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "add-subtree",
@@ -1593,7 +1593,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). THE INCLUDED WOOD-FIRED BUILD, whole, and the point of the batch: the base price buys a complete sauna, so choosing wood-fired costs nothing. A pure addition, so it is declared as one subtree keyed on its measured content hash. modal.js renders it disabled on S2 (clearances) and SC (commercial spec).",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "removed",
@@ -1603,7 +1603,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The premium wood tier, repriced. Its <label>, its product name and its per-model machinery are unchanged -- the pre-JS default stays the generic Original-IKI, as it was before this batch -- so only the value and the price text move: +$10,800 becomes +$5,900, the S6/S8 figure at the new 30% stove-category margin.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "added",
@@ -1613,7 +1613,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The premium wood tier, repriced. Its <label>, its product name and its per-model machinery are unchanged -- the pre-JS default stays the generic Original-IKI, as it was before this batch -- so only the value and the price text move: +$10,800 becomes +$5,900, the S6/S8 figure at the new 30% stove-category margin.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "removed",
@@ -1623,7 +1623,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The premium wood tier, repriced. Its <label>, its product name and its per-model machinery are unchanged -- the pre-JS default stays the generic Original-IKI, as it was before this batch -- so only the value and the price text move: +$10,800 becomes +$5,900, the S6/S8 figure at the new 30% stove-category margin.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "added",
@@ -1633,7 +1633,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The premium wood tier, repriced. Its <label>, its product name and its per-model machinery are unchanged -- the pre-JS default stays the generic Original-IKI, as it was before this batch -- so only the value and the price text move: +$10,800 becomes +$5,900, the S6/S8 figure at the new 30% stove-category margin.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "add-subtree",
@@ -1643,7 +1643,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). THE MOUNTING GROUP, whole -- new, declared as one subtree because every part of it is an addition. Mounting was never a configurator choice, so a trailer build's chassis lived nowhere and the base price silently carried whatever the build needed. Skid is the included default; trailer integration is a flat $3,500 because marrying a box to a chassis does not get harder as the box gets longer -- the chassis does, and it is quoted separately by final box length, which is what the note under the price says.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "removed",
@@ -1653,7 +1653,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "added",
@@ -1663,7 +1663,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "removed",
@@ -1673,7 +1673,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "added",
@@ -1683,7 +1683,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "removed",
@@ -1693,7 +1693,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "added",
@@ -1703,7 +1703,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "removed",
@@ -1713,7 +1713,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "added",
@@ -1723,7 +1723,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "removed",
@@ -1733,7 +1733,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "added",
@@ -1743,7 +1743,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "removed",
@@ -1753,7 +1753,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "added",
@@ -1763,7 +1763,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "removed",
@@ -1773,7 +1773,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     },
     {
       "op": "added",
@@ -1783,7 +1783,7 @@
       "count": 1,
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
-      "range": "8502fda..8e2bb3b"
+      "range": "8502fda..f9dd84e"
     }
   ],
   "_notes": {
@@ -1805,6 +1805,8 @@
     "glyphPrune": "The four /saunas/ tick-and-cross entries (range 83421b9..dec32ac) each carry a `_b4FixtureCheck` field recording B4's zero-reference grep result. They are prunable and their subject markup is gone as of B4. B6 prunes them. DONE 2026-08-02 (B6): the four entries are pruned, whitelist 116 -> 112. The recorded zero-reference result was RE-VERIFIED here rather than trusted -- `grep -rlF` for `class=\"check\"` and `class=\"x\"` across scripts/ (excluding this file), src/, js/ and dist/ returns nothing, and the styles.css rules that carried them (.comparison-list .check / .x) are deleted in the same batch's dead-CSS sweep. CONTRAST with the WP-1a four, which STAY: those are referenced BY fixtures as test data, so pruning them would delete a fixture's input, not a stale waiver. The discipline is the same in both cases -- run the grep, then act on what it says.",
     "reprice1JsRunFailure": "The base-price reprice step 1 (S2 22500 -> 23500, S4 29000 -> 29500, the yakisugi exterior, commit 9941997) reports a JS RUN FAILURE against 62e533a, and it is expected rather than waived -- the same shape as the precedent recorded at _notes.b1JsRunFailure and on the B3 modal delete-subtree entry (commit 24768c6). The batch necessarily edits js/data.js (two basePrice values, pricesVersion 3, the new per-model exteriorYakisugi field) and js/modal.js (the yakisugi token in PER_MODEL_PRICE_KEYS and its setPrice repaint), so the boundary crossing is structural to the batch and cannot be designed away. THE MARKUP HALF IS CERTIFIED: the 25 declarations above consumed exactly their declared counts across all 38 page/width comparisons -- 19 built pages x 2 widths -- of which 36 actually changed, every changed page reports 'identical ... (declared)', and no undeclared change remains. THE TWO NUMBERS ARE BOTH RIGHT AND MEAN DIFFERENT THINGS (Razor N1 read the run as contradicting this line; it does not). 38 is the SCOPE the declarations were consumed across; 36 is how many of those comparisons the reprice touched. The two that did not move are booking-ops.html at both widths, the one built page carrying no LocalBusiness schema and therefore no priceRange. The run prints an 'ok ... (declared)' line only for a comparison that CHANGED, so counting those lines yields 36 and counting fingerprints yields 38; a clean run states the latter as 'PASS -- 38 page/width fingerprint(s) identical modulo the whitelist'. Verified against `--baseline 62e533a --candidate 9941997` and `find dist -name '*.html' | wc -l` = 19. THE SCRIPT HALF IS CERTIFIED BY A DIFFERENT INSTRUMENT, and this is the important half to read: scripts/models-json-roundtrip.mjs drives the real built site in a real browser with JavaScript ENABLED, opens the configurator modal for all five models, and asserts every resolved option price -- including exterior_yakisugi at 5000 on S2/S4 and 6000 on S6/S8/SC -- and every base price against the canonical sheet. That is precisely the script-rendered content dom-integrity disclaims, and it is where the per-model token resolution is actually proven. CORRECTION, per Razor W3: this note previously claimed 'the yakisugi price exists in no markup literal at all'. It does. The span ships a PLACEHOLDER literal (+$5,000, the S2/S4 figure), and `updatePrices` only repaints it when the model's field is a number -- so a per-model key going missing on one model left the placeholder on screen while calculateTotal's `|| 0` silently dropped the money from the total, and the label-reading assertions all stayed green. Razor reproduced it on S2. The real compensating control is therefore NOT the absence of a literal: it is that models-json-roundtrip.mjs now SELECTS each per-model exterior and interior option, per model, and asserts #summaryTotal moved by exactly the canonical amount. That delta comes out of the token-resolution path itself, so no placeholder can absorb a missing key. Encoded as selftest mutation M16. scripts/prices-version.test.mjs independently hashes the same resolved surface in a real browser and refuses a moved price without a version bump. Read the three instruments together; do not read a dom-integrity PASS as covering the script, and do not read this run failure as an uncertified change.",
     "reprice1Range": "How to reproduce the reprice step-1 markup certificate. The 25 entries are range-scoped 62e533a..9941997, so the certifying invocation is `node scripts/dom-integrity.mjs --baseline 62e533a --candidate 9941997`, with the config read from the working tree. 9941997 is the last commit in the batch that changes delivered markup; the commit that adds these declarations touches only this config, which reaches no template and no hashed asset, so it produces byte-identical dist HTML and the entries stay live through descendant activation (see _notes.scope) rather than needing a hand re-point. Baselining on 62e533a rather than on main is deliberate and is what makes the certificate mean anything: main does not yet carry Wave B-1, so a run against it reports the whole unmerged wave -- roughly 400 changes per page -- and this batch's 25 real changes would be invisible inside it. A certificate whose diff is dominated by somebody else's work certifies nothing.",
-    "batch4JsRunFailure": "The pricesVersion 4 catalogue restructure (commit 8e2bb3b, baseline 8502fda) reports a JS RUN FAILURE, and it is EXPECTED rather than waived -- the same shape as the precedents at _notes.reprice1JsRunFailure and _notes.b1JsRunFailure. The batch necessarily edits js/data.js (pricesVersion 4, the per-model standardElectricLabel / standardWoodLabel / woodPremium fields replacing woodFired) and js/modal.js (the four-option heater group, the declared-default rule in resetForm and handlePremiumPackageChange), so the boundary crossing is structural to the batch and cannot be designed away. THE MARKUP HALF IS CERTIFIED: of 38 page/width comparisons, exactly 4 changed -- /gallery/ and /saunas/ at both widths, the two routes carrying the sauna modal -- and every one reports 'identical ... (declared)' with no undeclared change and no stale entry. The 24 declarations consumed exactly their declared counts. TWO MARKUP DECISIONS WERE MADE FOR DECLARABILITY and are recorded here so they are not undone as arbitrary. (1) The included ELECTRIC heater row carries NO ids. It was given some at first, which changed the attributes of an otherwise-untouched <label>/<span> pair -- and on the REMOVED side those nodes are attribute-less, so no `contains` could identify them without the family-of-nodes match the specificity check exists to refuse, and no subtree entry fits either because the row was only partly replaced. modal.js reaches the row through its input's data-default instead, and the change reduces to one text token. (2) The premium wood row's PRE-JS default stays the generic Original-IKI at +$5,900 rather than the S4 Mini-IKI at +$5,000: '+$5,000' cannot identify itself, because the S2/S4 yakisugi exterior carries the same figure. modal.js repaints value, label and price per model on open, so no visitor with scripts sees the difference -- and the markup default was already the generic Original-IKI before this batch, so this is the existing convention kept, not a new one. The two new components -- the included wood-fired row and the whole Mounting group -- are pure additions and are declared as single add-subtree entries keyed on measured content hashes (102469fa5540b97b and 6ec6ef8f37476dd3), which is what scripts/dom-subtree-hash.mjs was added to make possible: until it existed the two subtree shapes this config documents were the two nobody could actually write, because the hash cannot be authored from memory."
+    "batch4JsRunFailure": "The pricesVersion 4 catalogue restructure (commits 8e2bb3b and f9dd84e, baseline 8502fda, range end f9dd84e) reports a JS RUN FAILURE, and it is EXPECTED rather than waived -- the same shape as the precedents at _notes.reprice1JsRunFailure and _notes.b1JsRunFailure. The batch necessarily edits js/data.js (pricesVersion 4, the per-model standardElectricLabel / standardWoodLabel / woodPremium fields replacing woodFired) and js/modal.js (the four-option heater group, the declared-default rule in resetForm and handlePremiumPackageChange), so the boundary crossing is structural to the batch and cannot be designed away. THE MARKUP HALF IS CERTIFIED: of 38 page/width comparisons, exactly 4 changed -- /gallery/ and /saunas/ at both widths, the two routes carrying the sauna modal -- and every one reports 'identical ... (declared)' with no undeclared change and no stale entry. The 24 declarations consumed exactly their declared counts. TWO MARKUP DECISIONS WERE MADE FOR DECLARABILITY and are recorded here so they are not undone as arbitrary. (1) The included ELECTRIC heater row carries NO ids. It was given some at first, which changed the attributes of an otherwise-untouched <label>/<span> pair -- and on the REMOVED side those nodes are attribute-less, so no `contains` could identify them without the family-of-nodes match the specificity check exists to refuse, and no subtree entry fits either because the row was only partly replaced. modal.js reaches the row through its input's data-default instead, and the change reduces to one text token. (2) The premium wood row's PRE-JS default stays the generic Original-IKI at +$5,900 rather than the S4 Mini-IKI at +$5,000: '+$5,000' cannot identify itself, because the S2/S4 yakisugi exterior carries the same figure. modal.js repaints value, label and price per model on open, so no visitor with scripts sees the difference -- and the markup default was already the generic Original-IKI before this batch, so this is the existing convention kept, not a new one. The two new components -- the included wood-fired row and the whole Mounting group -- are pure additions and are declared as single add-subtree entries keyed on measured content hashes (102469fa5540b97b and 6ec6ef8f37476dd3), which is what scripts/dom-subtree-hash.mjs was added to make possible: until it existed the two subtree shapes this config documents were the two nobody could actually write, because the hash cannot be authored from memory.",
+    "batch4Range": "How to reproduce the pricesVersion 4 catalogue restructure's markup certificate, and why its range ends where it does. The 24 entries are range-scoped 8502fda..f9dd84e, so the certifying invocation is `node scripts/dom-integrity.mjs --baseline 8502fda --candidate f9dd84e`, with the config read from the working tree. THE RANGE ENDS AT THE FIX-ROUND TIP, NOT AT 8e2bb3b, and that is the correction this note exists to record: the entries first shipped scoped 8502fda..8e2bb3b, but the commit that DECLARED them (f9dd84e) also edited src/_includes/modals/sauna.njk -- two markup decisions made for declarability, both argued at _notes.batch4JsRunFailure -- so 8e2bb3b is not the last commit in the batch that changes delivered markup and a range ending there described a comparison whose candidate markup no longer exists. SAME PRECEDENT, THIRD TIME: _notes.b1Range and _notes.reprice1Range both state the rule as 'the range ends at the last commit in the batch that changes delivered markup', and in both of those cases the declaring commit touched only configs and scripts, which reach no template and no hashed asset, so the range could stop short of it. Here it could not. The rule is unchanged; what differs is which commit satisfies it. A declaring commit that edits a template is part of the certified change, not a footnote to it. Baselining on 8502fda rather than on main is deliberate for the reason given at _notes.reprice1Range: main does not yet carry Wave B-1, so a run against it reports the whole unmerged wave and this batch's 24 real changes would be invisible inside it. Commits after f9dd84e that touch only this config produce byte-identical dist HTML, so the entries stay live through descendant activation (see _notes.scope) rather than needing a hand re-point -- and that activation is PROVEN per run, not assumed: the harness requires both `git merge-base --is-ancestor` and an identical fingerprint of the range-end's own build.",
+    "batch4FixRound": "The batch-4 FIX ROUND (SC heater string, the standard-wood label repaint, the trailer note split), baseline f9dd84e. IT CARRIES NO DECLARATIONS, AND THE ABSENCE IS THE FINDING -- it was specified as needing one for the SC compare-table cell, and that specification rested on a false premise which MEASUREMENT overturned. The compare table does not exist in delivered markup: js/compare.js builds it at runtime into #compareTable from window.SSC.saunaModels, so the only place the SC heater string ships is dist/js/data.js, an asset rather than a document. `grep -rl 'Harvia Pro 20' dist/` returns exactly that one file and no HTML. Confirmed end to end: `--baseline f9dd84e --candidate WORKING` reports ZERO changed page/width comparisons and all 188 whitelist entries inert. WRITING THE DECLARATION ANYWAY WOULD HAVE BROKEN THE GATE, which is why this note exists rather than an entry: _notes.authority states that 'a declared change that does not occur ALSO fails, because a stale entry is a hole nobody closed'. A declaration for a change that happens in JavaScript is precisely that -- it would have gone red on its first run, and the tempting repair would have been to widen or delete the check rather than the entry. Same discipline as _notes.glyphPrune: run the grep, then act on what it says. THE JS RUN FAILURE IS EXPECTED, same shape as the precedents at _notes.batch4JsRunFailure, _notes.reprice1JsRunFailure and _notes.b1JsRunFailure: the round edits js/data.js (the SC `heater` string) and js/modal.js (the standard wood-fired row's label now repaints on the unavailable branch too), so the boundary crossing is structural. WHAT CERTIFIES THIS ROUND IS THEREFORE A DIFFERENT INSTRUMENT, and that is the half to read: scripts/models-json-roundtrip.mjs drives the built site in a real browser with JavaScript ENABLED and asserts the SC compare-table Heater cell byte-equal to the canonical sheet -- which is the assertion that actually moved when this string changed, and the reason the change could not be made in canonical alone. Read the two together; a dom-integrity PASS here would have covered nothing, because there was nothing in the markup to cover."
   }
 }

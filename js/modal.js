@@ -654,6 +654,27 @@
                 const stdWoodInput = stdWood.querySelector('input');
                 const stdWoodLabel = document.getElementById('heaterStandardWoodLabel');
                 const woodName = currentModel.standardWoodLabel;
+
+                // Label first, unconditionally -- the same rule as the premium
+                // row below, and the same defect: painting the name only on the
+                // available branch left the previously-viewed model's stove
+                // sitting under a greyed-out option. This row differs in one
+                // way that makes the bare hoist a no-op, which is why the
+                // fallback is here: a null `standardWoodLabel` is this row's
+                // availability signal AND its name, so unlike `woodPremiumLabel`
+                // (which S2 still carries with a null price) there is no
+                // per-model name to fall back on. The row therefore repaints to
+                // the GENERIC standard wood stove -- the same string the
+                // un-scripted markup already ships in sauna.njk -- so a disabled
+                // row names the stove the model cannot have rather than whichever
+                // one the visitor looked at last. Latent today because all three
+                // models that offer a standard wood build carry the M3; it stops
+                // being latent the first time one of them does not.
+                if (stdWoodLabel) {
+                    stdWoodLabel.textContent =
+                        `Standard wood-fired heater — ${woodName || 'Harvia M3'} (included)`;
+                }
+
                 // No standard wood build on this model: S2 on clearances, SC on
                 // commercial spec. Disabled exactly like the premium tier below,
                 // and if it was the live selection we fall back to the included
@@ -673,10 +694,6 @@
                 } else {
                     stdWood.classList.remove('disabled');
                     if (stdWoodInput) stdWoodInput.disabled = false;
-                    if (stdWoodLabel) {
-                        stdWoodLabel.textContent =
-                            `Standard wood-fired heater — ${woodName} (included)`;
-                    }
                 }
             }
 

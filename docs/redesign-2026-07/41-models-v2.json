@@ -59,7 +59,7 @@
       "size": "7' x 12' or larger",
       "basePrice": 57000,
       "capacity": "10-12+ people",
-      "heater": "Harvia Pro 20 or Homecraft Revive 9kW",
+      "heater": "Homecraft Revive 9kW (electric)",
       "electricOnly": false,
       "costBasis": {
         "stressCost": 39438,
@@ -135,7 +135,8 @@
           "id": "mount_trailer",
           "name": "Trailer integration — trailer client-supplied",
           "price": 3500,
-          "note": "Covers integrating the build onto a road-legal chassis. The trailer itself is client-supplied; where SSC sources one instead, it is quoted separately by FINAL BOX LENGTH (model + changing room + deck, which stack) with GVWR re-checked at quote time. Dealer chassis prices: doc 31 §1.6."
+          "note": "Covers integrating the build onto a road-legal chassis. The trailer itself is client-supplied; where SSC sources one instead, it is quoted separately by FINAL BOX LENGTH (model + changing room + deck, which stack) with GVWR re-checked at quote time.",
+          "_provenance": "Dealer chassis prices: doc 31 §1.6. Split out of `note` because `note` is CLIENT-FACING -- generate-document.js carries it verbatim onto the quote/estimate PDF as the line description, so an internal document citation was being printed for the customer. The underscore prefix is the file's existing rule for internal commentary that never leaves it (see the picker comment in generate-document.js): no renderer reads this field."
         }
       ],
       "_note": "New at pricesVersion 4. Mounting was never a configurator choice, so a trailer build's chassis cost lived nowhere and the base price silently carried whatever the build happened to need. Skid is the included default; the trailer line prices the INTEGRATION work only, at $3,500 on every model, because the labour to marry a box to a chassis does not scale with box length — the chassis cost does, and that is why it is quoted separately rather than folded in. Sizing rule and the chassis price steps: doc 35 §2.7."

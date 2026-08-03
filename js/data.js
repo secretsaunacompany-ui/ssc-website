@@ -146,7 +146,7 @@
             basePrice: 57000,
             size: "7' x 12' or larger",
             capacity: '10-12+ people',
-            heater: 'Harvia Pro 20 or Homecraft Revive 9kW',
+            heater: 'Homecraft Revive 9kW (electric)',
             interiorUpgrade: 5000,
             premiumFinishPrice: 12500,
             electricHeaterUpgrade: 2800,

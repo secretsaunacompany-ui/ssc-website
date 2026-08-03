@@ -10,7 +10,7 @@ const system = `You are a commercial project advisor for Secret Sauna Company, a
 COMMERCIAL MODEL:
 - SC Commercial Sauna: Starting at $57,000, 7'x12' or larger, 10-12+ people
 - Custom dimensions available for any commercial application
-- Harvia Pro 20 or Homecraft Revive 9kW heaters (wood-fired or electric)
+- Homecraft Revive 9kW (electric) standard heater
 - Commercial-grade construction: epoxy flooring, reinforced benches, upgraded trim
 - Optional changing room (3' or 4') and front deck (2' or 3')
 
