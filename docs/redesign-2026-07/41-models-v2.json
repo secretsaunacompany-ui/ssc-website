@@ -1,28 +1,32 @@
 {
   "_comment": "Single source of truth for SSC model and configurator pricing. Used by the quote generator and other tools outside the website repo.",
-  "_updated": "2026-07-31",
-  "_source": "js/data.js and src/_includes/modals/sauna.njk in ssc-website, at pricesVersion 2 (WP-0b-ii). Derivations and margins: docs/redesign-2026-07/35-configurator-price-sheet.md.",
+  "_updated": "2026-08-03",
+  "_source": "Base-price reprice STEP 1, ratified by Lee 2026-08-03: S2 22500 -> 23500 and S4 29000 -> 29500 only, plus the yakisugi exterior and the per-model costBasis record. S6, S8 and SC HOLD at their current list pending step 2 (trailer-line separation). Prior basis: js/data.js and src/_includes/modals/sauna.njk in ssc-website at pricesVersion 2 (WP-0b-ii); derivations and margins in docs/redesign-2026-07/35-configurator-price-sheet.md.",
   "_schema": "v2. The v1 file could not hold what the configurator now offers: one heater_apex entry cannot carry a per-model electric split, and there were no bench, deck-tier, window-tier, speaker-tier or per-model wood-fired structures at all. Options are now grouped exactly as the configurator groups them, and any price that varies by model is an explicit pricePerModel map rather than v1's 'model.interiorUpgrade' magic string, which every consumer had to know how to interpret.",
 
-  "pricesVersion": 2,
+  "pricesVersion": 3,
   "_pricesVersionNote": "Matches SSC.pricesVersion in js/data.js. Saved customer configurations are stamped with it; a mismatch means a stored total belongs to a superseded sheet. Bump both together, always.",
+
+  "_costBasisNote": "Per-model build cost at the stress case, and the gross-margin floor the list price is expected to clear against it. `stressCost` values are the step-1 figures from the pricing-overhaul stress table. The website's scripts/models-json-roundtrip.mjs asserts (basePrice - stressCost) / basePrice >= gmFloor for every model. `held: true` marks a model whose list price is KNOWINGLY below its floor pending a later step: the assertion does not go red for it, but the gate prints a loud WARNING naming the model, its actual margin and `heldRef`. A permanently red tree teaches people to ignore red; silent passage would defeat the gate. Clearing a held model's price above its floor, or resolving its heldRef, is what retires the flag.",
 
   "models": {
     "S2": {
       "name": "S2 Standard Sauna",
       "size": "5' x 7'",
-      "basePrice": 22500,
+      "basePrice": 23500,
       "capacity": "2-3 people",
       "heater": "Homecraft 7.5kW H Series",
-      "electricOnly": true
+      "electricOnly": true,
+      "costBasis": { "stressCost": 12862, "gmFloor": 0.40 }
     },
     "S4": {
       "name": "S4 Standard Sauna",
       "size": "7' x 7'",
-      "basePrice": 29000,
+      "basePrice": 29500,
       "capacity": "4-5 people",
       "heater": "Harvia M3 or Homecraft 7.5kW",
-      "electricOnly": false
+      "electricOnly": false,
+      "costBasis": { "stressCost": 16328, "gmFloor": 0.40 }
     },
     "S6": {
       "name": "S6 Standard Sauna",
@@ -30,7 +34,13 @@
       "basePrice": 35500,
       "capacity": "6-7 people",
       "heater": "Harvia M3 or Homecraft 7.5kW",
-      "electricOnly": false
+      "electricOnly": false,
+      "costBasis": {
+        "stressCost": 27143,
+        "gmFloor": 0.40,
+        "held": true,
+        "heldRef": "step-2 trailer separation, Lee linearity ruling 2026-08-03"
+      }
     },
     "S8": {
       "name": "S8 Standard Sauna",
@@ -38,7 +48,13 @@
       "basePrice": 44000,
       "capacity": "8-10 people",
       "heater": "Harvia M3 or Homecraft 7.5kW",
-      "electricOnly": false
+      "electricOnly": false,
+      "costBasis": {
+        "stressCost": 30082,
+        "gmFloor": 0.40,
+        "held": true,
+        "heldRef": "step-2 trailer separation, Lee linearity ruling 2026-08-03"
+      }
     },
     "SC": {
       "name": "SC Commercial Sauna",
@@ -46,7 +62,13 @@
       "basePrice": 57000,
       "capacity": "10-12+ people",
       "heater": "Harvia Pro 20 or Homecraft Revive 9kW",
-      "electricOnly": false
+      "electricOnly": false,
+      "costBasis": {
+        "stressCost": 45213,
+        "gmFloor": 0.40,
+        "held": true,
+        "heldRef": "step-2 trailer separation + photography gate"
+      }
     }
   },
 
@@ -108,6 +130,11 @@
           "id": "exterior_cedar",
           "name": "Cedar exterior",
           "pricePerModel": { "S2": 2500, "S4": 2500, "S6": 3000, "S8": 3000, "SC": 3000 }
+        },
+        {
+          "id": "exterior_yakisugi",
+          "name": "Yakisugi (charred cedar) exterior",
+          "pricePerModel": { "S2": 5000, "S4": 5000, "S6": 6000, "S8": 6000, "SC": 6000 }
         }
       ]
     },

@@ -45,6 +45,7 @@
         interiorThermowood: 'interiorUpgrade',
         exteriorStandingSeam: 'exteriorStandingSeam',
         exteriorCedar: 'exteriorCedar',
+        exteriorYakisugi: 'exteriorYakisugi',
         premiumFinishPrice: 'premiumFinishPrice'
     };
 
@@ -545,6 +546,7 @@
             setPrice('thermowoodPrice', currentModel.interiorUpgrade);
             setPrice('standingSeamPrice', currentModel.exteriorStandingSeam);
             setPrice('cedarExteriorPrice', currentModel.exteriorCedar);
+            setPrice('yakisugiExteriorPrice', currentModel.exteriorYakisugi);
             setPrice('premiumFinishPrice', currentModel.premiumFinishPrice);
         }
 

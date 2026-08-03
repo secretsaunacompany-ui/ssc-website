@@ -53,7 +53,7 @@ const MUTATIONS = [
   {
     name: 'M2  priceDisplay stops carrying basePrice',
     proves: 'the string a visitor reads is gated on its digits, not merely present',
-    file: DATA, from: '"priceDisplay": "From $29,000"', to: '"priceDisplay": "From $28,000"',
+    file: DATA, from: '"priceDisplay": "From $29,500"', to: '"priceDisplay": "From $28,000"',
     expect: 'S4 priceDisplay',
   },
   {

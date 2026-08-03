@@ -91,8 +91,10 @@ const CANONICAL_PATH = process.env.SSC_MODELS_JSON
 
 let fails = 0;
 let skips = 0;
+let warns = 0;
 const ok = (c, m) => { console.log((c ? 'PASS  ' : 'FAIL  ') + m); if (!c) fails += 1; };
 const skip = (m) => { console.log(`SKIP  ${m}`); skips += 1; };
+const warn = (m) => { console.log(`WARN  ${m}`); warns += 1; };
 const money = (s) => parseInt(String(s).replace(/[^0-9]/g, ''), 10);
 
 /**
@@ -244,7 +246,7 @@ function checkSiteDataParity() {
         + `print the second one. Copy the canonical value into ${SITE_DATA_FILE}.`);
 
     // priceDisplay is the string a visitor reads. It is presentational in shape
-    // and load-bearing in content, so it is gated on its DIGITS: "From $22,500"
+    // and load-bearing in content, so it is gated on its DIGITS: "From $23,500"
     // must carry exactly basePrice, and a typo'd separator or a stale figure is
     // a wrong price in front of a customer.
     ok(money(m.priceDisplay) === canonical.models[key].basePrice,
@@ -259,6 +261,86 @@ function checkSiteDataParity() {
   return canonical;
 }
 
+/**
+ * HALF FIVE -- THE COST-BASIS GATE.
+ *
+ * Every other assertion in this file checks that five copies of a price AGREE.
+ * None of them has any opinion about whether the number they agree on is a
+ * number we can afford to sell at. Five perfectly consistent copies of a price
+ * below cost is exactly as consistent as five copies of a good one, and the
+ * gate that catches drift would report ROUND-TRIP CLEAN either way.
+ *
+ * So: canonical records, per model, the stress-case build cost and the gross
+ * margin floor the list price is expected to clear against it. This asserts
+ * (basePrice - stressCost) / basePrice >= gmFloor.
+ *
+ * THE HELD FLAG, and why it is not a way of turning the check off.
+ *
+ * S6, S8 and SC are KNOWINGLY below floor pending step 2 (trailer-line
+ * separation). Two obvious designs are both wrong. Failing on them leaves the
+ * tree permanently red, and a suite that is always red is a suite everyone
+ * learns to run past -- it would swallow a real regression on S2 or S4 inside
+ * noise that is expected. Exempting them silently is worse: the whole reason
+ * this gate exists is that below-floor pricing is invisible, and a silent
+ * exemption restores the invisibility with a config key on top.
+ *
+ * So a held model does not fail, and does not pass quietly either: it prints a
+ * loud WARNING naming the model, its actual margin, the floor it misses, and
+ * the `heldRef` that says what has to happen for the hold to end. The warning
+ * is a standing bill, visible on every run, that someone eventually has to
+ * clear. A non-held model below floor is a hard FAIL naming both numbers.
+ *
+ * A missing costBasis is a FAIL, not a skip. "This model has no recorded cost"
+ * must not be the cheap way to leave the gate.
+ */
+function checkCostBasis(canonical) {
+  console.log('\n--- cost basis: every basePrice clears its gross-margin floor ---');
+  if (!canonical) {
+    skip('canonical not readable; NO basePrice was checked against a cost. '
+      + 'Margins are UNVERIFIED -- not confirmed. Set SSC_MODELS_JSON to assert them.');
+    return;
+  }
+
+  const pct = (n) => `${(n * 100).toFixed(1)}%`;
+
+  for (const [key, m] of Object.entries(canonical.models)) {
+    const cb = m.costBasis;
+    if (!cb || typeof cb.stressCost !== 'number' || typeof cb.gmFloor !== 'number') {
+      ok(false, `${key} has no usable costBasis {stressCost, gmFloor} in canonical, so its `
+        + `basePrice ${m.basePrice} is not checked against any cost. Record one; do not `
+        + 'delete the model from the check.');
+      continue;
+    }
+
+    const gm = (m.basePrice - cb.stressCost) / m.basePrice;
+
+    if (gm >= cb.gmFloor) {
+      ok(true, `${key} margin ${pct(gm)} >= floor ${pct(cb.gmFloor)} `
+        + `(basePrice ${m.basePrice} - stressCost ${cb.stressCost})`);
+      if (cb.held) {
+        warn(`${key} is still flagged costBasis.held but its margin ${pct(gm)} now CLEARS the `
+          + `floor ${pct(cb.gmFloor)}. The hold has served its purpose -- remove the flag `
+          + `(heldRef: ${cb.heldRef || '(none recorded)'}).`);
+      }
+      continue;
+    }
+
+    if (cb.held) {
+      warn(`${key} is BELOW its floor and knowingly held: margin ${pct(gm)} < floor `
+        + `${pct(cb.gmFloor)} (basePrice ${m.basePrice} - stressCost ${cb.stressCost} = `
+        + `${m.basePrice - cb.stressCost}). This is not a pass, it is a standing bill. `
+        + `Held pending: ${cb.heldRef || '(no heldRef recorded -- record one)'}`);
+      continue;
+    }
+
+    ok(false, `${key} basePrice ${m.basePrice} is BELOW its gross-margin floor: margin `
+      + `${pct(gm)} < floor ${pct(cb.gmFloor)} against stressCost ${cb.stressCost} `
+      + `(gross ${m.basePrice - cb.stressCost}). Either raise basePrice to at least `
+      + `${Math.ceil(cb.stressCost / (1 - cb.gmFloor))} or record a costBasis.held with a `
+      + 'heldRef saying what makes the shortfall deliberate.');
+  }
+}
+
 const inRepoRaw = fs.readFileSync(JSON_FILE, 'utf8');
 const spec = JSON.parse(inRepoRaw);
 
@@ -266,6 +348,7 @@ const spec = JSON.parse(inRepoRaw);
 // worth knowing about before spending two minutes on a build.
 checkCanonicalParity(inRepoRaw);
 const canonicalDoc = checkSiteDataParity();
+checkCostBasis(canonicalDoc);
 
 /**
  * HALF FOUR (B4 fix round, Razor W3) -- the COMPARE TABLE.
@@ -453,5 +536,8 @@ await browser.close();
 await server.close();
 fs.rmSync(dir, { recursive: true, force: true });
 const skipNote = skips ? ` (${skips} check(s) SKIPPED -- unverified, not confirmed)` : '';
-console.log(fails ? `\n${fails} FAILURES${skipNote}` : `\nROUND-TRIP CLEAN${skipNote}`);
+// Warnings do not fail the run, but they must not vanish from the last line
+// either -- an outstanding below-floor hold is the whole reason the count exists.
+const warnNote = warns ? ` (${warns} WARNING(s) -- held below-floor prices outstanding)` : '';
+console.log(fails ? `\n${fails} FAILURES${skipNote}${warnNote}` : `\nROUND-TRIP CLEAN${skipNote}${warnNote}`);
 process.exit(fails ? 1 : 0);

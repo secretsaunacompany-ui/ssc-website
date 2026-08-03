@@ -10,7 +10,8 @@
      *
      * Bump this in the SAME commit as any change to a price -- `basePrice`,
      * `interiorUpgrade`, `premiumFinishPrice`, `electricHeaterUpgrade`,
-     * `woodFired`, `exteriorStandingSeam`, `exteriorCedar` here, or any option
+     * `woodFired`, `exteriorStandingSeam`, `exteriorCedar`, `exteriorYakisugi`
+     * here, or any option
      * value in `_includes/modals/sauna.njk`.
      *
      * This is not a convention anyone has to remember: `npm run
@@ -23,7 +24,7 @@
      * recomputed from live prices, with a visible note. Without the stamp, a
      * week-old saved total would silently contradict its own line items.
      */
-    const pricesVersion = 2;
+    const pricesVersion = 3;
 
     // ============================================
     // Sauna Model Data
@@ -31,7 +32,7 @@
     const saunaModels = {
         s2: {
             name: 'S2 Standard Sauna',
-            basePrice: 22500,
+            basePrice: 23500,
             size: "5' x 7'",
             capacity: '2-3 people',
             heater: 'Homecraft 7.5kW H Series',
@@ -42,6 +43,7 @@
             woodFiredLabel: null,
             exteriorStandingSeam: 3000,
             exteriorCedar: 2500,
+            exteriorYakisugi: 5000,
             electricOnly: true,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768410759/Gemini_Generated_Image_ot1l9lot1l9lot1l_1_ukzekw.png',
@@ -52,7 +54,7 @@
         },
         s4: {
             name: 'S4 Standard Sauna',
-            basePrice: 29000,
+            basePrice: 29500,
             size: "7' x 7'",
             capacity: '4-5 people',
             heater: 'Harvia M3 or Homecraft 7.5kW',
@@ -63,6 +65,7 @@
             woodFiredLabel: 'Mini-IKI (Wood-fired)',
             exteriorStandingSeam: 3000,
             exteriorCedar: 2500,
+            exteriorYakisugi: 5000,
             electricOnly: false,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768272416/PXL_20240808_173352968.MP_yhb9bq.jpg',
@@ -87,6 +90,7 @@
             woodFiredLabel: 'Original-IKI (Wood-fired)',
             exteriorStandingSeam: 3500,
             exteriorCedar: 3000,
+            exteriorYakisugi: 6000,
             electricOnly: false,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250653/IMG_6404_hrncws.jpg',
@@ -108,6 +112,7 @@
             woodFiredLabel: 'Original-IKI (Wood-fired)',
             exteriorStandingSeam: 4000,
             exteriorCedar: 3000,
+            exteriorYakisugi: 6000,
             electricOnly: false,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324977/DSC03225-EDIT_crqtkp.jpg',
@@ -129,6 +134,7 @@
             woodFiredLabel: 'Original-IKI (Wood-fired)',
             exteriorStandingSeam: 4000,
             exteriorCedar: 3000,
+            exteriorYakisugi: 6000,
             electricOnly: false,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409622/IMG_5228_1_z2bz8q.jpg',

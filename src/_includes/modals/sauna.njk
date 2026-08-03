@@ -32,7 +32,7 @@
                         </div>
                         <div class="spec-item">
                             <label>Base Price</label>
-                            <span id="specPrice">$29,000</span>
+                            <span id="specPrice">$29,500</span>
                         </div>
                         <div class="spec-item">
                             <label>Heater Included</label>
@@ -154,6 +154,11 @@
                             <span class="addon-label">Cedar exterior</span>
                             <span class="addon-price" id="cedarExteriorPrice">+$2,500</span>
                         </label>
+                        <label class="addon-option">
+                            <input type="radio" name="exterior" value="exteriorYakisugi" data-addon="exterior">
+                            <span class="addon-label">Yakisugi (charred cedar) exterior</span>
+                            <span class="addon-price" id="yakisugiExteriorPrice">+$5,000</span>
+                        </label>
                     </div>
 
                     <div class="addon-category">
@@ -270,12 +275,12 @@
                     <div class="price-summary">
                         <div class="price-row base">
                             <span>Base Price</span>
-                            <span id="summaryBase">$29,000</span>
+                            <span id="summaryBase">$29,500</span>
                         </div>
                         <div id="addonsList"></div>
                         <div class="price-row total">
                             <span>Estimated Total</span>
-                            <span id="summaryTotal">$29,000</span>
+                            <span id="summaryTotal">$29,500</span>
                         </div>
 
                         {# Shown by modal.js only when a saved configuration was

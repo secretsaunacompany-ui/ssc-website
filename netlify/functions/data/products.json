@@ -1,11 +1,11 @@
 {
-  "_comment": "SSC product data for advisor system prompts. Keep in sync with js/data.js and _includes/modals/sauna.njk when pricing or models change. Price sheet version 2 (WP-0b-ii, 2026-07-31) -- these are the prices the configurator quotes.",
-  "_pricesVersion": 2,
+  "_comment": "SSC product data for advisor system prompts. Keep in sync with js/data.js and _includes/modals/sauna.njk when pricing or models change. Price sheet version 3 (base-price reprice step 1, 2026-08-03) -- these are the prices the configurator quotes.",
+  "_pricesVersion": 3,
   "models": {
     "s2": {
       "name": "S2",
       "fullName": "S2 Standard Sauna",
-      "basePrice": 22500,
+      "basePrice": 23500,
       "size": "5' x 7'",
       "capacity": "2-3 people",
       "heater": "Homecraft 7.5kW H Series (electric)",
@@ -17,7 +17,7 @@
     "s4": {
       "name": "S4",
       "fullName": "S4 Standard Sauna",
-      "basePrice": 29000,
+      "basePrice": 29500,
       "size": "7' x 7'",
       "capacity": "4-5 people",
       "heater": "Harvia M3 or Homecraft 7.5kW (wood-fired or electric)",
@@ -94,7 +94,8 @@
       "options": [
         { "name": "Standard metal (included)", "price": 0 },
         { "name": "Standing seam metal", "price": "varies by model (S2/S4 $3,000, S6 $3,500, S8/SC $4,000)" },
-        { "name": "Cedar exterior", "price": "varies by model (S2/S4 $2,500, S6/S8/SC $3,000)" }
+        { "name": "Cedar exterior", "price": "varies by model (S2/S4 $2,500, S6/S8/SC $3,000)" },
+        { "name": "Yakisugi (charred cedar) exterior", "price": "varies by model (S2/S4 $5,000, S6/S8/SC $6,000)" }
       ]
     },
     "interiorWood": {
