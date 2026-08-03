@@ -44,7 +44,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ canonical | default("https://www.secretsaunacompany.ca/") }}">
     <meta property="og:title" content="{{ og_title | default(title) | default("Secret Sauna Company | Handcrafted Finnish Saunas in BC") }}">
-    <meta property="og:description" content="{{ og_description | default(description) | default("Authentic Finnish saunas handcrafted in Squamish, BC. Traditional construction with Western Red Cedar. Custom builds starting at $22,500.") }}">
+    <meta property="og:description" content="{{ og_description | default(description) | default("Authentic Finnish saunas handcrafted in Squamish, BC. Traditional construction with Western Red Cedar. Models from $23,500.") }}">
     <meta property="og:image" content="{{ og_image | default("https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250655/IMG_7991-EDIT_gz1kqt.jpg") }}">
     <meta property="og:locale" content="en_CA">
     <meta property="og:site_name" content="Secret Sauna Company">
@@ -96,7 +96,7 @@
             {"@type": "Place", "name": "British Columbia"},
             {"@type": "Place", "name": "Western Canada"}
         ],
-        "priceRange": "$22,500 - $57,000+",
+        "priceRange": "$23,500 - $57,000+",
         "openingHours": "Mo-Fr 09:00-17:00",
         "hasMap": "https://maps.google.com/?q=Secret+Sauna+Company,+38918+Progress+Way,+Squamish,+BC",
         "sameAs": [
@@ -107,61 +107,19 @@
             "@type": "OfferCatalog",
             "name": "Finnish Saunas",
             "itemListElement": [
+{%- for key in models.order %}{% set m = models.models[key] %}
                 {
                     "@type": "Offer",
                     "itemOffered": {
                         "@type": "Product",
-                        "name": "S2 Finnish Sauna",
-                        "description": "2-3 person compact Finnish sauna with three-tier benches",
+                        "name": "{{ m.ldName | jsonld | safe }}",
+                        "description": "{{ m.capacity | replace(" people", " person") | jsonld | safe }} {{ m.ldShort | jsonld | safe }}",
                         "brand": "Secret Sauna Company"
                     },
-                    "price": "22500",
+                    "price": "{{ m.basePrice }}",
                     "priceCurrency": "CAD"
-                },
-                {
-                    "@type": "Offer",
-                    "itemOffered": {
-                        "@type": "Product",
-                        "name": "S4 Finnish Sauna",
-                        "description": "4-5 person Finnish sauna with Western Red Cedar interior",
-                        "brand": "Secret Sauna Company"
-                    },
-                    "price": "29000",
-                    "priceCurrency": "CAD"
-                },
-                {
-                    "@type": "Offer",
-                    "itemOffered": {
-                        "@type": "Product",
-                        "name": "S6 Finnish Sauna",
-                        "description": "6-7 person Finnish sauna, available as mobile or semi-permanent",
-                        "brand": "Secret Sauna Company"
-                    },
-                    "price": "35500",
-                    "priceCurrency": "CAD"
-                },
-                {
-                    "@type": "Offer",
-                    "itemOffered": {
-                        "@type": "Product",
-                        "name": "S8 Finnish Sauna",
-                        "description": "8-10 person luxury Finnish sauna with full customization",
-                        "brand": "Secret Sauna Company"
-                    },
-                    "price": "44000",
-                    "priceCurrency": "CAD"
-                },
-                {
-                    "@type": "Offer",
-                    "itemOffered": {
-                        "@type": "Product",
-                        "name": "SC Commercial Sauna",
-                        "description": "10-14 person commercial-grade Finnish sauna for resorts and gyms",
-                        "brand": "Secret Sauna Company"
-                    },
-                    "price": "57000",
-                    "priceCurrency": "CAD"
-                }
+                }{{ "," if not loop.last }}
+{%- endfor %}
             ]
         }
     }
@@ -302,8 +260,24 @@
 
     <!-- Preconnect & Preload -->
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+    {#- The LCP preload. Two shapes, and the responsive one is OPT-IN
+        (`preload_responsive_sizes`) so the eleven pages that do not opt in emit
+        BYTE-IDENTICAL html -- hence the single-line if/else and the whitespace
+        control on this comment, both of which are load-bearing.
+
+        Default shape: a plain href. Those pages preload a CSS background (the
+        .page-hero overlays); there is no <img> for the preload to agree with,
+        so a responsive preload would describe a selection the browser never
+        makes.
+
+        Responsive shape: the target IS an <img> that cloudinaryResponsive
+        rewrites, so the preload must carry the same candidate list the element
+        will carry. Without it the preload picks one candidate by its href and
+        the element picks another by its srcset, and the LCP photograph is
+        downloaded TWICE (measured: preload w_1200, element w_800). The list
+        comes from the transform's own generator, never hand-authored. #}
     {% if preload_image %}
-    <link rel="preload" as="image" href="{{ preload_image }}">
+    {% if preload_responsive_sizes %}<link rel="preload" as="image" href="{{ preload_image | cloudinaryDefaultSrc }}" imagesrcset="{{ preload_image | cloudinarySrcset }}" imagesizes="{{ preload_responsive_sizes }}">{% else %}<link rel="preload" as="image" href="{{ preload_image }}">{% endif %}
     {% endif %}
 
     <!-- Fonts: self-hosted, so no Google origins and no third-party round trip.

@@ -25,7 +25,8 @@ import { startServer } from './lib/server.mjs';
 import {
   extractFingerprint, diffTokens, describeToken, loadWhitelist, applyWhitelist,
   checkWhitelistSpecificity, applyRenameMap, staleRenames, partitionByScope,
-  subtreeHash, findSubtreeHashes, checkSubtreeDeclarations,
+  subtreeHash, findSubtreeHashes, checkSubtreeDeclarations, checkAddedDeclarations,
+  MAX_SUBTREE_TOKENS, fingerprintsIdentical,
 } from './lib/dom-fingerprint.mjs';
 import * as realFingerprint from './lib/dom-fingerprint.mjs';
 
@@ -275,6 +276,115 @@ const MUTATIONS = [
     // goes green. 1 failure vs 0 — the difference is the whole scope mechanism.
     probe: (m, f) => m.applyWhitelist(f.twoSameShapeDeletions,
       m.partitionByScope(f.scopedPair, 'aaaaaaa', 'bbbbbbb').active).failures.length,
+  },
+  {
+    name: 'D-m17 descendant activation disabled (the proven clause ignored)',
+    proves: 'an entry whose tip moved on, with markup PROVEN identical, still certifies',
+    edits: { 'dom-fingerprint.mjs': [
+      '    return descendantOk.has(c);',
+      '    return false;'] },
+    // Shipped: the caller has proven descent and markup identity, so the entry
+    // activates and the run can certify the tip that is actually merging.
+    // Mutated: it goes inert, every comparison it covered reports undeclared,
+    // and we are back to hand re-pointing an entry that is stale on arrival.
+    probe: (m, f) => m.partitionByScope(f.descEntry, f.descBase, f.descTip,
+      { descendantOk: new Set([f.descEnd]) }).active.length,
+  },
+  {
+    name: 'D-m18 fingerprint identity stops comparing token CONTENT',
+    proves: 'identity reads the markup, not just how much of it there is',
+    edits: { 'dom-fingerprint.mjs': [
+      '      if (tokenKey(a[i]) !== tokenKey(b[i])) {',
+      '      if (false) {'] },
+    // The half that makes descent SAFE, and it is probed with a REWORDED page
+    // rather than an added node on purpose: a changed word leaves the token
+    // count untouched, so the cheap length check cannot see it and only real
+    // content comparison can. Mutated, a descendant whose copy changed reads as
+    // identical and the entry activates over markup it never described --
+    // which is the whole failure mode descent could have introduced.
+    probe: (m, f) => m.fingerprintsIdentical(f.printsA, f.printsReworded).identical,
+  },
+  {
+    name: 'D-m20 cap enforcement bypassed on the ADD path',
+    proves: 'the cap governs additions too, and not merely by sharing a code path',
+    // D-m16 aims at the same enforcement site from the DELETE direction. Both
+    // exist on purpose. The cap is enforced in shared code today, so one
+    // mutation appears to cover both -- but "appears to" is the whole problem:
+    // if the add path is ever given its own matcher (the obvious refactor the
+    // moment the two directions need to differ), D-m16 keeps passing while the
+    // add cap silently becomes a suggestion. This probe is aimed at the add
+    // direction's OWN material so it fails the moment that happens.
+    edits: { 'dom-fingerprint.mjs': [
+      '      const maxLen = Math.min(MAX_SUBTREE_TOKENS, end - i);',
+      '      const maxLen = Math.min(end - i, 100000);'] },
+    // Shipped: the over-cap ADD entry matches nothing, so the whole run of
+    // additions falls through undeclared -- many failures. Mutated: the cap
+    // disappears, the oversized subtree is consumed whole, and 0 failures. An
+    // entry larger than one component would start certifying itself.
+    probe: (m, f) => m.applyWhitelist(
+      m.diffTokens(f.capNone, f.capOver).ops, f.capOverAddEntry).failures.length,
+  },
+  {
+    name: 'D-m21 add-subtree stops checking the hash (tag + path alone)',
+    proves: 'an add declaration aimed at the WRONG node consumes nothing',
+    edits: { 'dom-fingerprint.mjs': [
+      '          if (subtreeHash(slice, e.path) !== e.textHash) continue;',
+      '          if (false) continue;'] },
+    // The add-path twin of D-m12. Shipped, an entry whose hash names subtree A
+    // cannot consume subtree B even though tag and path match exactly -- which
+    // is the only thing separating two attribute-less siblings. Mutated, the
+    // first slice that fits the path is claimed and the declaration means
+    // nothing beyond "something of this tag appeared somewhere under here".
+    probe: (m, f) => m.applyWhitelist(
+      m.diffTokens(f.capNone, f.capOther).ops, f.capAddEntry).failures.length,
+  },
+  {
+    name: 'D-m22 the add-subtree staleness mirror deleted',
+    proves: 'a hand-written add hash is refused before any verdict rests on it',
+    edits: { 'dom-fingerprint.mjs': [
+      "  return checkSubtreeSide(whitelist, candidatePrints, 'add-subtree', 'candidate');",
+      '  return [];'] },
+    // Without the mirror an add entry can name a node the candidate never
+    // contained and simply go quiet: it consumes nothing, and the only signal
+    // left is the generic "never matched anywhere" staleness line, which does
+    // not distinguish "your hash is wrong" from "the addition did not happen".
+    // Shipped: 1 problem, named. Mutated: 0.
+    probe: (m, f) => m.checkAddedDeclarations(f.capBogusAddEntry, f.capPrints).length,
+  },
+  {
+    name: 'D-m19 the vacuity guard removed (empty compares as identical)',
+    proves: 'a comparison that measured nothing cannot certify identity',
+    edits: { 'dom-fingerprint.mjs': [
+      '  if (aPrints.size === 0 || bPrints.size === 0) {',
+      '  if (false) {'] },
+    // Shipped: false. Mutated: true — and a `true` here activates a whitelist
+    // entry against a build that produced no pages at all. Cheap to probe and
+    // it needs no fixture, which is the point: the guard is one line and
+    // without this the one line could be deleted by anyone and nothing would
+    // go red.
+    probe: (m) => m.fingerprintsIdentical(new Map(), new Map()).identical,
+  },
+  {
+    name: 'D-m16 MAX_SUBTREE_TOKENS collapsed back to a tiny cap',
+    proves: 'the raised cap is what actually lets a whole component be declared as one deletion',
+    // Aimed at the ENFORCEMENT site, not at the constant's declaration. An
+    // anchor of `const MAX_SUBTREE_TOKENS = 400;` would be a third functional
+    // copy of the number -- it would have to be edited in lockstep with any
+    // future retune, and the cap value is supposed to live in exactly two
+    // places: the constant and Z20.
+    edits: { 'dom-fingerprint.mjs': [
+      '      const maxLen = Math.min(MAX_SUBTREE_TOKENS, end - i);',
+      '      const maxLen = Math.min(4, end - i);'] },
+    // Z18's material: a subtree of ~121 tokens, correctly declared and hashed.
+    // Shipped, the cap is 400 and it is consumed whole -- 0 failures. Mutated
+    // to 4, the slice search can never reach the subtree's length, the entry
+    // matches nothing and the whole run of removals falls through as
+    // undeclared. This is the mutation that stops the cap being a number
+    // nobody's tests touch: without it, 400 could be edited to anything and
+    // only Z20's equality assertion would notice, which proves the constant is
+    // written down rather than that it does anything.
+    probe: (m, f) => m.applyWhitelist(
+      m.diffTokens(f.capUnder, f.capNone).ops, f.capEntry).failures.length,
   },
   {
     name: 'D-m8  document order ignored (tokens sorted)',
@@ -628,6 +738,110 @@ async function main() {
       check('Y4 a candidate mismatch alone is enough to make an entry inert',
         partitionByScope(abbrev, full[0], `beef${full[1].slice(4)}`).active.length === 0,
         'both ends of the range must match, not just the baseline');
+
+      // ---- DESCENDANT ACTIVATION (Razor CRITICAL-1) ----
+      //
+      // The problem it solves: an entry names one comparison `B..C`, and the
+      // commit that re-points `..C` can only name its OWN PARENT, so the entry
+      // is stale the instant it lands. Re-pointing by hand forever, always one
+      // commit behind, is not a mechanism.
+      //
+      // The rule gains a second clause with TWO required halves, both supplied
+      // as proof by the caller: the candidate is a git descendant of C, AND the
+      // harness's own fingerprints of C and the candidate are identical. The
+      // git half is environmental and is injected here; the fingerprint half is
+      // a pure function and is tested below on real browser-built markup.
+      const DESC_END = 'c0ffee1';
+      const descEntry = [{ ...abbrev[0], range: `${full[0].slice(0, 7)}..${DESC_END}` }];
+      const laterTip = `dddddd${full[1].slice(6)}`;
+
+      check('Y5 a descendant with IDENTICAL markup activates the entry',
+        partitionByScope(descEntry, full[0], laterTip,
+          { descendantOk: new Set([DESC_END]) }).active.length === 1,
+        'this is the whole mechanism: the tip moved past the range end, the markup did not, '
+        + 'so the declaration still describes the comparison being run');
+
+      check('Y6 a descendant whose MARKUP CHANGED does not activate',
+        partitionByScope(descEntry, full[0], laterTip,
+          { descendantOk: new Set() }).active.length === 0,
+        'the caller proves identity or the entry stays inert. There is no "probably fine".');
+
+      check('Y7 with no proof offered at all, behaviour is exactly as before',
+        partitionByScope(descEntry, full[0], laterTip).active.length === 0,
+        'the default path must be the old, strict one — a caller that does not opt in '
+        + 'cannot be silently widened');
+
+      check('Y8 descent NEVER relaxes the BASELINE end',
+        partitionByScope(descEntry, `beef${full[0].slice(4)}`, laterTip,
+          { descendantOk: new Set([DESC_END]) }).active.length === 0,
+        'every measurement an entry carries — a subtree hash, a count — was taken against '
+        + 'ONE baseline. Reading it against another is describing a document it never saw.');
+
+      // The fingerprint half, on real markup rather than on a stub, because
+      // this is the half that makes the mechanism self-verifying.
+      const fpA = await fp(PAGE(), 'desc-a');
+      const fpAgain = await fp(PAGE(), 'desc-a2');
+      const fpMoved = await fp(PAGE({ extraCard: '<article class="card" data-index="9"></article>' }), 'desc-b');
+      const prints = (t) => new Map([['/@1440', t], ['/about/@390', t]]);
+
+      check('Y9 identical builds fingerprint identical',
+        fingerprintsIdentical(prints(fpA), prints(fpAgain)).identical === true,
+        `two builds of the same markup must compare identical, or the mechanism refuses `
+        + `everything. got ${JSON.stringify(
+          fingerprintsIdentical(prints(fpA), prints(fpAgain)).differences)}`);
+
+      const moved = fingerprintsIdentical(prints(fpA), prints(fpMoved));
+      check('Y10 one added node makes them NOT identical, and it says where',
+        moved.identical === false && moved.differences.length > 0
+        && /@/.test(moved.differences[0]),
+        `a markup change between the range end and the tip is exactly what must block `
+        + `activation, and the message must name the page. got `
+        + `${JSON.stringify(moved.differences)}`);
+
+      check('Y11 a page missing on one side is NOT identical',
+        fingerprintsIdentical(prints(fpA), new Map([['/@1440', fpA]])).identical === false,
+        'a page that exists on one side only is a difference, not an absence of evidence — '
+        + 'fail closed');
+
+      // Y13, the vacuity guard (Razor, B3 review). Y12 was already taken by the
+      // descendant-activation check below it. Every loop in
+      // fingerprintsIdentical is over the keys of the maps it was handed, so
+      // two EMPTY maps fall straight through all of them and returned
+      // identical:true — "I compared nothing and found no difference". In the
+      // one caller that matters that answer activates a whitelist entry on the
+      // strength of a build that produced no pages, which is the fail-OPEN
+      // direction in a mechanism whose every other error path closes.
+      {
+        const vacuous = fingerprintsIdentical(new Map(), new Map());
+        check('Y13 two EMPTY fingerprint sets are NOT identical',
+          vacuous.identical === false && vacuous.differences.length === 1,
+          'an empty comparison establishes nothing; it must never read as proof of identity. '
+          + `got ${JSON.stringify(vacuous)}`);
+        check('Y13b one empty side is NOT identical either',
+          fingerprintsIdentical(new Map(), prints(fpA)).identical === false
+          && fingerprintsIdentical(prints(fpA), new Map()).identical === false,
+          'the guard has to hold in both directions, or the argument order decides the verdict');
+      }
+
+      // (b) from the reviewer's list, end to end: the entry is inert AND the
+      // deletion it would have covered reports as undeclared.
+      {
+        const withModal = await fp(PAGE({ heroIntro: '<style>.x{color:red}</style>' }), 'desc-live');
+        const withoutModal = await fp(PAGE(), 'desc-gone');
+        const hash = findSubtreeHashes(withModal, 'html/body/main/section/style', 'STYLE')[0].hash;
+        const decl = loadWhitelist('t.json', { whitelist: [{
+          op: 'delete-subtree', tag: 'STYLE', path: 'html/body/main/section/style',
+          textHash: hash, count: 1, reason: 'fixture', commit: 'fixture',
+          range: `${full[0].slice(0, 7)}..${DESC_END}`,
+        }] });
+        const inert = partitionByScope(decl, full[0], laterTip, { descendantOk: new Set() });
+        const verdict = applyWhitelist(diffTokens(withModal, withoutModal).ops, inert.active);
+        check('Y12 an unactivated entry lets its own deletion fail as undeclared',
+          inert.active.length === 0 && verdict.failures.length > 0,
+          `inert must mean LOUD, not silent: the change the entry would have covered has to `
+          + `surface as undeclared. got ${inert.active.length} active, `
+          + `${verdict.failures.length} failures`);
+      }
     }
 
     process.stdout.write('\nZ — delete-subtree declarations\n');
@@ -777,6 +991,191 @@ async function main() {
           prints, new Map()).length === 0,
         'a delete-subtree entry has no "contains" to be lazy with; the substring check must '
         + 'not fabricate a verdict about it');
+
+      // ---- THE CAP, at both bounds ----
+      //
+      // MAX_SUBTREE_TOKENS went 64 -> 400 in B3, because the configurator modal
+      // is a 355-token subtree and could not be declared at all under 64. A cap
+      // raised to let one batch through is exactly the tuning-until-green move
+      // this instrument exists to refuse, so the raised cap is proven here on
+      // its own material rather than on that batch's: one subtree comfortably
+      // UNDER the cap must certify, one OVER it must still fail loudly, and the
+      // number itself is asserted so it cannot drift silently.
+      //
+      // These subtrees are sized RELATIVE to the constant, not to the literal
+      // 400. Change the cap and the fixtures follow it; the only place the
+      // number is written down is the constant and Z20's assertion.
+      const bigSubtree = (n, tail = '') =>
+        `<div class="big">${Array.from({ length: n }, (_, i) => `<p>Row ${i}</p>`).join('')}${tail}</div>`;
+      const BIG_PATH = `${HERO_PATH}/div`;
+      // span = 1 (the div) + 2 per <p> (element + text) + 1 per bare <hr>.
+      const UNDER_N = 60;                                   // span 121
+      const OVER_N = Math.ceil((MAX_SUBTREE_TOKENS + 40 - 2) / 2);
+      const underHtml = bigSubtree(UNDER_N);
+      const overHtml = bigSubtree(OVER_N, '<hr>');
+      const withUnder = await fp(PAGE({ heroIntro: underHtml }), 'z-cap-under');
+      const withOver = await fp(PAGE({ heroIntro: overHtml }), 'z-cap-over');
+      const withoutBig = await fp(PAGE({ heroIntro: '' }), 'z-cap-none');
+      const underMeasured = findSubtreeHashes(withUnder, BIG_PATH, 'DIV')[0];
+      const overMeasured = findSubtreeHashes(withOver, BIG_PATH, 'DIV')[0];
+
+      check('Z18 a subtree well under the cap is declarable and certifies',
+        (() => {
+          const decl = entry(underMeasured.hash, 'DIV', BIG_PATH);
+          const v = applyWhitelist(diffTokens(withUnder, withoutBig).ops, decl);
+          return underMeasured.span > 64 && underMeasured.span < MAX_SUBTREE_TOKENS
+            && v.failures.length === 0 && v.consumed.get(0) === 1;
+        })(),
+        `a ${underMeasured.span}-token deletion, over the OLD cap of 64 and under the new `
+        + `${MAX_SUBTREE_TOKENS}, must be consumed whole as one declaration. This is the `
+        + `property the raise buys, and it is what the modal entry rests on. got span `
+        + `${underMeasured.span}, `
+        + JSON.stringify(applyWhitelist(diffTokens(withUnder, withoutBig).ops,
+          entry(underMeasured.hash, 'DIV', BIG_PATH)).failures.length) + ' failures');
+
+      // The cap did not become a suggestion. Past it the entry matches NOTHING
+      // -- it does not degrade to a looser tag+path check, and it does not
+      // half-consume. consumed===0 is asserted explicitly rather than inferred
+      // from the failure count, because "failed loudly" and "quietly spent its
+      // budget on part of the run" look the same from failures alone.
+      const overDecl = entry(overMeasured.hash, 'DIV', BIG_PATH);
+      const overVerdict = applyWhitelist(diffTokens(withOver, withoutBig).ops, overDecl);
+      check('Z19 a correctly declared subtree OVER the cap still fails loudly',
+        overMeasured.span > MAX_SUBTREE_TOKENS
+        && overVerdict.failures.length > 0 && (overVerdict.consumed.get(0) || 0) === 0,
+        `the entry is correct in every way -- right tag, right path, hash measured from the `
+        + `real baseline -- and is refused purely for size. Raising the ceiling must not turn `
+        + `the ceiling into a soft one. got span ${overMeasured.span} (cap ${MAX_SUBTREE_TOKENS}), `
+        + `${overVerdict.failures.length} failures, consumed `
+        + `${JSON.stringify([...overVerdict.consumed])}`);
+
+      check('Z20 the cap is 400',
+        MAX_SUBTREE_TOKENS === 400,
+        `the number is load-bearing and is asserted so it cannot drift unreviewed. It was `
+        + `raised from 64 in B3 on a measurement -- the configurator modal at 355 tokens -- `
+        + `and 400 is that need plus headroom, still one-component scale. Moving it is a `
+        + `reviewed harness change, not a knob. got ${MAX_SUBTREE_TOKENS}`);
+
+      // ---- ADD-SUBTREE: the same battery, the other direction (B4-pre) ----
+      //
+      // The vocabulary was asymmetric. A removed component was one entry; the
+      // IDENTICAL component added was one entry per token, and an attribute-less
+      // added element could not be declared at all. Measured on B4's /saunas/
+      // recomposition: 249 removed tokens coverable by ~7 delete-subtree
+      // entries, against 102 added tokens needing 102 declarations.
+      //
+      // The material is reused deliberately: these are the SAME subtrees as
+      // Z18/Z19 with the diff run the other way round, so any difference in
+      // verdict is a difference in the mechanism and not in the fixture.
+      const addEntry = (hash, tag, p, extra = {}) => loadWhitelist('t.json', { whitelist: [{
+        op: 'add-subtree', tag, path: p, textHash: hash, count: 1,
+        reason: 'fixture', commit: 'fixture', range: 'aaaaaaa..bbbbbbb', ...extra,
+      }] });
+
+      const addDecl = addEntry(underMeasured.hash, 'DIV', BIG_PATH);
+      const addVerdict = applyWhitelist(diffTokens(withoutBig, withUnder).ops, addDecl);
+      check('Z21 a DECLARED subtree ADDITION under the cap is consumed whole',
+        addVerdict.failures.length === 0 && addVerdict.consumed.get(0) === 1,
+        `the mirror of Z18: a ${underMeasured.span}-token addition must be one declaration, `
+        + `not ${underMeasured.span}. got ${addVerdict.failures.length} failures, consumed `
+        + `${JSON.stringify([...addVerdict.consumed])}`);
+
+      // The hash is measured in the CANDIDATE for an addition, and it is the
+      // same hash the baseline yielded for the deletion -- the subtree hash
+      // describes the node, not which side of the diff it sat on. Asserted
+      // because it is the property that lets one hashing primitive serve both.
+      check('Z21b the added subtree hashes identically whichever way it crossed the diff',
+        findSubtreeHashes(withUnder, BIG_PATH, 'DIV')[0].hash === underMeasured.hash,
+        'one subtreeHash serves both directions; if it did not, add-subtree would need its '
+        + 'own hasher and the two would drift');
+
+      const overAddDecl = addEntry(overMeasured.hash, 'DIV', BIG_PATH);
+      const overAddVerdict = applyWhitelist(diffTokens(withoutBig, withOver).ops, overAddDecl);
+      check('Z22 a correctly declared ADDITION over the cap still fails loudly',
+        overMeasured.span > MAX_SUBTREE_TOKENS
+        && overAddVerdict.failures.length > 0 && (overAddVerdict.consumed.get(0) || 0) === 0,
+        `Z19's property on the add path, and it needs its own assertion: the cap is enforced `
+        + `in shared code but nothing proved the add direction reached it. consumed===0 is `
+        + `explicit, because "failed loudly" and "quietly spent its budget on part of the run" `
+        + `look identical from a failure count. got span ${overMeasured.span}, `
+        + `${overAddVerdict.failures.length} failures, consumed `
+        + `${JSON.stringify([...overAddVerdict.consumed])}`);
+
+      // An entry written for one added subtree must not swallow a DIFFERENT one.
+      // Same argument as Z2, and the same shape of node: same tag, same path,
+      // distinguished only by content -- which is exactly what a `contains`
+      // entry cannot see and the hash can.
+      const otherAdd = await fp(PAGE({ heroIntro: bigSubtree(UNDER_N, '<hr>') }), 'z-add-other');
+      const wrongTarget = applyWhitelist(diffTokens(withoutBig, otherAdd).ops, addDecl);
+      check('Z23 an UNDECLARED addition of an identical-tag sibling still fails',
+        wrongTarget.failures.length > 0,
+        `the entry names one subtree by content; a different subtree at the same tag and path `
+        + `must not be absorbed by it. got ${wrongTarget.failures.length} failures`);
+
+      check('Z24 an add-subtree entry whose hash is in NO candidate node is flagged',
+        (() => {
+          const bogus = addEntry('deadbeefdeadbeef', 'DIV', BIG_PATH);
+          const problems = checkAddedDeclarations(bogus, new Map([['/@1440', withUnder]]));
+          return problems.length === 1 && /add-subtree/.test(problems[0])
+            && /candidate/.test(problems[0]);
+        })(),
+        'a hand-written hash must be refused before any verdict rests on it, and the message '
+        + 'must say it looked in the CANDIDATE -- otherwise a reader checks the wrong build');
+
+      // The mirror is NECESSARY, not decorative: the delete-side check reads the
+      // baseline, where an added node is correctly absent, so pointing it at an
+      // add entry would flag every correct declaration. Pinned so nobody
+      // "simplifies" the two calls into one.
+      check('Z25 the two staleness checks read opposite builds',
+        checkAddedDeclarations(addDecl, new Map([['/@1440', withUnder]])).length === 0
+        && checkAddedDeclarations(addDecl, new Map([['/@1440', withoutBig]])).length === 1
+        && checkSubtreeDeclarations(addDecl, new Map([['/@1440', withUnder]])).length === 0,
+        'a correct add entry passes against a candidate that HAS the node and is flagged '
+        + 'against one that does not; and the delete-side check must ignore add entries '
+        + 'entirely rather than judging them against the baseline');
+
+      check('Z26 an add-subtree entry is flagged when the candidate produced NO pages',
+        checkAddedDeclarations(addDecl, new Map()).length === 1,
+        'vacuity, guarded the same way fingerprintsIdentical guards it: a build that '
+        + 'fingerprinted nothing corroborates nothing, and must not read as corroboration');
+
+      // Z28 — WIRING (Razor N5). Every other add-subtree fixture imports the lib
+      // and exercises it directly, which proves the mirror WORKS and says nothing
+      // about whether the gate ever calls it. Delete the one line in
+      // dom-integrity.mjs that invokes it and all of Z21-Z27 stay green while a
+      // hand-written hash sails through: the exact shape of inertness this repo
+      // has now hit five times (sha-abbrev scoping, stale entries, the reveal
+      // pin, VIDEO_URL, the reveal-boot).
+      //
+      // ITS LIMIT, STATED: this reads the runner's SOURCE. It proves the call
+      // exists and is handed the CANDIDATE prints; it does not execute the
+      // runner, because doing so needs two real git refs and a pair of builds.
+      // A source check is weaker than a mutation and stronger than the nothing
+      // that was here before. If it ever fires falsely, replace it with an
+      // end-to-end run rather than loosening the pattern.
+      {
+        const runner = fs.readFileSync(path.join(REPO_ROOT, 'scripts', 'dom-integrity.mjs'), 'utf8');
+        check('Z28 the runner CALLS checkAddedDeclarations, against the candidate prints',
+          /checkAddedDeclarations\(\s*nodeEntries\s*,\s*candidate\.prints\s*\)/.test(runner)
+          && /checkSubtreeDeclarations\(\s*nodeEntries\s*,\s*baseline\.prints\s*\)/.test(runner)
+          // The import is read from the dom-fingerprint block SPECIFICALLY. A
+          // first draft of this line split on the first `} from` in the file,
+          // which is the node:child_process import, and reported "not imported"
+          // about a runner that imports it fine. A wiring check that can be
+          // wrong about the wiring is worse than none.
+          && /import\s*\{[^}]*checkAddedDeclarations[^}]*\}\s*from\s*'\.\/lib\/dom-fingerprint\.mjs'/s
+            .test(runner),
+          'the add-subtree staleness mirror must be imported AND invoked AND handed the '
+          + 'candidate build. Written-but-unwired is how five things on this branch went '
+          + 'silently inert; the delete-side call is asserted alongside it so a copy-paste '
+          + 'that points both at the same build is caught too.');
+      }
+
+      check('Z27 the specificity check ignores add-subtree entries',
+        checkWhitelistSpecificity(addDecl, new Map(), new Map([['/@1440', withUnder]]))
+          .length === 0,
+        'an add-subtree entry has no "contains" to be lazy with; the substring check must '
+        + 'not fabricate a verdict about it');
     }
 
     process.stdout.write('\nM — mutation battery (runnable)\n');
@@ -823,6 +1222,24 @@ async function main() {
         heroAll: null,
         heroNoA: null,
         wrongSubtreeEntry: null,
+        // Cap material for D-m16, the same shape as Z18: a subtree of ~121
+        // tokens -- over the OLD cap of 64, under the new 400 -- correctly
+        // declared with a hash measured from the fixture itself. Built here
+        // rather than shared with the Z block because that block is scoped;
+        // the shape is what matters, not the identity of the object.
+        capUnder: null,
+        capNone: null,
+        capEntry: null,
+        // Descendant-activation material (D-m17/D-m18). The shas are fixtures,
+        // not repo history: the git half is the CALLER's to prove, and what is
+        // under test here is what partitionByScope does with that proof.
+        descBase: 'aaaaaaa1111111111111111111111111111aaaa',
+        descEnd: 'c0ffee1',
+        descTip: 'dddddd11111111111111111111111111111dddd',
+        descEntry: null,
+        printsA: null,
+        printsMoved: null,
+        printsReworded: null,
         // class-removal material
         withUtility: await fp(PAGE().replace(/class="card"/g, 'class="card featured"'), 'm-wu'),
         withoutUtility: await fp(PAGE(), 'm-wou'),
@@ -865,6 +1282,61 @@ async function main() {
           textHash: hashes[1].hash, count: 1, reason: 'aimed at sibling B on purpose',
           commit: 'fixture', range: 'aaaaaaa..bbbbbbb',
         }] });
+      }
+      {
+        f.descEntry = loadWhitelist('t.json', { whitelist: [{
+          op: 'removed', tag: 'LINK', contains: 'rel="canonical"', count: 1,
+          reason: 'fixture', commit: 'fixture', range: `${f.descBase.slice(0, 7)}..${f.descEnd}`,
+        }] });
+        const a = await fp(PAGE(), 'm-desc-a');
+        const moved = await fp(PAGE({ extraCard: '<article class="card" data-index="9"></article>' }), 'm-desc-b');
+        // Same token COUNT, one changed word: the case only content comparison
+        // can see, and therefore the one that proves it happens.
+        const reworded = await fp(PAGE({ bodyCopy: 'Hand-built saunas for the Sea to Sky region.' }), 'm-desc-c');
+        f.printsA = new Map([['/@1440', a]]);
+        f.printsMoved = new Map([['/@1440', moved]]);
+        f.printsReworded = new Map([['/@1440', reworded]]);
+      }
+      {
+        const CAP_PATH = 'html/body/main/section/div';
+        const big = `<div class="big">${Array.from({ length: 60 },
+          (_, i) => `<p>Row ${i}</p>`).join('')}</div>`;   // span 121
+        f.capUnder = await fp(PAGE({ heroIntro: big }), 'm-cap-under');
+        f.capNone = await fp(PAGE({ heroIntro: '' }), 'm-cap-none');
+        const measured = findSubtreeHashes(f.capUnder, CAP_PATH, 'DIV')[0];
+        f.capEntry = loadWhitelist('t.json', { whitelist: [{
+          op: 'delete-subtree', tag: 'DIV', path: CAP_PATH,
+          textHash: measured.hash, count: 1,
+          reason: 'a whole component, declared as one deletion — needs the raised cap',
+          commit: 'fixture', range: 'aaaaaaa..bbbbbbb',
+        }] });
+
+        // ADD-PATH material (B4-pre), for D-m20/21/22. Deliberately its OWN
+        // fixtures rather than a reuse of the delete ones: the point of these
+        // mutations is that the add direction is exercised on add-direction
+        // material, so a future split of the shared matcher cannot leave the
+        // add path unguarded while the delete probes stay green.
+        const addOne = (hash, extra = {}) => loadWhitelist('t.json', { whitelist: [{
+          op: 'add-subtree', tag: 'DIV', path: CAP_PATH, textHash: hash, count: 1,
+          reason: 'a whole component, declared as one addition',
+          commit: 'fixture', range: 'aaaaaaa..bbbbbbb', ...extra,
+        }] });
+        f.capAddEntry = addOne(measured.hash);
+        f.capBogusAddEntry = addOne('deadbeefdeadbeef');
+        f.capPrints = new Map([['/@1440', f.capUnder]]);
+
+        // A different subtree at the same tag and path — for D-m21, the case
+        // only the hash separates.
+        const other = `<div class="big">${Array.from({ length: 60 },
+          (_, i) => `<p>Row ${i}</p>`).join('')}<hr></div>`;
+        f.capOther = await fp(PAGE({ heroIntro: other }), 'm-cap-other');
+
+        // Over the cap, correctly declared — for D-m20.
+        const overN = Math.ceil((MAX_SUBTREE_TOKENS + 40 - 2) / 2);
+        const over = `<div class="big">${Array.from({ length: overN },
+          (_, i) => `<p>Row ${i}</p>`).join('')}<hr></div>`;
+        f.capOver = await fp(PAGE({ heroIntro: over }), 'm-cap-over-add');
+        f.capOverAddEntry = addOne(findSubtreeHashes(f.capOver, CAP_PATH, 'DIV')[0].hash);
       }
       // Extraction-level mutations change the function that runs IN THE PAGE,
       // so they must be re-extracted through a real browser with the mutant's

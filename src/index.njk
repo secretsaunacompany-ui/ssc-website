@@ -1,7 +1,13 @@
 ---
 layout: base.njk
 bodyClass: "page-home"
-preload_image: "https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1200/v1768250655/IMG_7991-EDIT_gz1kqt.jpg"
+# The hero <img>'s own src, verbatim and WITHOUT a width -- head.njk derives the
+# href and the imagesrcset from it through the same generator the build
+# transform uses. It used to be hard-coded w_1200 while the element resolved
+# w_800: one undersized LCP paint and two downloads of the same photograph.
+preload_image: "https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250655/IMG_7991-EDIT_gz1kqt.jpg"
+# The hero renders full-bleed; matches the sizes on the element in home.njk.
+preload_responsive_sizes: "100vw"
 sitemap_priority: "1.0"
 sitemap_changefreq: "weekly"
 ---

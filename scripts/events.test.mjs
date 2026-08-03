@@ -180,6 +180,230 @@ const RECORDER = `
   };
 `;
 
+/**
+ * Marks, INSIDE the page, the two instants the hero-hold clock fixture compares:
+ * when `.reveal-ready` actually appeared, and when the metric's own trigger
+ * condition (a scroll event seeing a non-zero pageYOffset) first became true.
+ *
+ * Both are marked here rather than from the test side because a CDP round trip
+ * is tens of milliseconds and the tolerance being asserted is two frames. An
+ * earlier version of this fixture noted the ready instant with an
+ * `await page.evaluate(() => Date.now())` after waitForFunction, and the round
+ * trip alone put it over the line in roughly one run in three -- it was
+ * measuring its own instrumentation.
+ *
+ * A MutationObserver on the class attribute, not a poll: it observes the DOM
+ * fact the transition-delays key off, it fires in the same task as the class
+ * lands, and it is independent of the page's own bookkeeping, which is what
+ * keeps the comparison from being tautological.
+ *
+ * The attach step retries: an init script runs at document-creation time, when
+ * `document.documentElement` can still be null, and observing null throws --
+ * which killed the whole script and hung the fixture on a wait that could never
+ * resolve. Found by this suite going red, which is the correct way to find it.
+ */
+const HERO_CLOCK_PROBE = `
+  window.__tReady = null;
+  window.__tTrigger = null;
+  (function () {
+    var mark = function () {
+      if (window.__tReady === null
+          && document.documentElement
+          && document.documentElement.classList.contains('reveal-ready')) {
+        window.__tReady = Date.now();
+      }
+    };
+    var attach = function () {
+      if (!document.documentElement) { setTimeout(attach, 0); return; }
+      new MutationObserver(mark).observe(document.documentElement, {
+        attributes: true, attributeFilter: ['class'],
+      });
+      mark();
+    };
+    attach();
+    window.addEventListener('scroll', function () {
+      if (window.__tTrigger === null && window.pageYOffset > 0) {
+        window.__tTrigger = Date.now();
+      }
+    }, { passive: true, capture: true });
+  })();
+`;
+
+/**
+ * Marks, INSIDE the page, the three instants the escape hatch's contract is
+ * made of: the keydown, the moment the nav is GRANTED its reveal, and the
+ * painted opacity every frame thereafter.
+ *
+ * Nothing here is polled over CDP. A round trip is tens of milliseconds and the
+ * whole fade is 350, so a poll would be measuring its own instrumentation --
+ * the same lesson HERO_CLOCK_PROBE was written for, applied to the other
+ * page-side timing question. The old CDP poll is in fact why this fixture's
+ * first failure reported `opacity was 0` for a page that was painting ~0.5.
+ *
+ * TWO clocks on purpose, because the contract has two halves that fail
+ * differently:
+ *
+ *   key -> `.seen`   did the page RESPOND? A DOM fact, set synchronously in
+ *                    the keydown handler. Measured at 0ms in 6 of 6 runs.
+ *   painted opacity  did it LOOK right? Only paint can answer "did it fade or
+ *                    did it snap", and only paint knows when focus stopped
+ *                    sitting on an invisible link.
+ *
+ * The distinction is load-bearing rather than tidy. An earlier version of this
+ * fixture asserted the painted fade had STARTED within 100ms and went red at
+ * 121ms on a machine also running sixteen mutation builds. Measured standalone,
+ * the same page starts painting between 28ms and 87ms with a median FRAME gap
+ * of 25ms and a worst gap of 60 -- so that bound was reading the headless
+ * browser's frame cadence and calling it site latency. The responsiveness claim
+ * it was trying to make is real; it just has to be made against the grant,
+ * which is deterministic, and not against the first frame that happens to get
+ * scheduled.
+ *
+ * The keydown listener is registered at document-creation time, so it runs
+ * before the hatch's own capture-phase listener and records the input instant
+ * rather than some instant after the release. Passive: nothing here can affect
+ * the gesture it is measuring.
+ */
+const NAV_FADE_PROBE = `
+  window.__fade = { key: null, seen: null, samples: [] };
+  (function () {
+    window.addEventListener('keydown', function () {
+      if (window.__fade.key === null) window.__fade.key = performance.now();
+    }, { capture: true, passive: true });
+    var attach = function () {
+      var n = document.querySelector('nav');
+      if (!n) { setTimeout(attach, 0); return; }
+      new MutationObserver(function () {
+        if (window.__fade.seen === null && n.classList.contains('seen')) {
+          window.__fade.seen = performance.now();
+        }
+      }).observe(n, { attributes: true, attributeFilter: ['class'] });
+    };
+    document.addEventListener('DOMContentLoaded', attach);
+    var tick = function () {
+      var n = document.querySelector('nav');
+      if (n) {
+        window.__fade.samples.push({
+          t: performance.now(),
+          o: parseFloat(getComputedStyle(n).opacity),
+        });
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  })();
+`;
+
+/**
+ * THE PRE-READY WINDOW (Razor W-1), made deterministic.
+ *
+ * The escape hatch binds at DOMContentLoaded; `.reveal-ready` -- the class both
+ * `.reveal--quick` rules are gated on -- lands a double rAF later. In the field
+ * that gap is 53-168ms and, in the code's own words, "unbounded in a rAF-starved
+ * tab". An input inside it used to hit elements no transition rule matched, and
+ * composing them was a snap.
+ *
+ * RACING that window from the test side is not good enough, and the first cut of
+ * this fixture did exactly that -- it fired on a bare 20ms timer and landed
+ * post-ready 5 runs in 6 with the CDN blocked (Razor W-A).
+ *
+ * WHY it was racing is the interesting part, and it is not jitter. There are TWO
+ * entry points that set `.reveal-ready`: the double rAF from DOMContentLoaded,
+ * and the `load` handler at init.js:246 -- which exists precisely FOR the
+ * rAF-starved case, adding the class itself so no `.seen` can be granted with
+ * transitions unarmed. Throttling rAF therefore does not widen the window; it
+ * hands the race to `load`. Measured with the CDN blocked: DCL -> load 24ms,
+ * DCL -> ready 27ms. A 20ms timer against a 24ms gap is a coin toss, and the
+ * fixture was quietly testing the ordinary post-ready path most of the time.
+ *
+ * So BOTH routes to ready are held open, and the fixture stops depending on
+ * timing at all:
+ *
+ *   rAF is throttled to 150ms, making the double-rAF route ~300ms.
+ *   A pending subresource holds the `load` event, closing the other route.
+ *
+ * Neither is a contrivance. Together they are the slow-network, starved-tab
+ * visitor the code comments already name, which is the case with the widest
+ * exposure to this bug. The fixture still ASSERTS it landed pre-ready before
+ * asserting anything else, so if a future change closes the window this turns
+ * red rather than quietly green.
+ *
+ * WHAT THIS FIXTURE DOES NOT COVER, stated rather than implied (Razor N2):
+ * because rAF here IS a setTimeout, `deferAFrame` becomes a task boundary
+ * instead of a frame boundary, so this cannot test the one-frame claim in
+ * scheduleHold -- that composing in the same task as `.reveal-ready` would not
+ * transition. Razor verified that claim independently against both entry paths.
+ * What this fixture holds is the outcome: pre-ready input fades, at the short
+ * duration. The mechanism's frame ordering is held by review, not by this.
+ */
+const SLOW_SUBRESOURCE = '/__pre-ready-probe.png';
+
+const STARVED_RAF_PROBE = `
+  window.__pre = { fire: null, wasPreReady: null, s: [] };
+  (function () {
+    var raf = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = function (cb) {
+      return window.setTimeout(function () { cb(performance.now()); }, 150);
+    };
+    document.addEventListener('DOMContentLoaded', function () {
+      // Holds the load event open. An image request started here is still
+      // pending when the parser finishes, and load waits for it -- which takes
+      // init.js:246 out of the race and leaves the throttled double rAF as the
+      // only route to reveal-ready. The route backing this URL never resolves
+      // within the fixture's lifetime.
+      // (No backticks in this block: it is a JS template literal. Same trap
+      // that broke capture.mjs earlier in this batch.)
+      var hold = document.createElement('img');
+      hold.src = '${SLOW_SUBRESOURCE}';
+      hold.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0';
+      (document.body || document.documentElement).appendChild(hold);
+      window.setTimeout(function () {
+        window.__pre.fire = performance.now();
+        window.__pre.wasPreReady =
+          !document.documentElement.classList.contains('reveal-ready');
+        window.dispatchEvent(new Event('scroll'));
+      }, 20);
+    });
+    var tick = function () {
+      var n = document.querySelector('nav');
+      if (n) {
+        window.__pre.s.push({
+          t: performance.now(),
+          o: parseFloat(getComputedStyle(n).opacity),
+        });
+      }
+      raf(tick);
+    };
+    raf(tick);
+  })();
+`;
+
+/**
+ * Arms a page for the pre-ready scenario and returns its samples. Shared by the
+ * fixture and by M17/M18 so the three cannot drift into testing different
+ * setups -- the defect that made the first cut of this non-deterministic was in
+ * the setup, not in the assertions.
+ */
+async function runPreReadyScenario(base, browser) {
+  const page = await newPage(browser);
+  // Never resolves inside the fixture's lifetime, so `load` cannot fire and
+  // init.js's load-path shortcut to `.reveal-ready` is out of the race.
+  await page.route(`**${SLOW_SUBRESOURCE}`, () => {});
+  await page.addInitScript(STARVED_RAF_PROBE);
+  await page.goto(base, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(2600);
+  const w = await page.evaluate(() => window.__pre);
+  await page.close();
+  const after = w.fire === null ? [] : w.s.filter((s) => s.t >= w.fire);
+  return {
+    wasPreReady: w.wasPreReady,
+    fired: w.fire !== null,
+    mid: after.filter((s) => s.o > 0.01 && s.o < 0.99),
+    first: after.find((s) => s.o > 0.01),
+    done: after.find((s) => s.o >= 0.999),
+  };
+}
+
 const readEvents = (page) => page.evaluate(
   () => JSON.parse(sessionStorage.getItem('__ssc_events') || '[]'));
 
@@ -188,11 +412,55 @@ const readEvents = (page) => page.evaluate(
  * scenarios: it observes what the site asks the tracker to send.
  */
 async function newPage(browser) {
-  const page = await browser.newPage();
+  return instrumentPage(await browser.newPage());
+}
+
+/**
+ * The same instrumented page, but inside a context carrying emulation options
+ * (reducedMotion, and whatever a later fixture needs).
+ *
+ * It exists so an emulated fixture cannot accidentally become tautological. A
+ * page opened WITHOUT the recorder and the analyticsTracker stub records no
+ * events for any reason whatsoever, so a fixture asserting "no events were
+ * emitted" would pass against a completely broken site. Both fixtures share one
+ * instrumentation path so that cannot drift apart.
+ *
+ * Returns { page, close } -- the context must be closed too, not just the page.
+ */
+async function newEmulatedPage(browser, contextOptions) {
+  const ctx = await browser.newContext(contextOptions);
+  const page = await instrumentPage(await ctx.newPage());
+  return { page, close: async () => { await page.close(); await ctx.close(); } };
+}
+
+/**
+ * CDN-BLOCKED MODE, opt-in via SSC_TEST_BLOCK_CDN=1.
+ *
+ * Several fixtures in this file are timing-sensitive to whether Cloudinary is
+ * reachable, and they say so in their own comments -- the agreement fixture
+ * measured 11 red runs in 12 with the CDN blocked, and the pre-ready fixture
+ * landed outside its window 5 runs in 6. Both were found by someone who
+ * happened to be offline at the time.
+ *
+ * "Happened to be offline" is not a test mode. Without a switch, the harder and
+ * more revealing configuration is only ever exercised by accident, and the
+ * acceptance criterion "green with the CDN blocked" cannot be run on purpose by
+ * the next person. This makes it runnable:
+ *
+ *     SSC_TEST_BLOCK_CDN=1 npm run events:test
+ *
+ * Default behaviour is unchanged -- no route is added unless the flag is set.
+ */
+const BLOCK_CDN = process.env.SSC_TEST_BLOCK_CDN === '1';
+
+async function instrumentPage(page) {
   // The real tracker must not load here: it is cross-origin, it would publish
   // its own window.analyticsTracker over the recorder, and a passing suite
   // would then be posting test events at the production endpoint.
   await page.route('**ssc-ops.netlify.app/**', (route) => route.abort());
+  if (BLOCK_CDN) {
+    await page.route('**res.cloudinary.com/**', (route) => route.abort());
+  }
   await page.addInitScript(RECORDER + `
     window.analyticsTracker = {
       trackEvent: (type, data) => window.__record(type, data),
@@ -489,24 +757,36 @@ async function runInventory(base, browser) {
   // used to synchronise on. The question the events answer is unchanged (is the
   // held moment watched or skipped?) but it is now asked of a photograph the
   // visitor is free to leave, so the branch is decided by the choreography's own
-  // settle boundary, 1240ms, rather than by which timer fired.
+  // settle boundary rather than by which timer fired.
   //
   //   hero_hold_skipped   first scroll BEFORE the page finished settling
   //   hero_hold_complete  first scroll after it, or the page going away unscrolled
   //
   // Note both scenarios scroll for real now. Scrolling is the thing that used to
   // be impossible here, which is the whole point of the change.
+  //
+  // ONE settle number in this block, not five literals scattered through it.
+  // B1 moved the boundary from 1240 to 2720 (the hold arrived) and the old
+  // shape meant finding every copy by hand; a copy missed is a fixture that
+  // still passes while measuring the wrong thing. The agreement fixture below
+  // ties this constant to the CSS token it is derived from, so the two cannot
+  // drift apart silently either.
+  //
+  //   SETTLE_MS      = --hero-hold 1600 + reveal 1000 + 1 x stagger 120
+  //   PAST_SETTLE_MS = a wait comfortably past it, for the "watched it" cases
+  const SETTLE_MS = 2720;
+  const PAST_SETTLE_MS = 3100;
   {
     const page = await newPage(browser);
     await page.goto(base, { waitUntil: 'domcontentloaded' });
-    // Immediately: well inside the 1240ms settle, so this is the skip branch.
+    // Immediately: well inside the settle, so this is the skip branch.
     await page.mouse.wheel(0, 600);
     await page.waitForTimeout(200);
     const events = await readEvents(page);
     const skipped = one(events, 'hero_hold_skipped');
     check('hero_hold_skipped: a scroll before the page settles reports the ms given to it',
       !!skipped && typeof skipped.data.ms === 'number'
-      && skipped.data.ms < 1240
+      && skipped.data.ms < SETTLE_MS
       && typeOf(events, 'hero_hold_complete').length === 0,
       `events were ${JSON.stringify(events)}`);
     collected.push(...events);
@@ -516,13 +796,13 @@ async function runInventory(base, browser) {
     const page = await newPage(browser);
     await page.goto(base, { waitUntil: 'domcontentloaded' });
     // Let it settle, THEN scroll. That is the "watched it" case.
-    await page.waitForTimeout(1600);
+    await page.waitForTimeout(PAST_SETTLE_MS);
     await page.mouse.wheel(0, 600);
     await page.waitForTimeout(200);
     const events = await readEvents(page);
     const done = one(events, 'hero_hold_complete');
     check('hero_hold_complete: a scroll after the settle reports as complete, once',
-      !!done && typeof done.data.ms === 'number' && done.data.ms >= 1240
+      !!done && typeof done.data.ms === 'number' && done.data.ms >= SETTLE_MS
       && typeOf(events, 'hero_hold_complete').length === 1
       && typeOf(events, 'hero_hold_skipped').length === 0,
       `events were ${JSON.stringify(events)}`);
@@ -544,7 +824,7 @@ async function runInventory(base, browser) {
     // pre-fix build, this scenario produced ZERO events.
     const page = await newPage(browser);
     await page.goto(base, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(1600);   // past the 1240ms settle
+    await page.waitForTimeout(PAST_SETTLE_MS);   // past the settle boundary
     const stillVisible = await page.evaluate(() => {
       window.dispatchEvent(new Event('pagehide'));
       return document.visibilityState;
@@ -554,7 +834,7 @@ async function runInventory(base, browser) {
     const done = one(events, 'hero_hold_complete');
     check('hero_hold_complete: leaving WITHOUT scrolling reports exactly once (NOTE-2b)',
       stillVisible === 'visible'
-      && !!done && typeof done.data.ms === 'number' && done.data.ms >= 1240
+      && !!done && typeof done.data.ms === 'number' && done.data.ms >= SETTLE_MS
       && typeOf(events, 'hero_hold_complete').length === 1
       && typeOf(events, 'hero_hold_skipped').length === 0,
       `visibilityState was ${stillVisible}, events were ${JSON.stringify(events)}`);
@@ -597,6 +877,328 @@ async function runInventory(base, browser) {
         && getComputedStyle(document.body).overflow !== 'hidden'),
       'body still carries the lock');
     await page.close();
+  }
+  {
+    // AGREEMENT. SETTLE_MS is a DERIVED number and it lives in three places:
+    // the --hero-hold token in styles.css, the constant in js/animations.js,
+    // and the constant at the top of this block. Nothing but a person keeps
+    // them equal, and the failure mode when they diverge is silent: the metric
+    // keeps emitting, the branch boundary is simply in the wrong place, and
+    // every hero_hold reading after that day is measuring something other than
+    // what its name says. That is the defect this fixture exists for.
+    //
+    // It is not tautological: it reads the LIVE COMPUTED values off the last
+    // held element in a real browser -- the delay the browser actually resolved
+    // and the duration it actually resolved -- and asserts their sum is
+    // SETTLE_MS. Editing the token without editing the constants fails it.
+    //
+    // REWIRED, because the mechanism moved and this fixture caught the move:
+    //
+    //   FAIL  the settle boundary agrees with the CSS the browser actually resolved
+    //         computed {"hold":1600,"step":120,"i":1,"delay":120,"duration":1000,
+    //         "heroHasReveal":false}; delay+duration was 1120, SETTLE_MS is 2720
+    //
+    // That is the fixture reporting the truth about a page it no longer
+    // described. The hold is no longer inside `transition-delay` -- it is the
+    // moment RevealManager grants `.seen` -- so the 120ms this reads is the
+    // held pair's ordinary stagger and 1120 is the correct sum of the two
+    // things it was reading. What it must read now is three terms, not two.
+    //
+    // The single-source claim survives the move and is asserted DIRECTLY here
+    // rather than inferred: --hero-hold is still the one authoritative value,
+    // and js/animations.js READS it (SSC.reveal.holdMs) instead of carrying a
+    // copy. So this checks the CSS token, the value the JS actually resolved
+    // from it, the stagger the browser actually applied, and the duration the
+    // browser actually applied, and requires all four to compose to SETTLE_MS.
+    // A token retuned alone fails it via the JS read; a constant edited alone
+    // fails it via the sum; and a hold that crept back into a transition-delay
+    // fails `delay === i * step`, which is the specific regression this whole
+    // rewrite exists to make impossible.
+    const page = await newPage(browser);
+    await page.goto(base, { waitUntil: 'load' });
+    // WAIT FOR THE CLASS THAT CARRIES THE TRANSITION, not for `load`.
+    // `.reveal-ready` is added behind a double rAF, and `load` can resolve
+    // before it -- more often when Cloudinary is blocked and there is no image
+    // traffic to wait on. Read one frame early and transitionDelay computes to
+    // "0s" and the fixture reports a false RED: measured 11 of 12 runs with the
+    // CDN blocked, 1 of 12 with it reachable, which is the worst possible shape
+    // for a fixture (green on the developer's machine, red in CI).
+    await page.waitForFunction(
+      () => document.documentElement.classList.contains('reveal-ready'));
+    const m = await page.evaluate(() => {
+      const ms = (v) => (String(v).trim().endsWith('ms')
+        ? parseFloat(v) : parseFloat(v) * 1000);
+      const root = getComputedStyle(document.documentElement);
+      const title = document.querySelector('.hero-content');
+      const cs = getComputedStyle(title);
+      return {
+        hold: ms(root.getPropertyValue('--hero-hold')),
+        // What the JS resolved from that token, not a copy of it.
+        jsHold: window.SSC.reveal.holdMs,
+        step: ms(root.getPropertyValue('--stagger-step')),
+        i: parseFloat(cs.getPropertyValue('--i')),
+        delay: ms(cs.transitionDelay.split(',')[0]),
+        duration: ms(cs.transitionDuration.split(',')[0]),
+        heroHasReveal: document.querySelector('.hero-image').classList.contains('reveal'),
+      };
+    });
+    // Note what is NOT asserted here: the literal values 1600 and 120. Those
+    // were a fourth and fifth copy of tokens the ROADMAP retune note promises
+    // are single-sourced ("the token is the only value that needs to move"),
+    // and a fixture that hard-codes them makes that promise false -- a
+    // legitimate retune would have gone red for the wrong reason. Everything is
+    // DERIVED from the computed read instead: the delay the browser resolved
+    // must equal the hold plus this element's own stagger, and the delay plus
+    // the duration must equal the boundary the metric branches on. A consistent
+    // retune passes; a token moved without its constants does not.
+    check('the settle boundary agrees with the hold the page actually runs on',
+      m.jsHold === m.hold
+      && m.delay === m.i * m.step
+      && m.hold + m.delay + m.duration === SETTLE_MS
+      && m.hold > 0 && m.step > 0 && m.i === 1,
+      `computed ${JSON.stringify(m)}; hold+delay+duration was `
+      + `${m.hold + m.delay + m.duration}, SETTLE_MS is ${SETTLE_MS}`);
+    check('the hold is spent by the reveal clock, never by a transition-delay',
+      m.delay < m.hold && m.delay === m.i * m.step,
+      `.hero-content resolved a ${m.delay}ms transition-delay against a ${m.hold}ms `
+      + `hold and a ${m.i * m.step}ms stagger. A held element carrying its hold as a `
+      + `delay leaves a PENDING transition for the length of the beat, and Chrome `
+      + `UPDATES a pending transition rather than replacing it -- which is what made `
+      + `the escape hatch's short fade run at the long timing twice before`);
+    check('the LCP hero image is never a reveal target',
+      m.heroHasReveal === false,
+      'the hero <img> carries .reveal -- the largest paint on the page is being withheld');
+    await page.close();
+  }
+  {
+    // THE HOLD ACTUALLY HOLDS.
+    //
+    // New, and it is not redundant with the agreement fixture above -- it is
+    // the assertion that fixture used to make implicitly and can no longer
+    // make at all. While the hold lived in `transition-delay`, reading the
+    // computed delay WAS reading the hold: the browser had already resolved
+    // the cascade and there was nothing left to go wrong. The hold is now a
+    // scheduled grant, and a computed style cannot see a setTimeout. Every way
+    // of getting that scheduling wrong -- never arming it, arming it at zero,
+    // letting the IntersectionObserver compose the pair on its first callback
+    // -- leaves the whole page above green while the photograph is never alone
+    // for a single frame.
+    //
+    // So it is asserted as the thing Lee actually asked for: at 900ms the nav
+    // and the title are not on the page, and by the settle boundary they are.
+    // No input of any kind is issued here, because input is the one thing that
+    // legitimately ends the beat early.
+    const page = await newPage(browser);
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(900);
+    const during = await page.evaluate(() => ({
+      nav: parseFloat(getComputedStyle(document.querySelector('nav')).opacity),
+      title: parseFloat(getComputedStyle(document.querySelector('.hero-content')).opacity),
+    }));
+    await page.waitForTimeout(PAST_SETTLE_MS - 900 + 200);
+    const after = await page.evaluate(() => ({
+      nav: parseFloat(getComputedStyle(document.querySelector('nav')).opacity),
+      title: parseFloat(getComputedStyle(document.querySelector('.hero-content')).opacity),
+    }));
+    check('the photograph is held alone: nothing has arrived over it at 900ms',
+      during.nav === 0 && during.title === 0,
+      `900ms in, nav opacity ${during.nav} and title opacity ${during.title} -- the `
+      + `hold is not being spent. The grant is scheduled in JS now, so a computed `
+      + `style cannot catch this and this fixture is the only thing that can`);
+    check('and both have arrived by the settle boundary',
+      after.nav === 1 && after.title === 1,
+      `past the settle, nav opacity ${after.nav} and title opacity ${after.title} -- `
+      + `the scheduled grant never landed and the homepage has no navigation on it`);
+    await page.close();
+  }
+  {
+    // ONE CLOCK.
+    //
+    // The metric brands a view `skipped` or `complete` by comparing the time
+    // the visitor gave the page against SETTLE_MS -- a number derived entirely
+    // from the choreography's own delays. That comparison is only meaningful if
+    // both sides start counting at the same instant, and for a while they did
+    // not: the metric started at DOMContentLoaded while the delays start when
+    // `.reveal-ready` lands, two rAFs later. The gap measured 53-168ms, so a
+    // visitor who watched the entire 2720ms arrival and scrolled at the end of
+    // it was recorded as having skipped it -- the metric's own headline branch,
+    // wrong, silently, for the visitor it most cares about.
+    //
+    // Asserted end to end rather than by inspection: note the wall-clock inside
+    // the page the moment `.reveal-ready` appears, scroll at a known later
+    // moment, and require the `ms` the metric REPORTS to match the elapsed time
+    // since that instant to within two frames. Nothing here reads the
+    // implementation, so any future re-plumbing that puts the two back on
+    // different clocks fails this.
+    // Both instants are marked INSIDE the page, because the two things being
+    // compared are both page-side clocks and a CDP round trip is not one of
+    // them. The second instant is the metric's own trigger condition -- the
+    // first scroll event that sees a non-zero pageYOffset -- rather than the
+    // moment the scroll was requested: `html { scroll-behavior: smooth }` means
+    // those are ~100ms apart, and timing from the request would measure the
+    // easing curve and call it clock drift. (It did, on the first run of this
+    // fixture.) The scroll itself is issued as 'instant' as well, so the
+    // assertion does not depend on how long an animation takes.
+    const TWO_FRAMES_MS = 34;
+    const page = await newPage(browser);
+    await page.addInitScript(HERO_CLOCK_PROBE);
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.__tReady !== null);
+    await page.waitForTimeout(400);
+    await page.evaluate(() => window.scrollTo({ top: 600, behavior: 'instant' }));
+    await page.waitForTimeout(200);
+    const marks = await page.evaluate(
+      () => ({ ready: window.__tReady, trigger: window.__tTrigger }));
+    const events = await readEvents(page);
+    const ev = one(events, 'hero_hold_skipped') || one(events, 'hero_hold_complete');
+    const expected = marks.trigger === null ? null : marks.trigger - marks.ready;
+    const drift = (ev && expected !== null) ? Math.abs(ev.data.ms - expected) : null;
+    check('the metric and the choreography count from the same instant',
+      !!ev && drift !== null && drift <= TWO_FRAMES_MS,
+      `reported ms ${ev && ev.data.ms}, elapsed since .reveal-ready ${expected}, `
+      + `drift ${drift}ms > ${TWO_FRAMES_MS}ms — the branch boundary is measuring `
+      + `a different clock than the delays it is a boundary of`);
+    collected.push(...events);
+    await page.close();
+  }
+  {
+    // REDUCED MOTION ABSTAINS.
+    //
+    // A visitor who asked for no motion is never held: both the CSS mirror and
+    // the JS guard compose the page immediately. They then scroll whenever they
+    // like, which lands in the `skipped` branch essentially always -- and since
+    // the skipped:complete ratio is the instrument for retuning --hero-hold,
+    // every one of those views was a vote to shorten a beat that visitor never
+    // saw. The metric is supposed to answer "is the held moment watched or
+    // skipped?"; from someone who was never held, there is no answer to give.
+    //
+    // Emitting nothing is the honest reading, and it is asserted rather than
+    // assumed because the failure is invisible in production: the events keep
+    // arriving and simply mean something else.
+    const { page, close } = await newEmulatedPage(browser, { reducedMotion: 'reduce' });
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(300);
+    await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+    await page.waitForTimeout(100);
+    // NOT vacuous, and this half is load-bearing: the homepage's ONLY event is
+    // the hero_hold verdict, so "no events" is the expected result whether the
+    // metric abstained or the recorder was never wired up at all. A probe event
+    // is pushed through the same window.SSC.track path the metric uses, and the
+    // recorder must have caught it -- otherwise this fixture would pass against
+    // a site whose analytics are entirely broken.
+    await page.evaluate(() => window.SSC.track('probe_recorder_live', { ok: 1 }));
+    await page.waitForTimeout(50);
+    const events = await readEvents(page);
+    check('a reduced-motion visitor emits no hero_hold verdict at all',
+      typeOf(events, 'probe_recorder_live').length === 1
+      && typeOf(events, 'hero_hold_skipped').length === 0
+      && typeOf(events, 'hero_hold_complete').length === 0,
+      `events were ${JSON.stringify(events)} — either a visitor who was never `
+      + `held is voting on the length of the hold, or the probe event is missing `
+      + `and this page recorded nothing at all, in which case the fixture proves `
+      + `nothing`);
+    await close();
+  }
+  {
+    // TAB DURING THE BEAT.
+    //
+    // For the length of the hold the nav is at opacity 0 and its links are
+    // still in the tab order. Without the escape hatch the first Tab moves
+    // focus onto a link nobody can see and leaves it there for the remainder of
+    // the beat -- invisible focus, which is the accessibility failure the hold
+    // introduces and the reason keydown is one of its cancel triggers.
+    //
+    // RETARGETED, and this fixture is how the retarget was forced:
+    //
+    //   FAIL  a Tab during the held beat reveals the nav immediately, not eventually
+    //         nav opacity was 0 100ms after Tab -- focus is sitting on an
+    //         invisible link
+    //
+    // The old contract was `opacity === 1` inside 100ms, and its comment argued
+    // that "a cancel implemented as a shortened delay rather than a snap would
+    // miss that window, which is deliberate -- an interrupted animation must
+    // yield". Lee's fixed decision reverses the aesthetic half of that: the
+    // cancel is a short FADE now. The accessibility half is not negotiable and
+    // is not being softened away, it is being restated at the three bounds that
+    // still mean something:
+    //
+    //   grant within 50ms of the key   -- the page RESPONDED to the input
+    //   composed within 500ms          -- focus is not on an invisible link
+    //   the fade lasts at least 120ms  -- it faded; it did not snap
+    //
+    // The third clause is what stops the first two being satisfied by going
+    // back to the snap; the second is what stops them being satisfied by a
+    // crawl. 500ms is the contract rather than a tolerance -- it is how long
+    // focus may sit somewhere invisible -- so if it ever goes red, the fade got
+    // slower and the answer is not to raise the number.
+    //
+    // The first clause is measured against the GRANT, not against the first
+    // painted frame. See NAV_FADE_PROBE for why: the painted-start version of
+    // this bound was reading the headless browser's frame cadence.
+    const page = await newPage(browser);
+    await page.addInitScript(NAV_FADE_PROBE);
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(200);
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(800);
+    const f = await page.evaluate(() => window.__fade);
+    const after = f.key === null ? [] : f.samples.filter((s) => s.t >= f.key);
+    const moved = after.find((s) => s.o > 0.01);
+    const done = after.find((s) => s.o >= 0.999);
+    const grantMs = (f.key !== null && f.seen !== null)
+      ? Math.round(f.seen - f.key) : null;
+    const doneMs = done ? Math.round(done.t - f.key) : null;
+    const fadeMs = (moved && done) ? Math.round(done.t - moved.t) : null;
+    check('a Tab during the held beat ends the beat on the keystroke itself',
+      grantMs !== null && grantMs <= 50,
+      `the nav was granted its reveal ${grantMs}ms after the key (want <=50). The `
+      + `hatch handles keydown synchronously, so anything above a frame here means `
+      + `the release has been deferred behind something`);
+    check('and focus is never left on an invisible link for long',
+      doneMs !== null && doneMs <= 500,
+      `the nav reached full opacity ${doneMs}ms after Tab (want <=500). That is how `
+      + `long focus sat on a link nobody could see`);
+    check('and it FADES -- the interrupted beat yields, it does not flinch',
+      fadeMs !== null && fadeMs >= 120,
+      `the nav went from invisible to composed in ${fadeMs}ms, which is a snap. `
+      + `Lee's fixed decision is a gentle fade on early input; a snap is the `
+      + `behaviour this replaced`);
+    await page.close();
+  }
+
+  {
+    // INPUT BEFORE THE CHOREOGRAPHY IS ARMED (Razor W-1).
+    //
+    // The hatch binds two frames before `.reveal-ready`, on purpose -- that gap
+    // is exactly when an impatient returning visitor acts, and leaving it
+    // unlistened was a bug this batch already fixed once. But the cancel's fade
+    // is gated on `.reveal-ready`, so for the length of the gap the release had
+    // nothing to fade WITH and snapped. Razor measured it: zero intermediate
+    // frames at 0-40ms, fades only from 80ms on.
+    //
+    // The fix latches a pre-ready release and composes it on the first frame in
+    // which a fade is possible. What that buys is asserted here as pixels, not
+    // as state: the nav must pass through real intermediate opacities, and the
+    // fade must be the SHORT one -- an upper bound, because the most likely
+    // regression is not "no fade" but "the 1000ms fade", which is what a second
+    // writer racing the deferred compose produced during development.
+    const { wasPreReady, mid, first, done } = await runPreReadyScenario(base, browser);
+    const fadeMs = (first && done) ? Math.round(done.t - first.t) : null;
+    check('the pre-ready fixture actually lands in the window it is about',
+      wasPreReady === true,
+      `the input fired with .reveal-ready already present, so this fixture `
+      + `exercised the ordinary post-ready path and proves nothing about the gap`);
+    check('an input before the choreography is armed still FADES, never snaps',
+      mid.length >= 3 && !!done,
+      `nav passed through ${mid.length} intermediate opacities after a pre-ready `
+      + `input and ${done ? 'did' : 'did NOT'} reach full opacity. Fewer than three `
+      + `is a snap -- the release composed elements that no transition rule matched`);
+    check('and the pre-ready fade is the SHORT one, not the full reveal',
+      fadeMs !== null && fadeMs >= 150 && fadeMs <= 600,
+      `the pre-ready fade took ${fadeMs}ms. Above ~600 means .reveal--quick lost `
+      + `the race and the element is running the 1000ms reveal instead -- the same `
+      + `hijack this batch removed, arriving from a second writer`);
   }
 
   // --- the payload contract, across everything collected ---------------
@@ -932,6 +1534,243 @@ const MUTATIONS = [
       });
       await page.close();
       return !!(payload && 'detail' in payload);
+    },
+  },
+  // ---- B1, the held hero ------------------------------------------------
+  //
+  // These five were run by hand during review and discriminate; encoded here
+  // because this section's own contract is that EVERY assertion above has a
+  // mutation proving it can fail, and five fixtures had arrived without one.
+  // A fixture nobody has ever seen go red is a decoration with a green tick.
+  {
+    name: 'M9 hero hold token changed without its constants',
+    proves: 'a --hero-hold that no longer agrees with SETTLE_MS is detected',
+    apply: (dir) => mutate(path.join(dir, 'styles.css'),
+      '--hero-hold: 1600ms;', '--hero-hold: 1200ms;'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.goto(base, { waitUntil: 'load' });
+      await page.waitForFunction(
+        () => document.documentElement.classList.contains('reveal-ready'));
+      // Three terms now, not two. The hold left `transition-delay` for the
+      // reveal clock, so the token's effect on the page arrives through
+      // SSC.reveal.holdMs -- which is exactly the path this mutation has to
+      // travel down for the single-source claim to still mean anything.
+      const agrees = await page.evaluate(() => {
+        const ms = (v) => (String(v).trim().endsWith('ms')
+          ? parseFloat(v) : parseFloat(v) * 1000);
+        const hold = ms(getComputedStyle(document.documentElement)
+          .getPropertyValue('--hero-hold'));
+        const cs = getComputedStyle(document.querySelector('.hero-content'));
+        return window.SSC.reveal.holdMs === hold
+          && hold + ms(cs.transitionDelay.split(',')[0])
+            + ms(cs.transitionDuration.split(',')[0]) === 2720;
+      });
+      await page.close();
+      return !agrees;
+    },
+  },
+  {
+    name: 'M10 hero image put back in the load-in group',
+    proves: 'the LCP element being withheld behind a reveal is detected',
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      "                document.querySelector('nav'),\n"
+      + "                document.querySelector('.hero-content'),",
+      "                document.querySelector('.hero-image'),\n"
+      + "                document.querySelector('nav'),"),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.goto(base, { waitUntil: 'load' });
+      await page.waitForFunction(
+        () => document.documentElement.classList.contains('reveal-ready'));
+      const hasReveal = await page.evaluate(
+        () => document.querySelector('.hero-image').classList.contains('reveal'));
+      await page.close();
+      return hasReveal;
+    },
+  },
+  {
+    name: 'M11 escape hatch never bound',
+    proves: 'a held beat that cannot be interrupted by Tab is detected',
+    apply: (dir) => mutate(path.join(dir, 'js', 'init.js'),
+      'SSC.initHoldEscape();', 'void SSC.initHoldEscape;'),
+    // `opacity !== 1` at 100ms was the old discriminator and it stopped being
+    // one the moment the cancel became a 350ms fade: at 100ms an UNMUTATED page
+    // is mid-fade at roughly 0.5, so the mutation would have "detected" a build
+    // with nothing wrong with it. A mutation that fires either way is worse
+    // than no mutation, because it reads as coverage.
+    //
+    // Read at 800ms instead, which is past the longest legitimate fade and
+    // still 800ms clear of the 1600ms hold. Unbound, the nav is exactly 0 there
+    // because the beat is simply still running.
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(200);
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(600);
+      const opacity = await page.evaluate(
+        () => parseFloat(getComputedStyle(document.querySelector('nav')).opacity));
+      await page.close();
+      return opacity === 0;
+    },
+  },
+  {
+    name: 'M12 choreography clock origin displaced',
+    proves: 'the branch boundary drifting off the choreography clock is detected',
+    // The historical bug was the metric timing from DOMContentLoaded, and that
+    // is NOT what this mutation reproduces -- deliberately. The DCL-to-
+    // reveal-ready gap is environment-dependent (53-168ms measured; the low end
+    // is barely three frames), so mutating to the literal old behaviour
+    // discriminates on a slow machine and not on a fast one: it failed 2 runs
+    // in 3 here. A mutation that only sometimes fires is worse than none,
+    // because it teaches the next person to re-run until it is quiet.
+    //
+    // So the clock ORIGIN is displaced by a flat quarter second instead. That
+    // is the general defect the fixture claims to catch -- the metric counting
+    // from an instant that is not the one the delays count from -- tested at a
+    // magnitude that cannot hide inside the tolerance. The specific historical
+    // instance is a member of that class.
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      'this.startedAt = Date.now();',
+      'this.startedAt = Date.now() - 250;'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.addInitScript(HERO_CLOCK_PROBE);
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => window.__tReady !== null);
+      await page.waitForTimeout(400);
+      await page.evaluate(() => window.scrollTo({ top: 600, behavior: 'instant' }));
+      await page.waitForTimeout(200);
+      const marks = await page.evaluate(
+        () => ({ ready: window.__tReady, trigger: window.__tTrigger }));
+      const events = await readEvents(page);
+      const ev = one(events, 'hero_hold_skipped') || one(events, 'hero_hold_complete');
+      await page.close();
+      if (!ev || marks.trigger === null) return true;
+      return Math.abs(ev.data.ms - (marks.trigger - marks.ready)) > 34;
+    },
+  },
+  {
+    name: 'M13 reduced-motion abstention removed',
+    proves: 'a visitor who was never held voting on the hold is detected',
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      '        if (prefersReducedMotion()) return;\n\n        let reported = false;',
+      '        if (false) return;\n\n        let reported = false;'),
+    run: async (base, browser) => {
+      const { page, close } = await newEmulatedPage(browser, { reducedMotion: 'reduce' });
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(300);
+      const events = await readEvents(page);
+      await close();
+      return typeOf(events, 'hero_hold_skipped').length
+        + typeOf(events, 'hero_hold_complete').length > 0;
+    },
+  },
+  // ---- the hold, now that it lives in the reveal clock -------------------
+  //
+  // While the hold was a `transition-delay`, the agreement fixture's computed
+  // read was proof it happened: the browser had resolved the cascade and there
+  // was no further step to get wrong. A scheduled grant has three further steps
+  // -- arm the timer, arm it at the right length, and keep the observer's hands
+  // off the held pair -- and a computed style can see none of them. These three
+  // mutations are one per step, and all three are caught by the same new
+  // behavioural fixture, which is the point: that fixture is now the only thing
+  // standing between the site and a homepage with no hold at all.
+  {
+    name: 'M14 hold scheduled at zero',
+    proves: 'a beat that is armed but never actually waited out is detected',
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      'const remaining = Math.max(0, this.holdMs - elapsed);',
+      'const remaining = 0;'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(900);
+      const opacity = await page.evaluate(
+        () => parseFloat(getComputedStyle(document.querySelector('nav')).opacity));
+      await page.close();
+      return opacity !== 0;
+    },
+  },
+  {
+    name: 'M15 escape release drops the short duration',
+    proves: 'a cancel that fades at the FULL reveal length is detected',
+    // The failure this guards is the one the previous two attempts shipped: the
+    // hatch fires, the classes are right, and the fade still runs at 1000ms.
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      'this.compose(heldTargets(), true);',
+      'this.compose(heldTargets(), false);'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.addInitScript(NAV_FADE_PROBE);
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(200);
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(800);
+      const f = await page.evaluate(() => window.__fade);
+      await page.close();
+      if (f.key === null) return true;
+      const done = f.samples.filter((s) => s.t >= f.key).find((s) => s.o >= 0.999);
+      return !done || done.t - f.key > 500;
+    },
+  },
+  {
+    name: 'M16 held pair handed back to the intersection observer',
+    proves: 'the hold being composed away on the observer\'s first callback is detected',
+    // The subtlest of the three, and the easiest to reintroduce by tidying:
+    // the held pair carries `.reveal` like everything else, so an observer that
+    // is not told to skip it grants `.seen` on its first callback -- the pair is
+    // above the fold -- and the scheduled grant then lands 1600ms later on
+    // elements that have already arrived. Nothing errors. There is just no hold.
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      'if (isHeld.has(el)) return;',
+      'if (false && isHeld.has(el)) return;'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(900);
+      const opacity = await page.evaluate(
+        () => parseFloat(getComputedStyle(document.querySelector('nav')).opacity));
+      await page.close();
+      return opacity !== 0;
+    },
+  },
+  // ---- the pre-ready window (Razor W-1) ---------------------------------
+  {
+    name: 'M17 pre-ready release composes immediately',
+    proves: 'a cancel inside the DCL-to-reveal-ready gap snapping is detected',
+    // The exact defect Razor found: the guard removed, so a release that lands
+    // before `.reveal-ready` composes elements that no transition rule matches.
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      "if (!document.documentElement.classList.contains('reveal-ready')) {",
+      'if (false) {'),
+    run: async (base, browser) => {
+      const r = await runPreReadyScenario(base, browser);
+      // Not "detected" unless the scenario actually reached the window. A
+      // mutation that reports success because its setup missed is worse than
+      // no mutation.
+      if (!r.fired || r.wasPreReady !== true) return false;
+      return r.mid.length < 3;
+    },
+  },
+  {
+    name: 'M18 the deferred pre-ready compose drops the short duration',
+    proves: 'the latched fade running at the FULL reveal length is detected',
+    // Distinct from M15, which mutates the POST-ready release. This is the
+    // deferred path, and it is the one that actually regressed during
+    // development: a second init() call composed without the quick class and
+    // Chrome updated the running transition rather than replacing it, so the
+    // fade took 914ms while the computed duration read 0.35s.
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      'deferAFrame(() => this.compose(held, true));',
+      'deferAFrame(() => this.compose(held, false));'),
+    run: async (base, browser) => {
+      const r = await runPreReadyScenario(base, browser);
+      if (!r.fired || r.wasPreReady !== true) return false;
+      if (!r.first || !r.done) return true;
+      return (r.done.t - r.first.t) > 600;
     },
   },
 ];

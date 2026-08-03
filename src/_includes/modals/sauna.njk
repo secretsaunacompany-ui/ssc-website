@@ -32,7 +32,7 @@
                         </div>
                         <div class="spec-item">
                             <label>Base Price</label>
-                            <span id="specPrice">$29,000</span>
+                            <span id="specPrice">$29,500</span>
                         </div>
                         <div class="spec-item">
                             <label>Heater Included</label>
@@ -58,34 +58,47 @@
 
                     <div id="configureStep">
                     <div class="addon-category">
-                        <h4>Heater Upgrade</h4>
+                        <h4>Heater</h4>
+                        {# THE COMPLETE-SAUNA RULE (per Lee, 2026-08-03). The base
+                           price buys a finished sauna, so this group opens with TWO
+                           included builds -- electric, and wood-fired where the model
+                           offers it -- both at $0. They are a choice between complete
+                           saunas, not a discount and an upcharge, and neither may ever
+                           acquire a price. The two tiers below them price OVER whichever
+                           standard the model carries.
+
+                           Every label and value here is per-model and set by modal.js
+                           from standardElectricLabel / standardWoodLabel /
+                           electricHeaterUpgrade / woodPremium / woodPremiumLabel. The
+                           markup is the S4 default the modal opens on. One slot once
+                           sold two different heaters at one price -- never reintroduce
+                           a hardcoded heater price here. #}
                         <label class="addon-option">
-                            <input type="radio" name="heater" value="0" checked data-addon="heater">
-                            <span class="addon-label">Standard heater (included)</span>
+                            <input type="radio" name="heater" value="0" checked data-default data-addon="heater">
+                            <span class="addon-label">Standard electric heater — Homecraft 7.5kW H-Series (included)</span>
                             <span class="addon-price">Included</span>
                         </label>
-                        {# Both heater upgrades are per-model: value, label and price
-                           are all set by modal.js from electricHeaterUpgrade /
-                           woodFired / woodFiredLabel. The markup below is the S4
-                           default the modal opens on. One slot previously sold two
-                           different heaters at one price -- never reintroduce a
-                           hardcoded heater price here. #}
+                        <label class="addon-option" id="heaterStandardWood">
+                            <input type="radio" name="heater" value="0" data-addon="heater">
+                            <span class="addon-label" id="heaterStandardWoodLabel">Standard wood-fired heater — Harvia M3 (included)</span>
+                            <span class="addon-price">Included</span>
+                        </label>
                         <label class="addon-option" id="heaterElectricUpgrade">
                             <input type="radio" name="heater" value="3500" data-addon="heater">
                             <span class="addon-label" id="heaterElectricLabel">Homecraft Revive 9kW (Electric)</span>
                             <span class="addon-price" id="heaterElectricPrice">+$3,500</span>
                         </label>
                         <label class="addon-option" id="heaterWoodUpgrade">
-                            <input type="radio" name="heater" value="10800" data-addon="heater">
+                            <input type="radio" name="heater" value="5900" data-addon="heater">
                             <span class="addon-label" id="heaterWoodLabel">Original-IKI (Wood-fired)</span>
-                            <span class="addon-price" id="heaterWoodPrice">+$10,800</span>
+                            <span class="addon-price" id="heaterWoodPrice">+$5,900</span>
                         </label>
                     </div>
 
                     <div class="addon-category">
                         <h4>Changing Room</h4>
                         <label class="addon-option">
-                            <input type="radio" name="changing" value="0" checked data-addon="changing">
+                            <input type="radio" name="changing" value="0" checked data-default data-addon="changing">
                             <span class="addon-label">No changing room</span>
                             <span class="addon-price">—</span>
                         </label>
@@ -104,7 +117,7 @@
                     <div class="addon-category">
                         <h4>Front Deck</h4>
                         <label class="addon-option">
-                            <input type="radio" name="deck" value="0" checked data-addon="deck">
+                            <input type="radio" name="deck" value="0" checked data-default data-addon="deck">
                             <span class="addon-label">No deck</span>
                             <span class="addon-price">—</span>
                         </label>
@@ -134,10 +147,32 @@
                         </label>
                     </div>
 
+                    {# Mounting sits next to the deck because both add to box
+                       length, and box length is what decides the chassis. The
+                       $3,500 is INTEGRATION LABOUR ONLY and is flat on every
+                       model -- marrying a box to a chassis does not get harder
+                       as the box gets longer. The chassis itself does scale, and
+                       is quoted separately by final box length, which is why the
+                       note below has to travel with the price. #}
+                    <div class="addon-category" id="mountingCategory">
+                        <h4>Mounting</h4>
+                        <label class="addon-option">
+                            <input type="radio" name="mounting" value="0" checked data-default data-addon="mounting">
+                            <span class="addon-label">Skid-mounted (included)</span>
+                            <span class="addon-price">Included</span>
+                        </label>
+                        <label class="addon-option">
+                            <input type="radio" name="mounting" value="3500" data-addon="mounting">
+                            <span class="addon-label">Trailer integration — trailer client-supplied</span>
+                            <span class="addon-price">+$3,500</span>
+                        </label>
+                        <p class="addon-note">Trailer supplied by you. If you'd like us to source one, it's quoted separately by final box length (model plus changing room plus deck).</p>
+                    </div>
+
                     <div class="addon-category">
                         <h4>Exterior Cladding</h4>
                         <label class="addon-option">
-                            <input type="radio" name="exterior" value="0" checked data-addon="exterior">
+                            <input type="radio" name="exterior" value="0" checked data-default data-addon="exterior">
                             <span class="addon-label">Standard metal cladding</span>
                             <span class="addon-price">Included</span>
                         </label>
@@ -154,12 +189,17 @@
                             <span class="addon-label">Cedar exterior</span>
                             <span class="addon-price" id="cedarExteriorPrice">+$2,500</span>
                         </label>
+                        <label class="addon-option">
+                            <input type="radio" name="exterior" value="exteriorYakisugi" data-addon="exterior">
+                            <span class="addon-label">Yakisugi (charred cedar) exterior</span>
+                            <span class="addon-price" id="yakisugiExteriorPrice">+$5,000</span>
+                        </label>
                     </div>
 
                     <div class="addon-category">
                         <h4>Interior Wood</h4>
                         <label class="addon-option">
-                            <input type="radio" name="interior" value="0" checked data-addon="interior">
+                            <input type="radio" name="interior" value="0" checked data-default data-addon="interior">
                             <span class="addon-label">Knotty Western Red Cedar</span>
                             <span class="addon-price">Included</span>
                         </label>
@@ -198,7 +238,7 @@
                         <h4>Premium Finish Package</h4>
                         <p class="package-description">Clear cedar interior, cedar or standing seam exterior, WiFi controller, lighting package, Bluetooth speakers. <strong>Save $500</strong> vs selecting individually.</p>
                         <label class="addon-option">
-                            <input type="radio" name="premiumPackage" value="0" checked data-addon="premiumPackage" data-action="premium-change">
+                            <input type="radio" name="premiumPackage" value="0" checked data-default data-addon="premiumPackage" data-action="premium-change">
                             <span class="addon-label">No package (select options individually)</span>
                             <span class="addon-price">—</span>
                         </label>
@@ -240,12 +280,18 @@
                     {# Audio is a tier choice, so it is a radio group with an
                        explicit "none" default -- not two checkboxes a visitor
                        could tick together and be quoted for twice. The Premium
-                       Finish Package carries the STANDARD set; a buyer who wants
-                       the premium tier pays the difference on top. #}
+                       Finish Package carries the STANDARD set, and this group
+                       stays SELECTABLE with the package on -- premium audio is
+                       priced OUTSIDE the package, at its own full price on top,
+                       not at a difference (models.json optionGroups.audio._note
+                       and packages.premium_finish.upgradableGroups.audio, which
+                       marks this the one additive slot). The package used to
+                       disable all three radios here, which made the premium tier
+                       unreachable and contradicted both. #}
                     <div class="addon-category">
                         <h4>Audio</h4>
                         <label class="addon-option">
-                            <input type="radio" name="speakers" value="0" checked data-addon="speakers">
+                            <input type="radio" name="speakers" value="0" checked data-default data-addon="speakers">
                             <span class="addon-label">No speakers</span>
                             <span class="addon-price">—</span>
                         </label>
@@ -270,12 +316,12 @@
                     <div class="price-summary">
                         <div class="price-row base">
                             <span>Base Price</span>
-                            <span id="summaryBase">$29,000</span>
+                            <span id="summaryBase">$29,500</span>
                         </div>
                         <div id="addonsList"></div>
                         <div class="price-row total">
                             <span>Estimated Total</span>
-                            <span id="summaryTotal">$29,000</span>
+                            <span id="summaryTotal">$29,500</span>
                         </div>
 
                         {# Shown by modal.js only when a saved configuration was

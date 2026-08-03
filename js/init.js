@@ -161,8 +161,26 @@
             startReveal();
         }
 
-        // Arrival instrumentation (doc 14 §8). Must run AFTER reveal.init so the
-        // hero has settled into its own choreography before we time it.
+        // The held beat's escape hatch, and the arrival instrumentation that
+        // measures it. BOTH bind here, at DOMContentLoaded, and both are two
+        // frames EARLIER than startReveal above -- deliberately.
+        //
+        // The old comment here claimed the metric "must run AFTER reveal.init so
+        // the hero has settled into its own choreography before we time it".
+        // That was never what happened: startReveal sits behind a double rAF, so
+        // these have always run first. Worse, the claim licensed the metric to
+        // start its own clock at this moment, 53-168ms before the choreography's
+        // delay actually begins counting -- so a visitor who watched the whole
+        // arrival could be recorded as having skipped it. The metric now reads
+        // SSC.reveal.startedAt instead of timing from here, which makes the
+        // ordering below a non-issue rather than a dependency.
+        //
+        // The hatch binds here for the opposite reason: it must be listening
+        // BEFORE the beat starts resolving, or the two frames it was missing are
+        // exactly the ones an impatient visitor acts in.
+        if (SSC.initHoldEscape) {
+            SSC.initHoldEscape();
+        }
         if (SSC.initHeroHoldMetric) {
             SSC.initHeroHoldMetric();
         }
@@ -205,6 +223,27 @@
     window.addEventListener('load', () => {
         // Re-run reveal after all resources load: late images move things into
         // view. init() is idempotent and reuses its observer.
+        //
+        // `reveal-ready` is asserted FIRST, and that ordering is the whole point
+        // of this line rather than tidiness. On the DOMContentLoaded path the
+        // class and the observer start together inside startReveal, two frames
+        // in. But `load` is a SEPARATE entry point, and nothing guarantees it
+        // fires after that double rAF: in a background or otherwise
+        // rAF-starved tab, animation frames are throttled or withheld entirely
+        // while resource loading finishes on its own schedule, so `load` can
+        // arrive first. Calling init() there would hand `.seen` to every
+        // above-fold element while transitions are still disabled -- the
+        // elements would be correct but they would arrive instantly, with the
+        // hero's held beat skipped and no animation at all. Benign in that
+        // nothing breaks, and invisible in testing because a foreground tab
+        // never reproduces it.
+        //
+        // Adding the class immediately before the call makes the two atomic
+        // from the DOM's point of view: no `.seen` can be granted on this path
+        // with transitions unarmed. On the normal path the class is already
+        // present two frames earlier and this is a no-op, so the choreography
+        // and its fixtures are untouched.
+        document.documentElement.classList.add('reveal-ready');
         if (SSC.reveal && SSC.reveal.init) {
             SSC.reveal.init();
         }

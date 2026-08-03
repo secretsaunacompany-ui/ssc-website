@@ -6,7 +6,7 @@
             <p>{{ page_subtitle }}</p>
         </section>
 
-        <section class="container section--pt-6">
+        <section class="container">
             <div class="grid-2 grid-2--responsive-gap">
                 <div class="reveal">
                     {{ intro_content | safe }}
@@ -18,7 +18,7 @@
         </section>
 
         {% if features %}
-        <section class="surface--elevated hero-overlay">
+        <section class="hero-overlay section--tight">
             <div class="hero-overlay__bg hero-overlay__bg--opacity-15" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/{{ features_bg_image }}');"></div>
             <div class="hero-overlay__content container">
                 <h2 class="text-center reveal">{{ features_heading }}</h2>
@@ -42,18 +42,20 @@
         </section>
         {% endif %}
 
-        <section class="container text-center">
-            <div class="pos-relative--z1 reveal">
-                <h2>Ready to Build Your Sauna{{ " in " + area_name if area_name != "the Sea-to-Sky Corridor" else " in the Sea-to-Sky" }}?</h2>
-                <p class="cta__text measure-wide">Every project starts with a conversation. Tell us about your space and we'll design something built to last.</p>
-                <div class="cta__buttons">
-                    <a href="/contact/" class="btn">Get a Quote</a>
-                    <a href="/saunas/" class="btn btn-outline">View Our Saunas</a>
+        <section class="text-center surface--elevated">
+            <div class="container">
+                <div class="pos-relative--z1 reveal">
+                    <h2>Ready to Build Your Sauna{{ " in " + area_name if area_name != "the Sea-to-Sky Corridor" else " in the Sea-to-Sky" }}?</h2>
+                    <p class="cta__text measure-wide">Every project starts with a conversation. Tell us about your space and we'll design something built to last.</p>
+                    <div class="cta__buttons">
+                        <a href="/contact/" class="btn">Get a Quote</a>
+                        <a href="/saunas/" class="btn btn-outline">View Our Saunas</a>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="container">
+        <section class="container section--tight">
             <div class="reveal">
                 <h3>We Also Serve</h3>
                 <p class="service-area-links">
