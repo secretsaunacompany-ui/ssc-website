@@ -49,6 +49,53 @@
         premiumFinishPrice: 'premiumFinishPrice'
     };
 
+    /**
+     * The single-choice groups the Premium Finish Package OCCUPIES, and the
+     * option each one is occupied WITH.
+     *
+     * Mirrors `packages.premium_finish.upgradableGroups` in canonical
+     * models.json, which is the machine-readable statement of the same fact and
+     * is asserted against the package's `includes` by the quote generator.
+     * Keyed by radio-group NAME here because that is what the DOM offers.
+     *
+     * A slot's baseline is ALREADY PAID FOR inside the package price. Showing
+     * it checked and then adding its price on top is the double-bill; showing
+     * the group's own default checked instead is a different lie -- the page
+     * says "standard metal cladding" while the package it just sold includes
+     * cedar. Both were live. `calculateTotal()` bills a checked baseline at $0
+     * and labels it as included.
+     *
+     * `pricing: 'additive'` marks the documented audio exception: the package
+     * carries the standard set, and the premium tier is billed at its own full
+     * price on top rather than at a difference (optionGroups.audio._note). So
+     * audio is the one occupied group that stays SELECTABLE under the package.
+     */
+    const PACKAGE_SLOTS = {
+        exterior: { baseline: 'exteriorCedar' },
+        interior: { baseline: 'interiorClearCedar' },
+        speakers: { baseline: '1000', pricing: 'additive' }
+    };
+
+    /** The package's `select: "any"` includes. No slot, no baseline: locked off. */
+    const PACKAGE_CHECKBOX_INCLUDES = ['input[data-addon="wifi"]', 'input[data-addon="lighting"]'];
+
+    const PACKAGE_LABEL = 'Premium Finish Package';
+
+    /** Is the package currently selected? One reader, so nobody drifts. */
+    const isPackageSelected = () =>
+        !!document.querySelector('input[name="premiumPackage"][value="premiumFinishPrice"]:checked');
+
+    /**
+     * True when this input is the baseline of a slot the package occupies AND
+     * the package is on -- i.e. the customer already paid for it inside the
+     * package and it must not be billed a second time.
+     */
+    function isPackageIncluded(input) {
+        if (!isPackageSelected()) return false;
+        const slot = PACKAGE_SLOTS[input.name];
+        return !!slot && input.value === slot.baseline;
+    }
+
     /** Debounce and per-open ceiling for `configurator_option_change`. */
     const OPTION_EVENT_DEBOUNCE_MS = 500;
     const OPTION_EVENT_CAP = 12;
@@ -609,6 +656,12 @@
         }
 
         resetForm() {
+            // The form is about to go back to defaults, package radio included,
+            // so the transition tracker must go with it -- a stale `true` from
+            // the previous open would make the next call think the package had
+            // just been cleared and reset a slot the visitor had chosen.
+            this.packageWasOn = false;
+
             // Reset radio buttons to default
             document.querySelectorAll('.modal-addons input[type="radio"]').forEach((input) => {
                 // Zero-valued radios are the "none / included" defaults for their group.
@@ -663,6 +716,23 @@
             // Process radio button selections
             document.querySelectorAll('.modal-addons input[type="radio"]:checked').forEach((input) => {
                 let value = input.value;
+
+                // Already inside the package price. Named on the summary so the
+                // visitor can see what the package bought them, at $0 so they
+                // are not charged for it twice.
+                if (isPackageIncluded(input)) {
+                    const included = input.closest('.addon-option');
+                    const includedLabel = included ? included.querySelector('.addon-label') : null;
+                    if (includedLabel) {
+                        addonsHTML += `
+                        <div class="price-row addon">
+                            <span>${includedLabel.textContent}</span>
+                            <span>Included in package</span>
+                        </div>
+                    `;
+                    }
+                    return;
+                }
 
                 if (Object.prototype.hasOwnProperty.call(PER_MODEL_PRICE_KEYS, value)) {
                     value = currentModel[PER_MODEL_PRICE_KEYS[value]] || 0;
@@ -724,38 +794,91 @@
             if (stickyTotal) stickyTotal.textContent = formatCurrency(total);
         }
 
+        /**
+         * What selecting (or clearing) the package does to the rest of the form.
+         *
+         * The old version treated all five includes identically: disable the
+         * input, and for radios force the group's ZERO default checked. That was
+         * wrong in two different directions at once.
+         *
+         *   - It disabled `input[data-addon="speakers"]`, which is all THREE
+         *     audio radios, so premium audio became unreachable under the
+         *     package. Canonical says the opposite (the package carries the
+         *     standard set; premium is priced outside it) and so does the
+         *     comment directly above that markup. The page contradicted both.
+         *   - It forced "Standard metal cladding" and "Knotty Western Red Cedar"
+         *     checked while selling a package that includes CEDAR exterior and
+         *     CLEAR cedar interior. The visitor was shown a build the package
+         *     does not describe.
+         *
+         * Now: `select: "any"` includes stay locked off (nothing to upgrade
+         * from, so having them selected is a plain double-bill). Delta slots are
+         * locked TO the package's own included option, shown as included at $0.
+         * The additive slot (audio) stays open, seeded to the included standard
+         * set, with premium selectable and charged in full on top.
+         *
+         * The exterior and interior groups stay LOCKED for now. Letting a
+         * visitor swap them at the delta is a real product (Lee ruled the
+         * pricing on 2026-08-03 and the quote generator already implements it);
+         * it needs configurator UI this batch does not build. Tracked in
+         * ROADMAP `next`.
+         */
         handlePremiumPackageChange() {
-            const isPremiumSelected = document.querySelector('input[name="premiumPackage"][value="premiumFinishPrice"]:checked');
+            const on = isPackageSelected();
+            // This runs on every package radio change AND after every restore,
+            // so "the package is off" is not the same question as "the package
+            // was just turned off". Only the TRANSITION may clear a slot back to
+            // its default -- otherwise restoring a saved a-la-carte cedar
+            // exterior (or the standard speaker set) would wipe it, because the
+            // restore path calls this to re-apply the disabling rule.
+            const wasOn = this.packageWasOn === true;
+            this.packageWasOn = on;
 
-            // Elements that are included in Premium Finish Package
-            const conflictingAddons = [
-                'input[name="interior"]',           // Clear cedar interior
-                'input[name="exterior"]',           // Cedar exterior
-                'input[data-addon="wifi"]',         // WiFi controller
-                'input[data-addon="lighting"]',     // Lighting package
-                'input[data-addon="speakers"]'      // Bluetooth speakers
-            ];
-
-            conflictingAddons.forEach((selector) => {
+            // select:"any" includes -- no slot, no baseline, locked off entirely.
+            PACKAGE_CHECKBOX_INCLUDES.forEach((selector) => {
                 document.querySelectorAll(selector).forEach((input) => {
                     const addonOption = input.closest('.addon-option');
-                    if (isPremiumSelected) {
-                        // Disable and dim conflicting options
-                        input.disabled = true;
-                        if (addonOption) addonOption.classList.add('disabled');
-                        // Reset to default/included value
-                        if (input.type === 'checkbox') {
-                            input.checked = false;
-                        // Same default test as resetForm -- see the comment there.
-                        } else if (input.type === 'radio' && (input.value === '0' || input.hasAttribute('data-default'))) {
-                            input.checked = true;
-                        }
-                    } else {
-                        // Re-enable options
-                        input.disabled = false;
-                        if (addonOption) addonOption.classList.remove('disabled');
-                    }
+                    input.disabled = on;
+                    if (addonOption) addonOption.classList.toggle('disabled', on);
+                    if (on) input.checked = false;
                 });
+            });
+
+            Object.entries(PACKAGE_SLOTS).forEach(([groupName, slot]) => {
+                const inputs = [...document.querySelectorAll(`.modal-addons input[name="${groupName}"]`)];
+                const additive = slot.pricing === 'additive';
+
+                inputs.forEach((input) => {
+                    const addonOption = input.closest('.addon-option');
+                    // Additive slots stay live: the whole point is that the
+                    // premium tier remains buyable alongside the package.
+                    const lock = on && !additive;
+                    input.disabled = lock;
+                    if (addonOption) addonOption.classList.toggle('disabled', lock);
+                });
+
+                if (on) {
+                    // Show the package's own included choice. For the additive
+                    // slot only seed it -- a visitor who has already chosen
+                    // premium audio keeps it.
+                    const current = inputs.find((i) => i.checked);
+                    const atDefault = !current || current.value === '0' || current.hasAttribute('data-default');
+                    if (!additive || atDefault) {
+                        const baseline = inputs.find((i) => i.value === slot.baseline);
+                        if (baseline) baseline.checked = true;
+                    }
+                } else if (wasOn) {
+                    // Package just cleared. The baseline was only checked
+                    // because the package put it there -- leaving it checked
+                    // would start billing cedar the moment the package came
+                    // off, which is the same double-bill wearing the other hat.
+                    // Same default test as resetForm; keep them in step.
+                    const current = inputs.find((i) => i.checked);
+                    if (current && current.value === slot.baseline) {
+                        const def = inputs.find((i) => i.value === '0' || i.hasAttribute('data-default'));
+                        if (def) def.checked = true;
+                    }
+                }
             });
 
             this.calculateTotal();
@@ -786,7 +909,14 @@
                 if (!labelEl) return;
 
                 const label = labelEl.textContent.trim();
-                const priceText = priceEl ? priceEl.textContent.trim() : '';
+                // The price SPAN still reads "+$2,500" on cedar, because it is
+                // the a-la-carte price and stays correct with the package off.
+                // Under the package that option is already paid for, and copying
+                // the span into the quote would put a charge in the text that is
+                // not in the total.
+                const priceText = isPackageIncluded(input)
+                    ? `(included in ${PACKAGE_LABEL})`
+                    : (priceEl ? priceEl.textContent.trim() : '');
                 lines.push(`\u2022 ${label}${priceText ? ` ${priceText}` : ''}`);
                 selections.push({
                     i: index,

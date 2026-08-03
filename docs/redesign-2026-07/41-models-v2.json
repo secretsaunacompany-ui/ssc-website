@@ -1,7 +1,7 @@
 {
   "_comment": "Single source of truth for SSC model and configurator pricing. Used by the quote generator and other tools outside the website repo.",
   "_updated": "2026-08-03",
-  "_source": "Base-price reprice STEP 1, ratified by Lee 2026-08-03: S2 22500 -> 23500 and S4 29000 -> 29500 only, plus the yakisugi exterior and the per-model costBasis record. S6, S8 and SC HOLD at their current list pending step 2 (trailer-line separation). Prior basis: js/data.js and src/_includes/modals/sauna.njk in ssc-website at pricesVersion 2 (WP-0b-ii); derivations and margins in docs/redesign-2026-07/35-configurator-price-sheet.md.",
+  "_source": "Base-price reprice STEP 1, ratified by Lee 2026-08-03: S2 22500 -> 23500 and S4 29000 -> 29500 only, plus the yakisugi exterior and the per-model costBasis record. S6, S8 and SC HOLD at their current list pending step 2 (trailer-line separation). Prior basis: js/data.js and src/_includes/modals/sauna.njk in ssc-website at pricesVersion 2 (WP-0b-ii); derivations and margins in docs/redesign-2026-07/35-configurator-price-sheet.md. SCHEMA ADDITION 2026-08-03 (no price moved, pricesVersion unchanged): packages.premium_finish.upgradableGroups, encoding Lee's 2026-08-03 ruling that a package occupies the select-one groups its includes touch and a different choice in an occupied group bills at the delta, never at both prices and never below zero.",
   "_schema": "v2. The v1 file could not hold what the configurator now offers: one heater_apex entry cannot carry a per-model electric split, and there were no bench, deck-tier, window-tier, speaker-tier or per-model wood-fired structures at all. Options are now grouped exactly as the configurator groups them, and any price that varies by model is an explicit pricePerModel map rather than v1's 'model.interiorUpgrade' magic string, which every consumer had to know how to interpret.",
 
   "pricesVersion": 3,
@@ -206,6 +206,16 @@
       ],
       "pricePerModel": { "S2": 9200, "S4": 9600, "S6": 10500, "S8": 11000, "SC": 12500 },
       "savings": 500,
+      "upgradableGroups": {
+        "interior": { "baseline": "interior_clear_cedar" },
+        "exterior": { "baseline": "exterior_cedar" },
+        "audio": {
+          "baseline": "speakers_standard",
+          "pricing": "additive",
+          "_note": "The one exception to delta pricing, and it is the shape this package has always had: the package carries the standard set, and the premium tier is priced OUTSIDE the package at its own canonical price, added on top. See optionGroups.audio._note."
+        }
+      },
+      "_upgradableGroupsNote": "GROUP-SLOT occupancy, machine-readable. A package does not merely bundle option IDS -- it OCCUPIES each `select: \"one\"` group its `includes` touch, with the listed option as that group's baseline. Choosing a different option in an occupied group is an UPGRADE, billed at max(0, optionPrice - baselinePrice) and rendered as an upgrade line; never both prices, and never a negative line (a cheaper substitution clamps to $0 and reads as a substitution at no charge -- there is no downgrade credit). `pricing: \"additive\"` marks a group that is billed at full price on top instead, the documented audio exception. Per Lee, 2026-08-03. The generator asserts that the key set here EQUALS the set of select-one groups reachable from `includes`, so a package that grows a component cannot silently un-occupy a slot. `select: \"any\"` includes (wifi_controller, lighting_package) are NOT slots: selecting them alongside the package is a double-bill and is refused.",
       "_note": "savings = (sum of `includes` at the CHEAPEST qualifying combination, i.e. cedar rather than standing seam) minus the package price, and it must hold on every model. Verified in CI by scripts/package-claim.test.mjs in the website repo, which scrapes the advertised figure off the rendered page rather than trusting this number."
     }
   },

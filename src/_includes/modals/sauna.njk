@@ -245,8 +245,14 @@
                     {# Audio is a tier choice, so it is a radio group with an
                        explicit "none" default -- not two checkboxes a visitor
                        could tick together and be quoted for twice. The Premium
-                       Finish Package carries the STANDARD set; a buyer who wants
-                       the premium tier pays the difference on top. #}
+                       Finish Package carries the STANDARD set, and this group
+                       stays SELECTABLE with the package on -- premium audio is
+                       priced OUTSIDE the package, at its own full price on top,
+                       not at a difference (models.json optionGroups.audio._note
+                       and packages.premium_finish.upgradableGroups.audio, which
+                       marks this the one additive slot). The package used to
+                       disable all three radios here, which made the premium tier
+                       unreachable and contradicted both. #}
                     <div class="addon-category">
                         <h4>Audio</h4>
                         <label class="addon-option">
