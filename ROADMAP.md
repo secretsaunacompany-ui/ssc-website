@@ -98,6 +98,43 @@ Lee agrees curated packages directly with Clarke, Emmanuel and Mountain Life.
 
 Order is not a priority ranking.
 
+## B7 rides (recorded 2026-08-03)
+
+**Hero graceful-cancel — ESCALATED, not shipped.** Lee's decision stands: an early
+scroll/key/tap during the held beat should gently fade the nav and title in rather than
+snapping them. Implemented, measured, and withdrawn under the two-strike rule after four
+failed mechanisms. Root cause is identified and reproducible, and it is not where anyone
+would look: the held beat leaves a PENDING CSS transition on the nav (opacity + transform,
+delay 1600ms, duration 1000ms), created because `animations.js` adds the `reveal` class to
+the nav *after* transitions are already enabled, so the nav's hidden state arrives as a
+value change under a live transition. When the cancel then changes the target value, Chrome
+UPDATES that pending transition rather than creating a new one — so the fade inherits the
+hold's timing no matter what the computed `transition-delay` says at that instant. Measured
+directly: computed `0s / 0.35s`, actual running animation `1600 / 1000`. Cancelling the
+pending animations first removes the hijack but also removes the transition, so it snaps.
+The escape-hatch reading note in the hero section still describes the SNAP, which is what
+ships today; update it when this lands. Next step is a cold-eyes pass, not a fifth patch —
+and the pending-transition-on-nav artifact is worth fixing on its own merits regardless.
+
+**Booking subdomain.** `book.secretsaunacompany.ca`, a separate Next.js app, fire-ban
+gated. Session photos get the same imaging discipline the site now has (angle in the
+source URL, width left to the generator) when it reopens. Session price is **$45** —
+recorded here because the ~$30 figure that appeared on an early mood board never reached
+production and must not be resurrected from it.
+
+**The image inventory is not unified, and this bug will regrow.** `js/data.js` is a SECOND
+image inventory that never passes through the Eleventy transform. It is why the rotation
+corrections hand-written into the templates never reached the modal galleries or the map
+popups, and B7 fixed the instances rather than the class — six URLs corrected by hand, and
+the next photograph added to a model will have the same problem. Post-wave unification
+candidate; `models.json` is the precedent for moving a second source of truth into the
+build. Until then, any URL added to `js/data.js` is sized by hand (w_1200 for modal
+galleries, w_400 for map popups) and carries its own angle.
+
+**WETT policy ruling.** All future wood-fired builds are to be designed WETT-certifiable.
+This is insurer-driven, not a preference. Flagged for the pricing owner: it has
+configurator and models implications that have not been costed.
+
 ## AI Advisor Widget (parked, needs more thought)
 
 **What it is.** A chat widget that lives on contact, about, faq, saunas, and warranty pages. Context-aware starters per page (product, care, commercial, etc.), multi-turn on some pages, single-shot on others.
