@@ -486,6 +486,53 @@ const PRODUCTS_PROSE_LINES = {
 /** Every dollar figure in a sentence, as numbers. "$9,200-$12,500" -> [9200, 12500]. */
 const dollarsIn = (s) => [...String(s).matchAll(/\$([\d,]+)/g)].map((m) => money(m[1]));
 
+/**
+ * ATTRIBUTION, not a set of figures (Razor re-review NEW-1).
+ *
+ * The 'enumerating' check used to compare the SET of dollar amounts in the
+ * sentence against the SET of canonical per-model values. Sets have no idea
+ * who owns what: swap the exterior sentence to "S2/S4 $6,000, S6/S8/SC $5,000"
+ * and the set is still {5000, 6000}, so the gate stayed green while the AI
+ * advisor quoted an S2 customer $6,000 for cladding that costs $5,000. This
+ * parses the sentence into a model -> price map so each model is asserted
+ * against its own canonical `pricePerModel` entry.
+ *
+ * Grammar (all three exterior sentences follow it): one or more segments of
+ * slash-joined model tokens followed by a dollar figure --
+ *   "varies by model (S2/S4 $5,000, S6/S8/SC $6,000)"
+ *
+ * Any dollar figure the grammar cannot attribute to a model makes this return
+ * an error, and the caller FAILS asking for a parseable sentence. It does NOT
+ * fall back to the set comparison: falling back is how the hole got here.
+ */
+function parseModelPrices(sentence) {
+  const text = String(sentence);
+  const segment = /((?:S2|S4|S6|S8|SC)(?:\s*\/\s*(?:S2|S4|S6|S8|SC))*)\s*\$([\d,]+)/g;
+  const map = {};
+  let attributed = 0;
+
+  for (const m of text.matchAll(segment)) {
+    const value = money(m[2]);
+    for (const token of m[1].split('/').map((t) => t.trim())) {
+      if (token in map && map[token] !== value) {
+        return { err: `attributes both $${map[token]} and $${value} to ${token}` };
+      }
+      map[token] = value;
+    }
+    attributed += 1;
+  }
+
+  const figures = dollarsIn(text);
+  if (figures.length !== attributed) {
+    return {
+      err: `names ${figures.length} dollar figure(s) but only ${attributed} could be attributed `
+        + 'to a model. Write it as "MODEL[/MODEL...] $N" segments, e.g. '
+        + '"varies by model (S2/S4 $5,000, S6/S8/SC $6,000)", so each price has an owner',
+    };
+  }
+  return { map };
+}
+
 function checkAdvisorProductsProjection(canonical) {
   console.log('\n--- advisor price sheet vs canonical (netlify/functions/data/products.json) ---');
   console.log(`  advisor   ${PRODUCTS_FILE}`);
@@ -595,9 +642,30 @@ function checkAdvisorProductsProjection(canonical) {
         .sort((a, b) => a - b);
       const said = [...new Set(dollarsIn(line.price))].sort((a, b) => a - b);
       if (mode === 'enumerating') {
-        ok(JSON.stringify(said) === JSON.stringify(canon),
-          `advisor addon "${line.name}" enumerates ${JSON.stringify(said)} === canonical `
-          + `distinct per-model values ${JSON.stringify(canon)}`);
+        const parsed = parseModelPrices(line.price);
+        if (parsed.err) {
+          ok(false, `advisor addon "${line.name}" price sentence ${JSON.stringify(line.price)} `
+            + `${parsed.err}. An unparseable per-model sentence cannot be attributed, and an `
+            + 'unattributed price is an ungated price.');
+          continue;
+        }
+        const canonMap = Object.fromEntries(Object.entries(opt.pricePerModel)
+          .filter(([, v]) => typeof v === 'number'));
+        const wrong = [];
+        for (const [model, want] of Object.entries(canonMap)) {
+          if (!(model in parsed.map)) wrong.push(`${model} unstated (canonical $${want})`);
+          else if (parsed.map[model] !== want) wrong.push(`${model} says $${parsed.map[model]}, canonical $${want}`);
+        }
+        for (const model of Object.keys(parsed.map)) {
+          if (!(model in canonMap)) wrong.push(`${model} priced at $${parsed.map[model]} but canonical has no price for it`);
+        }
+        ok(wrong.length === 0,
+          wrong.length === 0
+            ? `advisor addon "${line.name}" attributes each model its canonical price `
+              + `(${Object.entries(canonMap).map(([k, v]) => `${k} $${v}`).join(', ')})`
+            : `advisor addon "${line.name}" MIS-ATTRIBUTES per-model prices: ${wrong.join('; ')}. `
+              + 'The set of figures can be right while every model is quoted the wrong one; the '
+              + 'AI advisor states this attribution to customers.');
       } else {
         const strays = said.filter((v) => !canon.includes(v));
         ok(strays.length === 0,
@@ -614,6 +682,24 @@ function checkAdvisorProductsProjection(canonical) {
       ok(names.has(mapped), `advisor addon "${group}" still carries the mapped line "${mapped}" `
         + '(a mapping whose line vanished is a check that stopped checking)');
     }
+  }
+
+  // A WHOLE GROUP can vanish and nothing above notices (Razor re-review NEW-2).
+  // The vanished-mapping guard lives INSIDE the per-group loop, and that loop
+  // walks products.json's own keys -- so deleting `exteriorCladding` outright
+  // deletes the only iteration that would have missed it. Every group the
+  // mapping tables describe must still be present, checked from the mapping
+  // side, which products.json cannot edit its way out of.
+  const MAPPED_GROUPS = new Set([
+    ...Object.keys(PRODUCTS_FIXED_LINES),
+    ...Object.keys(PRODUCTS_PROSE_LINES),
+    'premiumFinishPackage',
+  ]);
+  for (const group of MAPPED_GROUPS) {
+    ok(Object.prototype.hasOwnProperty.call(products.addons || {}, group),
+      `advisor addons still carries the mapped group "${group}" (a group deleted wholesale is `
+      + 'checked by nothing: the per-line guard only runs for groups that still exist, so the '
+      + 'advisor would simply stop offering priced options and the gate would stay green)');
   }
 
   // The package line states a RANGE, and both ends are money.

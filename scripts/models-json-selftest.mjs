@@ -204,6 +204,62 @@ const MUTATIONS = [
     file: JSDATA, from: '            exteriorYakisugi: 5000,\n', to: '',
     expect: 'S2 exteriorYakisugi: selecting it moved the TOTAL by 0',
   },
+
+  // ---------------------------------------------------------------------
+  // THE ADVISOR SHEET'S REMAINING BRANCHES (Razor re-review NEW-3). M14 covers
+  // exactly one of them -- a model fact. The fixed-price lines, the prose
+  // lines, a vanished group and the package range/savings were all reachable
+  // only by reading the code and believing it. These four are their battery.
+  // ---------------------------------------------------------------------
+  {
+    name: 'M17 a FIXED advisor add-on price drifts from canonical',
+    proves: 'the per-line fixed-price branch. M14 only ever exercised a model FACT; every '
+      + 'priced add-on line in the advisor sheet went through a different assertion that '
+      + 'nothing had broken on purpose',
+    file: PRODUCTS, from: '{ "name": "3\' Changing Room", "price": 11000 }',
+    to: '{ "name": "3\' Changing Room", "price": 10000 }',
+    expect: 'advisor addon "3\' Changing Room": 10000 === canonical 11000',
+  },
+  {
+    name: 'M18 THE ATTRIBUTION PERMUTATION: the exterior sentence swaps which models '
+      + 'get which price',
+    proves: 'Razor re-review NEW-1, and it is the one the old check could not see. The set '
+      + 'of figures is UNCHANGED -- still {5000, 6000} -- so the previous set-equality '
+      + 'assertion reported green while the AI advisor told S2 and S4 customers their '
+      + 'yakisugi cladding costs $6,000 and SC customers theirs costs $5,000',
+    file: PRODUCTS,
+    from: '"price": "varies by model (S2/S4 $5,000, S6/S8/SC $6,000)"',
+    to: '"price": "varies by model (S2/S4 $6,000, S6/S8/SC $5,000)"',
+    expect: 'advisor addon "Yakisugi (charred cedar) exterior" MIS-ATTRIBUTES per-model prices',
+  },
+  {
+    name: 'M19 a whole advisor addon GROUP is deleted',
+    proves: 'Razor re-review NEW-2: the vanished-mapping guard lived inside the loop over '
+      + 'products.json\'s OWN keys, so deleting a group deleted the iteration that would '
+      + 'have caught it. The advisor simply stops offering cladding, and every surviving '
+      + 'assertion still passes',
+    file: PRODUCTS,
+    from: '"exteriorCladding": {', to: '"exteriorCladdingREMOVED": {',
+    expect: 'advisor addons still carries the mapped group "exteriorCladding"',
+  },
+  {
+    name: 'M20 the premium package range and its advertised saving both drift',
+    proves: 'the last two ungated advisor assertions. The package is the single line most '
+      + 'likely to be edited by hand for tone, and both the range ends and the "$500" in '
+      + 'the note are money a customer is quoted',
+    canonical: true, from: '"savings": 500,', to: '"savings": 750,',
+    expect: 'advisor premium finish note states the canonical saving $750',
+  },
+  {
+    name: 'M21 the advertised premium package RANGE stops matching canonical min/max',
+    proves: 'the range ends are the only package figures a customer sees before a quote, and '
+      + 'they live in a hand-written sentence in the advisor sheet. Nothing had ever broken '
+      + 'this assertion on purpose',
+    file: PRODUCTS,
+    from: '"price": "varies by model ($9,200-$12,500)"',
+    to: '"price": "varies by model ($9,200-$11,000)"',
+    expect: 'advisor premium finish package range',
+  },
 ];
 
 const abs = (rel) => path.join(REPO_ROOT, rel);
