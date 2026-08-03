@@ -1274,6 +1274,256 @@
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
       "range": "a5c07f7..8df11ac"
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"priceRange\": \"$22,500 - $57,000+\"",
+      "reason": "The sitewide LocalBusiness JSON-LD carries a priceRange whose low end is the S2 entry price. S2 moved 22500 -> 23500 in the Lee-ratified step-1 reprice, so the structured data moves with it. The high end ($57,000+) is SC, which is held at current list this step and is unchanged. Keyed on the whole priceRange pair rather than on \"22,500\" alone so the entry names this field and not any other price string in the block. One per page, on every page that emits head.njk.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"priceRange\": \"$23,500 - $57,000+\"",
+      "reason": "Its replacement. Same field, new S2 low end, SC high end untouched.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"@type\": \"ItemList\"",
+      "reason": "The /saunas/ ItemList JSON-LD states an offer price per model, rendered from src/_data/models.json, which models-json-roundtrip gates against canonical field by field. The S2 and S4 offers move with the reprice; this is one token carrying all five, so the whole block reads as changed. Keyed on \"@type\": \"ItemList\" rather than on the S2 offer price, because the sitewide LocalBusiness block in head.njk carries an OfferCatalog with the SAME price strings -- two nodes, and an entry keyed on the price would have been held in check by its count alone and could have absorbed the wrong one. The specificity check refused it and was right to. That head block is a separate declared change (the priceRange pair). Rendered on /saunas/, which /gallery/ also serves.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"@type\": \"ItemList\"",
+      "reason": "Its replacement: same single ItemList block, now carrying S2 23500 and S4 29500. S6/S8/SC offers unchanged, held pending step 2. Keyed on the block identity for the same reason as its removed twin.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "SPAN",
+      "kind": "text",
+      "contains": "From $22,500",
+      "reason": "The S2 ledger row price cell on /saunas/, rendered from src/_data/models.json priceDisplay, which the round-trip gate asserts carries exactly basePrice. Moves with the S2 reprice.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "SPAN",
+      "kind": "text",
+      "contains": "From $23,500",
+      "reason": "Its replacement, and the gate proves it still carries basePrice 23500 rather than merely being present.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "SPAN",
+      "kind": "text",
+      "contains": "$29,000",
+      "count": 4,
+      "reason": "The four S4 price spans that move together: the S4 ledger row cell (\"From $29,000\") plus the sauna modal's three pre-JS placeholders -- specPrice, summaryBase and summaryTotal -- which are the S4 default the modal opens on before modal.js repaints them from the model. Declared as ONE entry of count 4 rather than four entries, because \"From $29,000\" contains \"$29,000\" and two entries would race for the same node; the count is what pins the number of them. Four on /saunas/ and four on /gallery/, which carries the same modal.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "SPAN",
+      "kind": "text",
+      "contains": "$29,500",
+      "count": 4,
+      "reason": "Their replacements. Same four spans, S4 at 29500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "LABEL",
+      "path": "html/body/div/div/div/div/div/div/label",
+      "textHash": "f9967f248893c36c",
+      "reason": "THE YAKISUGI OPTION (6 tokens): a new radio in the modal's Exterior Cladding group -- label, input, the label span and its text, the price span and its text. Declared as a subtree rather than as six added nodes because two of them (the bare <label class=\"addon-option\"> and the <span class=\"addon-label\">) carry no attribute that distinguishes them from the twenty-odd other option rows, so no honest \"contains\" could name them; the specificity check refuses an entry held in check by its count alone, and it is right to. The input's value is the per-model TOKEN exteriorYakisugi, never a literal price: modal.js resolves it to the model's own figure (5000 on S2/S4, 6000 on S6/S8/SC) and repaints the visible span from the same field, which the round-trip gate verifies per model in a real browser. Hash MEASURED against the candidate build, not written by hand. Present on /saunas/ and /gallery/ at both widths.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "P",
+      "kind": "text",
+      "contains": "Finnish style construction starting at $22,500.",
+      "reason": "The homepage Standard Builds card, the one homepage carrier of the entry price. The sentence already ties the figure to the S2-through-SC range rather than to S4, so the standing open task (state/current.md: \"link $22,500 to S2 entry point, not $29K\") needed no re-attribution -- only the number moves. Nothing else in the sentence changes.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "P",
+      "kind": "text",
+      "contains": "Finnish style construction starting at $23,500.",
+      "reason": "Its replacement. S2 entry price, S2 attribution, same sentence.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Traditional construction with Western Red Cedar. Custom builds starting at $22,500.",
+      "reason": "The og:description DEFAULT in head.njk, used by the one page that supplies no description of its own. Carries the entry price, so it moves with S2.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Traditional construction with Western Red Cedar. Custom builds starting at $23,500.",
+      "reason": "Its replacement.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Compare our Finnish sauna models from the compact S2 ($22,500) to the commercial SC ($57,000+).",
+      "count": 3,
+      "reason": "The entry-price figure in src/saunas.njk -- the only route meta that names the model behind the figure, and it names S2, which is the one that moved. SC ($57,000+) is held and unchanged. Emitted on /saunas/ and /gallery/.. One front-matter `description` value reaches the page three times -- name=\"description\", property=\"og:description\" and name=\"twitter:description\" -- so one edit is three changed META nodes, which is what count 3 records. Only the price moves; the sentence is otherwise untouched.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Compare our Finnish sauna models from the compact S2 ($23,500) to the commercial SC ($57,000+).",
+      "count": 3,
+      "reason": "Its replacement in src/saunas.njk -- the only route meta that names the model behind the figure, and it names S2, which is the one that moved. SC ($57,000+) is held and unchanged. Emitted on /saunas/ and /gallery/.. Same three metas, S2 entry price at 23500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Western Red Cedar construction from $22,500.",
+      "count": 3,
+      "reason": "The entry-price figure in src/squamish.njk. One front-matter `description` value reaches the page three times -- name=\"description\", property=\"og:description\" and name=\"twitter:description\" -- so one edit is three changed META nodes, which is what count 3 records. Only the price moves; the sentence is otherwise untouched.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Western Red Cedar construction from $23,500.",
+      "count": 3,
+      "reason": "Its replacement in src/squamish.njk. Same three metas, S2 entry price at 23500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Custom builds from $22,500.",
+      "count": 3,
+      "reason": "The entry-price figure in src/vancouver.njk. One front-matter `description` value reaches the page three times -- name=\"description\", property=\"og:description\" and name=\"twitter:description\" -- so one edit is three changed META nodes, which is what count 3 records. Only the price moves; the sentence is otherwise untouched.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Custom builds from $23,500.",
+      "count": 3,
+      "reason": "Its replacement in src/vancouver.njk. Same three metas, S2 entry price at 23500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Mobile and permanent builds from $22,500.",
+      "count": 3,
+      "reason": "The entry-price figure in src/sea-to-sky.njk. One front-matter `description` value reaches the page three times -- name=\"description\", property=\"og:description\" and name=\"twitter:description\" -- so one edit is three changed META nodes, which is what count 3 records. Only the price moves; the sentence is otherwise untouched.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Mobile and permanent builds from $23,500.",
+      "count": 3,
+      "reason": "Its replacement in src/sea-to-sky.njk. Same three metas, S2 entry price at 23500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Western Red Cedar from $22,500.",
+      "count": 3,
+      "reason": "The entry-price figure in src/north-shore.njk. One front-matter `description` value reaches the page three times -- name=\"description\", property=\"og:description\" and name=\"twitter:description\" -- so one edit is three changed META nodes, which is what count 3 records. Only the price moves; the sentence is otherwise untouched.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Western Red Cedar from $23,500.",
+      "count": 3,
+      "reason": "Its replacement in src/north-shore.njk. Same three metas, S2 entry price at 23500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Cedar construction designed for alpine conditions. From $22,500.",
+      "count": 3,
+      "reason": "The entry-price figure in src/whistler.njk. One front-matter `description` value reaches the page three times -- name=\"description\", property=\"og:description\" and name=\"twitter:description\" -- so one edit is three changed META nodes, which is what count 3 records. Only the price moves; the sentence is otherwise untouched.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Cedar construction designed for alpine conditions. From $23,500.",
+      "count": 3,
+      "reason": "Its replacement in src/whistler.njk. Same three metas, S2 entry price at 23500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
     }
   ],
   "_notes": {
@@ -1292,6 +1542,8 @@
     "stage3": "Jen Stage 3 final polish, range-scoped to c41dec1..2a23c8d. Sixteen items shipped; only FOUR touch delivered markup and all four are declared here. The other twelve (F1 tracking, F6/(c) hero pair, F7 inputs, F10 white->ink, F11 pin colours, (d) stat-number, C26/C27 error token, C4 CTA alignment) are CSS-only and produce no DOM delta -- confirmed by measurement, not assumed: they do not appear in the residual at all. C34's hamburger glyph is a runtime textContent swap and this check runs with scripts disabled, so it is correctly invisible here; C2's footer fix is CSS-only for the same reason. The 22 FAQ text entries are declared one question at a time with exact strings rather than as a count of eleven anonymous moves, because 'eleven texts changed somewhere on this page' is not a declaration of which.",
     "b1JsRunFailure": "Wave B-1 batch B1 (hero-first reveal) reports a JS RUN FAILURE against fc65d61, and it is expected rather than waived. This instrument certifies DELIVERED MARKUP with scripts disabled and refuses to vouch for a comparison whose client JavaScript changed; B1 necessarily edits js/animations.js (SETTLE_MS retarget, the load-in ordering, the escape hatch), so the run failure is structural to the batch and cannot be designed away -- the same shape as the precedent recorded on the B3 modal delete-subtree entry (commit 24768c6, \"the JS RUN FAILURE on this run is expected and waived nowhere -- js/modal.js changes by design\"). That entry is cited by its COMMIT, not by a line number: this sentence previously read \":650 narrative\" and had already gone stale -- line 650 of this file is now part of B1's own LCP preload entry, so the citation pointed at unrelated text. Same defect class as B5's N-2 ruling on styles.css line numbers in comments, in a config rather than a stylesheet: a line number is not a stable address and must not be used as one. The markup half IS certified: the six declarations above consumed 1 each per page/width across both widths and no undeclared change remains. The behavioural half is certified by the events suite, which drives the real built site in a real browser -- 64 passing as of 2026-08-02 (was 56 earlier the same day, and 49 when this note was written; B1 re-review, B5, and the hero graceful-cancel added fixtures since, and the figure is re-read from the suite rather than carried forward), including the agreement fixture, the LCP invariant (the hero <img> is never a reveal target), the Tab-during-the-beat fixtures, and the untouched anti-lock invariants. The agreement fixture's contract CHANGED on 2026-08-02 when the hold moved out of `transition-delay` and into the reveal clock: it was `computed transition delay + duration === SETTLE_MS`, and it is now three terms -- `SSC.reveal.holdMs === the computed --hero-hold` (the JS reads the token rather than copying it), the held pair's computed delay is its ORDINARY stagger and nothing more, and hold + delay + duration === SETTLE_MS. A fourth fixture asserts the hold BEHAVIOURALLY (nothing over the photograph at 900ms, both arrived by the boundary), because a computed style can no longer see a scheduled grant; mutations M14-M16 are what prove that fixture can fail. Read the two instruments together; do not read a dom-integrity PASS as covering the script.",
     "b1Range": "How to reproduce Wave B-1 batch B1's markup certificate, and why its range ends where it does. The six B1 entries are range-scoped fc65d61..c3ed9cd, and entries apply only when the RUN's candidate sha matches the range end -- so the certifying invocation is `node scripts/dom-integrity.mjs --baseline fc65d61 --candidate c3ed9cd`, with the config read from the working tree. c3ed9cd is the last B1 commit that changes delivered markup; the commits after it touch only scripts/, configs and ROADMAP.md, none of which reach a template or a hashed asset, so they produce byte-identical dist HTML. (Within the batch as a whole that is NOT true of the eighteen non-home pages: styles.css and js/ changed, so their ?v= cache-bust stamps moved. The dom-integrity instrument normalizes that stamp -- see _notes.volatile -- which is why those pages still compare identical.) Running with the default candidate WORKING reports the six as undeclared, which is the range mechanism behaving correctly, not a regression -- a declaration that stayed live past the commits it describes is the 'load-bearing forever' failure the scope rule at _notes.scope exists to prevent. The next batch baselines on B1's tip, where these entries correctly go inert.",
-    "glyphPrune": "The four /saunas/ tick-and-cross entries (range 83421b9..dec32ac) each carry a `_b4FixtureCheck` field recording B4's zero-reference grep result. They are prunable and their subject markup is gone as of B4. B6 prunes them. DONE 2026-08-02 (B6): the four entries are pruned, whitelist 116 -> 112. The recorded zero-reference result was RE-VERIFIED here rather than trusted -- `grep -rlF` for `class=\"check\"` and `class=\"x\"` across scripts/ (excluding this file), src/, js/ and dist/ returns nothing, and the styles.css rules that carried them (.comparison-list .check / .x) are deleted in the same batch's dead-CSS sweep. CONTRAST with the WP-1a four, which STAY: those are referenced BY fixtures as test data, so pruning them would delete a fixture's input, not a stale waiver. The discipline is the same in both cases -- run the grep, then act on what it says."
+    "glyphPrune": "The four /saunas/ tick-and-cross entries (range 83421b9..dec32ac) each carry a `_b4FixtureCheck` field recording B4's zero-reference grep result. They are prunable and their subject markup is gone as of B4. B6 prunes them. DONE 2026-08-02 (B6): the four entries are pruned, whitelist 116 -> 112. The recorded zero-reference result was RE-VERIFIED here rather than trusted -- `grep -rlF` for `class=\"check\"` and `class=\"x\"` across scripts/ (excluding this file), src/, js/ and dist/ returns nothing, and the styles.css rules that carried them (.comparison-list .check / .x) are deleted in the same batch's dead-CSS sweep. CONTRAST with the WP-1a four, which STAY: those are referenced BY fixtures as test data, so pruning them would delete a fixture's input, not a stale waiver. The discipline is the same in both cases -- run the grep, then act on what it says.",
+    "reprice1JsRunFailure": "The base-price reprice step 1 (S2 22500 -> 23500, S4 29000 -> 29500, the yakisugi exterior, commit 9941997) reports a JS RUN FAILURE against 62e533a, and it is expected rather than waived -- the same shape as the precedent recorded at _notes.b1JsRunFailure and on the B3 modal delete-subtree entry (commit 24768c6). The batch necessarily edits js/data.js (two basePrice values, pricesVersion 3, the new per-model exteriorYakisugi field) and js/modal.js (the yakisugi token in PER_MODEL_PRICE_KEYS and its setPrice repaint), so the boundary crossing is structural to the batch and cannot be designed away. THE MARKUP HALF IS CERTIFIED: the 25 declarations above consumed exactly their declared counts across all 38 page/width comparisons, every page reports 'identical ... (declared)', and no undeclared change remains. THE SCRIPT HALF IS CERTIFIED BY A DIFFERENT INSTRUMENT, and this is the important half to read: scripts/models-json-roundtrip.mjs drives the real built site in a real browser with JavaScript ENABLED, opens the configurator modal for all five models, and asserts every resolved option price -- including exterior_yakisugi at 5000 on S2/S4 and 6000 on S6/S8/SC -- and every base price against the canonical sheet. That is precisely the script-rendered content dom-integrity disclaims, and it is where the per-model token resolution is actually proven; the yakisugi price exists in no markup literal at all, so a scripts-disabled certificate could never have covered it. scripts/prices-version.test.mjs independently hashes the same resolved surface in a real browser and refuses a moved price without a version bump. Read the three instruments together; do not read a dom-integrity PASS as covering the script, and do not read this run failure as an uncertified change.",
+    "reprice1Range": "How to reproduce the reprice step-1 markup certificate. The 25 entries are range-scoped 62e533a..9941997, so the certifying invocation is `node scripts/dom-integrity.mjs --baseline 62e533a --candidate 9941997`, with the config read from the working tree. 9941997 is the last commit in the batch that changes delivered markup; the commit that adds these declarations touches only this config, which reaches no template and no hashed asset, so it produces byte-identical dist HTML and the entries stay live through descendant activation (see _notes.scope) rather than needing a hand re-point. Baselining on 62e533a rather than on main is deliberate and is what makes the certificate mean anything: main does not yet carry Wave B-1, so a run against it reports the whole unmerged wave -- roughly 400 changes per page -- and this batch's 25 real changes would be invisible inside it. A certificate whose diff is dominated by somebody else's work certifies nothing."
   }
 }
