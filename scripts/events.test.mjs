@@ -294,6 +294,56 @@ const NAV_FADE_PROBE = `
   })();
 `;
 
+/**
+ * THE PRE-READY WINDOW (Razor W-1), made deterministic.
+ *
+ * The escape hatch binds at DOMContentLoaded; `.reveal-ready` -- the class both
+ * `.reveal--quick` rules are gated on -- lands a double rAF later. In the field
+ * that gap is 53-168ms and, in the code's own words, "unbounded in a rAF-starved
+ * tab". An input inside it used to hit elements no transition rule matched, and
+ * composing them was a snap.
+ *
+ * RACING that window from the test side is not good enough. Locally the gap is
+ * 5-15ms, so a fixture that fires at DOMContentLoaded+0 and hopes lands on the
+ * POST-ready path most runs and passes while proving nothing -- the vacuous-green
+ * failure this suite guards against elsewhere.
+ *
+ * So the window is forced open instead: requestAnimationFrame is throttled to
+ * 150ms, which makes the double rAF ~300ms wide. That is not a synthetic
+ * contrivance, it is the starved tab the comment names, and it is the case with
+ * the widest exposure. The fixture then ASSERTS it actually landed pre-ready
+ * before asserting anything else, so a future change that closes the gap turns
+ * this red rather than quietly green.
+ */
+const STARVED_RAF_PROBE = `
+  window.__pre = { fire: null, wasPreReady: null, s: [] };
+  (function () {
+    var raf = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = function (cb) {
+      return window.setTimeout(function () { cb(performance.now()); }, 150);
+    };
+    document.addEventListener('DOMContentLoaded', function () {
+      window.setTimeout(function () {
+        window.__pre.fire = performance.now();
+        window.__pre.wasPreReady =
+          !document.documentElement.classList.contains('reveal-ready');
+        window.dispatchEvent(new Event('scroll'));
+      }, 20);
+    });
+    var tick = function () {
+      var n = document.querySelector('nav');
+      if (n) {
+        window.__pre.s.push({
+          t: performance.now(),
+          o: parseFloat(getComputedStyle(n).opacity),
+        });
+      }
+      raf(tick);
+    };
+    raf(tick);
+  })();
+`;
+
 const readEvents = (page) => page.evaluate(
   () => JSON.parse(sessionStorage.getItem('__ssc_events') || '[]'));
 
@@ -1034,6 +1084,49 @@ async function runInventory(base, browser) {
     await page.close();
   }
 
+  {
+    // INPUT BEFORE THE CHOREOGRAPHY IS ARMED (Razor W-1).
+    //
+    // The hatch binds two frames before `.reveal-ready`, on purpose -- that gap
+    // is exactly when an impatient returning visitor acts, and leaving it
+    // unlistened was a bug this batch already fixed once. But the cancel's fade
+    // is gated on `.reveal-ready`, so for the length of the gap the release had
+    // nothing to fade WITH and snapped. Razor measured it: zero intermediate
+    // frames at 0-40ms, fades only from 80ms on.
+    //
+    // The fix latches a pre-ready release and composes it on the first frame in
+    // which a fade is possible. What that buys is asserted here as pixels, not
+    // as state: the nav must pass through real intermediate opacities, and the
+    // fade must be the SHORT one -- an upper bound, because the most likely
+    // regression is not "no fade" but "the 1000ms fade", which is what a second
+    // writer racing the deferred compose produced during development.
+    const page = await newPage(browser);
+    await page.addInitScript(STARVED_RAF_PROBE);
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2600);
+    const w = await page.evaluate(() => window.__pre);
+    const after = w.fire === null ? [] : w.s.filter((s) => s.t >= w.fire);
+    const mid = after.filter((s) => s.o > 0.01 && s.o < 0.99);
+    const first = after.find((s) => s.o > 0.01);
+    const done = after.find((s) => s.o >= 0.999);
+    const fadeMs = (first && done) ? Math.round(done.t - first.t) : null;
+    check('the pre-ready fixture actually lands in the window it is about',
+      w.wasPreReady === true,
+      `the input fired with .reveal-ready already present, so this fixture `
+      + `exercised the ordinary post-ready path and proves nothing about the gap`);
+    check('an input before the choreography is armed still FADES, never snaps',
+      mid.length >= 3 && !!done,
+      `nav passed through ${mid.length} intermediate opacities after a pre-ready `
+      + `input and ${done ? 'did' : 'did NOT'} reach full opacity. Fewer than three `
+      + `is a snap -- the release composed elements that no transition rule matched`);
+    check('and the pre-ready fade is the SHORT one, not the full reveal',
+      fadeMs !== null && fadeMs >= 150 && fadeMs <= 600,
+      `the pre-ready fade took ${fadeMs}ms. Above ~600 means .reveal--quick lost `
+      + `the race and the element is running the 1000ms reveal instead -- the same `
+      + `hijack this batch removed, arriving from a second writer`);
+    await page.close();
+  }
+
   // --- the payload contract, across everything collected ---------------
   {
     const pii = Object.values(PII).map((v) => v.toLowerCase());
@@ -1568,6 +1661,53 @@ const MUTATIONS = [
         () => parseFloat(getComputedStyle(document.querySelector('nav')).opacity));
       await page.close();
       return opacity !== 0;
+    },
+  },
+  // ---- the pre-ready window (Razor W-1) ---------------------------------
+  {
+    name: 'M17 pre-ready release composes immediately',
+    proves: 'a cancel inside the DCL-to-reveal-ready gap snapping is detected',
+    // The exact defect Razor found: the guard removed, so a release that lands
+    // before `.reveal-ready` composes elements that no transition rule matches.
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      "if (!document.documentElement.classList.contains('reveal-ready')) {",
+      'if (false) {'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.addInitScript(STARVED_RAF_PROBE);
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2600);
+      const w = await page.evaluate(() => window.__pre);
+      await page.close();
+      if (w.fire === null || w.wasPreReady !== true) return false;
+      const after = w.s.filter((s) => s.t >= w.fire);
+      return after.filter((s) => s.o > 0.01 && s.o < 0.99).length < 3;
+    },
+  },
+  {
+    name: 'M18 the deferred pre-ready compose drops the short duration',
+    proves: 'the latched fade running at the FULL reveal length is detected',
+    // Distinct from M15, which mutates the POST-ready release. This is the
+    // deferred path, and it is the one that actually regressed during
+    // development: a second init() call composed without the quick class and
+    // Chrome updated the running transition rather than replacing it, so the
+    // fade took 914ms while the computed duration read 0.35s.
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      'deferAFrame(() => this.compose(held, true));',
+      'deferAFrame(() => this.compose(held, false));'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.addInitScript(STARVED_RAF_PROBE);
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2600);
+      const w = await page.evaluate(() => window.__pre);
+      await page.close();
+      if (w.fire === null || w.wasPreReady !== true) return false;
+      const after = w.s.filter((s) => s.t >= w.fire);
+      const first = after.find((s) => s.o > 0.01);
+      const done = after.find((s) => s.o >= 0.999);
+      if (!first || !done) return true;
+      return (done.t - first.t) > 600;
     },
   },
 ];

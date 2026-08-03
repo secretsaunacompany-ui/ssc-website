@@ -104,6 +104,17 @@
         return ms;
     }
 
+    // One frame, with the same fallback shape init.js uses for its double rAF:
+    // a browser without requestAnimationFrame still has to compose the page,
+    // and a setTimeout(0) there is a worse fade rather than no content.
+    const deferAFrame = (fn) => {
+        if (typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(fn);
+        } else {
+            window.setTimeout(fn, 0);
+        }
+    };
+
     /**
      * The held pair, named in ONE place.
      *
@@ -156,6 +167,12 @@
             this.holdMs = null;
             this.holdTimer = null;
             this.holdReleased = false;
+            // A release that arrived BEFORE `.reveal-ready`, waiting for the
+            // frame in which a fade is actually possible. Once set it is never
+            // cleared: it is the claim that ONLY the deferred quick compose may
+            // write the held pair. See releaseHold and scheduleHold.
+            this.pendingQuick = false;
+            this.quickScheduled = false;
         }
 
         /**
@@ -206,7 +223,42 @@
             // at DOMContentLoaded and init() is two frames later, so this is a
             // real window and it is exactly when an impatient visitor acts.
             if (this.holdReleased) {
-                this.compose(held, false);
+                if (this.pendingQuick) {
+                    // EXACTLY ONE WRITER, and it took a second instance of the
+                    // batch's own bug to see why. init() runs twice -- once at
+                    // DOMContentLoaded and again on window load. The first call
+                    // deferred the quick compose by a frame; the second call
+                    // arrived in between, found `pendingQuick` already consumed,
+                    // and took the plain branch -- so `.seen` landed alone at
+                    // t=272 with a 1000ms transition, and the deferred
+                    // `.reveal--quick` arrived one frame later at t=292 into a
+                    // transition that was already running. Chrome UPDATED it
+                    // rather than replacing it, computed duration read 0.35s,
+                    // and the fade took 914ms. That is the same hijack this
+                    // whole batch exists to remove, reintroduced by a second
+                    // caller rather than by a pending delay.
+                    //
+                    // So `pendingQuick` is never cleared -- it means "this
+                    // release happened pre-ready, and ONLY the deferred quick
+                    // compose may write these elements" -- and `quickScheduled`
+                    // makes the scheduling itself idempotent.
+                    //
+                    // ONE FRAME, and it is load-bearing rather than defensive.
+                    // `.reveal-ready` was added by startReveal in THIS task, so
+                    // its transition is not in the before-change style yet. A
+                    // transition whose property becomes applicable in the same
+                    // style change as the value change does not run -- compose
+                    // here and the fade we deferred in order to get would snap
+                    // anyway, one task later. Waiting a frame lets the armed
+                    // transition resolve first, so `.seen` is an ordinary value
+                    // change against it.
+                    if (!this.quickScheduled) {
+                        this.quickScheduled = true;
+                        deferAFrame(() => this.compose(held, true));
+                    }
+                } else {
+                    this.compose(held, false);
+                }
                 return;
             }
             // init() runs again on window load. One beat, one timer.
@@ -245,6 +297,36 @@
             if (this.holdTimer !== null) {
                 window.clearTimeout(this.holdTimer);
                 this.holdTimer = null;
+            }
+            // THE PRE-READY WINDOW (Razor W-1).
+            //
+            // Both `.reveal--quick` rules are gated on `.js.reveal-ready`,
+            // because that class is what arms transitions at all. The hatch,
+            // deliberately, binds one double-rAF EARLIER than that -- 53-168ms
+            // in the field and unbounded in a starved tab -- so an input can
+            // land when no transition rule matches the held pair. Composing
+            // then is a snap, which is the one outcome Lee ruled out. Measured
+            // before this guard: zero intermediate frames at 0-40ms, fades from
+            // 80ms on.
+            //
+            // Rejected: a `.js:not(.reveal-ready)` quick rule. That arms a
+            // transition before the double rAF has committed the hidden state,
+            // which is the visible-to-hidden animation init.js's ordering
+            // exists to prevent -- and it would not even fade, for the
+            // same before-change-style reason noted in scheduleHold.
+            //
+            // Rejected: documenting the exception. This window is not an edge
+            // of the feature, it is the window the early bind was added to
+            // serve; a hole there is a hole in the point.
+            //
+            // So the release LATCHES and the compose moves to the first frame
+            // in which a fade is possible. The visitor waits out the remainder
+            // of a gap they were already inside, and then sees a fade instead
+            // of a flash. `holdReleased` is set above regardless, so the beat
+            // is over either way and the scheduled grant cannot resurrect it.
+            if (!document.documentElement.classList.contains('reveal-ready')) {
+                this.pendingQuick = true;
+                return;
             }
             this.compose(heldTargets(), true);
         }
