@@ -163,19 +163,23 @@ const DETERMINISM_CSS = `
      along with the class. The events suite asserts the class cannot come back
      ("no scroll-lock class or style survives on the body"), so this is a pin
      with a fixture standing behind its absence rather than a pin removed on the
-     assumption nothing needs it. B1 is the batch that re-examined the hold, and
-     it deliberately reintroduces no lock of any kind: the hold is a withheld
-     .seen class, and the first scroll gesture always works. (NOTE: this block
-     is a JS template literal -- no backticks in these comments, or the string
-     terminates here and the whole capture module throws on import. It did.)
-     It was a
-     transition-delay until 2026-08-02, when the hold moved into the reveal
-     clock so an early gesture could fade the held pair in rather than snap it.
-     Either way it is a hold and never a lock, which is the claim this pin's
-     absence rests on. The two opacity pins ABOVE are what keep the capture
-     deterministic across that change -- they force the held pair visible
-     whatever is or is not withholding it, which is why the 2026-08-02 move
-     produced byte-identical numbers on all 38 page/width rows. */
+     assumption nothing needs it.
+
+     B1 is the batch that re-examined the hold, and it deliberately reintroduces
+     no lock of any kind: the hold was a transition-delay until 2026-08-02, when
+     it moved into the reveal clock (a withheld .seen class) so an early gesture
+     could fade the held pair in rather than snap it. Either way it is a hold and
+     never a lock, and the first scroll gesture always works -- which is the
+     claim this pin's absence rests on.
+
+     The two opacity pins ABOVE are what keep the capture deterministic across
+     that change: they force the held pair visible whatever is or is not
+     withholding it, which is why the move produced byte-identical numbers on all
+     38 page/width rows.
+
+     NOTE: this block is inside a JS template literal. No backticks in these
+     comments, or the string terminates here and the whole capture module throws
+     on import. That happened once already this batch. */
   /* Parallax: SSC.initHeroParallax writes a scroll-position-dependent inline
      style on every scroll event, so each target lands wherever scrolling
      stopped. Pin them to their untransformed positions. A stylesheet

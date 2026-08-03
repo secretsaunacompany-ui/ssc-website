@@ -1055,7 +1055,7 @@
       "reason": "Nav mark, un-pinned. The responsive transform's logo skip-rule stopped handing the mark back untouched and now pins w_192. \"No srcset\" used to also mean \"no width\", so every page fetched the ORIGINAL: CircleWhite2025 is 1257x1251 and FINAL_LOGO_TEXT1.1 is 1920x953, both for a mark that renders at about 48px of chrome. A responsive candidate list is still the wrong tool for a fixed-size mark, so the fix is a single small derivative rather than a srcset. Sitewide by construction: the nav and the footer are includes, so this is one edit seen on all 19 routes.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "added",
@@ -1064,7 +1064,7 @@
       "reason": "Nav mark, pinned to w_192. The responsive transform's logo skip-rule stopped handing the mark back untouched and now pins w_192. \"No srcset\" used to also mean \"no width\", so every page fetched the ORIGINAL: CircleWhite2025 is 1257x1251 and FINAL_LOGO_TEXT1.1 is 1920x953, both for a mark that renders at about 48px of chrome. A responsive candidate list is still the wrong tool for a fixed-size mark, so the fix is a single small derivative rather than a srcset. Sitewide by construction: the nav and the footer are includes, so this is one edit seen on all 19 routes.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "removed",
@@ -1073,7 +1073,7 @@
       "reason": "Footer mark, un-pinned. The responsive transform's logo skip-rule stopped handing the mark back untouched and now pins w_192. \"No srcset\" used to also mean \"no width\", so every page fetched the ORIGINAL: CircleWhite2025 is 1257x1251 and FINAL_LOGO_TEXT1.1 is 1920x953, both for a mark that renders at about 48px of chrome. A responsive candidate list is still the wrong tool for a fixed-size mark, so the fix is a single small derivative rather than a srcset. Sitewide by construction: the nav and the footer are includes, so this is one edit seen on all 19 routes.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "added",
@@ -1082,7 +1082,7 @@
       "reason": "Footer mark, pinned to w_192. The responsive transform's logo skip-rule stopped handing the mark back untouched and now pins w_192. \"No srcset\" used to also mean \"no width\", so every page fetched the ORIGINAL: CircleWhite2025 is 1257x1251 and FINAL_LOGO_TEXT1.1 is 1920x953, both for a mark that renders at about 48px of chrome. A responsive candidate list is still the wrong tool for a fixed-size mark, so the fix is a single small derivative rather than a srcset. Sitewide by construction: the nav and the footer are includes, so this is one edit seen on all 19 routes.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "removed",
@@ -1091,7 +1091,7 @@
       "reason": "home :54 (also seen on / only): URL before normalization, no srcset. A hand-written EXIF rotation (a_90) used to make the URL fail the transform's shape test, so the image silently opted OUT of responsive delivery and the browser fetched the full-size original -- the correction that made the photograph the right way up was also the thing making it enormous. The transform now tolerates a leading angle and carries it into every candidate, so this element gains the srcset/sizes pair and a w_800 src exactly like every other photograph on the site. No pixel moves: same element, same box, same rendered orientation, fewer bytes.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "added",
@@ -1100,7 +1100,7 @@
       "reason": "home :54 (also seen on / only): URL after normalization, srcset + sizes present. A hand-written EXIF rotation (a_90) used to make the URL fail the transform's shape test, so the image silently opted OUT of responsive delivery and the browser fetched the full-size original -- the correction that made the photograph the right way up was also the thing making it enormous. The transform now tolerates a leading angle and carries it into every candidate, so this element gains the srcset/sizes pair and a w_800 src exactly like every other photograph on the site. No pixel moves: same element, same box, same rendered orientation, fewer bytes.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "removed",
@@ -1109,7 +1109,7 @@
       "reason": "about :27 (and /process/, which redirects to it): URL before normalization, no srcset. A hand-written EXIF rotation (a_90) used to make the URL fail the transform's shape test, so the image silently opted OUT of responsive delivery and the browser fetched the full-size original -- the correction that made the photograph the right way up was also the thing making it enormous. The transform now tolerates a leading angle and carries it into every candidate, so this element gains the srcset/sizes pair and a w_800 src exactly like every other photograph on the site. No pixel moves: same element, same box, same rendered orientation, fewer bytes.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "added",
@@ -1118,7 +1118,7 @@
       "reason": "about :27 (and /process/, which redirects to it): URL after normalization, srcset + sizes present. A hand-written EXIF rotation (a_90) used to make the URL fail the transform's shape test, so the image silently opted OUT of responsive delivery and the browser fetched the full-size original -- the correction that made the photograph the right way up was also the thing making it enormous. The transform now tolerates a leading angle and carries it into every candidate, so this element gains the srcset/sizes pair and a w_800 src exactly like every other photograph on the site. No pixel moves: same element, same box, same rendered orientation, fewer bytes.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "removed",
@@ -1127,7 +1127,7 @@
       "reason": "about :95 (and /process/): URL before normalization, no srcset. A hand-written EXIF rotation (a_90) used to make the URL fail the transform's shape test, so the image silently opted OUT of responsive delivery and the browser fetched the full-size original -- the correction that made the photograph the right way up was also the thing making it enormous. The transform now tolerates a leading angle and carries it into every candidate, so this element gains the srcset/sizes pair and a w_800 src exactly like every other photograph on the site. No pixel moves: same element, same box, same rendered orientation, fewer bytes.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "added",
@@ -1136,7 +1136,7 @@
       "reason": "about :95 (and /process/): URL after normalization, srcset + sizes present. A hand-written EXIF rotation (a_90) used to make the URL fail the transform's shape test, so the image silently opted OUT of responsive delivery and the browser fetched the full-size original -- the correction that made the photograph the right way up was also the thing making it enormous. The transform now tolerates a leading angle and carries it into every candidate, so this element gains the srcset/sizes pair and a w_800 src exactly like every other photograph on the site. No pixel moves: same element, same box, same rendered orientation, fewer bytes.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "removed",
@@ -1145,7 +1145,7 @@
       "reason": "Mosaic card, eager. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "added",
@@ -1154,7 +1154,7 @@
       "reason": "Mosaic card, lazy. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "removed",
@@ -1163,7 +1163,7 @@
       "reason": "Mosaic card, eager. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "added",
@@ -1172,7 +1172,7 @@
       "reason": "Mosaic card, lazy. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "removed",
@@ -1181,7 +1181,7 @@
       "reason": "Mosaic card, eager. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "added",
@@ -1190,7 +1190,7 @@
       "reason": "Mosaic card, lazy. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "removed",
@@ -1199,7 +1199,7 @@
       "reason": "Mosaic card, eager. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "added",
@@ -1208,25 +1208,25 @@
       "reason": "Mosaic card, lazy. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "removed",
       "tag": "IMG",
       "contains": "a_90,w_600/v1768324972/PXL_20250605_233615654",
-      "reason": "Over-rotated. B7 stream 1. The a_90 on this mosaic card was OVER-APPLIED and is removed. Verified by rendering both derivatives rather than reasoned about: bare is upright (the heater stands on the floor, stones on top, firebox at the bottom, cedar wall vertical) and a_90 lays it on its side. It was the one template correction of the five that was wrong; the other four are correct and are untouched. Rotation only -- same element, same box.",
+      "reason": "Over-rotated. B7 stream 1. The a_90 on this mosaic card was OVER-APPLIED and is removed. Verified by rendering both derivatives rather than reasoned about: bare is upright (the heater stands on the floor, stones on top, firebox at the bottom, cedar wall vertical) and a_90 lays it on its side. It was the one template correction of the five that was wrong. TWO CORRECTIONS to this text, 2026-08-02/03, both because it asserted things nobody had checked. (1) It said 'the other four are correct and are untouched' -- FALSE, and that sentence is exactly what licensed leaving IMG_2891 unverified until Razor caught it 90 degrees off (fix C-1). Struck here as well as on the `added` twin, because a false claim is load-bearing wherever a reader meets it (Razor N1). (2) It said 'Rotation only -- same element, same box' -- false in the same way: removing a_90 flips the DELIVERED aspect from 600x452 to 600x797, so the box changed and this element's width/height attributes went stale on the spot and stayed stale for a full review cycle. Corrected by fix W-B, which rides inside this same declaration (see the `added` twin).",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "added",
       "tag": "IMG",
       "contains": "f_auto,w_600/v1768324972/PXL_20250605_233615654",
-      "reason": "Upright. B7 stream 1. The a_90 on this mosaic card was OVER-APPLIED and is removed. Verified by rendering both derivatives rather than reasoned about: bare is upright (the heater stands on the floor, stones on top, firebox at the bottom, cedar wall vertical) and a_90 lays it on its side. It was the one template correction of the five that was wrong; the other four are correct and are untouched. CORRECTED 2026-08-02 by fix C-1 below: 'the other four are correct' was FALSE. IMG_2891 was 90 degrees off and this entry's own claim is what licensed leaving it alone. Rotation only -- same element, same box.",
+      "reason": "Upright. B7 stream 1. The a_90 on this mosaic card was OVER-APPLIED and is removed. Verified by rendering both derivatives rather than reasoned about: bare is upright (the heater stands on the floor, stones on top, firebox at the bottom, cedar wall vertical) and a_90 lays it on its side. It was the one template correction of the five that was wrong. CORRECTED 2026-08-02 by fix C-1: 'the other four are correct and are untouched' was FALSE. IMG_2891 was 90 degrees off and this entry's own claim is what licensed leaving it alone. CORRECTED AGAIN 2026-08-03 by fix W-B (Razor): 'rotation only -- same element, same box' was false too. Removing a_90 flips the DELIVERED aspect from 600x452 to 600x797, so this element's width/height attributes went stale the moment the rotation came off. The height attribute is corrected to 797 INSIDE this declaration -- dom-integrity re-run at the advanced range reports it consuming 4x with ZERO undeclared changes, so no additional pair was needed and none was invented to look thorough. The general rule both C-1 and W-B are instances of: the declared aspect is a claim about the delivered derivative, so any edit to the transform is an edit to that claim. rhythm:test now asserts it across all 39 declared images.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "removed",
@@ -1235,7 +1235,7 @@
       "reason": "Sideways, and it had been sideways all along. B7 fix C-1 (Razor). This mosaic tile carried a PRE-EXISTING a_180 that stream 1 surveyed and passed over -- the entry above says in its own words that 'the other four are correct and are untouched', and that sentence is the whole reason this shipped wrong. It was not verified, only assumed. Rendered all four derivatives to settle it: the source is PORTRAIT, and a_180 keeps a landscape framing in which the bather lies horizontal, the loyly bucket pours sideways, and the window sits on the ceiling. Only a_-90 stands the photograph up. Paired with the `added` entry below; the alt text is deliberately unchanged (it is wrong, describing an exterior, but that is pre-existing, orthogonal to rotation, and copy belongs to George and Jen -- raised in the C-1 commit body rather than fixed past review).",
       "count": 1,
       "commit": "21d10d7 relay batch B7 fix C-1: IMG_2891 was 90 degrees off, at both sites",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "added",
@@ -1244,7 +1244,7 @@
       "reason": "Upright. B7 fix C-1 (Razor). a_-90 puts the bather on her feet, the loyly bucket opening up, the duckboard horizontal and the window at eye height. TWO attributes move together and both are in this token's element: the src angle, and height 400 -> 900. The height is FORCED by the rotation rather than added to it -- a_-90 delivers 600x900 where a_180 delivered 600x400, so leaving height=400 would declare a landscape reservation for a portrait asset. Its portrait siblings in this same mosaic already declare true dimensions (600x1068, 800x1067). Render-verified at 1440 on all three surfaces this image reaches: the mosaic tile (600x900 natural, attrs agree, object-fit cover), the gallery lightbox (object-fit contain, 510x765 box), and the S4 configurator modal and its thumbnail strip via the js/data.js twin at w_1200 (1200x1800 natural, index 2 of 7). The w_600 stays hard-coded, so this URL remains outside the responsive transform exactly as its mosaic siblings are; .eleventy.js's angle tolerance already accepts negatives (,a_-?\\d+).",
       "count": 1,
       "commit": "21d10d7 relay batch B7 fix C-1: IMG_2891 was 90 degrees off, at both sites",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "removed",
@@ -1253,7 +1253,7 @@
       "reason": "B7 stream 2b. /locations/ preloaded a 448.8KB image that NOTHING on the page renders -- verified by grep across src/, js/ and styles.css, where the URL appeared in the page's front matter and nowhere else. A preload for an element that does not exist is not a hint, it is a guaranteed extra download on every visit, and it was the single largest byte on the route. The page's LCP element is the map, which is script-driven and not preloadable this way, so there is no replacement preload.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "delete-subtree",
@@ -1263,7 +1263,7 @@
       "reason": "The essay, removed. B7 stream 4 (Jen's mini-spec). The comparison ESSAY becomes a comparison LEDGER: a one-paragraph lede over a five-row table with three source columns, the FAQ link beneath it, and the 60-side plate deleted. The section is rewritten wholesale rather than edited -- different element vocabulary, different depth, different child count -- so the honest declaration is a subtree pair, a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 110 lines of noise describing one replacement. Span 14 becomes span 93, well inside the 400 cap, so no split at children is needed. Every cell traces to a bullet in the three comparison cards as they stood at ab83ed6 (saunas.njk:110-163); two cells are deliberately empty because the source recorded no heat-retention claim for infrared and no evidence claim for barrels. LOSSY IN ONE DIRECTION, recorded 2026-08-02 (Razor N-5): that sentence says every CELL traces to a bullet, and it is true, but the converse is not. One source bullet did not survive the rewrite -- the infrared card's \"No authentic sauna experience\" (ab83ed6 saunas.njk:156) has no cell in any of the five rows. It is a verdict rather than a dimension, so there is no row it belongs to without inventing one, and the ledger's own argument already carries it: the heat row says infrared cannot make loyly and caps at 60C, which is the same claim stated as a fact instead of a judgement. Kept as a deliberate omission rather than restored, and named here so the next reader does not have to re-derive whether it was dropped on purpose. Jen ratifies either way; if she prefers it back it is a sixth row, not a sixth cell. The hashes match /saunas/ and its /gallery/ redirect capture, and nothing else on the site has a section at this path with this content.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     },
     {
       "op": "add-subtree",
@@ -1273,7 +1273,7 @@
       "reason": "The ledger, added. B7 stream 4 (Jen's mini-spec). The comparison ESSAY becomes a comparison LEDGER: a one-paragraph lede over a five-row table with three source columns, the FAQ link beneath it, and the 60-side plate deleted. The section is rewritten wholesale rather than edited -- different element vocabulary, different depth, different child count -- so the honest declaration is a subtree pair, a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 110 lines of noise describing one replacement. Span 14 becomes span 93, well inside the 400 cap, so no split at children is needed. Every cell traces to a bullet in the three comparison cards as they stood at ab83ed6 (saunas.njk:110-163); two cells are deliberately empty because the source recorded no heat-retention claim for infrared and no evidence claim for barrels. LOSSY IN ONE DIRECTION, recorded 2026-08-02 (Razor N-5): that sentence says every CELL traces to a bullet, and it is true, but the converse is not. One source bullet did not survive the rewrite -- the infrared card's \"No authentic sauna experience\" (ab83ed6 saunas.njk:156) has no cell in any of the five rows. It is a verdict rather than a dimension, so there is no row it belongs to without inventing one, and the ledger's own argument already carries it: the heat row says infrared cannot make loyly and caps at 60C, which is the same claim stated as a fact instead of a judgement. Kept as a deliberate omission rather than restored, and named here so the next reader does not have to re-derive whether it was dropped on purpose. Jen ratifies either way; if she prefers it back it is a sixth row, not a sixth cell. The hashes match /saunas/ and its /gallery/ redirect capture, and nothing else on the site has a section at this path with this content.",
       "count": 1,
       "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
-      "range": "a5c07f7..21d10d7"
+      "range": "a5c07f7..8df11ac"
     }
   ],
   "_notes": {

@@ -106,17 +106,26 @@ during the held beat gently fades the nav and title in rather than snapping them
 
 COUNTING, because the earlier wording made these look like contradictions and they are
 not. FOUR mechanisms were tried and failed (inline longhand overrides; rAF-separated
-retiming; pin-and-release; cancel-then-retime). They live in THREE commits, one of which
-— abfcc75 — was amended away rather than reverted, so it does not appear in the log and
-the reverted range reads shorter than the work. The "two-strike rule" that stopped the
+retiming; pin-and-release; cancel-then-retime). The "two-strike rule" that stopped the
 work is the name of the policy, not a count of attempts: it fired after the second
-strike, by which point four mechanisms had been tried across them.
+strike, by which point four mechanisms had been tried across them. That is the whole
+reconciliation of the 4-versus-2 discrepancy this entry used to carry.
+
+Do not go looking for the attempts in the log (Razor N7). An earlier version of this
+paragraph cited them by sha, including one that was amended away rather than reverted
+and so never existed in any reachable history. A citation the reader cannot check is
+worse than no citation, because it sends them hunting for a commit that is not there.
+What IS verifiable is the list of four mechanisms above, the fact that none survives in
+the working tree, and `js/animations.js`, which names each one at the point it would
+otherwise be reintroduced — which is where the next person actually needs the warning.
 
 ROOT CAUSE — corrected 2026-08-02 (Razor W-3), and the correction matters because the
 old story sent readers to the wrong place. This paragraph used to say the pending
 transition was "created because `animations.js` adds the `reveal` class to the nav after
 transitions are enabled, so the nav's hidden state arrives as a value change under a live
-transition." That is wrong. Traced against the pre-B7 build (93fab50) by snapshotting
+transition." That is wrong. Traced against `93fab50` — the last B7 commit BEFORE the hold
+was rewritten, and therefore the last state in which the old mechanism can be reproduced
+at all (Razor N6) — by snapshotting
 `nav.getAnimations()` on every class mutation:
 
     t=427  nav class -> "reveal"          anims=[]        <- no live transition
@@ -125,8 +134,11 @@ transition." That is wrong. Traced against the pre-B7 build (93fab50) by snapsho
                                                  transform dur=1000 delay=1600 running]
 
 The hidden state never arrived as a value change under a live transition; there was no
-transition to arrive under. The real cause is the pair that `js/animations.js:190-197`
-and `styles.css:344-349` already described correctly: the IntersectionObserver granted
+transition to arrive under. The real cause is the pair already described correctly by
+`RevealManager.scheduleHold`'s docblock in `js/animations.js` and by the `--hero-hold`
+token's comment in `styles.css` — named by their docblocks rather than by line numbers,
+per B5's N-2 ruling that a line number is not a stable address, and because the numbered
+citation this replaces had already drifted (Razor N5): the IntersectionObserver granted
 `.seen` almost immediately (the nav is above the fold — 54ms after `.reveal-ready`, not
 1600ms), and the CSS carried `transition-delay: 1600ms`, so the transition created at
 that moment sat in its DELAY PHASE for the length of the beat. When a cancel then changed
@@ -205,6 +217,34 @@ a box that is not 400px on a 2x display, so the popup photographs are soft. It i
 worth a hand-edit now — changing it by hand is another instance of the very thing this
 item says to stop doing — but the unification should let the generator choose the width
 from the rendered box, as it already does everywhere the Eleventy transform reaches.
+
+**IMG_2891's alt text describes a different photograph** — for the George/Jen copy pass.
+On `/saunas/` the mosaic tile and the lightbox behind it carry
+`alt="Completed sauna installation in residential backyard setting"`. The photograph is
+an INTERIOR: a bather ladling water, löyly bucket, window at eye height, cedar walls. The
+SUBJECT is wrong, not the wording, so this is not a tidy-in-place — a screen-reader
+visitor is told about an exterior that is not in the frame. Found during fix C-1 (where
+the image was also 90° off, which is fixed), and flagged rather than silently corrected:
+user-facing copy belongs to George and Jen, and a rotation fix is not the place to put
+new words past review.
+
+**`models-json:selftest` leaves the tree dirty only under SIGKILL** — and the version of
+this finding I filed first was wrong, which is why it is written out properly here rather
+than carried forward. I reported that the suite "has no trap handler". It has all of
+them: `snapshot()`/`restoreAll()`, SIGINT and SIGTERM handlers, an `uncaughtException`
+handler, a `finally { restoreAll() }`, and a closing check that every mutated file came
+back byte-identical. Reproduced both cases directly against the running script:
+
+    SIGTERM   handlers run       -> mutations restored, tree clean
+    SIGKILL   handlers bypassed  -> src/_data/models.json left mutated
+
+So the hazard is narrow and is NOT fixable in-script: a harness enforcing a timeout with
+SIGKILL cannot be trapped, and the run that bit us was exactly that — a 10-minute kill
+while the suite sat at the end of a long `for` loop. Operationally: give this suite an
+uninterrupted run of its own, and after ANY interrupted run check `git status` before
+trusting the next one. A leftover mutation makes the following run fail M0 ("the shipped
+tree is green before anything is broken") for a reason that has nothing to do with the
+code, which is precisely how it cost a cycle here.
 
 **The homepage video is 59MB and dwarfs everything else on the site** (Razor N-9). Its own
 named post-wave item, because it is pre-existing, it is NOT this wave's to fix, and it is
