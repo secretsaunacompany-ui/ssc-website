@@ -303,18 +303,41 @@ const NAV_FADE_PROBE = `
  * tab". An input inside it used to hit elements no transition rule matched, and
  * composing them was a snap.
  *
- * RACING that window from the test side is not good enough. Locally the gap is
- * 5-15ms, so a fixture that fires at DOMContentLoaded+0 and hopes lands on the
- * POST-ready path most runs and passes while proving nothing -- the vacuous-green
- * failure this suite guards against elsewhere.
+ * RACING that window from the test side is not good enough, and the first cut of
+ * this fixture did exactly that -- it fired on a bare 20ms timer and landed
+ * post-ready 5 runs in 6 with the CDN blocked (Razor W-A).
  *
- * So the window is forced open instead: requestAnimationFrame is throttled to
- * 150ms, which makes the double rAF ~300ms wide. That is not a synthetic
- * contrivance, it is the starved tab the comment names, and it is the case with
- * the widest exposure. The fixture then ASSERTS it actually landed pre-ready
- * before asserting anything else, so a future change that closes the gap turns
- * this red rather than quietly green.
+ * WHY it was racing is the interesting part, and it is not jitter. There are TWO
+ * entry points that set `.reveal-ready`: the double rAF from DOMContentLoaded,
+ * and the `load` handler at init.js:246 -- which exists precisely FOR the
+ * rAF-starved case, adding the class itself so no `.seen` can be granted with
+ * transitions unarmed. Throttling rAF therefore does not widen the window; it
+ * hands the race to `load`. Measured with the CDN blocked: DCL -> load 24ms,
+ * DCL -> ready 27ms. A 20ms timer against a 24ms gap is a coin toss, and the
+ * fixture was quietly testing the ordinary post-ready path most of the time.
+ *
+ * So BOTH routes to ready are held open, and the fixture stops depending on
+ * timing at all:
+ *
+ *   rAF is throttled to 150ms, making the double-rAF route ~300ms.
+ *   A pending subresource holds the `load` event, closing the other route.
+ *
+ * Neither is a contrivance. Together they are the slow-network, starved-tab
+ * visitor the code comments already name, which is the case with the widest
+ * exposure to this bug. The fixture still ASSERTS it landed pre-ready before
+ * asserting anything else, so if a future change closes the window this turns
+ * red rather than quietly green.
+ *
+ * WHAT THIS FIXTURE DOES NOT COVER, stated rather than implied (Razor N2):
+ * because rAF here IS a setTimeout, `deferAFrame` becomes a task boundary
+ * instead of a frame boundary, so this cannot test the one-frame claim in
+ * scheduleHold -- that composing in the same task as `.reveal-ready` would not
+ * transition. Razor verified that claim independently against both entry paths.
+ * What this fixture holds is the outcome: pre-ready input fades, at the short
+ * duration. The mechanism's frame ordering is held by review, not by this.
  */
+const SLOW_SUBRESOURCE = '/__pre-ready-probe.png';
+
 const STARVED_RAF_PROBE = `
   window.__pre = { fire: null, wasPreReady: null, s: [] };
   (function () {
@@ -323,6 +346,17 @@ const STARVED_RAF_PROBE = `
       return window.setTimeout(function () { cb(performance.now()); }, 150);
     };
     document.addEventListener('DOMContentLoaded', function () {
+      // Holds the load event open. An image request started here is still
+      // pending when the parser finishes, and load waits for it -- which takes
+      // init.js:246 out of the race and leaves the throttled double rAF as the
+      // only route to reveal-ready. The route backing this URL never resolves
+      // within the fixture's lifetime.
+      // (No backticks in this block: it is a JS template literal. Same trap
+      // that broke capture.mjs earlier in this batch.)
+      var hold = document.createElement('img');
+      hold.src = '${SLOW_SUBRESOURCE}';
+      hold.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0';
+      (document.body || document.documentElement).appendChild(hold);
       window.setTimeout(function () {
         window.__pre.fire = performance.now();
         window.__pre.wasPreReady =
@@ -343,6 +377,32 @@ const STARVED_RAF_PROBE = `
     raf(tick);
   })();
 `;
+
+/**
+ * Arms a page for the pre-ready scenario and returns its samples. Shared by the
+ * fixture and by M17/M18 so the three cannot drift into testing different
+ * setups -- the defect that made the first cut of this non-deterministic was in
+ * the setup, not in the assertions.
+ */
+async function runPreReadyScenario(base, browser) {
+  const page = await newPage(browser);
+  // Never resolves inside the fixture's lifetime, so `load` cannot fire and
+  // init.js's load-path shortcut to `.reveal-ready` is out of the race.
+  await page.route(`**${SLOW_SUBRESOURCE}`, () => {});
+  await page.addInitScript(STARVED_RAF_PROBE);
+  await page.goto(base, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(2600);
+  const w = await page.evaluate(() => window.__pre);
+  await page.close();
+  const after = w.fire === null ? [] : w.s.filter((s) => s.t >= w.fire);
+  return {
+    wasPreReady: w.wasPreReady,
+    fired: w.fire !== null,
+    mid: after.filter((s) => s.o > 0.01 && s.o < 0.99),
+    first: after.find((s) => s.o > 0.01),
+    done: after.find((s) => s.o >= 0.999),
+  };
+}
 
 const readEvents = (page) => page.evaluate(
   () => JSON.parse(sessionStorage.getItem('__ssc_events') || '[]'));
@@ -373,11 +433,34 @@ async function newEmulatedPage(browser, contextOptions) {
   return { page, close: async () => { await page.close(); await ctx.close(); } };
 }
 
+/**
+ * CDN-BLOCKED MODE, opt-in via SSC_TEST_BLOCK_CDN=1.
+ *
+ * Several fixtures in this file are timing-sensitive to whether Cloudinary is
+ * reachable, and they say so in their own comments -- the agreement fixture
+ * measured 11 red runs in 12 with the CDN blocked, and the pre-ready fixture
+ * landed outside its window 5 runs in 6. Both were found by someone who
+ * happened to be offline at the time.
+ *
+ * "Happened to be offline" is not a test mode. Without a switch, the harder and
+ * more revealing configuration is only ever exercised by accident, and the
+ * acceptance criterion "green with the CDN blocked" cannot be run on purpose by
+ * the next person. This makes it runnable:
+ *
+ *     SSC_TEST_BLOCK_CDN=1 npm run events:test
+ *
+ * Default behaviour is unchanged -- no route is added unless the flag is set.
+ */
+const BLOCK_CDN = process.env.SSC_TEST_BLOCK_CDN === '1';
+
 async function instrumentPage(page) {
   // The real tracker must not load here: it is cross-origin, it would publish
   // its own window.analyticsTracker over the recorder, and a passing suite
   // would then be posting test events at the production endpoint.
   await page.route('**ssc-ops.netlify.app/**', (route) => route.abort());
+  if (BLOCK_CDN) {
+    await page.route('**res.cloudinary.com/**', (route) => route.abort());
+  }
   await page.addInitScript(RECORDER + `
     window.analyticsTracker = {
       trackEvent: (type, data) => window.__record(type, data),
@@ -1100,18 +1183,10 @@ async function runInventory(base, browser) {
     // fade must be the SHORT one -- an upper bound, because the most likely
     // regression is not "no fade" but "the 1000ms fade", which is what a second
     // writer racing the deferred compose produced during development.
-    const page = await newPage(browser);
-    await page.addInitScript(STARVED_RAF_PROBE);
-    await page.goto(base, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(2600);
-    const w = await page.evaluate(() => window.__pre);
-    const after = w.fire === null ? [] : w.s.filter((s) => s.t >= w.fire);
-    const mid = after.filter((s) => s.o > 0.01 && s.o < 0.99);
-    const first = after.find((s) => s.o > 0.01);
-    const done = after.find((s) => s.o >= 0.999);
+    const { wasPreReady, mid, first, done } = await runPreReadyScenario(base, browser);
     const fadeMs = (first && done) ? Math.round(done.t - first.t) : null;
     check('the pre-ready fixture actually lands in the window it is about',
-      w.wasPreReady === true,
+      wasPreReady === true,
       `the input fired with .reveal-ready already present, so this fixture `
       + `exercised the ordinary post-ready path and proves nothing about the gap`);
     check('an input before the choreography is armed still FADES, never snaps',
@@ -1124,7 +1199,6 @@ async function runInventory(base, browser) {
       `the pre-ready fade took ${fadeMs}ms. Above ~600 means .reveal--quick lost `
       + `the race and the element is running the 1000ms reveal instead -- the same `
       + `hijack this batch removed, arriving from a second writer`);
-    await page.close();
   }
 
   // --- the payload contract, across everything collected ---------------
@@ -1673,15 +1747,12 @@ const MUTATIONS = [
       "if (!document.documentElement.classList.contains('reveal-ready')) {",
       'if (false) {'),
     run: async (base, browser) => {
-      const page = await newPage(browser);
-      await page.addInitScript(STARVED_RAF_PROBE);
-      await page.goto(base, { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(2600);
-      const w = await page.evaluate(() => window.__pre);
-      await page.close();
-      if (w.fire === null || w.wasPreReady !== true) return false;
-      const after = w.s.filter((s) => s.t >= w.fire);
-      return after.filter((s) => s.o > 0.01 && s.o < 0.99).length < 3;
+      const r = await runPreReadyScenario(base, browser);
+      // Not "detected" unless the scenario actually reached the window. A
+      // mutation that reports success because its setup missed is worse than
+      // no mutation.
+      if (!r.fired || r.wasPreReady !== true) return false;
+      return r.mid.length < 3;
     },
   },
   {
@@ -1696,18 +1767,10 @@ const MUTATIONS = [
       'deferAFrame(() => this.compose(held, true));',
       'deferAFrame(() => this.compose(held, false));'),
     run: async (base, browser) => {
-      const page = await newPage(browser);
-      await page.addInitScript(STARVED_RAF_PROBE);
-      await page.goto(base, { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(2600);
-      const w = await page.evaluate(() => window.__pre);
-      await page.close();
-      if (w.fire === null || w.wasPreReady !== true) return false;
-      const after = w.s.filter((s) => s.t >= w.fire);
-      const first = after.find((s) => s.o > 0.01);
-      const done = after.find((s) => s.o >= 0.999);
-      if (!first || !done) return true;
-      return (done.t - first.t) > 600;
+      const r = await runPreReadyScenario(base, browser);
+      if (!r.fired || r.wasPreReady !== true) return false;
+      if (!r.first || !r.done) return true;
+      return (r.done.t - r.first.t) > 600;
     },
   },
 ];
