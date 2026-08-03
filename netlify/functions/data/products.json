@@ -1,6 +1,6 @@
 {
-  "_comment": "SSC product data for advisor system prompts. Keep in sync with js/data.js and _includes/modals/sauna.njk when pricing or models change. Price sheet version 3 (base-price reprice step 1, 2026-08-03) -- these are the prices the configurator quotes.",
-  "_pricesVersion": 3,
+  "_comment": "SSC product data for advisor system prompts. Keep in sync with js/data.js and _includes/modals/sauna.njk when pricing or models change. Price sheet version 4 (catalogue restructure, 2026-08-03) -- these are the prices the configurator quotes. The base price buys a COMPLETE sauna: a standard heater, electric or wood-fired where offered, is included at $0 and no add-on is ever required to make the build work. Delivery is not quoted; it is arranged at order.",
+  "_pricesVersion": 4,
   "models": {
     "s2": {
       "name": "S2",
@@ -66,12 +66,19 @@
   "addons": {
     "heaterUpgrade": {
       "options": [
-        { "name": "Standard (included)", "price": 0 },
+        { "name": "Standard electric heater (included)", "price": 0 },
+        { "name": "Standard wood-fired heater, Harvia M3 (included, S4/S6/S8)", "price": 0, "note": "No standard wood-fired build on S2 (clearances) or SC (commercial spec)." },
         { "name": "Homecraft Revive 9kW Electric (S2-S8)", "price": 3500 },
         { "name": "Homecraft 15kW Apex Electric (SC)", "price": 2800 },
-        { "name": "Mini-IKI Wood-fired (S4)", "price": 9800 },
-        { "name": "Original-IKI Wood-fired (S6, S8)", "price": 10800 },
-        { "name": "Original-IKI Wood-fired (SC)", "price": 8200, "note": "Wood-fired not available on S2" }
+        { "name": "Mini-IKI Wood-fired (S4)", "price": 5000 },
+        { "name": "Original-IKI Wood-fired (S6, S8)", "price": 5900 },
+        { "name": "Original-IKI Wood-fired (SC)", "price": 6500, "note": "Priced over the standard ELECTRIC stack, because SC has no standard wood build -- which is why it costs more than S6/S8 despite the same stove." }
+      ]
+    },
+    "mounting": {
+      "options": [
+        { "name": "Skid-mounted (included)", "price": 0 },
+        { "name": "Trailer integration", "price": 3500, "note": "Integration labour only, flat on every model. The trailer is client-supplied; if SSC sources one it is quoted separately by final box length." }
       ]
     },
     "changingRoom": {

@@ -598,16 +598,25 @@
         }
 
         /**
-         * Both heater upgrades are per-model in price AND in product.
+         * Four heater options, all per-model in product and two of them in
+         * price. The group's shape is the complete-sauna rule (per Lee,
+         * 2026-08-03): the base price buys a finished sauna, so the first two
+         * options are INCLUDED BUILDS at $0 -- electric, and wood-fired where
+         * the model offers it -- and the two tiers below them price over
+         * whichever standard that model carries.
          *
-         * This slot previously swapped only the LABEL and left one hardcoded
-         * $2,000 behind it, so SC's 15kW Apex and the S2-S8 Revive were sold at
-         * one price that had only ever been costed for one of them. Value,
-         * price text and label are now set together from the model, every time.
+         * The priced slots were the original defect: this group once swapped
+         * only the LABEL and left one hardcoded $2,000 behind it, so SC's 15kW
+         * Apex and the S2-S8 Revive sold at one price that had only ever been
+         * costed for one of them. Value, price text and label are now set
+         * together from the model, every time.
          *
-         * Wood-fired is per-model too: a model with no `woodFired` price has no
-         * wood-fired option, which is stronger than the old electricOnly flag
-         * -- it cannot be selected because there is no price for it to carry.
+         * Availability is per-model and expressed as an absent price rather
+         * than a flag, which is stronger: `standardWoodLabel` null means the
+         * model has no wood-fired BUILD (S2 on clearances, SC on commercial
+         * spec) and `woodPremium` null means no IKI tier. S2 has neither; SC
+         * has the tier but not the standard, which is exactly why its tier is
+         * the dearest -- it steps off electric rather than off a free M3.
          */
         handleHeaterOptions() {
             const electricLabel = document.getElementById('heaterElectricLabel');
@@ -622,14 +631,61 @@
                 electricInput.value = String(amount);
             }
 
+            // The two INCLUDED builds. Both are $0 on every model that offers
+            // them, so nothing here touches a value -- only the names, which
+            // differ by model (S2-S8 carry the H-Series, SC the Revive).
+            const stdElecLabel = document.getElementById('heaterStandardElectricLabel');
+            if (stdElecLabel && currentModel.standardElectricLabel) {
+                stdElecLabel.textContent =
+                    `Standard electric heater — ${currentModel.standardElectricLabel} (included)`;
+            }
+
+            const stdWood = document.getElementById('heaterStandardWood');
+            if (stdWood) {
+                const stdWoodInput = stdWood.querySelector('input');
+                const stdWoodLabel = document.getElementById('heaterStandardWoodLabel');
+                const woodName = currentModel.standardWoodLabel;
+                // No standard wood build on this model: S2 on clearances, SC on
+                // commercial spec. Disabled exactly like the premium tier below,
+                // and if it was the live selection we fall back to the included
+                // ELECTRIC build -- never to a priced tier, which would raise the
+                // total by switching models.
+                if (!woodName) {
+                    stdWood.classList.add('disabled');
+                    if (stdWoodInput) {
+                        stdWoodInput.disabled = true;
+                        if (stdWoodInput.checked) {
+                            stdWoodInput.checked = false;
+                            const fallback = document.getElementById('heaterStandardElectric');
+                            const fallbackInput = fallback && fallback.querySelector('input');
+                            if (fallbackInput) fallbackInput.checked = true;
+                        }
+                    }
+                } else {
+                    stdWood.classList.remove('disabled');
+                    if (stdWoodInput) stdWoodInput.disabled = false;
+                    if (stdWoodLabel) {
+                        stdWoodLabel.textContent =
+                            `Standard wood-fired heater — ${woodName} (included)`;
+                    }
+                }
+            }
+
             const woodUpgrade = document.getElementById('heaterWoodUpgrade');
             if (!woodUpgrade) return;
 
             const woodInput = woodUpgrade.querySelector('input');
             const woodLabel = document.getElementById('heaterWoodLabel');
             const woodPrice = document.getElementById('heaterWoodPrice');
-            const woodAmount = currentModel.woodFired;
-            const unavailable = currentModel.electricOnly || typeof woodAmount !== 'number';
+            const woodAmount = currentModel.woodPremium;
+            const unavailable = typeof woodAmount !== 'number';
+
+            // Label first, unconditionally. A disabled row still has to name
+            // the right stove: setting it only on the available branch left the
+            // previous model's name sitting under a greyed-out option.
+            if (woodLabel && currentModel.woodPremiumLabel) {
+                woodLabel.textContent = currentModel.woodPremiumLabel;
+            }
 
             if (unavailable) {
                 woodUpgrade.classList.add('disabled');
@@ -640,8 +696,15 @@
                     // rather than leaving an unbuyable heater in the total.
                     if (woodInput.checked) {
                         woodInput.checked = false;
-                        const fallback = document.querySelector('input[name="heater"][value="0"]');
-                        if (fallback) fallback.checked = true;
+                        // Two radios carry value="0" since pricesVersion 4 (the
+                        // electric and wood-fired included builds), so target
+                        // the included ELECTRIC one by id rather than by value
+                        // -- a value selector would pick whichever came first
+                        // in the markup and could hand the visitor a wood build
+                        // on a model that has just been ruled out of wood.
+                        const fallback = document.getElementById('heaterStandardElectric');
+                        const fallbackInput = fallback && fallback.querySelector('input');
+                        if (fallbackInput) fallbackInput.checked = true;
                     }
                 }
             } else {
@@ -650,7 +713,6 @@
                     woodInput.disabled = false;
                     woodInput.value = String(woodAmount);
                 }
-                if (woodLabel && currentModel.woodFiredLabel) woodLabel.textContent = currentModel.woodFiredLabel;
                 if (woodPrice) woodPrice.textContent = `+${formatCurrency(woodAmount)}`;
             }
         }
@@ -664,12 +726,18 @@
 
             // Reset radio buttons to default
             document.querySelectorAll('.modal-addons input[type="radio"]').forEach((input) => {
-                // Zero-valued radios are the "none / included" defaults for their group.
-                // Groups whose options are all non-priced (e.g. bench) mark their default
-                // explicitly with data-default so they still reset correctly.
-                // handlePremiumPackageChange applies the same two-clause test -- keep them
+                // The default is DECLARED (data-default), never inferred from a
+                // $0 value. It used to be inferred, and pricesVersion 4 broke
+                // that: the heater group now has two $0 options -- the included
+                // electric and wood-fired builds -- so the old test checked BOTH
+                // and the last one silently won the group, resetting every
+                // visitor onto a wood-fired sauna. Bench already had to be
+                // marked explicitly for the mirror-image reason (no $0 marker to
+                // infer from at all), so this is that same rule, applied to
+                // every group instead of the one that forced it.
+                // handlePremiumPackageChange applies the same test -- keep them
                 // in step, or the two paths disagree about what "default" means.
-                if (input.value === '0' || input.hasAttribute('data-default')) {
+                if (input.hasAttribute('data-default')) {
                     input.checked = true;
                 }
                 // Re-enable all inputs
@@ -862,7 +930,7 @@
                     // slot only seed it -- a visitor who has already chosen
                     // premium audio keeps it.
                     const current = inputs.find((i) => i.checked);
-                    const atDefault = !current || current.value === '0' || current.hasAttribute('data-default');
+                    const atDefault = !current || current.hasAttribute('data-default');
                     if (!additive || atDefault) {
                         const baseline = inputs.find((i) => i.value === slot.baseline);
                         if (baseline) baseline.checked = true;
@@ -875,7 +943,7 @@
                     // Same default test as resetForm; keep them in step.
                     const current = inputs.find((i) => i.checked);
                     if (current && current.value === slot.baseline) {
-                        const def = inputs.find((i) => i.value === '0' || i.hasAttribute('data-default'));
+                        const def = inputs.find((i) => i.hasAttribute('data-default'));
                         if (def) def.checked = true;
                     }
                 }

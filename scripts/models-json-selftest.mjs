@@ -27,6 +27,30 @@
  * handlers (SIGINT/SIGTERM/uncaughtException). The run then VERIFIES every file
  * is byte-identical to its backup and exits non-zero shouting if not. A suite
  * that can leave the working tree edited must prove it did not.
+ *
+ * TWO WAYS THOSE DEFENCES STILL LOSE, both learned the hard way during the
+ * pricesVersion 4 batch (2026-08-03), recorded here because the next person to
+ * lose an afternoon to them will be reading this header and not a session log.
+ *
+ *   RUN ONE AT A TIME. The backup/restore is per-process and knows nothing
+ *   about a second process. Two concurrent runs mutate the SAME files, so each
+ *   one's "backup" is whatever the other had already written: they restore each
+ *   other's mutations and both report failures belonging to neither. The
+ *   symptom is a baseline that fails M0/M0b naming a drift nobody introduced —
+ *   e.g. `products.json basePrice 22500` (M14's mutation) or the group renamed
+ *   to `exteriorCladdingREMOVED` (M19's) — while the file on disk looks fine by
+ *   the time you go and read it, because the other run has moved on. Check
+ *   `pgrep -f models-json-selftest` before starting, and never launch a second
+ *   run because the first "seems stuck": it takes minutes, by design.
+ *
+ *   SIGKILL BEATS ALL THREE DEFENCES. `kill -9`, a harness timeout that hard-
+ *   kills, or a crashed terminal leaves the tree MUTATED — no `finally`, no
+ *   signal handler, no verification. Recovering is easy but only if you know to
+ *   look: `git status` will show a mutated source file, and the mutation is
+ *   always one of the literal find/replace pairs in MUTATIONS below, so it can
+ *   be read straight out of this file and reversed by hand. Do that BEFORE
+ *   committing anything, or a mutation ships. If the file has no uncommitted
+ *   work of your own in it, `git checkout --` is the faster fix.
  */
 import fs from 'node:fs';
 import os from 'node:os';
@@ -147,9 +171,9 @@ const MUTATIONS = [
     proves: 'the hold is the only thing keeping a knowingly-below-floor price from failing, '
       + 'so removing it must produce the failure it was suppressing — not silence',
     canonical: true,
-    from: '"stressCost": 27143,\n        "gmFloor": 0.40,\n        "held": true,',
-    to: '"stressCost": 27143,\n        "gmFloor": 0.40,',
-    expect: 'S6 basePrice 35500 is BELOW its gross-margin floor',
+    from: '"stressCost": 39438,\n        "gmFloor": 0.40,\n        "held": true,',
+    to: '"stressCost": 39438,\n        "gmFloor": 0.40,',
+    expect: 'SC basePrice 57000 is BELOW its gross-margin floor',
   },
   {
     name: 'M12 a model\'s costBasis is deleted outright',
@@ -168,11 +192,11 @@ const MUTATIONS = [
       + 'now pinned in scripts/models-json-roundtrip.mjs, so this mutation must produce TWO '
       + 'failures: the tampered floor named, and the price still measured against the real one',
     canonical: true,
-    from: '"stressCost": 27143,\n        "gmFloor": 0.40,\n        "held": true,',
-    to: '"stressCost": 27143,\n        "gmFloor": 0.20,',
+    from: '"stressCost": 39438,\n        "gmFloor": 0.40,\n        "held": true,',
+    to: '"stressCost": 39438,\n        "gmFloor": 0.20,',
     expect: [
-      'S6 costBasis.gmFloor 20.0%',
-      'S6 basePrice 35500 is BELOW its gross-margin floor',
+      'SC costBasis.gmFloor 20.0%',
+      'SC basePrice 57000 is BELOW its gross-margin floor',
     ],
   },
   {
@@ -189,10 +213,11 @@ const MUTATIONS = [
     proves: 'Razor N3: a hold is a promise that something specific retires it. Without the '
       + 'reference it is an untraceable permanent exemption with better manners',
     canonical: true,
-    from: '"stressCost": 30082,\n        "gmFloor": 0.40,\n        "held": true,\n'
-      + '        "heldRef": "step-2 trailer separation, Lee linearity ruling 2026-08-03"',
-    to: '"stressCost": 30082,\n        "gmFloor": 0.40,\n        "held": true',
-    expect: 'S8 is flagged costBasis.held with NO heldRef',
+    from: '"stressCost": 39438,\n        "gmFloor": 0.40,\n        "held": true,\n'
+      + '        "heldRef":',
+    to: '"stressCost": 39438,\n        "gmFloor": 0.40,\n        "held": true,\n'
+      + '        "_heldRefWasHere":',
+    expect: 'SC is flagged costBasis.held with NO heldRef',
   },
   {
     name: 'M16 a per-model price token goes missing while its placeholder stays',

@@ -426,12 +426,21 @@ const PRODUCTS_MODEL_KEYS = { s2: 'S2', s4: 'S4', s6: 'S6', s8: 'S8', sc: 'SC' }
  */
 const PRODUCTS_FIXED_LINES = {
   heaterUpgrade: {
-    'Standard (included)': 'heater_standard',
+    'Standard electric heater (included)': 'heater_standard_electric',
+    // The second INCLUDED build, at $0 on the models that offer it. It is
+    // mapped to S4 rather than left out because a $0 line still has to be
+    // proved $0 -- an included build that silently acquires a price is the
+    // exact failure the complete-sauna rule exists to prevent.
+    'Standard wood-fired heater, Harvia M3 (included, S4/S6/S8)': ['heater_standard_wood', 'S4'],
     'Homecraft Revive 9kW Electric (S2-S8)': ['heater_electric', 'S2'],
     'Homecraft 15kW Apex Electric (SC)': ['heater_electric', 'SC'],
-    'Mini-IKI Wood-fired (S4)': ['heater_wood', 'S4'],
-    'Original-IKI Wood-fired (S6, S8)': ['heater_wood', 'S6'],
-    'Original-IKI Wood-fired (SC)': ['heater_wood', 'SC'],
+    'Mini-IKI Wood-fired (S4)': ['heater_wood_premium', 'S4'],
+    'Original-IKI Wood-fired (S6, S8)': ['heater_wood_premium', 'S6'],
+    'Original-IKI Wood-fired (SC)': ['heater_wood_premium', 'SC'],
+  },
+  mounting: {
+    'Skid-mounted (included)': 'mount_skid',
+    'Trailer integration': 'mount_trailer',
   },
   changingRoom: {
     None: 'changing_none',

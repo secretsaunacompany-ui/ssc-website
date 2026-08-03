@@ -1,10 +1,10 @@
 {
   "_comment": "Single source of truth for SSC model and configurator pricing. Used by the quote generator and other tools outside the website repo.",
   "_updated": "2026-08-03",
-  "_source": "Base-price reprice STEP 1, ratified by Lee 2026-08-03: S2 22500 -> 23500 and S4 29000 -> 29500 only, plus the yakisugi exterior and the per-model costBasis record. S6, S8 and SC HOLD at their current list pending step 2 (trailer-line separation). Prior basis: js/data.js and src/_includes/modals/sauna.njk in ssc-website at pricesVersion 2 (WP-0b-ii); derivations and margins in docs/redesign-2026-07/35-configurator-price-sheet.md. SCHEMA ADDITION 2026-08-03 (no price moved, pricesVersion unchanged): packages.premium_finish.upgradableGroups, encoding Lee's 2026-08-03 ruling that a package occupies the select-one groups its includes touch and a different choice in an occupied group bills at the delta, never at both prices and never below zero.",
+  "_source": "CATALOGUE RESTRUCTURE (batch 4), ratified by Lee 2026-08-03 — pricesVersion 4. Four changes. (1) HEATER becomes a complete-sauna choice rather than an upgrade ladder: the base price now buys a finished sauna with a standard heater, electric OR wood-fired, at $0; the premium electric and premium wood (IKI) tiers price above it. (2) DELIVERY is no longer quoted anywhere — it is arranged at order, never a configurator line. (3) MOUNTING becomes an explicit select-one group: skid-mounted included, trailer integration +$3,500 with the trailer client-supplied. (4) costBasis: S6 and S8 come OFF hold on sauna-only stress costs; SC stays held on the photography gate alone. Prior basis: base-price reprice step 1 (2026-08-03, S2 -> 23500 and S4 -> 29500) at pricesVersion 3; js/data.js and src/_includes/modals/sauna.njk in ssc-website; derivations and margins in docs/redesign-2026-07/35-configurator-price-sheet.md and 30-pricing-heaters-equipment.md. Schema addition 2026-08-03 at pricesVersion 3: packages.premium_finish.upgradableGroups, encoding Lee's ruling that a package occupies the select-one groups its includes touch and a different choice in an occupied group bills at the delta, never at both prices and never below zero.",
   "_schema": "v2. The v1 file could not hold what the configurator now offers: one heater_apex entry cannot carry a per-model electric split, and there were no bench, deck-tier, window-tier, speaker-tier or per-model wood-fired structures at all. Options are now grouped exactly as the configurator groups them, and any price that varies by model is an explicit pricePerModel map rather than v1's 'model.interiorUpgrade' magic string, which every consumer had to know how to interpret.",
 
-  "pricesVersion": 3,
+  "pricesVersion": 4,
   "_pricesVersionNote": "Matches SSC.pricesVersion in js/data.js. Saved customer configurations are stamped with it; a mismatch means a stored total belongs to a superseded sheet. Bump both together, always.",
 
   "_costBasisNote": "Per-model build cost at the stress case, and the gross-margin floor the list price is expected to clear against it. `stressCost` values are the step-1 figures from the pricing-overhaul stress table. The website's scripts/models-json-roundtrip.mjs asserts (basePrice - stressCost) / basePrice >= gmFloor for every model. `held: true` marks a model whose list price is KNOWINGLY below its floor pending a later step: the assertion does not go red for it, but the gate prints a loud WARNING naming the model, its actual margin and `heldRef`. A permanently red tree teaches people to ignore red; silent passage would defeat the gate. Clearing a held model's price above its floor, or resolving its heldRef, is what retires the flag.",
@@ -36,10 +36,9 @@
       "heater": "Harvia M3 or Homecraft 7.5kW",
       "electricOnly": false,
       "costBasis": {
-        "stressCost": 27143,
+        "stressCost": 19600,
         "gmFloor": 0.40,
-        "held": true,
-        "heldRef": "step-2 trailer separation, Lee linearity ruling 2026-08-03"
+        "_stressCostRef": "Sauna-only estimate at pricesVersion 4: the 27143 it replaces bundled a trailer the base price no longer assumes (mounting is now its own group). Skid materials extrapolated from the S2->S4 progression rather than taken off a build; a takeoff on the next S6 converts this estimate to a record."
       }
     },
     "S8": {
@@ -50,10 +49,9 @@
       "heater": "Harvia M3 or Homecraft 7.5kW",
       "electricOnly": false,
       "costBasis": {
-        "stressCost": 30082,
+        "stressCost": 23200,
         "gmFloor": 0.40,
-        "held": true,
-        "heldRef": "step-2 trailer separation, Lee linearity ruling 2026-08-03"
+        "_stressCostRef": "Sauna-only estimate at pricesVersion 4: the 30082 it replaces bundled a trailer the base price no longer assumes (mounting is now its own group). Skid materials extrapolated from the S2->S4 progression rather than taken off a build; a takeoff on the next S8 converts this estimate to a record."
       }
     },
     "SC": {
@@ -64,20 +62,32 @@
       "heater": "Harvia Pro 20 or Homecraft Revive 9kW",
       "electricOnly": false,
       "costBasis": {
-        "stressCost": 45213,
+        "stressCost": 39438,
         "gmFloor": 0.40,
         "held": true,
-        "heldRef": "step-2 trailer separation + photography gate"
+        "heldRef": "photography gate (Lee): the derived complete price from-$71,500 is parked until commercial photography ships. The trailer half of this hold retired at pricesVersion 4 (mounting is now its own group and the stress cost is sauna-only); the photography gate is the whole of what remains."
       }
     }
   },
 
   "optionGroups": {
     "heater": {
-      "label": "Heater Upgrade",
+      "label": "Heater",
       "select": "one",
       "options": [
-        { "id": "heater_standard", "name": "Standard heater (included)", "price": 0, "default": true },
+        {
+          "id": "heater_standard_electric",
+          "name": "Standard electric heater — Homecraft 7.5kW H-Series (included)",
+          "nameByModel": { "SC": "Standard electric heater — Homecraft Revive 9kW (included)" },
+          "price": 0,
+          "default": true
+        },
+        {
+          "id": "heater_standard_wood",
+          "name": "Standard wood-fired heater — Harvia M3 (included)",
+          "pricePerModel": { "S2": null, "S4": 0, "S6": 0, "S8": 0, "SC": null },
+          "_note": "A null means the model has no standard wood-fired option: S2 on clearances (long-standing ruling, unchanged), SC because its commercial spec and size sit outside the M3. Availability on S4/S6/S8 is SSC FIELD EXPERIENCE, not the manufacturer's catalogue volume rating — built and tested including the S8, and manufacturer volume ratings run conservative (per Lee, 2026-08-03)."
+        },
         {
           "id": "heater_electric",
           "name": "Homecraft Revive 9kW (Electric)",
@@ -86,14 +96,14 @@
           "_note": "One slot previously sold the SC's 15kW Apex and the S2-S8 Revive at a single $2,000 that had only ever been costed for one of them."
         },
         {
-          "id": "heater_wood",
+          "id": "heater_wood_premium",
           "name": "Original-IKI (Wood-fired)",
           "nameByModel": { "S4": "Mini-IKI (Wood-fired)" },
-          "pricePerModel": { "S2": null, "S4": 9800, "S6": 10800, "S8": 10800, "SC": 8200 },
-          "availableOn": ["S4", "S6", "S8", "SC"],
-          "_note": "Replaces the Kuuma Banya, cut at ~$3,000/sale loss. A null price means the model has no wood-fired option."
+          "pricePerModel": { "S2": null, "S4": 5000, "S6": 5900, "S8": 5900, "SC": 6500 },
+          "_note": "The premium wood tier, replacing the Kuuma Banya that was cut at a ~$3,000/sale loss. Priced OVER the standard heater this model actually includes: over the Harvia M3 on S4/S6/S8, over the standard electric stack on SC (which has no standard wood). That is why SC's step is the largest despite the same stove as S6/S8."
         }
-      ]
+      ],
+      "_note": "THE COMPLETE-SAUNA PRINCIPLE (per Lee, 2026-08-03): the base price buys a finished, usable sauna. A standard heater — electric, or wood-fired where offered — is included at $0, and no configurator choice in this group is ever mandatory to make the build work. The two standard options are a CHOICE between included builds, not a discount and an upcharge. MARGIN CONVENTION: stove-category hardware runs at ~30% GM (per Lee, 2026-08-03), NOT the 45%/40% convention that governs the rest of doc 35 — the premium heater prices here are correct at 30% and must not be 'corrected' upward to 45% by a future audit. PROVENANCE OF THE $0 WOOD CHOICE: the standard wood stack, chimney kit and its install included, has historically been carried inside base materials on wood-standard builds (per Lee, 2026-08-03), so the $0 price absorbs nothing new and the base costBasis figures already cover it."
     },
     "changingRoom": {
       "label": "Changing Room",
@@ -115,6 +125,20 @@
         { "id": "deck_enclosed_3ft", "name": "3' semi-enclosed deck — two finished side walls, covered roof", "price": 5200 }
       ],
       "_note": "Two tiers. One 'front deck' label was selling both builds, and the semi-enclosed build was below cost at the platform price."
+    },
+    "mounting": {
+      "label": "Mounting",
+      "select": "one",
+      "options": [
+        { "id": "mount_skid", "name": "Skid-mounted (included)", "price": 0, "default": true },
+        {
+          "id": "mount_trailer",
+          "name": "Trailer integration — trailer client-supplied",
+          "price": 3500,
+          "note": "Covers integrating the build onto a road-legal chassis. The trailer itself is client-supplied; where SSC sources one instead, it is quoted separately by FINAL BOX LENGTH (model + changing room + deck, which stack) with GVWR re-checked at quote time. Dealer chassis prices: doc 31 §1.6."
+        }
+      ],
+      "_note": "New at pricesVersion 4. Mounting was never a configurator choice, so a trailer build's chassis cost lived nowhere and the base price silently carried whatever the build happened to need. Skid is the included default; the trailer line prices the INTEGRATION work only, at $3,500 on every model, because the labour to marry a box to a chassis does not scale with box length — the chassis cost does, and that is why it is quoted separately rather than folded in. Sizing rule and the chassis price steps: doc 35 §2.7."
     },
     "exterior": {
       "label": "Exterior Cladding",
@@ -221,17 +245,7 @@
   },
 
   "delivery": {
-    "delivery_local": {
-      "name": "Local Delivery (Sea to Sky)",
-      "price": 500,
-      "description": "Delivery within Sea to Sky corridor"
-    },
-    "delivery_extended": {
-      "name": "Extended Delivery",
-      "price": 0,
-      "description": "Delivery outside local area - $3/km (calculate separately)"
-    },
-    "_note": "Not configurator lines; quoted separately. Carried over from schema v1 unchanged."
+    "_note": "NOT QUOTED. As of pricesVersion 4 delivery carries no price anywhere in this file and appears on no quoting surface — no catalogue entry, no configurator line, no generator prompt. Delivery is arranged at order and discussed at consultation. The priced entries removed here (delivery_local $500, delivery_extended $3/km) were schema-v1 carry-overs that had survived two repricings without ever being re-derived, and the extended line was a $0 catalogue price that only became real if someone remembered to enter a distance. If delivery is ever priced again it gets a derivation like every other line, not a revival of these numbers."
   },
 
   "standard_inclusions": [
@@ -239,7 +253,8 @@
     "Standard metal exterior cladding",
     "One exterior accent wall (entrance wall is always T&G, never metal)",
     "L-shaped or U-shaped bench (choice included)",
-    "Standard heater (Harvia M3 or Homecraft 7.5kW)",
+    "Skid-mounted chassis (trailer integration available)",
+    "Standard heater at no extra cost, electric or wood-fired where offered — the base price buys a complete, usable sauna",
     "One large window",
     "Vapor barrier and insulation",
     "Basic electrical (heater hookup)"

@@ -76,6 +76,15 @@ const STORAGE_KEY = 'ssc_quote_config';
  * funnel.
  */
 const WOOD_HEATER = 'Mini-IKI (Wood-fired)';
+/**
+ * The heater group's DEFAULT option as it renders for MODEL -- the included
+ * electric build. This is what "back to defaults" means for the heater, and it
+ * is named here for the same reason WOOD_HEATER is: pricesVersion 4 restructured
+ * the group so the base price buys a complete sauna, and the default's label
+ * went from a generic "Standard heater (included)" to one that names the actual
+ * heater per model.
+ */
+const DEFAULT_HEATER = 'Standard electric heater — Homecraft 7.5kW H-Series (included)';
 const MODEL = 's4';
 
 let failures = 0;
@@ -702,9 +711,9 @@ async function runStates(base, browser) {
     await page.click('[data-action="quote-start-over"]');
     check('start over: clears the record and returns to defaults',
       await readStore(page) === null
-      && await page.evaluate(() => !![...document.querySelectorAll('.modal-addons .addon-option')]
-        .find((o) => o.querySelector('.addon-label').textContent.trim() === 'Standard heater (included)')
-        .querySelector('input').checked),
+      && await page.evaluate((wanted) => !![...document.querySelectorAll('.modal-addons .addon-option')]
+        .find((o) => o.querySelector('.addon-label').textContent.trim() === wanted)
+        .querySelector('input').checked, DEFAULT_HEATER),
       'start over left either the record or the selections behind');
     await page.close();
   }
@@ -733,9 +742,9 @@ async function runStates(base, browser) {
     await openModal(page, base);
     check('expiry: a record older than 7 days is ignored and removed',
       await readStore(page) === null
-      && await page.evaluate(() => !![...document.querySelectorAll('.modal-addons .addon-option')]
-        .find((o) => o.querySelector('.addon-label').textContent.trim() === 'Standard heater (included)')
-        .querySelector('input').checked),
+      && await page.evaluate((wanted) => !![...document.querySelectorAll('.modal-addons .addon-option')]
+        .find((o) => o.querySelector('.addon-label').textContent.trim() === wanted)
+        .querySelector('input').checked, DEFAULT_HEATER),
       'an expired configuration was restored, or left on disk');
     await page.close();
   }
@@ -1132,9 +1141,9 @@ const MUTATIONS = [
 
       // The wood heater block, whose removal shifts every later index by one.
       const WOOD_HEATER_BLOCK = `                        <label class="addon-option" id="heaterWoodUpgrade">
-                            <input type="radio" name="heater" value="10800" data-addon="heater">
-                            <span class="addon-label" id="heaterWoodLabel">Original-IKI (Wood-fired)</span>
-                            <span class="addon-price" id="heaterWoodPrice">+$10,800</span>
+                            <input type="radio" name="heater" value="5000" data-addon="heater">
+                            <span class="addon-label" id="heaterWoodLabel">Mini-IKI (Wood-fired)</span>
+                            <span class="addon-price" id="heaterWoodPrice">+$5,000</span>
                         </label>
 `;
       const removeOption = (dir) => mutate(

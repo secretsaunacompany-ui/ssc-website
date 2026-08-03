@@ -10,9 +10,17 @@
      *
      * Bump this in the SAME commit as any change to a price -- `basePrice`,
      * `interiorUpgrade`, `premiumFinishPrice`, `electricHeaterUpgrade`,
-     * `woodFired`, `exteriorStandingSeam`, `exteriorCedar`, `exteriorYakisugi`
-     * here, or any option
+     * `woodPremium`, `exteriorStandingSeam`, `exteriorCedar`,
+     * `exteriorYakisugi` here, or any option
      * value in `_includes/modals/sauna.njk`.
+     *
+     * The heater fields at pricesVersion 4 encode the complete-sauna rule:
+     * `standardElectricLabel` and `standardWoodLabel` name the heaters this
+     * model INCLUDES at $0, and a null `standardWoodLabel` means the model has
+     * no wood-fired build (S2 on clearances, SC on commercial spec).
+     * `woodPremium` is the IKI tier priced OVER whichever standard that model
+     * carries -- which is why SC's is the largest step despite sharing a stove
+     * with S6 and S8. Neither standard heater is ever a priced line.
      *
      * This is not a convention anyone has to remember: `npm run
      * prices-version:test` hashes the whole price table and fails if the hash
@@ -24,7 +32,7 @@
      * recomputed from live prices, with a visible note. Without the stamp, a
      * week-old saved total would silently contradict its own line items.
      */
-    const pricesVersion = 3;
+    const pricesVersion = 4;
 
     // ============================================
     // Sauna Model Data
@@ -39,8 +47,14 @@
             interiorUpgrade: 2200,
             premiumFinishPrice: 9200,
             electricHeaterUpgrade: 3500,
-            woodFired: null,
-            woodFiredLabel: null,
+            standardElectricLabel: 'Homecraft 7.5kW H-Series',
+            standardWoodLabel: null,
+            woodPremium: null,
+            // Named even though it is never sellable here. The option still
+            // RENDERS on S2 -- disabled -- and a disabled row must say what it
+            // is that S2 cannot have, not keep whichever model's stove the
+            // visitor happened to look at last.
+            woodPremiumLabel: 'Original-IKI (Wood-fired)',
             exteriorStandingSeam: 3000,
             exteriorCedar: 2500,
             exteriorYakisugi: 5000,
@@ -61,8 +75,10 @@
             interiorUpgrade: 2600,
             premiumFinishPrice: 9600,
             electricHeaterUpgrade: 3500,
-            woodFired: 9800,
-            woodFiredLabel: 'Mini-IKI (Wood-fired)',
+            standardElectricLabel: 'Homecraft 7.5kW H-Series',
+            standardWoodLabel: 'Harvia M3',
+            woodPremium: 5000,
+            woodPremiumLabel: 'Mini-IKI (Wood-fired)',
             exteriorStandingSeam: 3000,
             exteriorCedar: 2500,
             exteriorYakisugi: 5000,
@@ -86,8 +102,10 @@
             interiorUpgrade: 3000,
             premiumFinishPrice: 10500,
             electricHeaterUpgrade: 3500,
-            woodFired: 10800,
-            woodFiredLabel: 'Original-IKI (Wood-fired)',
+            standardElectricLabel: 'Homecraft 7.5kW H-Series',
+            standardWoodLabel: 'Harvia M3',
+            woodPremium: 5900,
+            woodPremiumLabel: 'Original-IKI (Wood-fired)',
             exteriorStandingSeam: 3500,
             exteriorCedar: 3000,
             exteriorYakisugi: 6000,
@@ -108,8 +126,10 @@
             interiorUpgrade: 3500,
             premiumFinishPrice: 11000,
             electricHeaterUpgrade: 3500,
-            woodFired: 10800,
-            woodFiredLabel: 'Original-IKI (Wood-fired)',
+            standardElectricLabel: 'Homecraft 7.5kW H-Series',
+            standardWoodLabel: 'Harvia M3',
+            woodPremium: 5900,
+            woodPremiumLabel: 'Original-IKI (Wood-fired)',
             exteriorStandingSeam: 4000,
             exteriorCedar: 3000,
             exteriorYakisugi: 6000,
@@ -130,8 +150,10 @@
             interiorUpgrade: 5000,
             premiumFinishPrice: 12500,
             electricHeaterUpgrade: 2800,
-            woodFired: 8200,
-            woodFiredLabel: 'Original-IKI (Wood-fired)',
+            standardElectricLabel: 'Homecraft Revive 9kW',
+            standardWoodLabel: null,
+            woodPremium: 6500,
+            woodPremiumLabel: 'Original-IKI (Wood-fired)',
             exteriorStandingSeam: 4000,
             exteriorCedar: 3000,
             exteriorYakisugi: 6000,
