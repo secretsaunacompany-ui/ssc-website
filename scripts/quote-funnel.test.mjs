@@ -1141,9 +1141,9 @@ const MUTATIONS = [
 
       // The wood heater block, whose removal shifts every later index by one.
       const WOOD_HEATER_BLOCK = `                        <label class="addon-option" id="heaterWoodUpgrade">
-                            <input type="radio" name="heater" value="5000" data-addon="heater">
-                            <span class="addon-label" id="heaterWoodLabel">Mini-IKI (Wood-fired)</span>
-                            <span class="addon-price" id="heaterWoodPrice">+$5,000</span>
+                            <input type="radio" name="heater" value="5900" data-addon="heater">
+                            <span class="addon-label" id="heaterWoodLabel">Original-IKI (Wood-fired)</span>
+                            <span class="addon-price" id="heaterWoodPrice">+$5,900</span>
                         </label>
 `;
       const removeOption = (dir) => mutate(

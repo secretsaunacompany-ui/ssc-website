@@ -24,6 +24,8 @@
     "fonts:test": "node scripts/fonts.test.mjs",
     "//rhythm:test": "Group R drives a real Chromium against dist/, so run `npm run build` first. A token's declared value and the value that reaches the element are different claims — and an edit (or mutation probe) made to styles.css WITHOUT a rebuild never reaches the measured page: it reports as 'suite did not notice', a coverage gap that isn't there.",
     "rhythm:test": "node scripts/rhythm.test.mjs",
+    "//dom-subtree-hash": "Measures the content hash a delete-subtree or add-subtree entry in dom-integrity.config.json needs. The config says the hash cannot be written from memory, and until this existed there was no way to measure one -- so the two shapes the config documents for ATTRIBUTE-LESS nodes were the two nobody could write. Usage in the script header.",
+    "dom-subtree-hash": "node scripts/dom-subtree-hash.mjs",
     "dom-integrity": "node scripts/dom-integrity.mjs",
     "dom-integrity:test": "node scripts/dom-integrity.test.mjs",
     "//lint:css": "The guard that keeps the type scale and the radius collapse from drifting back: raw font-size and border-radius literals are rejected outside :root. Six exceptions exist and every one carries a stylelint-disable-next-line with its reason.",

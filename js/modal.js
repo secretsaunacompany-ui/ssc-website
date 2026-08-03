@@ -634,7 +634,16 @@
             // The two INCLUDED builds. Both are $0 on every model that offers
             // them, so nothing here touches a value -- only the names, which
             // differ by model (S2-S8 carry the H-Series, SC the Revive).
-            const stdElecLabel = document.getElementById('heaterStandardElectricLabel');
+            // Reached through the input's data-default rather than an id. The
+            // row carries no id deliberately: it is the same included row it has
+            // always been, and giving it one would have changed the attributes of
+            // an otherwise-untouched <label>/<span> pair -- a change the DOM
+            // integrity gate cannot be made to declare, because on the removed
+            // side those nodes have no attributes to key on.
+            const stdElecInput = document.querySelector('input[name="heater"][data-default]');
+            const stdElecLabel = stdElecInput
+                && stdElecInput.closest('.addon-option')
+                && stdElecInput.closest('.addon-option').querySelector('.addon-label');
             if (stdElecLabel && currentModel.standardElectricLabel) {
                 stdElecLabel.textContent =
                     `Standard electric heater — ${currentModel.standardElectricLabel} (included)`;
@@ -656,8 +665,8 @@
                         stdWoodInput.disabled = true;
                         if (stdWoodInput.checked) {
                             stdWoodInput.checked = false;
-                            const fallback = document.getElementById('heaterStandardElectric');
-                            const fallbackInput = fallback && fallback.querySelector('input');
+                            const fallbackInput =
+                                document.querySelector('input[name="heater"][data-default]');
                             if (fallbackInput) fallbackInput.checked = true;
                         }
                     }
@@ -702,8 +711,8 @@
                         // -- a value selector would pick whichever came first
                         // in the markup and could hand the visitor a wood build
                         // on a model that has just been ruled out of wood.
-                        const fallback = document.getElementById('heaterStandardElectric');
-                        const fallbackInput = fallback && fallback.querySelector('input');
+                        const fallbackInput =
+                            document.querySelector('input[name="heater"][data-default]');
                         if (fallbackInput) fallbackInput.checked = true;
                     }
                 }
