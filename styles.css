@@ -334,13 +334,36 @@
     --reveal-shift: 28px;
     --stagger-step: 120ms;   /* per-child delay; --i capped at 4 */
     /* The beat the homepage holds before anything arrives over the photograph.
-       Not a second motion system -- it is a delay added inside .reveal, so the
-       hold and every other reveal on the site are the same transition (21 N2).
+
+       STILL ONE MOTION SYSTEM (21 N2), and still the same .reveal transition --
+       but the hold is no longer spent as a `transition-delay` here. It is spent
+       as the moment RevealManager GRANTS `.seen` to the held pair, on the clock
+       it already keeps. The delay moved from the CSS property to the grant
+       timing; the transition, the observer and the stagger are untouched.
+
+       Why it had to move: a `transition-delay` of 1600ms on an element whose
+       `.seen` arrives from JS leaves a PENDING transition sitting on the
+       element. When the escape hatch then retimed that transition, Chrome
+       UPDATED the pending one rather than starting a new one, so the shortened
+       fade inherited 1600/1000 no matter what the computed values said
+       (measured: computed 0s/0.35s, actual 1600/1000). With no delay declared,
+       no pending transition exists and the escape hatch gets a fresh one.
+
+       THIS TOKEN IS STILL THE ONE AUTHORITATIVE VALUE. js/animations.js reads
+       it off the computed root at init (HERO_HOLD_MS) rather than carrying a
+       copy, so a retune here still moves the hold.
+
        RETUNE FROM DATA, not taste: the hero_hold_skipped:complete ratio on
        post-cutover views is the instrument, and N2 pre-authorises the change.
        Moving it moves SETTLE_MS in js/animations.js, and the events suite's
        agreement fixture fails until both agree. */
     --hero-hold: 1600ms;
+
+    /* The escape hatch's fade. Early input during the hold used to SNAP the
+       held pair to visible with an inline `transition: none`; Lee's fixed
+       decision is that it fades gently instead. Short enough to read as
+       yielding to the gesture, long enough not to be a snap. */
+    --transition-quick-reveal: 350ms;
 
     /* ===== Elevation -- ONE shadow, and it is a hover affordance =====
        --shadow-sm/-md had zero consumers; -lg/-xl unify here (21 A4). No
@@ -2846,22 +2869,28 @@ section.surface--elevated:has(> .wide-container) {
 
    Lee's fixed decision: the photograph arrives alone, and the title comes over
    it after a beat. The old implementation of that idea was a scroll LOCK and it
-   is not coming back. This one adds a NUMBER to a delay and nothing else --
-   same .reveal, same transition, same observer, no second timer, and the page
-   scrolls from the first frame. That is 21 N2's mechanism ruling honoured; the
-   only clause of N2 superseded is its ban on content over the photograph.
+   is not coming back. This one still adds no lock, no second transition and no
+   second easing curve -- same .reveal, same transition, same stagger, and the
+   page scrolls from the first frame. That is 21 N2's mechanism ruling honoured;
+   the only clause of N2 superseded is its ban on content over the photograph.
+
+   WHAT CHANGED, and it is deliberately NOT a rule in this file: the hold used
+   to be `transition-delay: calc(var(--hero-hold) + ...)` on the held pair, at
+   (0,4,0) so it beat the generic (0,3,0) stagger rule. That rule is gone. The
+   hold is now the moment `.seen` is granted (js/animations.js, RevealManager's
+   hold scheduler) -- see the --hero-hold token's note for the pending-transition
+   defect that forced the move. The held pair therefore resolves the ORDINARY
+   stagger delay here, and arrives 1600ms later than everything else because
+   that is when it is told to, not because it is waiting on a longer clock.
 
    The hero <img> is deliberately absent from all of this. It carries no reveal
    class ever: it is the LCP element and it composites on first paint. Only the
    things ARRIVING over it are held.
 
-   Specificity, checked rather than assumed. The generic delay rule is
-   `.js.reveal-ready .reveal` at (0,3,0), so a held element needs to beat that
-   on its own terms -- source order is not the mechanism here. */
-.js.reveal-ready .reveal.reveal--held {
-    /* (0,4,0) beats (0,3,0). */
-    transition-delay: calc(var(--hero-hold) + var(--i, 0) * var(--stagger-step));
-}
+   `.reveal--held` keeps its class in the markup: it is how the scheduler and
+   the escape hatch NAME the held pair, and it is the declared markup change in
+   dom-integrity.config.json. A class with no rule of its own is the correct
+   shape for a hook that JS reads. */
 
 /* animations.js also writes this inline as part of the load-in ordering; the
    declaration is here so the index is right before a line of JS has run. */
@@ -2883,13 +2912,36 @@ section.surface--elevated:has(> .wide-container) {
     transform: translateY(var(--reveal-shift));
 }
 
-/* (0,3,2) -- more classes than the generic (0,3,0)? No: equal classes, but two
-   more element selectors, so this wins the cascade and the nav gets the HELD
-   delay rather than the bare stagger. This is the rule the plan meant by
-   "specificity checked". */
+/* (0,3,2). It used to carry the HELD delay so it would beat the generic
+   (0,3,0) stagger rule; the held delay is gone (see above) and what remains is
+   the transition itself, declared here so the nav has one even in the frame
+   before animations.js has added `.reveal` to it. The stagger delay resolves
+   from the generic rule, and at --i:0 it is 0ms. */
 .js.reveal-ready body.page-home nav {
     transition: opacity var(--transition-reveal), transform var(--transition-reveal);
-    transition-delay: calc(var(--hero-hold) + var(--i, 0) * var(--stagger-step));
+}
+
+/* ---- The escape hatch's fade -----------------------------------------------
+
+   Early input during the hold (scroll, key incl. Tab, pointer) ends the beat.
+   It used to end it by writing an inline `transition: none` and snapping. Lee's
+   fixed decision is a gentle fade instead, so `.reveal--quick` is added by
+   js/animations.js in the same task as `.seen`: one style recalculation, one
+   fresh transition, at the short duration.
+
+   Only the DURATION is overridden. The easing stays --transition-reveal's
+   curve, because the fade that yields to a gesture should be the same gesture
+   of a fade, just faster. `transition-delay: 0s` because a held element that
+   has just been interrupted must not then sit through its stagger slot.
+
+   BOTH held selectors are named at their own specificity. The generic form is
+   (0,4,0) against the (0,3,0) it must beat; the nav form is (0,4,2) against
+   (0,3,2). Naming only the generic one would leave the nav -- the element the
+   Tab case is entirely about -- fading at 1000ms. */
+.js.reveal-ready .reveal.reveal--quick,
+.js.reveal-ready body.page-home nav.reveal--quick {
+    transition-duration: var(--transition-quick-reveal);
+    transition-delay: 0s;
 }
 
 /* (0,3,2), beating the hidden state's (0,2,2). animations.js grants .seen the
@@ -2912,8 +2964,10 @@ section.surface--elevated:has(> .wide-container) {
     .js .reveal,
     .js.reveal-ready .reveal,
     .js.reveal-ready .reveal.reveal--held,
+    .js.reveal-ready .reveal.reveal--quick,
     .js body.page-home nav,
     .js.reveal-ready body.page-home nav,
+    .js.reveal-ready body.page-home nav.reveal--quick,
     .js body.page-home nav.seen {
         opacity: 1;
         transform: none;

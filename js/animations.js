@@ -39,6 +39,15 @@
     // +  120  1 x --stagger-step, the LAST held member's --i
     // = 2720
     //
+    // UNCHANGED by the move of the hold out of CSS, and worth saying why rather
+    // than leaving it to be re-derived. Before: `.seen` landed at t=0 and the
+    // transition sat out a 1600ms delay before starting. Now: `.seen` lands at
+    // t=1600 and the transition starts immediately. Same three numbers, same
+    // order, same instant the last held member finishes -- the hold simply
+    // stopped being a property of the transition and became a property of when
+    // the transition is allowed to begin. The visible timeline is identical, so
+    // the boundary is too.
+    //
     // The old comment here asserted the last member sat at --i:2 and derived
     // 1240 from it. That was wrong on the day it was written: the --i:2 slot
     // belongs to the scroll cue, which is WP-2 composition and does not exist,
@@ -57,6 +66,70 @@
 
     const prefersReducedMotion = () =>
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // The hold's length, if the stylesheet cannot be read for it. Loud, because
+    // a silent fallback here is a hold that no longer tracks its token and a
+    // SETTLE_MS that quietly stops describing the page.
+    const FALLBACK_HERO_HOLD_MS = 1600;
+
+    const parseMs = (value) => {
+        const v = String(value).trim();
+        const n = parseFloat(v);
+        if (!Number.isFinite(n)) return null;
+        if (v.endsWith('ms')) return n;
+        if (v.endsWith('s')) return n * 1000;
+        return null;
+    };
+
+    // ONE authoritative value for the hold, and it is still the CSS token.
+    //
+    // The hold is spent in JS now (see RevealManager.scheduleHold), but --hero-hold
+    // is not copied into a constant here -- it is READ. A retune of the token
+    // therefore still moves the hold, which is the promise the ROADMAP's retune
+    // note makes and the events suite's agreement fixture checks.
+    function readHeroHoldMs() {
+        const raw = getComputedStyle(document.documentElement)
+            .getPropertyValue('--hero-hold');
+        const ms = parseMs(raw);
+        if (ms === null || ms < 0) {
+            // Not a debug line. If this fires, the hold and SETTLE_MS have come
+            // apart and every hero_hold reading after it is measuring something
+            // other than what its name says.
+            window.console.warn(
+                '[ssc] --hero-hold did not resolve to a time (' + String(raw).trim()
+                + '). Falling back to ' + FALLBACK_HERO_HOLD_MS
+                + 'ms; SETTLE_MS may no longer describe the page.');
+            return FALLBACK_HERO_HOLD_MS;
+        }
+        return ms;
+    }
+
+    /**
+     * The held pair, named in ONE place.
+     *
+     * The hold scheduler and the escape hatch must agree exactly on which
+     * elements are held -- a scheduler that holds an element the hatch cannot
+     * release is a nav stuck invisible. So both call this.
+     *
+     * page-home ONLY. The hold exists on the homepage and nowhere else, but
+     * `nav` exists on all sixteen built pages; unscoped, this would hold the
+     * navigation of a page that was never meant to have one held.
+     *
+     * The nav is found by element rather than by class because a bare <nav>
+     * cannot be named by a dom-integrity `contains` (empty attributes are
+     * rejected, dom-fingerprint.mjs:316-324), so it carries no markup class.
+     * `.hero-content` does carry `.reveal--held`, which is the declared markup
+     * change B1 makes.
+     */
+    function heldTargets() {
+        if (!document.body || !document.body.classList.contains('page-home')) {
+            return [];
+        }
+        return [
+            document.querySelector('nav'),
+            ...document.querySelectorAll('.reveal--held')
+        ].filter(Boolean);
+    }
 
     // Containers whose children reveal as a staggered GROUP. A grid that reveals
     // item-by-item on each item's own intersection reads as a page still
@@ -77,6 +150,103 @@
             // The origin of the CHOREOGRAPHY's clock, and the only clock the
             // hero-hold metric is allowed to measure against. See init().
             this.startedAt = null;
+            // The hold, which lives here rather than in a transition-delay.
+            // holdMs is read from --hero-hold at init; holdTimer is the pending
+            // grant; holdReleased latches the beat as over, by either path.
+            this.holdMs = null;
+            this.holdTimer = null;
+            this.holdReleased = false;
+        }
+
+        /**
+         * Grant the reveal. `quick` swaps the duration for the escape hatch's
+         * short one, in the SAME task as `.seen`, so the browser resolves one
+         * style change and starts exactly one transition at the short duration.
+         *
+         * Two classes in one recalculation is the whole trick. Adding `.seen`
+         * first and retiming afterwards is what failed twice: it leaves a
+         * transition already running (or, worse, pending) at 1000ms, and Chrome
+         * UPDATES a pending transition rather than replacing it, so the
+         * shortened fade inherits the long timing regardless of what the
+         * computed style says.
+         */
+        compose(elements, quick) {
+            elements.forEach((el) => {
+                if (quick) el.classList.add('reveal--quick');
+                el.classList.add('seen');
+            });
+        }
+
+        /**
+         * THE HOLD.
+         *
+         * Not a second motion system. It is the same RevealManager, granting
+         * `.seen` to the same .reveal targets through the same transition and
+         * the same CSS stagger -- the only thing that moved is WHEN the grant
+         * happens for two of them. 21 N2's one-system ruling is satisfied by
+         * that: there is still exactly one thing on this page that reveals
+         * elements, and this is it.
+         *
+         * Why the grant and not a `transition-delay`, which is where the hold
+         * used to live: a 1600ms delay on an element whose `.seen` comes from
+         * JS leaves a PENDING transition on it for the length of the beat. Any
+         * attempt to retime that transition -- which is what a gentle escape
+         * fade is -- gets folded into the pending one instead of starting a new
+         * one, and the fade runs at 1600/1000 no matter what the computed delay
+         * and duration read (measured: computed 0s/0.35s, actual 1600/1000).
+         * With no delay declared, nothing is pending, and the hatch's fade is
+         * an ordinary first transition.
+         *
+         * Measured from `startedAt`, the same clock the metric reads, so the
+         * hold and the boundary that judges it cannot drift apart.
+         */
+        scheduleHold(held) {
+            if (held.length === 0) return;
+            // Interrupted before the choreography even started: the hatch binds
+            // at DOMContentLoaded and init() is two frames later, so this is a
+            // real window and it is exactly when an impatient visitor acts.
+            if (this.holdReleased) {
+                this.compose(held, false);
+                return;
+            }
+            // init() runs again on window load. One beat, one timer.
+            if (this.holdTimer !== null) return;
+            if (this.holdMs === null) this.holdMs = readHeroHoldMs();
+            const elapsed = this.startedAt === null ? 0 : Date.now() - this.startedAt;
+            const remaining = Math.max(0, this.holdMs - elapsed);
+            this.holdTimer = window.setTimeout(() => {
+                this.holdTimer = null;
+                this.holdReleased = true;
+                this.compose(held, false);
+            }, remaining);
+        }
+
+        /**
+         * End the beat early, gently. Called by the escape hatch.
+         *
+         * On the timer, said plainly rather than dressed up: clearing it has NO
+         * observable effect today. If it were left pending it would fire at
+         * 1600ms and add two classes that are already on the elements. There is
+         * therefore no mutation in the events suite for the `clearTimeout`
+         * line, because a mutation nothing can detect is a decoration with a
+         * green tick, and this suite's own contract forbids those. It is kept
+         * because a scheduled callback that outlives its reason is a trap for
+         * whoever next makes the grant do more than add a class -- but that is
+         * a maintenance argument, not a behavioural one, and it should not be
+         * mistaken for one.
+         *
+         * The `holdReleased` latch beside it IS load-bearing: it is what makes
+         * a cancel in the two frames before init() runs turn into an immediate
+         * compose instead of a hold nobody is waiting for.
+         */
+        releaseHold() {
+            if (this.holdReleased) return;
+            this.holdReleased = true;
+            if (this.holdTimer !== null) {
+                window.clearTimeout(this.holdTimer);
+                this.holdTimer = null;
+            }
+            this.compose(heldTargets(), true);
         }
 
         assignStagger() {
@@ -174,6 +344,14 @@
 
             this.assignStagger();
 
+            // The held pair is granted by the clock below, not by intersection.
+            // It is above the fold and would otherwise be composed by the
+            // observer on the first callback, which is precisely the hold not
+            // happening.
+            const held = heldTargets();
+            const isHeld = new Set(held);
+            this.scheduleHold(held);
+
             // init() runs on DOMContentLoaded and again on window load, because
             // late-arriving images move things into view. Reuse the observer: a
             // second one would double-observe every element on the page.
@@ -195,6 +373,7 @@
 
             targets.forEach((el) => {
                 if (el.classList.contains('seen')) return;
+                if (isHeld.has(el)) return;
                 this.observer.observe(el);
             });
         }
@@ -226,11 +405,19 @@
      * links nobody can see. So the first sign of intent ends the hold: scroll,
      * key (Tab included, which is the point), or pointer.
      *
-     * It cancels by removing the TRANSITION, not by rewriting the delay.
-     * Rewriting the delay restarts a 1000ms fade from wherever the element
-     * happened to be, which races the gesture that interrupted it. Snapping is
-     * the honest response to "I am already doing something else": an
-     * interrupted animation should yield, not negotiate.
+     * It cancels with a SHORT FADE, not a snap. That is Lee's fixed decision
+     * and it is a reversal of what this comment used to argue, so the argument
+     * is worth replacing rather than deleting: the old text said an interrupted
+     * animation should yield rather than negotiate, and snapped with an inline
+     * `transition: none`. Yielding and snapping turn out not to be the same
+     * thing. A ~350ms fade yields -- it is over before the gesture is -- while
+     * a snap reads as the page flinching.
+     *
+     * The mechanism is RevealManager.releaseHold: clear the pending grant, add
+     * `.reveal--quick` and `.seen` together, one recalculation, one fresh
+     * transition at the short duration. It is emphatically NOT a retime of an
+     * existing transition. Two attempts to do it that way were reverted; the
+     * reason is in scheduleHold's comment and in the --hero-hold token's.
      *
      * TWO scoping decisions, both learned the hard way:
      *
@@ -239,21 +426,25 @@
      *    pages -- so bound sitewide this listener fired on every interior page
      *    and wrote a PERMANENT inline `transition: none` onto the nav of a page
      *    that was never held. A cancel for something that is not happening is
-     *    not free; it silently disables the nav's transitions for the rest of
-     *    that visit.
+     *    not free; it silently disabled the nav's transitions for the rest of
+     *    that visit. The inline write is gone, but the scoping is not softened
+     *    on that account: `heldTargets()` returns nothing off the homepage, so
+     *    the guard is now stated in two places that agree.
      *
      * 2. Bound at DOMContentLoaded, not from inside RevealManager.init(). init()
      *    runs after a double rAF, so binding there left a two-frame window in
      *    which the beat was already resolving under CSS while nothing was
      *    listening for the gesture that should cancel it. Two frames is small
      *    and it is also exactly when an impatient returning visitor acts. It is
-     *    correct to bind before the choreography starts: the snap adds `.seen`,
-     *    which wins the cascade against the hidden state whether or not
-     *    `.reveal-ready` has landed yet.
+     *    correct to bind before the choreography starts: the release adds
+     *    `.seen`, which wins the cascade against the hidden state whether or
+     *    not `.reveal-ready` has landed yet. A release in that two-frame window
+     *    also latches `holdReleased`, so init() -- which has not run yet --
+     *    composes the pair instead of scheduling a beat nobody is waiting for.
      *
-     * Reduced motion never gets here -- there is no hold to escape, and binding
-     * would mean writing an inline transition override onto a page that already
-     * composed itself instantly.
+     * Reduced motion never gets here -- there is no hold to escape, and the
+     * page has already composed itself instantly by both the CSS mirror and
+     * the JS guard.
      *
      * One-shot, capture phase, passive. Nothing here can block a scroll.
      */
@@ -261,11 +452,7 @@
         if (!document.body.classList.contains('page-home')) return;
         if (prefersReducedMotion()) return;
 
-        const held = [
-            document.querySelector('nav'),
-            ...document.querySelectorAll('.reveal--held')
-        ].filter(Boolean);
-        if (held.length === 0) return;
+        if (heldTargets().length === 0) return;
 
         const events = ['scroll', 'keydown', 'pointerdown'];
         let fired = false;
@@ -276,10 +463,7 @@
             events.forEach((type) =>
                 window.removeEventListener(type, cancel, { capture: true })
             );
-            held.forEach((el) => {
-                el.style.transition = 'none';
-                el.classList.add('seen');
-            });
+            reveal.releaseHold();
         };
 
         events.forEach((type) =>

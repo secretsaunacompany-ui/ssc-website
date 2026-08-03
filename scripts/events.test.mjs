@@ -229,6 +229,71 @@ const HERO_CLOCK_PROBE = `
   })();
 `;
 
+/**
+ * Marks, INSIDE the page, the three instants the escape hatch's contract is
+ * made of: the keydown, the moment the nav is GRANTED its reveal, and the
+ * painted opacity every frame thereafter.
+ *
+ * Nothing here is polled over CDP. A round trip is tens of milliseconds and the
+ * whole fade is 350, so a poll would be measuring its own instrumentation --
+ * the same lesson HERO_CLOCK_PROBE was written for, applied to the other
+ * page-side timing question. The old CDP poll is in fact why this fixture's
+ * first failure reported `opacity was 0` for a page that was painting ~0.5.
+ *
+ * TWO clocks on purpose, because the contract has two halves that fail
+ * differently:
+ *
+ *   key -> `.seen`   did the page RESPOND? A DOM fact, set synchronously in
+ *                    the keydown handler. Measured at 0ms in 6 of 6 runs.
+ *   painted opacity  did it LOOK right? Only paint can answer "did it fade or
+ *                    did it snap", and only paint knows when focus stopped
+ *                    sitting on an invisible link.
+ *
+ * The distinction is load-bearing rather than tidy. An earlier version of this
+ * fixture asserted the painted fade had STARTED within 100ms and went red at
+ * 121ms on a machine also running sixteen mutation builds. Measured standalone,
+ * the same page starts painting between 28ms and 87ms with a median FRAME gap
+ * of 25ms and a worst gap of 60 -- so that bound was reading the headless
+ * browser's frame cadence and calling it site latency. The responsiveness claim
+ * it was trying to make is real; it just has to be made against the grant,
+ * which is deterministic, and not against the first frame that happens to get
+ * scheduled.
+ *
+ * The keydown listener is registered at document-creation time, so it runs
+ * before the hatch's own capture-phase listener and records the input instant
+ * rather than some instant after the release. Passive: nothing here can affect
+ * the gesture it is measuring.
+ */
+const NAV_FADE_PROBE = `
+  window.__fade = { key: null, seen: null, samples: [] };
+  (function () {
+    window.addEventListener('keydown', function () {
+      if (window.__fade.key === null) window.__fade.key = performance.now();
+    }, { capture: true, passive: true });
+    var attach = function () {
+      var n = document.querySelector('nav');
+      if (!n) { setTimeout(attach, 0); return; }
+      new MutationObserver(function () {
+        if (window.__fade.seen === null && n.classList.contains('seen')) {
+          window.__fade.seen = performance.now();
+        }
+      }).observe(n, { attributes: true, attributeFilter: ['class'] });
+    };
+    document.addEventListener('DOMContentLoaded', attach);
+    var tick = function () {
+      var n = document.querySelector('nav');
+      if (n) {
+        window.__fade.samples.push({
+          t: performance.now(),
+          o: parseFloat(getComputedStyle(n).opacity),
+        });
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  })();
+`;
+
 const readEvents = (page) => page.evaluate(
   () => JSON.parse(sessionStorage.getItem('__ssc_events') || '[]'));
 
@@ -693,6 +758,29 @@ async function runInventory(base, browser) {
     // held element in a real browser -- the delay the browser actually resolved
     // and the duration it actually resolved -- and asserts their sum is
     // SETTLE_MS. Editing the token without editing the constants fails it.
+    //
+    // REWIRED, because the mechanism moved and this fixture caught the move:
+    //
+    //   FAIL  the settle boundary agrees with the CSS the browser actually resolved
+    //         computed {"hold":1600,"step":120,"i":1,"delay":120,"duration":1000,
+    //         "heroHasReveal":false}; delay+duration was 1120, SETTLE_MS is 2720
+    //
+    // That is the fixture reporting the truth about a page it no longer
+    // described. The hold is no longer inside `transition-delay` -- it is the
+    // moment RevealManager grants `.seen` -- so the 120ms this reads is the
+    // held pair's ordinary stagger and 1120 is the correct sum of the two
+    // things it was reading. What it must read now is three terms, not two.
+    //
+    // The single-source claim survives the move and is asserted DIRECTLY here
+    // rather than inferred: --hero-hold is still the one authoritative value,
+    // and js/animations.js READS it (SSC.reveal.holdMs) instead of carrying a
+    // copy. So this checks the CSS token, the value the JS actually resolved
+    // from it, the stagger the browser actually applied, and the duration the
+    // browser actually applied, and requires all four to compose to SETTLE_MS.
+    // A token retuned alone fails it via the JS read; a constant edited alone
+    // fails it via the sum; and a hold that crept back into a transition-delay
+    // fails `delay === i * step`, which is the specific regression this whole
+    // rewrite exists to make impossible.
     const page = await newPage(browser);
     await page.goto(base, { waitUntil: 'load' });
     // WAIT FOR THE CLASS THAT CARRIES THE TRANSITION, not for `load`.
@@ -712,6 +800,8 @@ async function runInventory(base, browser) {
       const cs = getComputedStyle(title);
       return {
         hold: ms(root.getPropertyValue('--hero-hold')),
+        // What the JS resolved from that token, not a copy of it.
+        jsHold: window.SSC.reveal.holdMs,
         step: ms(root.getPropertyValue('--stagger-step')),
         i: parseFloat(cs.getPropertyValue('--i')),
         delay: ms(cs.transitionDelay.split(',')[0]),
@@ -728,14 +818,64 @@ async function runInventory(base, browser) {
     // must equal the hold plus this element's own stagger, and the delay plus
     // the duration must equal the boundary the metric branches on. A consistent
     // retune passes; a token moved without its constants does not.
-    check('the settle boundary agrees with the CSS the browser actually resolved',
-      m.delay + m.duration === SETTLE_MS
-      && m.delay === m.hold + m.i * m.step
+    check('the settle boundary agrees with the hold the page actually runs on',
+      m.jsHold === m.hold
+      && m.delay === m.i * m.step
+      && m.hold + m.delay + m.duration === SETTLE_MS
       && m.hold > 0 && m.step > 0 && m.i === 1,
-      `computed ${JSON.stringify(m)}; delay+duration was ${m.delay + m.duration}, SETTLE_MS is ${SETTLE_MS}`);
+      `computed ${JSON.stringify(m)}; hold+delay+duration was `
+      + `${m.hold + m.delay + m.duration}, SETTLE_MS is ${SETTLE_MS}`);
+    check('the hold is spent by the reveal clock, never by a transition-delay',
+      m.delay < m.hold && m.delay === m.i * m.step,
+      `.hero-content resolved a ${m.delay}ms transition-delay against a ${m.hold}ms `
+      + `hold and a ${m.i * m.step}ms stagger. A held element carrying its hold as a `
+      + `delay leaves a PENDING transition for the length of the beat, and Chrome `
+      + `UPDATES a pending transition rather than replacing it -- which is what made `
+      + `the escape hatch's short fade run at the long timing twice before`);
     check('the LCP hero image is never a reveal target',
       m.heroHasReveal === false,
       'the hero <img> carries .reveal -- the largest paint on the page is being withheld');
+    await page.close();
+  }
+  {
+    // THE HOLD ACTUALLY HOLDS.
+    //
+    // New, and it is not redundant with the agreement fixture above -- it is
+    // the assertion that fixture used to make implicitly and can no longer
+    // make at all. While the hold lived in `transition-delay`, reading the
+    // computed delay WAS reading the hold: the browser had already resolved
+    // the cascade and there was nothing left to go wrong. The hold is now a
+    // scheduled grant, and a computed style cannot see a setTimeout. Every way
+    // of getting that scheduling wrong -- never arming it, arming it at zero,
+    // letting the IntersectionObserver compose the pair on its first callback
+    // -- leaves the whole page above green while the photograph is never alone
+    // for a single frame.
+    //
+    // So it is asserted as the thing Lee actually asked for: at 900ms the nav
+    // and the title are not on the page, and by the settle boundary they are.
+    // No input of any kind is issued here, because input is the one thing that
+    // legitimately ends the beat early.
+    const page = await newPage(browser);
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(900);
+    const during = await page.evaluate(() => ({
+      nav: parseFloat(getComputedStyle(document.querySelector('nav')).opacity),
+      title: parseFloat(getComputedStyle(document.querySelector('.hero-content')).opacity),
+    }));
+    await page.waitForTimeout(PAST_SETTLE_MS - 900 + 200);
+    const after = await page.evaluate(() => ({
+      nav: parseFloat(getComputedStyle(document.querySelector('nav')).opacity),
+      title: parseFloat(getComputedStyle(document.querySelector('.hero-content')).opacity),
+    }));
+    check('the photograph is held alone: nothing has arrived over it at 900ms',
+      during.nav === 0 && during.title === 0,
+      `900ms in, nav opacity ${during.nav} and title opacity ${during.title} -- the `
+      + `hold is not being spent. The grant is scheduled in JS now, so a computed `
+      + `style cannot catch this and this fixture is the only thing that can`);
+    check('and both have arrived by the settle boundary',
+      after.nav === 1 && after.title === 1,
+      `past the settle, nav opacity ${after.nav} and title opacity ${after.title} -- `
+      + `the scheduled grant never landed and the homepage has no navigation on it`);
     await page.close();
   }
   {
@@ -836,25 +976,61 @@ async function runInventory(base, browser) {
     // the beat -- invisible focus, which is the accessibility failure the hold
     // introduces and the reason keydown is one of its cancel triggers.
     //
-    // Asserted as behaviour rather than as "a listener is attached": Tab early,
-    // then poll for the nav to be fully visible inside 100ms. A cancel
-    // implemented as a shortened delay rather than a snap would miss that
-    // window, which is deliberate -- an interrupted animation must yield.
+    // RETARGETED, and this fixture is how the retarget was forced:
+    //
+    //   FAIL  a Tab during the held beat reveals the nav immediately, not eventually
+    //         nav opacity was 0 100ms after Tab -- focus is sitting on an
+    //         invisible link
+    //
+    // The old contract was `opacity === 1` inside 100ms, and its comment argued
+    // that "a cancel implemented as a shortened delay rather than a snap would
+    // miss that window, which is deliberate -- an interrupted animation must
+    // yield". Lee's fixed decision reverses the aesthetic half of that: the
+    // cancel is a short FADE now. The accessibility half is not negotiable and
+    // is not being softened away, it is being restated at the three bounds that
+    // still mean something:
+    //
+    //   grant within 50ms of the key   -- the page RESPONDED to the input
+    //   composed within 500ms          -- focus is not on an invisible link
+    //   the fade lasts at least 120ms  -- it faded; it did not snap
+    //
+    // The third clause is what stops the first two being satisfied by going
+    // back to the snap; the second is what stops them being satisfied by a
+    // crawl. 500ms is the contract rather than a tolerance -- it is how long
+    // focus may sit somewhere invisible -- so if it ever goes red, the fade got
+    // slower and the answer is not to raise the number.
+    //
+    // The first clause is measured against the GRANT, not against the first
+    // painted frame. See NAV_FADE_PROBE for why: the painted-start version of
+    // this bound was reading the headless browser's frame cadence.
     const page = await newPage(browser);
+    await page.addInitScript(NAV_FADE_PROBE);
     await page.goto(base, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(200);
     await page.keyboard.press('Tab');
-    let opacity = null;
-    const deadline = Date.now() + 100;
-    while (Date.now() < deadline) {
-      opacity = await page.evaluate(() =>
-        parseFloat(getComputedStyle(document.querySelector('nav')).opacity));
-      if (opacity === 1) break;
-      await page.waitForTimeout(10);
-    }
-    check('a Tab during the held beat reveals the nav immediately, not eventually',
-      opacity === 1,
-      `nav opacity was ${opacity} 100ms after Tab -- focus is sitting on an invisible link`);
+    await page.waitForTimeout(800);
+    const f = await page.evaluate(() => window.__fade);
+    const after = f.key === null ? [] : f.samples.filter((s) => s.t >= f.key);
+    const moved = after.find((s) => s.o > 0.01);
+    const done = after.find((s) => s.o >= 0.999);
+    const grantMs = (f.key !== null && f.seen !== null)
+      ? Math.round(f.seen - f.key) : null;
+    const doneMs = done ? Math.round(done.t - f.key) : null;
+    const fadeMs = (moved && done) ? Math.round(done.t - moved.t) : null;
+    check('a Tab during the held beat ends the beat on the keystroke itself',
+      grantMs !== null && grantMs <= 50,
+      `the nav was granted its reveal ${grantMs}ms after the key (want <=50). The `
+      + `hatch handles keydown synchronously, so anything above a frame here means `
+      + `the release has been deferred behind something`);
+    check('and focus is never left on an invisible link for long',
+      doneMs !== null && doneMs <= 500,
+      `the nav reached full opacity ${doneMs}ms after Tab (want <=500). That is how `
+      + `long focus sat on a link nobody could see`);
+    check('and it FADES -- the interrupted beat yields, it does not flinch',
+      fadeMs !== null && fadeMs >= 120,
+      `the nav went from invisible to composed in ${fadeMs}ms, which is a snap. `
+      + `Lee's fixed decision is a gentle fade on early input; a snap is the `
+      + `behaviour this replaced`);
     await page.close();
   }
 
@@ -1209,12 +1385,19 @@ const MUTATIONS = [
       await page.goto(base, { waitUntil: 'load' });
       await page.waitForFunction(
         () => document.documentElement.classList.contains('reveal-ready'));
+      // Three terms now, not two. The hold left `transition-delay` for the
+      // reveal clock, so the token's effect on the page arrives through
+      // SSC.reveal.holdMs -- which is exactly the path this mutation has to
+      // travel down for the single-source claim to still mean anything.
       const agrees = await page.evaluate(() => {
         const ms = (v) => (String(v).trim().endsWith('ms')
           ? parseFloat(v) : parseFloat(v) * 1000);
+        const hold = ms(getComputedStyle(document.documentElement)
+          .getPropertyValue('--hero-hold'));
         const cs = getComputedStyle(document.querySelector('.hero-content'));
-        return ms(cs.transitionDelay.split(',')[0])
-          + ms(cs.transitionDuration.split(',')[0]) === 2720;
+        return window.SSC.reveal.holdMs === hold
+          && hold + ms(cs.transitionDelay.split(',')[0])
+            + ms(cs.transitionDuration.split(',')[0]) === 2720;
       });
       await page.close();
       return !agrees;
@@ -1244,16 +1427,25 @@ const MUTATIONS = [
     proves: 'a held beat that cannot be interrupted by Tab is detected',
     apply: (dir) => mutate(path.join(dir, 'js', 'init.js'),
       'SSC.initHoldEscape();', 'void SSC.initHoldEscape;'),
+    // `opacity !== 1` at 100ms was the old discriminator and it stopped being
+    // one the moment the cancel became a 350ms fade: at 100ms an UNMUTATED page
+    // is mid-fade at roughly 0.5, so the mutation would have "detected" a build
+    // with nothing wrong with it. A mutation that fires either way is worse
+    // than no mutation, because it reads as coverage.
+    //
+    // Read at 800ms instead, which is past the longest legitimate fade and
+    // still 800ms clear of the 1600ms hold. Unbound, the nav is exactly 0 there
+    // because the beat is simply still running.
     run: async (base, browser) => {
       const page = await newPage(browser);
       await page.goto(base, { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(200);
       await page.keyboard.press('Tab');
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(600);
       const opacity = await page.evaluate(
         () => parseFloat(getComputedStyle(document.querySelector('nav')).opacity));
       await page.close();
-      return opacity !== 1;
+      return opacity === 0;
     },
   },
   {
@@ -1307,6 +1499,75 @@ const MUTATIONS = [
       await close();
       return typeOf(events, 'hero_hold_skipped').length
         + typeOf(events, 'hero_hold_complete').length > 0;
+    },
+  },
+  // ---- the hold, now that it lives in the reveal clock -------------------
+  //
+  // While the hold was a `transition-delay`, the agreement fixture's computed
+  // read was proof it happened: the browser had resolved the cascade and there
+  // was no further step to get wrong. A scheduled grant has three further steps
+  // -- arm the timer, arm it at the right length, and keep the observer's hands
+  // off the held pair -- and a computed style can see none of them. These three
+  // mutations are one per step, and all three are caught by the same new
+  // behavioural fixture, which is the point: that fixture is now the only thing
+  // standing between the site and a homepage with no hold at all.
+  {
+    name: 'M14 hold scheduled at zero',
+    proves: 'a beat that is armed but never actually waited out is detected',
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      'const remaining = Math.max(0, this.holdMs - elapsed);',
+      'const remaining = 0;'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(900);
+      const opacity = await page.evaluate(
+        () => parseFloat(getComputedStyle(document.querySelector('nav')).opacity));
+      await page.close();
+      return opacity !== 0;
+    },
+  },
+  {
+    name: 'M15 escape release drops the short duration',
+    proves: 'a cancel that fades at the FULL reveal length is detected',
+    // The failure this guards is the one the previous two attempts shipped: the
+    // hatch fires, the classes are right, and the fade still runs at 1000ms.
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      'this.compose(heldTargets(), true);',
+      'this.compose(heldTargets(), false);'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.addInitScript(NAV_FADE_PROBE);
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(200);
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(800);
+      const f = await page.evaluate(() => window.__fade);
+      await page.close();
+      if (f.key === null) return true;
+      const done = f.samples.filter((s) => s.t >= f.key).find((s) => s.o >= 0.999);
+      return !done || done.t - f.key > 500;
+    },
+  },
+  {
+    name: 'M16 held pair handed back to the intersection observer',
+    proves: 'the hold being composed away on the observer\'s first callback is detected',
+    // The subtlest of the three, and the easiest to reintroduce by tidying:
+    // the held pair carries `.reveal` like everything else, so an observer that
+    // is not told to skip it grants `.seen` on its first callback -- the pair is
+    // above the fold -- and the scheduled grant then lands 1600ms later on
+    // elements that have already arrived. Nothing errors. There is just no hold.
+    apply: (dir) => mutate(path.join(dir, 'js', 'animations.js'),
+      'if (isHeld.has(el)) return;',
+      'if (false && isHeld.has(el)) return;'),
+    run: async (base, browser) => {
+      const page = await newPage(browser);
+      await page.goto(base, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(900);
+      const opacity = await page.evaluate(
+        () => parseFloat(getComputedStyle(document.querySelector('nav')).opacity));
+      await page.close();
+      return opacity !== 0;
     },
   },
 ];

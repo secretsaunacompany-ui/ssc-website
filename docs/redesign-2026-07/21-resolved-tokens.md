@@ -243,11 +243,22 @@ N2 that survives intact and governs:
   separate intro system" failure Jen §5.1 rules out. Lee's addendum agrees in its own
   words: the old `HeroIntroAnimation` "stays dead", and it grants total implementation
   freedom while fixing only the sequence. B1 shipped the amended sequence *inside* the
-  re-affirmed mechanism — a longer image-first hold (`--hero-hold`) plus held
-  transition-delays on the later `--i` members — adding no second system.
+  re-affirmed mechanism — a longer image-first hold (`--hero-hold`) — adding no second
+  system. **Amended 2026-08-02 (hero graceful-cancel):** B1 originally spent that hold
+  as `transition-delay` on the held `--i` members. It is now spent as the moment
+  `RevealManager` grants `.seen` to them, because a long pending transition made a
+  gentle cancel impossible to implement (four attempts; see the ROADMAP entry). This
+  does not open a second system and the ruling above is not weakened: it is the same
+  `RevealManager`, the same `.reveal` transition, the same `--i` stagger and the same
+  observer, and the `.seen` grant was already JS-driven. Only its TIMING moved, from a
+  CSS property to the clock the manager already keeps. There is still exactly one thing
+  on the page that reveals elements. `--hero-hold` remains the single authoritative
+  value; `animations.js` reads it rather than copying it.
 - **Scroll is never blocked.** Both Jen and Wim agreed on this and Lee's addendum does
   not touch it. The beat is a hold, never a lock: a scroll, keypress or tap during it
-  cancels the hold instantly.
+  cancels the hold instantly. Since 2026-08-02 the cancel resolves as a ~350ms fade
+  rather than a snap (Lee's fixed decision); "instantly" describes when the beat ENDS,
+  which is on the input itself, not how long the pixels take to catch up.
 - **Reduced motion renders fully composed.**
 - The mobile `w_828` srcset requirement.
 - The `hero_hold_complete` / `hero_hold_skipped` instrumentation, and with it N2's own
@@ -267,6 +278,12 @@ content on the hero is a misreading of its scope.
 choreography. The 1240 figure is retained above as the historical record of what N2
 originally resolved; the live number is asserted by `scripts/events.test.mjs` against
 the browser's own computed style, so it cannot drift from the note that reads it.
+`SETTLE_MS` survived the 2026-08-02 mechanism change unaltered, and the arithmetic
+above still holds term for term: `.seen` used to land at t=0 with the transition
+waiting out a 1600ms delay, and now lands at t=1600 with the transition starting at
+once. Same visible timeline, same boundary. The agreement fixture now checks three
+terms rather than two (the token, the JS value read from it, and the ordinary stagger
+plus duration the browser resolved).
 
 ---
 
