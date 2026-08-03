@@ -461,6 +461,82 @@ const GUTTER_DEVIATIONS = [
 ];
 const MEASURE_WIDE_CH = 70;              // doc 11 §5 / --measure-wide
 
+/**
+ * The ledger's source labels, at the width where they are hidden from the eye.
+ *
+ * `.compare-ledger__source` names which product each cell describes. Above 768
+ * the column header does that job visually, so the per-cell label is redundant
+ * TO THE EYE -- and it was `display: none`, which is redundancy removed from
+ * everything else as well. A screen reader reading the grid linearly got three
+ * bare claims per row with nothing saying whose they were, and one of them
+ * ("Often made with cheap materials") is a claim about INFRARED that reads, in a
+ * row opening with our own product, as a confession (Razor W-2).
+ *
+ * This has no other guard. dom-integrity cannot see it (CSS only), and
+ * visual-diff cannot see it either -- the fix is 0 pixels by construction, which
+ * was measured. A future tidy back to `display: none` would regress in silence.
+ * That is exactly the shape of thing this suite exists for: a declared value and
+ * the value that reaches the element are different claims.
+ */
+function probeLedgerSource() {
+  const el = document.querySelector('.compare-ledger__source');
+  if (!el) return null;
+  const cs = getComputedStyle(el);
+  const r = el.getBoundingClientRect();
+  const row = document.querySelector('.compare-ledger__row');
+  return {
+    display: cs.display,
+    w: Math.round(r.width),
+    h: Math.round(r.height),
+    // innerText reflects what is RENDERED: it omits display:none subtrees but
+    // keeps visually-hidden clipped text, which is precisely the distinction
+    // being asserted.
+    rowText: row ? row.innerText.replace(/\s+/g, ' ').trim() : null,
+  };
+}
+
+/**
+ * Declared aspect versus DELIVERED aspect, per image.
+ *
+ * Two separate defects in this batch were the same defect: C-1 added a rotation
+ * and the width/height attributes still described the unrotated derivative;
+ * W-B removed a rotation and the attributes still described the rotated one.
+ * Both shipped through a full review. The attributes are a CLAIM about the
+ * bytes Cloudinary returns, and any edit to the transform edits that claim --
+ * but nothing checked the claim against the bytes.
+ *
+ * Measured by decoding each `src` independently rather than reading
+ * `naturalWidth` off the element, because most of these are `loading="lazy"`
+ * below the fold and would report 0x0 unscrolled -- which would quietly skip
+ * the very images most likely to be wrong.
+ */
+async function probeImageAspect() {
+  const out = [];
+  const imgs = Array.from(document.querySelectorAll('img[width][height]'));
+  for (const el of imgs) {
+    const src = el.currentSrc || el.src;
+    if (!src) continue;
+    const dw = parseFloat(el.getAttribute('width'));
+    const dh = parseFloat(el.getAttribute('height'));
+    if (!(dw > 0) || !(dh > 0)) continue;
+    let nw = 0;
+    let nh = 0;
+    try {
+      const probe = new Image();
+      probe.src = src;
+      // eslint-disable-next-line no-await-in-loop
+      await probe.decode();
+      nw = probe.naturalWidth;
+      nh = probe.naturalHeight;
+    } catch (e) {
+      nw = 0;
+      nh = 0;
+    }
+    out.push({ src: src.split('/').pop(), dw, dh, nw, nh });
+  }
+  return out;
+}
+
 const WIDTHS = [1440, 390];
 
 /* The hero clearance is a PHONE-WIDTH property and its worst case is 360, which
@@ -517,6 +593,8 @@ async function measureAll(browser, base) {
           gutter: await page.evaluate(probeGutter),
           tier: await page.evaluate(probeSectionTier),
           measure: await page.evaluate(probeMeasure),
+          ledger: await page.evaluate(probeLedgerSource),
+          aspect: await page.evaluate(probeImageAspect),
         };
       }
     }
@@ -947,6 +1025,62 @@ function assertAll(results) {
   }
 }
 
+// ---------------------------- attribution + declared aspect (Razor W-2, W-B)
+
+function assertLedgerAndAspect(results) {
+  console.log('\nA — attribution and declared aspect');
+
+  // A. The ledger's source labels survive for assistive tech (Razor W-2).
+  //
+  // This has no other guard anywhere. dom-integrity cannot see it (CSS only)
+  // and visual-diff cannot see it either -- the fix is 0 pixels by
+  // construction, which was measured. A tidy back to `display: none` would
+  // regress in total silence, which is why it needed a home rather than a note.
+  const L = results['/saunas/@1440'] && results['/saunas/@1440'].ledger;
+  check('A1 the ledger source label is measurable at 1440 (not a vacuous pass)',
+    !!L, '.compare-ledger__source was not found on /saunas/ at 1440; the selector '
+    + 'moved, and every assertion below this one is measuring nothing');
+  check('A2 at >=768 the label is not display:none',
+    !!L && L.display !== 'none',
+    `computed display was ${L && L.display}. display:none removes the attribution from `
+    + `the accessibility tree entirely -- the defect W-2 fixed. It must be hidden with `
+    + `the clip pattern, which keeps it for the ear.`);
+  check('A3 and it is out of the visual flow (clipped, not drawn)',
+    !!L && L.w <= 2 && L.h <= 2,
+    `the label renders ${L && L.w}x${L && L.h}px. Above 768 the column header already `
+    + `names the source, so a drawn per-cell label is visible noise: this fix must cost `
+    + `zero pixels, and it was measured at zero.`);
+  const wanted = ['Ours', 'Barrel', 'Infrared'];
+  const missing = (L && L.rowText) ? wanted.filter((w) => !L.rowText.includes(w)) : wanted;
+  check('A4 the first ledger row reads attributed, source by source',
+    !!L && missing.length === 0,
+    `the row's rendered text is missing ${JSON.stringify(missing)}. Unattributed, "Often `
+    + `made with cheap materials" is a claim about INFRARED that reads, in a row opening `
+    + `with our own product, as a confession. Row text: ${JSON.stringify(L && L.rowText)}`);
+
+  // B. Declared aspect vs DELIVERED aspect -- the C-1 / W-B class.
+  const seen = new Map();
+  pages(results).forEach(([, r]) => (r.aspect || []).forEach((a) => seen.set(a.src, a)));
+  const all = [...seen.values()];
+  const decoded = all.filter((a) => a.nw > 0 && a.nh > 0);
+  check('B1 image aspects were actually decoded (not a vacuous pass)',
+    decoded.length >= 8,
+    `only ${decoded.length} of ${all.length} declared images decoded. The assertion below `
+    + `is worthless if the images never loaded -- most are lazy and below the fold, which `
+    + `is why the probe decodes each src itself instead of reading naturalWidth.`);
+  // RATIO, not absolute pixels: a declared width need not equal the delivered
+  // width (an image may be declared at its CSS size), but the SHAPE must match
+  // or the browser reserves the wrong box.
+  const off = decoded.filter((a) =>
+    Math.abs((a.dw / a.dh) - (a.nw / a.nh)) / (a.nw / a.nh) > 0.015);
+  check(`B2 every declared width/height matches the DELIVERED aspect (${decoded.length} images)`,
+    off.length === 0,
+    `these declare a shape the bytes do not have: ${JSON.stringify(off.slice(0, 4))}. Both `
+    + `C-1 (a rotation added) and W-B (a rotation removed) shipped through review as `
+    + `exactly this -- the attributes are a claim about the derivative, and editing the `
+    + `transform edits the claim. This is the check that would have caught both.`);
+}
+
 // ------------------------------------------------------------- the mutations
 //
 // Each patches the BUILT stylesheet in a throwaway copy of dist/ and must move
@@ -955,6 +1089,33 @@ function assertAll(results) {
 // DOM-integrity battery learned the hard way.
 
 const MUTATIONS = [
+  {
+    name: 'A-m1 the ledger source label reverts to display:none',
+    proves: 'the desktop attribution silently leaving the a11y tree is detected',
+    // The exact pre-W-2 state. Nothing else in the repo can catch this:
+    // dom-integrity is markup-only and visual-diff sees zero pixels, so without
+    // this mutation the A-assertions would be a fixture nobody has watched fail.
+    anchor: '.compare-ledger__source{clip:rect(0, 0, 0, 0);clip-path:inset(50%);'
+      + 'white-space:nowrap;border:0;width:1px;height:1px;margin:-1px;padding:0;'
+      + 'position:absolute;overflow:hidden}',
+    patched: '.compare-ledger__source{display:none}',
+    probe: (r) => (r['/saunas/@1440'] || {}).ledger,
+  },
+  {
+    name: 'B-m1 a declared height goes stale against its derivative',
+    proves: 'the C-1 / W-B class -- attributes describing a shape the bytes do not have',
+    // Reproduces W-B byte for byte: 452 is the aspect this image had under the
+    // a_90 that B7 stream 1 removed, and it survived a full review cycle.
+    // Patches built MARKUP, not CSS, because that is where the claim lives.
+    file: 'saunas/index.html',
+    anchor: 'v1768324972/PXL_20250605_233615654_or7ngn.jpg" alt="Commercial sauna '
+      + 'interior with professional-grade cedar benching" width="600" height="797"',
+    patched: 'v1768324972/PXL_20250605_233615654_or7ngn.jpg" alt="Commercial sauna '
+      + 'interior with professional-grade cedar benching" width="600" height="452"',
+    probe: (r) => ((r['/saunas/@1440'] || {}).aspect || [])
+      .filter((a) => a.src.indexOf('PXL_20250605_233615654') === 0)
+      .map((a) => `${a.dw}x${a.dh}|${a.nw}x${a.nh}`).join(','),
+  },
   {
     name: 'R-m6 the hero stops reserving the nav band',
     proves: 'the clearance is measured, not merely declared in a comment',
@@ -1085,19 +1246,24 @@ const MUTATIONS = [
 
 async function runMutations(browser, reference) {
   console.log('\nM — mutation battery (runnable)');
-  const css = fs.readFileSync(path.join(DIST, 'styles.css'), 'utf8');
   for (let i = 0; i < MUTATIONS.length; i++) {
     const m = MUTATIONS[i];
+    // Most mutations patch the built stylesheet. Some must patch built MARKUP
+    // instead: the declared-aspect claim lives in width/height attributes, so a
+    // CSS-only battery could never prove that assertion can fail, and an
+    // assertion nothing can falsify is decoration.
+    const target = m.file || 'styles.css';
     const dir = path.join(WORK, 'mutants', `r${i}`);
     fs.rmSync(dir, { recursive: true, force: true });
     fs.cpSync(DIST, dir, { recursive: true });
-    if (!css.includes(m.anchor)) {
+    const source = fs.readFileSync(path.join(DIST, target), 'utf8');
+    if (!source.includes(m.anchor)) {
       check(m.name, false,
-        `anchor ${JSON.stringify(m.anchor)} not found in the built stylesheet. The CSS `
+        `anchor ${JSON.stringify(m.anchor)} not found in built ${target}. That file `
         + `moved; re-aim the mutation. An un-applied mutation must never look like a pass.`);
       continue;
     }
-    fs.writeFileSync(path.join(dir, 'styles.css'), css.split(m.anchor).join(m.patched));
+    fs.writeFileSync(path.join(dir, target), source.split(m.anchor).join(m.patched));
     const server = await startServer(dir);
     try {
       const mutated = await measureAll(browser, server.url);
@@ -1129,6 +1295,7 @@ async function main() {
     const results = await measureAll(browser, server.url);
     assertAll(results);
     assertHeroClearance(results.__hero, results.__heroNoFont, results.__token);
+    assertLedgerAndAspect(results);
     await runMutations(browser, results);
   } finally {
     await server.close();
