@@ -89,6 +89,35 @@ const displayCapacity = (s) => s.replaceAll('-', '–');
 const CANONICAL_PATH = process.env.SSC_MODELS_JSON
   || '/home/leesalo/marvin/content/reference/operations/models.json';
 
+/**
+ * The advisor's hand-synced copy of the price sheet. Not a mirror of canonical
+ * in shape -- it is a flattened projection shaped for a prompt -- but every
+ * number in it is a number canonical is authoritative for. See
+ * `checkAdvisorProductsProjection`.
+ */
+const PRODUCTS_FILE = path.join(REPO_ROOT, 'netlify', 'functions', 'data', 'products.json');
+
+/**
+ * THE MARGIN FLOOR IS POLICY, AND POLICY DOES NOT LIVE IN THE FILE THE GATE
+ * POLICES (Razor W1).
+ *
+ * The cost-basis check used to read its floor out of `costBasis.gmFloor` in
+ * canonical -- the same document whose prices it is checking. That is a gate
+ * holding its own bar, and the bar was lowerable by the person being measured:
+ * editing S6's gmFloor to 0.20 and dropping its `held` flag turned a knowingly
+ * below-floor price into a silent PASS, with no diff to review anywhere near a
+ * price. Razor proved it.
+ *
+ * So the floor is pinned HERE, in code, and canonical's own gmFloor is checked
+ * AGAINST it rather than trusted as it. The policy: "No quote leaves under 40%
+ * GM stress-tested" (pricing-overhaul-reference.md §3 rule 1). A model whose
+ * recorded gmFloor differs from this constant is a FAIL naming both values --
+ * not a quietly-honoured local override. Lowering the floor now requires
+ * editing this line, which is a code review; it can no longer be done by
+ * editing the data the line exists to police.
+ */
+const GM_FLOOR_POLICY = 0.40;
+
 let fails = 0;
 let skips = 0;
 let warns = 0;
@@ -272,7 +301,10 @@ function checkSiteDataParity() {
  *
  * So: canonical records, per model, the stress-case build cost and the gross
  * margin floor the list price is expected to clear against it. This asserts
- * (basePrice - stressCost) / basePrice >= gmFloor.
+ * (basePrice - stressCost) / basePrice >= GM_FLOOR_POLICY -- the floor pinned in
+ * THIS file, not the one recorded in the data (Razor W1). Canonical's own
+ * `gmFloor` is still read, but only to be checked against the policy: a
+ * disagreement is a FAIL naming both numbers, never a local override.
  *
  * THE HELD FLAG, and why it is not a way of turning the check off.
  *
@@ -312,14 +344,34 @@ function checkCostBasis(canonical) {
       continue;
     }
 
+    // W1. The recorded floor is checked against the pinned policy BEFORE it is
+    // used for anything. Everything below compares against GM_FLOOR_POLICY, not
+    // against cb.gmFloor, so even a tampered value cannot lower the real bar --
+    // it can only add a second failure line saying it was tampered with.
+    ok(cb.gmFloor === GM_FLOOR_POLICY,
+      `${key} costBasis.gmFloor ${pct(cb.gmFloor)} === the pinned policy floor `
+      + `${pct(GM_FLOOR_POLICY)} (pricing-overhaul-reference.md §3 rule 1, "No quote leaves `
+      + 'under 40% GM stress-tested"). A per-model floor is not a thing this business has: '
+      + 'if the policy really changed, change GM_FLOOR_POLICY in '
+      + 'scripts/models-json-roundtrip.mjs, where it gets reviewed.');
+
+    // N3. A hold is a promise that something specific will retire it. Without a
+    // heldRef it is just an exemption with better manners, and nobody can tell
+    // years later what was supposed to clear it.
+    if (cb.held && !cb.heldRef) {
+      ok(false, `${key} is flagged costBasis.held with NO heldRef. A hold must carry the `
+        + 'reference that says what has to happen for it to end, or it is an untraceable '
+        + 'permanent exemption from the margin floor.');
+    }
+
     const gm = (m.basePrice - cb.stressCost) / m.basePrice;
 
-    if (gm >= cb.gmFloor) {
-      ok(true, `${key} margin ${pct(gm)} >= floor ${pct(cb.gmFloor)} `
+    if (gm >= GM_FLOOR_POLICY) {
+      ok(true, `${key} margin ${pct(gm)} >= floor ${pct(GM_FLOOR_POLICY)} `
         + `(basePrice ${m.basePrice} - stressCost ${cb.stressCost})`);
       if (cb.held) {
         warn(`${key} is still flagged costBasis.held but its margin ${pct(gm)} now CLEARS the `
-          + `floor ${pct(cb.gmFloor)}. The hold has served its purpose -- remove the flag `
+          + `floor ${pct(GM_FLOOR_POLICY)}. The hold has served its purpose -- remove the flag `
           + `(heldRef: ${cb.heldRef || '(none recorded)'}).`);
       }
       continue;
@@ -327,18 +379,254 @@ function checkCostBasis(canonical) {
 
     if (cb.held) {
       warn(`${key} is BELOW its floor and knowingly held: margin ${pct(gm)} < floor `
-        + `${pct(cb.gmFloor)} (basePrice ${m.basePrice} - stressCost ${cb.stressCost} = `
+        + `${pct(GM_FLOOR_POLICY)} (basePrice ${m.basePrice} - stressCost ${cb.stressCost} = `
         + `${m.basePrice - cb.stressCost}). This is not a pass, it is a standing bill. `
         + `Held pending: ${cb.heldRef || '(no heldRef recorded -- record one)'}`);
       continue;
     }
 
     ok(false, `${key} basePrice ${m.basePrice} is BELOW its gross-margin floor: margin `
-      + `${pct(gm)} < floor ${pct(cb.gmFloor)} against stressCost ${cb.stressCost} `
+      + `${pct(gm)} < floor ${pct(GM_FLOOR_POLICY)} against stressCost ${cb.stressCost} `
       + `(gross ${m.basePrice - cb.stressCost}). Either raise basePrice to at least `
-      + `${Math.ceil(cb.stressCost / (1 - cb.gmFloor))} or record a costBasis.held with a `
+      + `${Math.ceil(cb.stressCost / (1 - GM_FLOOR_POLICY))} or record a costBasis.held with a `
       + 'heldRef saying what makes the shortfall deliberate.');
   }
+}
+
+/**
+ * HALF SIX (Razor W4) -- THE ADVISOR'S PRICE SHEET.
+ *
+ * `netlify/functions/data/products.json` is a sixth copy of the price sheet and
+ * was, until now, the only one no assertion touched. It is read by the AI
+ * advisor functions and pasted wholesale into their system prompts, so a stale
+ * number there is not a stale number on a page a visitor can check against the
+ * configurator -- it is a stale number an assistant states with confidence, in
+ * conversation, to a customer who has no way of knowing. Its own `_comment`
+ * says "keep in sync with js/data.js", which is a hand-sync instruction with no
+ * detector behind it. This is the detector.
+ *
+ * It is a PROJECTION, not a mirror: the file is deliberately flattened and
+ * re-worded for a prompt, so it cannot be byte-compared like the in-repo copy.
+ * What is gated is every number in it that canonical is authoritative for, plus
+ * the version stamp that says which sheet it belongs to.
+ *
+ * The mapping tables below are HAND-WRITTEN and that is the point. A table
+ * derived from products.json would agree with products.json no matter what it
+ * said, which is the tautology this whole file exists to avoid. The cost is
+ * that adding a priced line means adding a mapping -- and an unmapped priced
+ * line is a FAIL, not a skip, so the cost is paid rather than silently dodged.
+ */
+const PRODUCTS_MODEL_KEYS = { s2: 'S2', s4: 'S4', s6: 'S6', s8: 'S8', sc: 'SC' };
+
+/**
+ * Fixed-price advisor lines -> the canonical option they copy. A bare string is
+ * an option with a flat `price`; a `[id, MODEL]` pair is one line of an option's
+ * `pricePerModel` map, which is how the advisor file flattens the per-model
+ * heater split into separate named lines.
+ */
+const PRODUCTS_FIXED_LINES = {
+  heaterUpgrade: {
+    'Standard (included)': 'heater_standard',
+    'Homecraft Revive 9kW Electric (S2-S8)': ['heater_electric', 'S2'],
+    'Homecraft 15kW Apex Electric (SC)': ['heater_electric', 'SC'],
+    'Mini-IKI Wood-fired (S4)': ['heater_wood', 'S4'],
+    'Original-IKI Wood-fired (S6, S8)': ['heater_wood', 'S6'],
+    'Original-IKI Wood-fired (SC)': ['heater_wood', 'SC'],
+  },
+  changingRoom: {
+    None: 'changing_none',
+    "3' Changing Room": 'changing_3ft',
+    "4' Changing Room": 'changing_4ft',
+  },
+  frontDeck: {
+    None: 'deck_none',
+    "2' open deck platform": 'deck_platform_2ft',
+    "3' open deck platform": 'deck_platform_3ft',
+    "2' semi-enclosed deck (two finished side walls, covered roof)": 'deck_enclosed_2ft',
+    "3' semi-enclosed deck (two finished side walls, covered roof)": 'deck_enclosed_3ft',
+  },
+  exteriorCladding: { 'Standard metal (included)': 'exterior_standard' },
+  interiorWood: { 'Knotty Western Red Cedar (included)': 'interior_knotty_cedar' },
+  benchConfig: { 'L-Shaped': 'bench_l', 'U-Shaped': 'bench_u' },
+  additionalOptions: {
+    'Additional window (standard size)': 'window_standard',
+    'Additional full-size window (~23 sq ft)': 'window_full_size',
+    'Interior + exterior lighting': 'lighting_package',
+    'Bluetooth speakers (standard set)': 'speakers_standard',
+    'Premium audio (Polk Atrium 5 all-weather pair + 2.1 Bluetooth amp)': 'speakers_premium',
+    'WiFi heater controller': 'wifi_controller',
+  },
+};
+
+/**
+ * Advisor lines whose price is PROSE rather than a number, because the real
+ * price varies by model. Two kinds, and the distinction is load-bearing:
+ *
+ *   'enumerating' -- the sentence lists the actual figures, so the set of
+ *                    dollar amounts in it must equal canonical's distinct
+ *                    per-model values EXACTLY. A dropped figure is as wrong as
+ *                    a stale one.
+ *   'vague'       -- the sentence says "varies by model" and names no figure.
+ *                    Legitimate. Gated as a subset: it may say nothing, but
+ *                    anything it does say must be a number canonical actually
+ *                    carries, so a stale figure cannot creep in later.
+ */
+const PRODUCTS_PROSE_LINES = {
+  exteriorCladding: {
+    'Standing seam metal': ['exterior_standing_seam', 'enumerating'],
+    'Cedar exterior': ['exterior_cedar', 'enumerating'],
+    'Yakisugi (charred cedar) exterior': ['exterior_yakisugi', 'enumerating'],
+  },
+  interiorWood: {
+    'Clear Cedar': ['interior_clear_cedar', 'vague'],
+    Thermowood: ['interior_thermowood', 'vague'],
+  },
+};
+
+/** Every dollar figure in a sentence, as numbers. "$9,200-$12,500" -> [9200, 12500]. */
+const dollarsIn = (s) => [...String(s).matchAll(/\$([\d,]+)/g)].map((m) => money(m[1]));
+
+function checkAdvisorProductsProjection(canonical) {
+  console.log('\n--- advisor price sheet vs canonical (netlify/functions/data/products.json) ---');
+  console.log(`  advisor   ${PRODUCTS_FILE}`);
+  if (!canonical) {
+    skip('canonical not readable; the advisor price sheet is UNVERIFIED against it -- not '
+      + 'confirmed. Four AI-advisor prompts quote from this file. Set SSC_MODELS_JSON to assert it.');
+    return;
+  }
+
+  let products;
+  try {
+    products = JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf8'));
+  } catch (err) {
+    ok(false, `${PRODUCTS_FILE} is not readable/parseable (${err.message}). The advisor `
+      + 'functions read it at runtime, so this is a broken advisor, not just a broken check.');
+    return;
+  }
+
+  // Flat index of every canonical option, by id.
+  const optById = new Map(Object.values(canonical.optionGroups)
+    .flatMap((g) => g.options).map((o) => [o.id, o]));
+
+  const canonicalAmount = (spec) => {
+    const [id, model] = Array.isArray(spec) ? spec : [spec, null];
+    const o = optById.get(id);
+    if (!o) return { err: `canonical has no option "${id}"` };
+    if (model) {
+      if (!o.pricePerModel || typeof o.pricePerModel[model] !== 'number') {
+        return { err: `canonical option "${id}" has no pricePerModel.${model}` };
+      }
+      return { value: o.pricePerModel[model] };
+    }
+    if (typeof o.price !== 'number') return { err: `canonical option "${id}" has no flat price` };
+    return { value: o.price };
+  };
+
+  ok(products._pricesVersion === canonical.pricesVersion,
+    `advisor _pricesVersion ${products._pricesVersion} === canonical pricesVersion `
+    + `${canonical.pricesVersion} (the stamp that says which sheet the advisor is quoting)`);
+
+  // --- per model ---
+  for (const [lower, KEY] of Object.entries(PRODUCTS_MODEL_KEYS)) {
+    const p = products.models[lower];
+    const c = canonical.models[KEY];
+    if (!p) { ok(false, `advisor products.json has no model "${lower}" (canonical has ${KEY})`); continue; }
+
+    const expect = {
+      fullName: c.name,
+      basePrice: c.basePrice,
+      size: c.size,
+      capacity: c.capacity,
+      electricOnly: c.electricOnly,
+      interiorUpgrade: canonicalAmount(['interior_clear_cedar', KEY]).value,
+      premiumFinishPrice: canonical.packages.premium_finish.pricePerModel[KEY],
+    };
+    const got = Object.fromEntries(Object.keys(expect).map((f) => [f, p[f]]));
+    const d = firstDifference(expect, got);
+    ok(d === null, d === null
+      ? `${KEY} advisor facts: fullName/basePrice/size/capacity/electricOnly/interiorUpgrade/`
+        + 'premiumFinishPrice all equal canonical'
+      : `${KEY} advisor sheet DIVERGED from canonical at "${d.field}": canonical `
+        + `${JSON.stringify(d.canonical)} vs products.json ${JSON.stringify(d.inRepo)}. The AI `
+        + `advisor states the second one to customers in conversation. Fix ${PRODUCTS_FILE}.`);
+  }
+
+  // --- add-on lines ---
+  // `additionalOptions` is a bare array; every other group is {options: [...]}.
+  const groupLines = (g) => (Array.isArray(products.addons[g])
+    ? products.addons[g] : (products.addons[g]?.options || []));
+
+  for (const group of Object.keys(products.addons)) {
+    if (group === 'premiumFinishPackage') continue; // handled on its own below
+    const fixed = PRODUCTS_FIXED_LINES[group] || {};
+    const prose = PRODUCTS_PROSE_LINES[group] || {};
+    const lines = groupLines(group);
+    if (!lines.length) { ok(false, `advisor addon group "${group}" has no option lines to check`); continue; }
+
+    for (const line of lines) {
+      if (typeof line.price === 'number') {
+        if (!(line.name in fixed)) {
+          ok(false, `advisor addon "${group}" / "${line.name}" carries a price (${line.price}) `
+            + 'that maps to NO canonical option. Every priced advisor line must be traceable to '
+            + 'canonical -- add it to PRODUCTS_FIXED_LINES in this script, do not leave it ungated.');
+          continue;
+        }
+        const r = canonicalAmount(fixed[line.name]);
+        if (r.err) { ok(false, `advisor addon "${line.name}": ${r.err}`); continue; }
+        ok(line.price === r.value,
+          `advisor addon "${line.name}": ${line.price} === canonical ${r.value}`);
+        continue;
+      }
+
+      // Prose price.
+      if (!(line.name in prose)) {
+        ok(false, `advisor addon "${group}" / "${line.name}" has a non-numeric price `
+          + `${JSON.stringify(line.price)} and no entry in PRODUCTS_PROSE_LINES. An unmapped `
+          + 'prose price is an ungated price.');
+        continue;
+      }
+      const [id, mode] = prose[line.name];
+      const opt = optById.get(id);
+      if (!opt || !opt.pricePerModel) {
+        ok(false, `advisor addon "${line.name}": canonical option "${id}" has no pricePerModel`);
+        continue;
+      }
+      const canon = [...new Set(Object.values(opt.pricePerModel).filter((v) => typeof v === 'number'))]
+        .sort((a, b) => a - b);
+      const said = [...new Set(dollarsIn(line.price))].sort((a, b) => a - b);
+      if (mode === 'enumerating') {
+        ok(JSON.stringify(said) === JSON.stringify(canon),
+          `advisor addon "${line.name}" enumerates ${JSON.stringify(said)} === canonical `
+          + `distinct per-model values ${JSON.stringify(canon)}`);
+      } else {
+        const strays = said.filter((v) => !canon.includes(v));
+        ok(strays.length === 0,
+          `advisor addon "${line.name}" names only figures canonical carries `
+          + `(said ${JSON.stringify(said)}, canonical ${JSON.stringify(canon)}`
+          + `${strays.length ? `, STRAY ${JSON.stringify(strays)}` : ''})`);
+      }
+    }
+
+    // Every mapping must have found its line, or the mapping is describing a
+    // file that no longer looks like this and is quietly checking nothing.
+    const names = new Set(lines.map((l) => l.name));
+    for (const mapped of [...Object.keys(fixed), ...Object.keys(prose)]) {
+      ok(names.has(mapped), `advisor addon "${group}" still carries the mapped line "${mapped}" `
+        + '(a mapping whose line vanished is a check that stopped checking)');
+    }
+  }
+
+  // The package line states a RANGE, and both ends are money.
+  const pkgPrice = products.addons.premiumFinishPackage?.price;
+  const pkgCanon = Object.values(canonical.packages.premium_finish.pricePerModel);
+  const bounds = [Math.min(...pkgCanon), Math.max(...pkgCanon)];
+  ok(JSON.stringify(dollarsIn(pkgPrice)) === JSON.stringify(bounds),
+    `advisor premium finish package range ${JSON.stringify(dollarsIn(pkgPrice))} === canonical `
+    + `min/max of pricePerModel ${JSON.stringify(bounds)}`);
+  ok(String(products.addons.premiumFinishPackage?.note || '').includes(
+    `$${canonical.packages.premium_finish.savings}`),
+  `advisor premium finish note states the canonical saving `
+    + `$${canonical.packages.premium_finish.savings}`);
 }
 
 const inRepoRaw = fs.readFileSync(JSON_FILE, 'utf8');
@@ -349,6 +637,7 @@ const spec = JSON.parse(inRepoRaw);
 checkCanonicalParity(inRepoRaw);
 const canonicalDoc = checkSiteDataParity();
 checkCostBasis(canonicalDoc);
+checkAdvisorProductsProjection(canonicalDoc);
 
 /**
  * HALF FOUR (B4 fix round, Razor W3) -- the COMPARE TABLE.
@@ -421,6 +710,90 @@ async function checkCompareTable(page, canonical) {
     ok(money(ledger[IDS[key]]) === money((table.rows['Base Price'] || [])[i]),
       `${key}: the ledger row (${ledger[IDS[key]]}) and the compare table `
       + `(${(table.rows['Base Price'] || [])[i]}) print the same number`);
+  }
+}
+
+/**
+ * HALF SEVEN (Razor W3) -- THE MONEY MUST MOVE, NOT JUST THE LABEL.
+ *
+ * Every per-model option in the modal is a radio carrying a TOKEN, not a price:
+ * `value="exteriorYakisugi"`, resolved at total time by
+ * `currentModel[PER_MODEL_PRICE_KEYS[value]] || 0`, with the visible span
+ * repainted from the same field. Two independent reads of one number, which is
+ * the right design -- but it has a seam, and the seam was open.
+ *
+ * The markup ships a PLACEHOLDER price in every span (+$5,000 for yakisugi,
+ * +$2,500 for cedar -- the S2/S4 figures), and `updatePrices` only repaints when
+ * the field is a number. So if a per-model key goes missing from js/data.js for
+ * one model, the span keeps showing the placeholder while `|| 0` silently drops
+ * the money from the total. The option reads "+$5,000" and adds nothing. Razor
+ * reproduced it on S2. Every assertion above stayed green, because the browser
+ * leg was reading the LABEL -- and the label is the half that lies.
+ *
+ * So the label is no longer the only witness. For each per-model token, on each
+ * model, this SELECTS the option and asserts `#summaryTotal` moved by exactly
+ * the canonical per-model amount, then puts the group back to its default. The
+ * delta comes out of `calculateTotal`'s own resolution path -- the `|| 0` -- so
+ * a missing key surfaces as a $0 move against a canonical expectation, and no
+ * placeholder can absorb it.
+ *
+ * Fixed as a CLASS, not as the yakisugi instance: all five per-model radio
+ * tokens are walked, exterior and interior alike, because the placeholder shape
+ * is identical in both groups.
+ */
+const PER_MODEL_TOKEN_OPTIONS = {
+  exteriorStandingSeam: { group: 'exterior', option: 'exterior_standing_seam' },
+  exteriorCedar: { group: 'exterior', option: 'exterior_cedar' },
+  exteriorYakisugi: { group: 'exterior', option: 'exterior_yakisugi' },
+  interiorClearCedar: { group: 'interior', option: 'interior_clear_cedar' },
+  interiorThermowood: { group: 'interior', option: 'interior_thermowood' },
+};
+
+/** Canonical per-model price for an option id, or null if it has none. */
+function canonicalPerModel(canonical, optionId, key) {
+  const opt = Object.values(canonical.optionGroups).flatMap((g) => g.options)
+    .find((o) => o.id === optionId);
+  if (!opt || !opt.pricePerModel) return null;
+  const v = opt.pricePerModel[key];
+  return typeof v === 'number' ? v : null;
+}
+
+async function checkPerModelTokenTotals(page, key, canonical) {
+  if (!canonical) return;
+  const readTotal = () => page.$eval('#summaryTotal', (el) => el.textContent.trim());
+
+  for (const [token, { group, option }] of Object.entries(PER_MODEL_TOKEN_OPTIONS)) {
+    const want = canonicalPerModel(canonical, option, key);
+    if (want === null) {
+      ok(false, `${key} ${token}: canonical option "${option}" carries no pricePerModel.${key}, `
+        + 'so the token the modal ships resolves against nothing.');
+      continue;
+    }
+
+    const sel = `.modal-addons input[name="${group}"][value="${token}"]`;
+    const input = await page.$(sel);
+    if (!input) {
+      ok(false, `${key} ${token}: no radio matched ${sel}. The per-model token is gone from the `
+        + 'markup, and the total would quietly stop being able to include this option.');
+      continue;
+    }
+
+    const before = money(await readTotal());
+    await page.check(sel);
+    const after = money(await readTotal());
+    const delta = after - before;
+
+    // Put the group back so the next token measures from the same baseline
+    // rather than from whatever the previous one left selected.
+    await page.check(`.modal-addons input[name="${group}"][value="0"]`);
+    const restored = money(await readTotal());
+
+    ok(delta === want,
+      `${key} ${token}: selecting it moved the TOTAL by ${delta} === canonical ${want} `
+      + `(${before} -> ${after}). This is the assertion no price placeholder can satisfy: the `
+      + 'delta comes from calculateTotal resolving the token, not from the label beside it.');
+    ok(restored === before,
+      `${key} ${token}: deselecting returned the total to ${restored} === ${before}`);
   }
 }
 
@@ -525,6 +898,9 @@ for (const [key, id] of Object.entries(IDS)) {
   }, 0);
   ok(sum - pkg.pricePerModel[key] === pkg.savings,
     `${key} json is internally true: components ${sum} - package ${pkg.pricePerModel[key]} = ${sum - pkg.pricePerModel[key]} === savings ${pkg.savings}`);
+
+  // Half seven, per model, with the modal open and at its defaults.
+  await checkPerModelTokenTotals(page, key, canonicalDoc);
 }
 
 // Half four. Runs once, on a clean load of the page rather than on whatever

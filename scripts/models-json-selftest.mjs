@@ -29,6 +29,7 @@
  * that can leave the working tree edited must prove it did not.
  */
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
@@ -36,12 +37,32 @@ const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const DATA = 'src/_data/models.json';
 const PAGE = 'src/_includes/pages/saunas.njk';
 const JSDATA = 'js/data.js';
+const PRODUCTS = 'netlify/functions/data/products.json';
 
 /**
- * Each mutation: the file, a literal `from` -> `to`, and `expect`, a substring
- * that must appear in a FAIL line. `expect` is what stops a mutation reporting
- * itself detected because some UNRELATED assertion happened to break — the
- * failure has to be the one the mutation was aimed at.
+ * THE CANONICAL SHEET IS NEVER WRITTEN TO. It lives in the MARVIN repo, outside
+ * this checkout, and it is the file the quoting tools read at runtime — a suite
+ * that edits it in place could leave a customer-facing price sheet mutated if it
+ * died at the wrong moment, and no `finally` block is worth betting that on.
+ *
+ * So canonical mutations work the other way round: a BYTE copy is made into a
+ * temp dir, the copy is mutated, and the gate is pointed at it with the
+ * `SSC_MODELS_JSON` override the gate already honours for exactly this reason.
+ * The real file is opened read-only and never written, by construction rather
+ * than by discipline.
+ */
+const CANONICAL_SRC = process.env.SSC_MODELS_JSON
+  || '/home/leesalo/marvin/content/reference/operations/models.json';
+
+/**
+ * Each mutation: the file, a literal `from` -> `to`, and `expect` — a substring,
+ * or an array of substrings that must ALL appear, in FAIL lines. `expect` is
+ * what stops a mutation reporting itself detected because some UNRELATED
+ * assertion happened to break — the failure has to be the one the mutation was
+ * aimed at.
+ *
+ * `canonical: true` marks a mutation that targets the canonical sheet. Its
+ * `file` is ignored; the temp-copy machinery above is used instead.
  */
 const MUTATIONS = [
   {
@@ -108,10 +129,101 @@ const MUTATIONS = [
     file: JSDATA, from: 'basePrice: 44000', to: 'basePrice: 44500',
     expect: 'compare-table base price',
   },
+
+  // ---------------------------------------------------------------------
+  // THE COST-BASIS GATE (Razor W2). It shipped with zero encoded mutations,
+  // in a file whose own preamble rejects hand-run ones. These are its battery.
+  // ---------------------------------------------------------------------
+  {
+    name: 'M10 a non-held basePrice drops below its margin floor',
+    proves: 'the whole point of the cost-basis gate: five perfectly consistent copies of a '
+      + 'price we cannot afford to sell at are exactly as consistent as five good ones, and '
+      + 'every other assertion in the gate would report ROUND-TRIP CLEAN either way',
+    canonical: true, from: '"basePrice": 23500,', to: '"basePrice": 15000,',
+    expect: 'S2 basePrice 15000 is BELOW its gross-margin floor',
+  },
+  {
+    name: 'M11 the held flag is removed from a below-floor model',
+    proves: 'the hold is the only thing keeping a knowingly-below-floor price from failing, '
+      + 'so removing it must produce the failure it was suppressing — not silence',
+    canonical: true,
+    from: '"stressCost": 27143,\n        "gmFloor": 0.40,\n        "held": true,',
+    to: '"stressCost": 27143,\n        "gmFloor": 0.40,',
+    expect: 'S6 basePrice 35500 is BELOW its gross-margin floor',
+  },
+  {
+    name: 'M12 a model\'s costBasis is deleted outright',
+    proves: '"this model has no recorded cost" must not be the cheap way to leave the gate. '
+      + 'A missing costBasis is a FAIL, never a skip',
+    canonical: true,
+    from: '"costBasis": { "stressCost": 16328, "gmFloor": 0.40 }',
+    to: '"_costBasisWasHere": true',
+    expect: 'S4 has no usable costBasis',
+  },
+  {
+    name: 'M13 THE W1 EXPLOIT: gmFloor lowered to 0.20 and the held flag dropped',
+    proves: 'Razor W1, exactly as proven: the gate used to read its own bar out of the file it '
+      + 'was policing, so the bar could be lowered by the party being measured and a '
+      + 'below-floor price passed SILENTLY, with no diff anywhere near a price. The floor is '
+      + 'now pinned in scripts/models-json-roundtrip.mjs, so this mutation must produce TWO '
+      + 'failures: the tampered floor named, and the price still measured against the real one',
+    canonical: true,
+    from: '"stressCost": 27143,\n        "gmFloor": 0.40,\n        "held": true,',
+    to: '"stressCost": 27143,\n        "gmFloor": 0.20,',
+    expect: [
+      'S6 costBasis.gmFloor 20.0%',
+      'S6 basePrice 35500 is BELOW its gross-margin floor',
+    ],
+  },
+  {
+    name: 'M14 the ADVISOR price sheet drifts from canonical',
+    proves: 'Razor W4: netlify/functions/data/products.json is pasted into four AI-advisor '
+      + 'system prompts, so a stale number there is not a wrong price a visitor can check '
+      + 'against the configurator — it is a wrong price an assistant states with confidence, '
+      + 'in conversation, to someone with no way of knowing',
+    file: PRODUCTS, from: '"basePrice": 23500,', to: '"basePrice": 22500,',
+    expect: 'S2 advisor sheet DIVERGED from canonical at "basePrice"',
+  },
+  {
+    name: 'M15 a hold loses its heldRef',
+    proves: 'Razor N3: a hold is a promise that something specific retires it. Without the '
+      + 'reference it is an untraceable permanent exemption with better manners',
+    canonical: true,
+    from: '"stressCost": 30082,\n        "gmFloor": 0.40,\n        "held": true,\n'
+      + '        "heldRef": "step-2 trailer separation, Lee linearity ruling 2026-08-03"',
+    to: '"stressCost": 30082,\n        "gmFloor": 0.40,\n        "held": true',
+    expect: 'S8 is flagged costBasis.held with NO heldRef',
+  },
+  {
+    name: 'M16 a per-model price token goes missing while its placeholder stays',
+    proves: 'Razor W3, and it is the subtle one. Deleting S2\'s exteriorYakisugi leaves the '
+      + 'markup placeholder "+$5,000" on screen — so the LABEL assertion still passes — while '
+      + 'calculateTotal\'s `|| 0` silently drops the money from the total. The option reads '
+      + '+$5,000 and adds nothing. Only an assertion on the TOTAL DELTA can see it, which is '
+      + 'why the expectation below is the delta reading 0 against a canonical 5000',
+    file: JSDATA, from: '            exteriorYakisugi: 5000,\n', to: '',
+    expect: 'S2 exteriorYakisugi: selecting it moved the TOTAL by 0',
+  },
 ];
 
 const abs = (rel) => path.join(REPO_ROOT, rel);
 const backups = new Map();
+
+/**
+ * The scratch canonical sheet. A byte copy, so an UNMUTATED run through this
+ * path is identical to a normal run — which the M0b baseline proves, and has to:
+ * if the temp-copy mechanism itself made the gate red, every canonical mutation
+ * would report itself "detected" while proving nothing.
+ *
+ * Declared HERE, above the signal handlers, because those handlers call
+ * cleanupTmp and a `const` they close over must be initialised before a signal
+ * can reach them.
+ */
+const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'ssc-selftest-canonical-'));
+const TMP_CANONICAL = path.join(TMP, 'models.json');
+fs.copyFileSync(CANONICAL_SRC, TMP_CANONICAL);
+const CANONICAL_BYTES = fs.readFileSync(TMP_CANONICAL);
+const cleanupTmp = () => { try { fs.rmSync(TMP, { recursive: true, force: true }); } catch { /* going away anyway */ } };
 
 function snapshot(rel) {
   if (!backups.has(rel)) backups.set(rel, fs.readFileSync(abs(rel)));
@@ -121,18 +233,24 @@ function restoreAll() {
     try { fs.writeFileSync(abs(rel), bytes); } catch { /* best effort on the way out */ }
   }
 }
-for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { restoreAll(); process.exit(130); });
-process.on('uncaughtException', (err) => { restoreAll(); console.error(err); process.exit(2); });
+for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { restoreAll(); cleanupTmp(); process.exit(130); });
+process.on('uncaughtException', (err) => { restoreAll(); cleanupTmp(); console.error(err); process.exit(2); });
 
 /** Run the gate, capture everything, never throw on a non-zero exit. */
-function runGate() {
+function runGate(env = {}) {
   try {
     return execFileSync('node', [path.join(REPO_ROOT, 'scripts', 'models-json-roundtrip.mjs')],
-      { cwd: REPO_ROOT, encoding: 'utf8', stdio: 'pipe', maxBuffer: 64 * 1024 * 1024 });
+      {
+        cwd: REPO_ROOT, encoding: 'utf8', stdio: 'pipe', maxBuffer: 64 * 1024 * 1024,
+        env: { ...process.env, ...env },
+      });
   } catch (err) {
     return `${err.stdout || ''}${err.stderr || ''}`;
   }
 }
+
+/** All of `expect`, as an array. A single string is the one-element case. */
+const expectations = (e) => (Array.isArray(e) ? e : [e]);
 
 let passes = 0;
 let failures = 0;
@@ -152,30 +270,50 @@ try {
       + clean.split('\n').filter((l) => l.startsWith('FAIL')).slice(0, 5).map((l) => `      ${l}`).join('\n'));
   }
 
+  // The canonical temp-copy PATH must be green before any canonical mutation is
+  // attributed to anything, for the same reason M0 exists.
+  const cleanTmp = runGate({ SSC_MODELS_JSON: TMP_CANONICAL });
+  const tmpOk = /ROUND-TRIP CLEAN/.test(cleanTmp);
+  console.log(`${tmpOk ? 'PASS' : 'FAIL'}  M0b an UNMUTATED byte copy of canonical, reached `
+    + 'through SSC_MODELS_JSON, is still green');
+  if (tmpOk) passes += 1; else {
+    failures += 1;
+    console.log('      the canonical battery cannot attribute anything through a path that is '
+      + 'already red:\n'
+      + cleanTmp.split('\n').filter((l) => l.startsWith('FAIL')).slice(0, 5).map((l) => `      ${l}`).join('\n'));
+  }
+
   for (const m of MUTATIONS) {
-    snapshot(m.file);
-    const original = fs.readFileSync(abs(m.file), 'utf8');
+    // Canonical mutations edit the scratch copy and point the gate at it. Repo
+    // mutations edit the real file in place, under the backup/restore contract.
+    const target = m.canonical ? TMP_CANONICAL : abs(m.file);
+    const where = m.canonical ? `${CANONICAL_SRC} (via a temp byte copy)` : m.file;
+    const env = m.canonical ? { SSC_MODELS_JSON: TMP_CANONICAL } : {};
+    if (!m.canonical) snapshot(m.file);
+
+    const original = fs.readFileSync(target, 'utf8');
     if (!original.includes(m.from)) {
       failures += 1;
-      console.log(`FAIL  ${m.name}\n      its anchor is not in ${m.file}: `
+      console.log(`FAIL  ${m.name}\n      its anchor is not in ${where}: `
         + `${JSON.stringify(m.from.slice(0, 70))}. The mutation never applied, so it proved `
         + `nothing — re-anchor it rather than deleting it.`);
       report.push({ name: m.name, result: 'ANCHOR MISSING' });
       continue;
     }
-    fs.writeFileSync(abs(m.file), original.replace(m.from, m.to));
-    const out = runGate();
-    fs.writeFileSync(abs(m.file), original);
+    fs.writeFileSync(target, original.replace(m.from, m.to));
+    const out = runGate(env);
+    fs.writeFileSync(target, original);
 
     const failLines = out.split('\n').filter((l) => l.startsWith('FAIL'));
-    const hit = failLines.some((l) => l.includes(m.expect));
-    if (hit) {
+    const wanted = expectations(m.expect);
+    const missed = wanted.filter((w) => !failLines.some((l) => l.includes(w)));
+    if (missed.length === 0) {
       passes += 1;
       console.log(`PASS  ${m.name} — ${m.proves.split('.')[0]}`);
-      report.push({ name: m.name, result: 'detected', line: failLines.find((l) => l.includes(m.expect)) });
+      report.push({ name: m.name, result: 'detected', line: failLines.find((l) => l.includes(wanted[0])) });
     } else {
       failures += 1;
-      console.log(`FAIL  ${m.name}\n      expected a FAIL line containing ${JSON.stringify(m.expect)}; `
+      console.log(`FAIL  ${m.name}\n      expected FAIL line(s) containing ${JSON.stringify(missed)}; `
         + `got ${failLines.length} failure line(s). ${m.proves}`);
       if (failLines.length) console.log(failLines.slice(0, 3).map((l) => `      ${l}`).join('\n'));
       report.push({ name: m.name, result: 'NOT DETECTED' });
@@ -184,6 +322,19 @@ try {
 } finally {
   restoreAll();
 }
+
+// The scratch canonical copy must also have come back, or a later mutation in
+// the same run was measuring an already-broken sheet.
+const tmpClean = Buffer.compare(fs.readFileSync(TMP_CANONICAL), CANONICAL_BYTES) === 0;
+console.log(`${tmpClean ? 'PASS' : 'FAIL'}  restore: the scratch canonical copy is byte-identical`);
+if (tmpClean) passes += 1; else failures += 1;
+
+// And the REAL canonical sheet must never have been touched at all.
+const realUntouched = Buffer.compare(fs.readFileSync(CANONICAL_SRC), CANONICAL_BYTES) === 0;
+console.log(`${realUntouched ? 'PASS' : 'FAIL'}  ${CANONICAL_SRC} is untouched `
+  + '(this suite opens it read-only and mutates only its copy)');
+if (realUntouched) passes += 1; else failures += 1;
+cleanupTmp();
 
 // Prove the tree came back. A suite that edits source files in place owes this.
 let dirty = 0;

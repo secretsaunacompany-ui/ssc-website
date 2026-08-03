@@ -1049,7 +1049,7 @@ nav .container {
    `grid-template-columns`, which reads as shared and is not: track 4 is
    `max-content`, and max-content resolves against the contents of ITS OWN
    container. The header's fourth track sized to the word "PRICE" (38.7px) while
-   the rows' sized to "From $22,500" (~89px), so the capacity column stood 25.1px
+   the rows' sized to "From $23,500" (~89px), so the capacity column stood 25.1px
    out of register at 1440 and 768 -- a misalignment in the one component whose
    entire argument is that its columns line up. The comment above claimed the
    shared grid; the CSS did not deliver it.
