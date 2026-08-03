@@ -249,7 +249,37 @@ module.exports = function(eleventyConfig) {
   // preload, it is a second download.
   var cloudinaryBase = "https://res.cloudinary.com/dlhqdgmih/image/upload/";
   var widths = [400, 800, 1200, 1920];
-  var CLOUDINARY_BARE = /^https:\/\/res\.cloudinary\.com\/dlhqdgmih\/image\/upload\/q_auto,f_auto\/(.+)$/;
+
+  // The accepted shape: `q_auto,f_auto`, then an OPTIONAL rotation, then the
+  // path. Capture 1 is the angle segment (",a_90" / ",a_-90" / ",a_180") or
+  // undefined; capture 2 is the image path.
+  //
+  // The angle tolerance exists because several photographs on this site carry
+  // EXIF rotation their derivative does not honour, and the fix for that was a
+  // hand-written `a_90` in the URL. That hand-written angle silently OPTED THE
+  // IMAGE OUT of responsive delivery: the old pattern demanded `q_auto,f_auto/`
+  // exactly, so an angle-carrying URL simply did not match, no srcset was
+  // generated, and the browser fetched the full-size original. Measured on
+  // three <img> elements (about :27, about :95, home :54) -- the correction that
+  // made the picture the right way up was also the thing making it enormous.
+  //
+  // A WIDTH is still rejected, and deliberately so: the angle is a property of
+  // the SOURCE (this photograph is on its side), while a width is a decision
+  // about DELIVERY, which is the generator's job. `q_auto,f_auto,w_1200/...`
+  // and `q_auto,f_auto,a_90,w_600/...` both fail to match and both still throw
+  // from the filters, which is the B1 guard that stopped the homepage fetching
+  // its LCP photograph twice. Tolerating rotation must not widen that hole.
+  //
+  // Order within the component is angle-then-width (`a_90,w_400`), matching the
+  // hand-written URLs already in the templates: Cloudinary applies the
+  // transforms left to right, so rotating before scaling is what keeps the
+  // requested width meaning "width of the upright picture".
+  var CLOUDINARY_BARE = /^https:\/\/res\.cloudinary\.com\/dlhqdgmih\/image\/upload\/q_auto,f_auto(,a_-?\d+)?\/(.+)$/;
+
+  /** Build a delivery URL at width `w`, preserving any source rotation. */
+  function cloudinaryAt(angle, imagePath, w) {
+    return cloudinaryBase + "q_auto,f_auto" + (angle || "") + ",w_" + w + "/" + imagePath;
+  }
 
   // The URL the transform puts in `src`: the w_800 candidate. A preload's href
   // is what a browser without imagesrcset support fetches, so it must be this
@@ -270,24 +300,27 @@ module.exports = function(eleventyConfig) {
     if (!m) {
       throw new Error(
         filterName + ": expected a Cloudinary URL with NO width transform "
-        + '(".../q_auto,f_auto/<path>"), got ' + JSON.stringify(url) + ". "
+        + '(".../q_auto,f_auto/<path>" or ".../q_auto,f_auto,a_<angle>/<path>"), got '
+        + JSON.stringify(url) + ". "
         + "A page that sets `preload_responsive_sizes` must give `preload_image` "
         + "the same widthless src the <img> carries, because the responsive "
         + "preload's candidate list is generated from it. Hard-coding a width "
         + "here is what made the homepage fetch its LCP photograph twice.");
     }
-    return m[1];
+    // { angle, path } -- angle is "" when the source needs no rotation, so
+    // callers can concatenate it unconditionally.
+    return { angle: m[1] || "", path: m[2] };
   }
 
   eleventyConfig.addFilter("cloudinaryDefaultSrc", function(url) {
-    return cloudinaryBase + "q_auto,f_auto,w_800/"
-      + bareCloudinaryPath(url, "cloudinaryDefaultSrc");
+    var src = bareCloudinaryPath(url, "cloudinaryDefaultSrc");
+    return cloudinaryAt(src.angle, src.path, 800);
   });
 
   eleventyConfig.addFilter("cloudinarySrcset", function(url) {
-    var imagePath = bareCloudinaryPath(url, "cloudinarySrcset");
+    var src = bareCloudinaryPath(url, "cloudinarySrcset");
     return widths.map(function(w) {
-      return cloudinaryBase + "q_auto,f_auto,w_" + w + "/" + imagePath + " " + w + "w";
+      return cloudinaryAt(src.angle, src.path, w) + " " + w + "w";
     }).join(", ");
   });
 
@@ -295,18 +328,28 @@ module.exports = function(eleventyConfig) {
     if (!outputPath || !outputPath.endsWith(".html")) return content;
 
     return content.replace(
-      /<img([^>]*?)src="https:\/\/res\.cloudinary\.com\/dlhqdgmih\/image\/upload\/q_auto,f_auto\/([^"]+)"([^>]*?)>/g,
-      function(match, before, imagePath, after) {
+      /<img([^>]*?)src="https:\/\/res\.cloudinary\.com\/dlhqdgmih\/image\/upload\/q_auto,f_auto(,a_-?\d+)?\/([^"]+)"([^>]*?)>/g,
+      function(match, before, angleRaw, imagePath, after) {
+        var angle = angleRaw || "";
         // Skip if already has srcset
         if (before.indexOf("srcset") !== -1 || after.indexOf("srcset") !== -1) return match;
-        // Skip logo/favicon (small images that don't need responsive)
-        if (imagePath.indexOf("FINAL_LOGO") !== -1 || imagePath.indexOf("Circle") !== -1) return match;
+        // The logo/favicon marks: a responsive candidate list is the wrong tool
+        // for them (they render at a fixed ~48px of chrome, identically at every
+        // breakpoint), but "no srcset" used to mean "no width either", and the
+        // browser therefore fetched the ORIGINAL -- CircleWhite2025 is
+        // 1257x1251. So they are pinned to a single small derivative instead of
+        // being handed back untouched. w_192 is 4x the rendered box, which
+        // covers a 3x display with room to spare and is still a rounding error
+        // next to the full-size PNG.
+        if (imagePath.indexOf("FINAL_LOGO") !== -1 || imagePath.indexOf("Circle") !== -1) {
+          return '<img' + before + 'src="' + cloudinaryAt(angle, imagePath, 192) + '"' + after + '>';
+        }
 
         var srcset = widths.map(function(w) {
-          return cloudinaryBase + "q_auto,f_auto,w_" + w + "/" + imagePath + " " + w + "w";
+          return cloudinaryAt(angle, imagePath, w) + " " + w + "w";
         }).join(", ");
 
-        var defaultSrc = cloudinaryBase + "q_auto,f_auto,w_800/" + imagePath;
+        var defaultSrc = cloudinaryAt(angle, imagePath, 800);
 
         // The default `sizes` describes the site's ordinary case: a card or a
         // plate inside a contained column, which is why it tops out at 800px.

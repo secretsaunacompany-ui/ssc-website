@@ -128,23 +128,86 @@
              Ledger the next section must be B, C or G. -->
         <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768256600/PXL_20241206_001021963.MP_g6jdgp.jpg" alt="Sauna detail" class="full-width-image reveal" width="1446" height="1920">
 
-        <!-- 6. Comparison essay (Jen §2.2) -- archetype D, demoted. The three
-             comparison cards and their 21 tick/cross bullets are gone: two
-             paragraphs a confident builder would say out loud, then a link for
-             the reader who wants the receipts. Every claim below is a
-             compression of copy that was already on this page. -->
-        <section class="container">
-            <div class="essay essay--text-left">
-                <div class="essay__text reveal">
-                    <h2 class="essay__heading">Why Traditional Finnish Saunas?</h2>
-                    <p>Ours are built the way a house is built. A framed envelope, insulated to R-13 or better, sealed behind a vapour barrier, clad in Western Red Cedar inside and metal outside. That construction is what makes proper löyly possible at 80 to 100°C, holds the heat once it is there instead of pouring it into the yard, and keeps the whole thing standing outdoors for twenty-five years and more.</p>
-                    <p>The usual alternatives cannot do that. A barrel sauna is single-wall stave construction with no insulation at all, which makes real heat hard to reach and quick to lose, and five to ten years is a typical life outdoors. An infrared cabin is not a sauna: it warms your body rather than the air, tops out around 60°C, and cannot make steam.</p>
-                    <p class="essay__link"><a href="/faq/" class="link--accent">The full comparison →</a></p>
+        <!-- 6. Comparison LEDGER (Jen B7 mini-spec) -- archetype E, tight tier,
+             on ground, --hold containment.
+
+             It was an asymmetric Essay (archetype D) for the length of B4-B6,
+             and before that three cards carrying 21 tick/cross bullets. The
+             ledger is the third and last form: the argument is a COMPARISON, and
+             a comparison read as prose makes the reader hold three columns of
+             fact in their head while the paragraph walks them through it one
+             clause at a time. A table hands them the same facts already aligned.
+             The page order becomes A→E→C→E→C→E→B→C→G, nine sections; the D is
+             gone and the 60-side plate with it.
+
+             EVERY CELL IS SOURCED. Each one traces to a bullet in the three
+             comparison cards as they stood at ab83ed6 (saunas.njk:110-163) --
+             this batch re-tabulates copy, it does not write claims. The two
+             temperatures and the two lifespans below come from those cards and
+             from nowhere else; in particular they are NOT models.json material,
+             which carries size, capacity and price only, so the round-trip gate
+             has nothing to say about this table and needs no extension.
+
+             Two cells are deliberately EMPTY (en dash): the cards recorded no
+             heat-retention claim for infrared and no evidence claim for barrels.
+             An empty cell is the honest rendering of "the source says nothing
+             here". Inventing a line to square the grid is exactly the failure
+             this comment exists to prevent. -->
+        <section class="container section--tight">
+            <div class="ledger-lede reveal">
+                <h2 class="ledger-lede__heading">Why Traditional Finnish Saunas?</h2>
+                <p>Ours are built the way a house is built: a framed envelope, insulated to R-13 or better, sealed behind a vapour barrier, clad in Western Red Cedar inside and metal outside. That construction is what makes proper löyly possible at 80 to 100°C, holds the heat instead of pouring it into the yard, and keeps the whole thing standing outdoors for twenty-five years and more. The usual alternatives cannot do that.</p>
+            </div>
+
+            <div class="compare-ledger reveal">
+                <!-- Labels carry classes for the same instrument reason the model
+                     index records at :61 -- a dom-integrity whitelist entry names
+                     a node by a substring of its ATTRIBUTES, so an attribute-less
+                     span cannot be declared. -->
+                <div class="compare-ledger__head" aria-hidden="false">
+                    <span class="compare-ledger__label compare-ledger__label--dimension"></span>
+                    <span class="compare-ledger__label compare-ledger__label--ours">Our Finnish</span>
+                    <span class="compare-ledger__label compare-ledger__label--barrel">Barrel</span>
+                    <span class="compare-ledger__label compare-ledger__label--infrared">Infrared</span>
                 </div>
-                <div class="essay__plate reveal">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409618/PXL_20251217_180620919_et8wbi.jpg" alt="Custom-built Finnish sauna sited on a British Columbia property" width="1920" height="1446">
+
+                <div class="compare-ledger__row">
+                    <span class="compare-ledger__dimension">Construction</span>
+                    <span class="compare-ledger__value compare-ledger__value--ours"><span class="compare-ledger__source">Ours</span>Fully insulated envelope (R-13+ walls), 2x4 framing with vapour barrier, cedar cladding inside and metal outside</span>
+                    <span class="compare-ledger__value"><span class="compare-ledger__source">Barrel</span>No insulation, single-wall stave construction with metal bands, wood exposed inside and out</span>
+                    <span class="compare-ledger__value"><span class="compare-ledger__source">Infrared</span>Often made with cheap materials</span>
+                </div>
+
+                <div class="compare-ledger__row">
+                    <span class="compare-ledger__dimension">Heat &amp; löyly</span>
+                    <span class="compare-ledger__value compare-ledger__value--ours"><span class="compare-ledger__source">Ours</span>Proper löyly (steam) at 80–100°C</span>
+                    <span class="compare-ledger__value"><span class="compare-ledger__source">Barrel</span>Difficult to achieve proper heat</span>
+                    <span class="compare-ledger__value"><span class="compare-ledger__source">Infrared</span>Heats your body, not the air. No steam (löyly) possible, max temp around 60°C</span>
+                </div>
+
+                <div class="compare-ledger__row">
+                    <span class="compare-ledger__dimension">Heat retention</span>
+                    <span class="compare-ledger__value compare-ledger__value--ours"><span class="compare-ledger__source">Ours</span>Heats evenly, retains heat efficiently</span>
+                    <span class="compare-ledger__value"><span class="compare-ledger__source">Barrel</span>Loses heat quickly in cold weather, higher energy costs to operate</span>
+                    <span class="compare-ledger__value compare-ledger__value--empty"><span class="compare-ledger__source">Infrared</span>–</span>
+                </div>
+
+                <div class="compare-ledger__row">
+                    <span class="compare-ledger__dimension">Lifespan outdoors</span>
+                    <span class="compare-ledger__value compare-ledger__value--ours"><span class="compare-ledger__source">Ours</span>Built to last 25+ years outdoors</span>
+                    <span class="compare-ledger__value"><span class="compare-ledger__source">Barrel</span>5–10 year lifespan typical</span>
+                    <span class="compare-ledger__value"><span class="compare-ledger__source">Infrared</span>Indoor use only</span>
+                </div>
+
+                <div class="compare-ledger__row">
+                    <span class="compare-ledger__dimension">Evidence</span>
+                    <span class="compare-ledger__value compare-ledger__value--ours"><span class="compare-ledger__source">Ours</span>Proven health benefits over millennia</span>
+                    <span class="compare-ledger__value compare-ledger__value--empty"><span class="compare-ledger__source">Barrel</span>–</span>
+                    <span class="compare-ledger__value"><span class="compare-ledger__source">Infrared</span>Unproven long-term health claims</span>
                 </div>
             </div>
+
+            <p class="compare-ledger__link reveal"><a href="/faq/" class="link--accent">The full comparison →</a></p>
         </section>
 
         <!-- 7. Science thesis (Jen §2.3) -- archetype B, one stat, on ground.
@@ -164,19 +227,19 @@
             <p class="text-center reveal measure-wide">A selection of recent builds across British Columbia.</p>
             <div class="gallery-mosaic">
                 <div class="gallery-item gallery-item--wide reveal">
-                    <img loading="eager" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768324977/DSC03225-EDIT_crqtkp.jpg" alt="Luxury Finnish sauna exterior with modern metal cladding in forest setting" width="800" height="534">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768324977/DSC03225-EDIT_crqtkp.jpg" alt="Luxury Finnish sauna exterior with modern metal cladding in forest setting" width="800" height="534">
                 </div>
                 <div class="gallery-item reveal">
-                    <img loading="eager" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250657/PXL_20250605_231738816.MP_javbdv.jpg" alt="Handcrafted Western Red Cedar sauna interior with three-tier benches" width="600" height="452">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250657/PXL_20250605_231738816.MP_javbdv.jpg" alt="Handcrafted Western Red Cedar sauna interior with three-tier benches" width="600" height="452">
                 </div>
                 <div class="gallery-item gallery-item--tall reveal">
-                    <img loading="eager" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324963/PXL_20250119_184356235.MP-EDIT_diy2x7.jpg" alt="Custom sauna with panoramic window overlooking BC mountains" width="600" height="310">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324963/PXL_20250119_184356235.MP-EDIT_diy2x7.jpg" alt="Custom sauna with panoramic window overlooking BC mountains" width="600" height="310">
                 </div>
                 <div class="gallery-item reveal">
-                    <img loading="eager" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250654/IMG_6592_ln0gz8.jpg" alt="Traditional wood-fired sauna heater with hot stones for authentic loyly" width="600" height="450">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768250654/IMG_6592_ln0gz8.jpg" alt="Traditional wood-fired sauna heater with hot stones for authentic loyly" width="600" height="450">
                 </div>
                 <div class="gallery-item reveal">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,a_90,w_600/v1768324972/PXL_20250605_233615654_or7ngn.jpg" alt="Commercial sauna interior with professional-grade cedar benching" width="600" height="452">
+                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_600/v1768324972/PXL_20250605_233615654_or7ngn.jpg" alt="Commercial sauna interior with professional-grade cedar benching" width="600" height="452">
                 </div>
                 <div class="gallery-item gallery-item--wide reveal">
                     <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_800/v1768250653/IMG_6404_hrncws.jpg" alt="Finnish sauna exterior with metal cladding in natural forest setting" width="800" height="1067">

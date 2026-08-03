@@ -1229,51 +1229,157 @@ nav .container {
     }
 }
 
-/* ── THE COMPARISON ESSAY ─────────────────────────────────────────────────
-   Jen §2.2. Archetype D, 40/60, text LEFT -- the first and only Essay on the
-   page, so text-left under her §2.4 strict alternation. Heading at --text-2xl,
-   not --text-3xl: the section defends, it no longer leads. */
-.essay {
-    display: grid;
-    grid-template-columns: 2fr 3fr;
-    gap: var(--spacing-2xl);
-    align-items: start;
-}
+/* ── THE COMPARISON LEDGER ────────────────────────────────────────────────
+   Jen's B7 mini-spec. Archetype E, tight tier, ground, --hold containment.
 
-.essay__text {
+   This replaces the asymmetric Essay that replaced the three comparison cards.
+   The reason it keeps moving is that the section has one job -- put our
+   construction beside the two things a buyer is actually cross-shopping -- and
+   prose is the wrong instrument for it. A paragraph delivers three columns of
+   fact one clause at a time and asks the reader to hold the other two in their
+   head. Rows and columns hand them the comparison already aligned, which is
+   what a Ledger is for.
+
+   Structurally it is the model index's grammar, deliberately: parent grid,
+   subgrid rows, one rule per row, radius 0, no fills. The two ledgers on this
+   page should read as the same instrument. What it does NOT take from the model
+   index is the interaction half -- these rows are not actionable, so there is no
+   hover state, no focus ring, no cursor change and no ember affordance. A row
+   that lights up under the pointer promises a click that does not exist. */
+.ledger-lede {
     max-width: var(--measure);
 }
 
-.essay__heading {
+/* --text-2xl, not --text-3xl: the section defends, it no longer leads. */
+.ledger-lede__heading {
     font-family: var(--font-heading);
     font-size: var(--text-2xl);
     color: var(--ink);
 }
 
-.essay__text p {
+.ledger-lede p {
     color: var(--ink);
-}
-
-.essay__link {
     margin-bottom: 0;
 }
 
-.essay__plate img {
-    display: block;
-    width: 100%;
-    height: var(--plate-pair-h);
-    object-fit: cover;
+.compare-ledger {
+    margin-top: var(--spacing-lg);
+    display: grid;
+    grid-template-columns: 9rem repeat(3, minmax(0, 1fr));
+    column-gap: var(--spacing-lg);
 }
 
+.compare-ledger__head,
+.compare-ledger__row {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    /* Baseline, not start: the three value cells wrap to different line counts
+       (construction runs three lines, evidence one), and aligning their boxes
+       would leave the first lines of a row sitting on three different heights.
+       Baseline puts the first line of every cell on one line, which is the
+       whole reading affordance of a comparison table. */
+    align-items: baseline;
+    padding-inline: 0;
+    border-bottom: 1px solid var(--rule);
+}
+
+.compare-ledger__head {
+    padding-block: var(--spacing-sm);
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--ink-quiet);
+}
+
+/* The one ember on the table, and it is doing the section's argument: of the
+   three columns, this is the one being recommended. */
+.compare-ledger__label--ours {
+    color: var(--ember);
+}
+
+.compare-ledger__row {
+    padding-block: var(--spacing-md);
+    line-height: var(--leading-ui);
+}
+
+.compare-ledger__dimension {
+    font-family: var(--font-primary);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--ink);
+}
+
+.compare-ledger__value {
+    font-size: var(--text-sm);
+    font-weight: 400;
+    color: var(--ink-quiet);
+}
+
+/* Our column reads at full --ink against the alternatives' --ink-quiet. The
+   contrast IS the comparison; no badge, no tick, no fill is needed to say it. */
+.compare-ledger__value--ours {
+    color: var(--ink);
+}
+
+/* The source label belongs to the STACKED form only. On desktop the column
+   header names the source once for the whole column, and repeating it in every
+   cell would be noise. It lives in the markup rather than in generated content
+   because it is a label, not punctuation -- the model index at :1223 draws the
+   same line, generating its middle dot and never its data. */
+.compare-ledger__source {
+    display: none;
+}
+
+.compare-ledger__link {
+    margin-top: var(--spacing-lg);
+    margin-bottom: 0;
+}
+
+/* Below 768 the columns cannot survive: four tracks in 342px gives each value
+   about 60px, which wraps every cell to a column of single words. So each
+   dimension becomes its own block and each value labels itself. */
 @media (max-width: 767.98px) {
-    .essay {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-lg);
+    .compare-ledger {
+        display: block;
+        column-gap: normal;
     }
 
-    /* Image first, text second (Jen §2.2). */
-    .essay__plate {
-        order: -1;
+    /* The header names columns that no longer exist. */
+    .compare-ledger__head {
+        display: none;
+    }
+
+    .compare-ledger__row {
+        grid-column: auto;
+        display: block;
+        padding-block: var(--spacing-md);
+    }
+
+    .compare-ledger__dimension {
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .compare-ledger__value {
+        display: block;
+    }
+
+    .compare-ledger__source {
+        display: inline;
+        font-size: var(--text-2xs);
+        letter-spacing: var(--tracking-caps);
+        text-transform: uppercase;
+        color: var(--ink-quiet);
+    }
+
+    /* `content: "·" / ""` -- the slash gives the separator empty ALTERNATIVE
+       TEXT, so it is drawn and not announced. Same reasoning as the model
+       index's capacity separator: punctuation for the eye, silence for the
+       screen reader, which would otherwise read "Barrel ·No insulation". */
+    .compare-ledger__source::after {
+        content: "·" / "";
+        margin-inline: 0.5ch;
     }
 }
 

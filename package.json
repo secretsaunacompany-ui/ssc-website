@@ -10,6 +10,8 @@
     "visual-diff": "node scripts/visual-diff.mjs",
     "visual-diff:test": "node scripts/visual-diff.test.mjs",
     "build-cache:test": "node scripts/build-cache.test.mjs",
+    "//cloudinary:test": "The responsive-delivery contract in .eleventy.js: the transform and the two preload filters must generate the same candidate list, a source rotation (a_90) must be tolerated AND carried into every derivative, and a hard-coded width must still throw. Mutation is built in -- scenario B removes the angle tolerance and requires the angle assertions to go red while the width guards stay green.",
+    "cloudinary:test": "node scripts/cloudinary-responsive.test.mjs",
     "package-claim:test": "node scripts/package-claim.test.mjs",
     "prices-version:test": "node scripts/prices-version.test.mjs",
     "models-json:roundtrip": "node scripts/models-json-roundtrip.mjs",

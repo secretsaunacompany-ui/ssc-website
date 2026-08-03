@@ -1047,6 +1047,215 @@
       "reason": "Service-area :45 Threshold on /sea-to-sky/, new depth inside `<div class=\"container\">` (11 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
       "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
       "range": "9747e25..117030b"
+    },
+    {
+      "op": "removed",
+      "tag": "IMG",
+      "contains": "q_auto,f_auto/v1768254526/CircleWhite2025",
+      "reason": "Nav mark, un-pinned. The responsive transform's logo skip-rule stopped handing the mark back untouched and now pins w_192. \"No srcset\" used to also mean \"no width\", so every page fetched the ORIGINAL: CircleWhite2025 is 1257x1251 and FINAL_LOGO_TEXT1.1 is 1920x953, both for a mark that renders at about 48px of chrome. A responsive candidate list is still the wrong tool for a fixed-size mark, so the fix is a single small derivative rather than a srcset. Sitewide by construction: the nav and the footer are includes, so this is one edit seen on all 19 routes.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "added",
+      "tag": "IMG",
+      "contains": "q_auto,f_auto,w_192/v1768254526/CircleWhite2025",
+      "reason": "Nav mark, pinned to w_192. The responsive transform's logo skip-rule stopped handing the mark back untouched and now pins w_192. \"No srcset\" used to also mean \"no width\", so every page fetched the ORIGINAL: CircleWhite2025 is 1257x1251 and FINAL_LOGO_TEXT1.1 is 1920x953, both for a mark that renders at about 48px of chrome. A responsive candidate list is still the wrong tool for a fixed-size mark, so the fix is a single small derivative rather than a srcset. Sitewide by construction: the nav and the footer are includes, so this is one edit seen on all 19 routes.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "removed",
+      "tag": "IMG",
+      "contains": "q_auto,f_auto/v1768255497/FINAL_LOGO_TEXT1.1",
+      "reason": "Footer mark, un-pinned. The responsive transform's logo skip-rule stopped handing the mark back untouched and now pins w_192. \"No srcset\" used to also mean \"no width\", so every page fetched the ORIGINAL: CircleWhite2025 is 1257x1251 and FINAL_LOGO_TEXT1.1 is 1920x953, both for a mark that renders at about 48px of chrome. A responsive candidate list is still the wrong tool for a fixed-size mark, so the fix is a single small derivative rather than a srcset. Sitewide by construction: the nav and the footer are includes, so this is one edit seen on all 19 routes.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "added",
+      "tag": "IMG",
+      "contains": "q_auto,f_auto,w_192/v1768255497/FINAL_LOGO_TEXT1.1",
+      "reason": "Footer mark, pinned to w_192. The responsive transform's logo skip-rule stopped handing the mark back untouched and now pins w_192. \"No srcset\" used to also mean \"no width\", so every page fetched the ORIGINAL: CircleWhite2025 is 1257x1251 and FINAL_LOGO_TEXT1.1 is 1920x953, both for a mark that renders at about 48px of chrome. A responsive candidate list is still the wrong tool for a fixed-size mark, so the fix is a single small derivative rather than a srcset. Sitewide by construction: the nav and the footer are includes, so this is one edit seen on all 19 routes.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "removed",
+      "tag": "IMG",
+      "contains": "a_90/v1768250651/20241009_163547_jyyapc",
+      "reason": "home :54 (also seen on / only): URL before normalization, no srcset. A hand-written EXIF rotation (a_90) used to make the URL fail the transform's shape test, so the image silently opted OUT of responsive delivery and the browser fetched the full-size original -- the correction that made the photograph the right way up was also the thing making it enormous. The transform now tolerates a leading angle and carries it into every candidate, so this element gains the srcset/sizes pair and a w_800 src exactly like every other photograph on the site. No pixel moves: same element, same box, same rendered orientation, fewer bytes.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "added",
+      "tag": "IMG",
+      "contains": "a_90,w_800/v1768250651/20241009_163547_jyyapc",
+      "reason": "home :54 (also seen on / only): URL after normalization, srcset + sizes present. A hand-written EXIF rotation (a_90) used to make the URL fail the transform's shape test, so the image silently opted OUT of responsive delivery and the browser fetched the full-size original -- the correction that made the photograph the right way up was also the thing making it enormous. The transform now tolerates a leading angle and carries it into every candidate, so this element gains the srcset/sizes pair and a w_800 src exactly like every other photograph on the site. No pixel moves: same element, same box, same rendered orientation, fewer bytes.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "removed",
+      "tag": "IMG",
+      "contains": "a_90/v1768250654/20250214_115013_ka8wl6",
+      "reason": "about :27 (and /process/, which redirects to it): URL before normalization, no srcset. A hand-written EXIF rotation (a_90) used to make the URL fail the transform's shape test, so the image silently opted OUT of responsive delivery and the browser fetched the full-size original -- the correction that made the photograph the right way up was also the thing making it enormous. The transform now tolerates a leading angle and carries it into every candidate, so this element gains the srcset/sizes pair and a w_800 src exactly like every other photograph on the site. No pixel moves: same element, same box, same rendered orientation, fewer bytes.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "added",
+      "tag": "IMG",
+      "contains": "a_90,w_800/v1768250654/20250214_115013_ka8wl6",
+      "reason": "about :27 (and /process/, which redirects to it): URL after normalization, srcset + sizes present. A hand-written EXIF rotation (a_90) used to make the URL fail the transform's shape test, so the image silently opted OUT of responsive delivery and the browser fetched the full-size original -- the correction that made the photograph the right way up was also the thing making it enormous. The transform now tolerates a leading angle and carries it into every candidate, so this element gains the srcset/sizes pair and a w_800 src exactly like every other photograph on the site. No pixel moves: same element, same box, same rendered orientation, fewer bytes.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "removed",
+      "tag": "IMG",
+      "contains": "a_90/v1768276566/20250917_153002_ug3p84",
+      "reason": "about :95 (and /process/): URL before normalization, no srcset. A hand-written EXIF rotation (a_90) used to make the URL fail the transform's shape test, so the image silently opted OUT of responsive delivery and the browser fetched the full-size original -- the correction that made the photograph the right way up was also the thing making it enormous. The transform now tolerates a leading angle and carries it into every candidate, so this element gains the srcset/sizes pair and a w_800 src exactly like every other photograph on the site. No pixel moves: same element, same box, same rendered orientation, fewer bytes.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "added",
+      "tag": "IMG",
+      "contains": "a_90,w_800/v1768276566/20250917_153002_ug3p84",
+      "reason": "about :95 (and /process/): URL after normalization, srcset + sizes present. A hand-written EXIF rotation (a_90) used to make the URL fail the transform's shape test, so the image silently opted OUT of responsive delivery and the browser fetched the full-size original -- the correction that made the photograph the right way up was also the thing making it enormous. The transform now tolerates a leading angle and carries it into every candidate, so this element gains the srcset/sizes pair and a w_800 src exactly like every other photograph on the site. No pixel moves: same element, same box, same rendered orientation, fewer bytes.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "removed",
+      "tag": "IMG",
+      "contains": "v1768324977/DSC03225-EDIT_crqtkp",
+      "reason": "Mosaic card, eager. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "added",
+      "tag": "IMG",
+      "contains": "v1768324977/DSC03225-EDIT_crqtkp",
+      "reason": "Mosaic card, lazy. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "removed",
+      "tag": "IMG",
+      "contains": "v1768250657/PXL_20250605_231738816.MP_javbdv",
+      "reason": "Mosaic card, eager. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "added",
+      "tag": "IMG",
+      "contains": "v1768250657/PXL_20250605_231738816.MP_javbdv",
+      "reason": "Mosaic card, lazy. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "removed",
+      "tag": "IMG",
+      "contains": "v1768324963/PXL_20250119_184356235.MP-EDIT_diy2x7",
+      "reason": "Mosaic card, eager. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "added",
+      "tag": "IMG",
+      "contains": "v1768324963/PXL_20250119_184356235.MP-EDIT_diy2x7",
+      "reason": "Mosaic card, lazy. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "removed",
+      "tag": "IMG",
+      "contains": "v1768250654/IMG_6592_ln0gz8",
+      "reason": "Mosaic card, eager. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "added",
+      "tag": "IMG",
+      "contains": "v1768250654/IMG_6592_ln0gz8",
+      "reason": "Mosaic card, lazy. B7 stream 2a. Four below-fold cards at the top of the 'Our Work' mosaic claimed loading=\"eager\". The mosaic is section 8 of 9 on this page -- nothing in it is within a viewport of first paint at either width -- so the attribute bought nothing and cost 218KB of contention against the images the visitor could actually see. They now match their ten siblings in the same grid, which were lazy all along; the inconsistency was the tell. Attribute-only change: same element, same src, same box, no pixel moves.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "removed",
+      "tag": "IMG",
+      "contains": "a_90,w_600/v1768324972/PXL_20250605_233615654",
+      "reason": "Over-rotated. B7 stream 1. The a_90 on this mosaic card was OVER-APPLIED and is removed. Verified by rendering both derivatives rather than reasoned about: bare is upright (the heater stands on the floor, stones on top, firebox at the bottom, cedar wall vertical) and a_90 lays it on its side. It was the one template correction of the five that was wrong; the other four are correct and are untouched. Rotation only -- same element, same box.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "added",
+      "tag": "IMG",
+      "contains": "f_auto,w_600/v1768324972/PXL_20250605_233615654",
+      "reason": "Upright. B7 stream 1. The a_90 on this mosaic card was OVER-APPLIED and is removed. Verified by rendering both derivatives rather than reasoned about: bare is upright (the heater stands on the floor, stones on top, firebox at the bottom, cedar wall vertical) and a_90 lays it on its side. It was the one template correction of the five that was wrong; the other four are correct and are untouched. Rotation only -- same element, same box.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "removed",
+      "tag": "LINK",
+      "contains": "PXL_20250907_221307193",
+      "reason": "B7 stream 2b. /locations/ preloaded a 448.8KB image that NOTHING on the page renders -- verified by grep across src/, js/ and styles.css, where the URL appeared in the page's front matter and nowhere else. A preload for an element that does not exist is not a hint, it is a guaranteed extra download on every visit, and it was the single largest byte on the route. The page's LCP element is the map, which is script-driven and not preloadable this way, so there is no replacement preload.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "a740566165f2dcf6",
+      "reason": "The essay, removed. B7 stream 4 (Jen's mini-spec). The comparison ESSAY becomes a comparison LEDGER: a one-paragraph lede over a five-row table with three source columns, the FAQ link beneath it, and the 60-side plate deleted. The section is rewritten wholesale rather than edited -- different element vocabulary, different depth, different child count -- so the honest declaration is a subtree pair, a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 110 lines of noise describing one replacement. Span 14 becomes span 93, well inside the 400 cap, so no split at children is needed. Every cell traces to a bullet in the three comparison cards as they stood at ab83ed6 (saunas.njk:110-163); two cells are deliberately empty because the source recorded no heat-retention claim for infrared and no evidence claim for barrels. The hashes match /saunas/ and its /gallery/ redirect capture, and nothing else on the site has a section at this path with this content.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "c4aa0cde9b1d3f3a",
+      "reason": "The ledger, added. B7 stream 4 (Jen's mini-spec). The comparison ESSAY becomes a comparison LEDGER: a one-paragraph lede over a five-row table with three source columns, the FAQ link beneath it, and the 60-side plate deleted. The section is rewritten wholesale rather than edited -- different element vocabulary, different depth, different child count -- so the honest declaration is a subtree pair, a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 110 lines of noise describing one replacement. Span 14 becomes span 93, well inside the 400 cap, so no split at children is needed. Every cell traces to a bullet in the three comparison cards as they stood at ab83ed6 (saunas.njk:110-163); two cells are deliberately empty because the source recorded no heat-retention claim for infrared and no evidence claim for barrels. The hashes match /saunas/ and its /gallery/ redirect capture, and nothing else on the site has a section at this path with this content.",
+      "count": 1,
+      "commit": "abfcc75 relay batch B7: the pictures stand up, the bytes come down, the hold yields, and the argument becomes a table",
+      "range": "a5c07f7..abfcc75"
     }
   ],
   "_notes": {
