@@ -71,6 +71,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
 import { startServer } from './lib/server.mjs';
+import { SCRATCH_SKIP, scratchSite as sharedScratchSite } from './lib/scratch.mjs';
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const require = createRequire(path.join(REPO_ROOT, '/'));
@@ -94,8 +95,7 @@ const HASH_SCHEMA = 2;
 const MODELS = ['s2', 's4', 's6', 's8', 'sc'];
 const UPDATE = process.argv.includes('--update');
 
-/** Directories never copied into the scratch site (mirrors build-cache.test.mjs). */
-const SKIP = new Set(['node_modules', '.git', 'dist', '_site', '.visual-diff', '.probe', 'tmp', '.env']);
+const SKIP = SCRATCH_SKIP; // one list, lib/scratch.mjs — the private copies drifted
 
 let failures = 0;
 let passes = 0;
@@ -105,19 +105,7 @@ function check(name, condition, detail) {
   else { failures += 1; process.stdout.write(`  FAIL  ${name}\n        ${detail}\n`); }
 }
 
-function scratchSite() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ssc-prices-version-'));
-  fs.cpSync(REPO_ROOT, dir, {
-    recursive: true,
-    filter: (src) => {
-      const base = path.basename(src);
-      if (base.startsWith('.env')) return false;
-      return !SKIP.has(base) || path.dirname(src) !== REPO_ROOT;
-    },
-  });
-  fs.symlinkSync(path.join(REPO_ROOT, 'node_modules'), path.join(dir, 'node_modules'));
-  return dir;
-}
+const scratchSite = () => sharedScratchSite('ssc-prices-version');
 
 /**
  * Edit one price in a copied data.js, leaving `pricesVersion` alone.

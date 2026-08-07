@@ -56,6 +56,7 @@ import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
 import { createRequire } from 'node:module';
+import { SCRATCH_SKIP, scratchSite as sharedScratchSite, serve } from './lib/scratch.mjs';
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const require = createRequire(path.join(REPO_ROOT, '/'));
@@ -69,14 +70,7 @@ const { chromium } = require('playwright');
  */
 const TRACKER_SRC = path.resolve(REPO_ROOT, '..', 'ssc-ops', 'tracker.js');
 
-/** Directories never copied into the scratch site (mirrors the sibling suites). */
-const SKIP = new Set(['node_modules', '.git', 'dist', '_site', '.visual-diff', '.probe', 'tmp', '.env']);
-
-const MIME = {
-  '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
-  '.json': 'application/json', '.svg': 'image/svg+xml', '.xml': 'application/xml',
-  '.webmanifest': 'application/json', '.txt': 'text/plain',
-};
+const SKIP = SCRATCH_SKIP; // one list, lib/scratch.mjs — the private copies drifted
 
 const STORAGE_KEY = 'ssc_quote_config';
 const MODEL = 's4';
@@ -101,19 +95,7 @@ function check(name, condition, detail) {
   else { failures += 1; process.stdout.write(`  FAIL  ${name}\n        ${detail}\n`); }
 }
 
-function scratchSite() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ssc-events-'));
-  fs.cpSync(REPO_ROOT, dir, {
-    recursive: true,
-    filter: (src) => {
-      const base = path.basename(src);
-      if (base.startsWith('.env')) return false; // never copy secrets into scratch
-      return !SKIP.has(base) || path.dirname(src) !== REPO_ROOT;
-    },
-  });
-  fs.symlinkSync(path.join(REPO_ROOT, 'node_modules'), path.join(dir, 'node_modules'));
-  return dir;
-}
+const scratchSite = () => sharedScratchSite('ssc-events');
 
 /**
  * Apply a single exact substitution to a file in the scratch copy.
@@ -140,19 +122,6 @@ function enableAdvisor(dir) {
   fs.writeFileSync(file, JSON.stringify(json, null, 2));
 }
 
-async function serve(root) {
-  const server = http.createServer((req, res) => {
-    let file = path.join(root, decodeURIComponent(req.url.split('?')[0]));
-    try { if (fs.statSync(file).isDirectory()) file = path.join(file, 'index.html'); } catch { /* 404 below */ }
-    fs.readFile(file, (err, buf) => {
-      if (err) { res.writeHead(404); res.end('not found'); return; }
-      res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
-      res.end(buf);
-    });
-  });
-  await new Promise((r) => server.listen(0, '127.0.0.1', r));
-  return { server, base: `http://127.0.0.1:${server.address().port}` };
-}
 
 /** Build a (possibly mutated) copy of the site and serve it. */
 async function bootSite(mutator) {
