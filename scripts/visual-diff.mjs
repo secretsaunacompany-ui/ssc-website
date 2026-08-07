@@ -27,6 +27,7 @@ import { captureAll } from './lib/capture.mjs';
 import { comparePair } from './lib/diff.mjs';
 import {
   loadConfig as loadGateConfig, evaluatePair, overBudget, evaluateFitDivergence,
+  unconsumedWaivers,
 } from './lib/gate.mjs';
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
@@ -395,6 +396,14 @@ async function main() {
         + `  ${(`${p.heightDeltaPx > 0 ? '+' : ''}${p.heightDeltaPx}px`).padStart(7)}`
         + `   ${p.status}${p.expectedReason ? ` (${p.expectedReason})` : ''}`);
     }
+  }
+  // Waivers that fired on nothing this run: said out loud, not failed (yet) —
+  // a baseline advance legitimately zeroes a waiver before retirement, but an
+  // unconsumed waiver left in silence becomes cover for the NEXT change to
+  // that route, which nobody reviewed.
+  for (const route of unconsumedWaivers(config, pages)) {
+    log(`  WARN  expectedToChange waiver for ${route} fired on ZERO compared pages this run — `
+      + `if its change is now in the baseline, retire the entry (its expiry will force the question).`);
   }
   // Say WHY each failing page failed, not just that it did.
   for (const p of pages) {
