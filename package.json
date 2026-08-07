@@ -47,7 +47,6 @@
     "pixelmatch": "7.2.0",
     "playwright": "1.62.0",
     "pngjs": "7.0.0",
-    "postgres": "^3.4.8",
     "stylelint": "17.14.1"
   }
 }
