@@ -34,6 +34,8 @@
     "csp-hash:test": "node scripts/csp-inline-hash.test.mjs",
     "//functions-gate:test": "In-process refusal-path tests for the Netlify functions. No network, no build needed: requires the real handlers and asserts they refuse before any outbound call. Drives the advisor flag via ADVISOR_ENABLED_OVERRIDE.",
     "functions-gate:test": "node scripts/functions-gate.test.mjs",
+    "//jsonld:test": "Requires a build first. Parses every application/ld+json block in dist and rejects HTML-entity artifacts — the wrong-medium escaping that garbled the FAQ schema in production until 2026-08-06.",
+    "jsonld:test": "node scripts/jsonld.test.mjs",
     "//csp-hash:test": "Requires a build first. Recomputes every inline script hash from dist/ and asserts each is declared in netlify.toml script-src — CSP headers exist only on Netlify, so a blocked inline script is invisible to every local instrument (learned when the reveal-boot shipped blocked)."
   },
   "dependencies": {

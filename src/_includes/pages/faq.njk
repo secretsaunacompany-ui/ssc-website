@@ -5,12 +5,17 @@
         "@type": "FAQPage",
         "mainEntity": [
             {% for item in faq.items %}
+            {# The two holes go through | jsonld | safe like every other schema
+               block (head.njk, saunas.njk). This was the one block that missed
+               the sweep: bare {{ }} let nunjucks autoescape write &#39; into
+               the structured data -- HTML alphabet, wrong medium -- and the
+               garbling was live in Google's FAQ parser until 2026-08-06. #}
             {
                 "@type": "Question",
-                "name": "{{ item.question }}",
+                "name": "{{ item.question | jsonld | safe }}",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "{{ item.schemaAnswer }}"
+                    "text": "{{ item.schemaAnswer | jsonld | safe }}"
                 }
             }{% if not loop.last %},{% endif %}
             {% endfor %}
