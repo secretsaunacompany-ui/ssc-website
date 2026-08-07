@@ -36,6 +36,8 @@
     "functions-gate:test": "node scripts/functions-gate.test.mjs",
     "//jsonld:test": "Requires a build first. Parses every application/ld+json block in dist and rejects HTML-entity artifacts — the wrong-medium escaping that garbled the FAQ schema in production until 2026-08-06.",
     "jsonld:test": "node scripts/jsonld.test.mjs",
+    "//lightbox:test": "Requires a build first. Drives the gallery lightbox in a real Chromium: modal semantics, focus to close button, alt propagation, w_1600 upgrade, Escape + focus restore. Known limit documented in the header: no keyboard path to OPEN it yet (Wave B residual).",
+    "lightbox:test": "node scripts/lightbox.test.mjs",
     "//csp-hash:test": "Requires a build first. Recomputes every inline script hash from dist/ and asserts each is declared in netlify.toml script-src — CSP headers exist only on Netlify, so a blocked inline script is invisible to every local instrument (learned when the reveal-boot shipped blocked)."
   },
   "dependencies": {
