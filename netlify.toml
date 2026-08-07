@@ -87,7 +87,7 @@
     # kept until a draft deploy proves the map needs no fetch to it.
     # X-XSS-Protection was dropped the same day: deprecated, ignored by every
     # modern browser, and its sniffer had real bypass history in old ones.
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-Du+OJKJSbdUgz5nrHeWWINvez6XKDDU/tyj/5c2uvwo=' 'sha256-/s69UjooOsNABgZKxKExBkkAM2ESQvTyX5KcH4FbS+I=' https://unpkg.com https://ssc-ops.netlify.app; style-src 'self' 'unsafe-inline' https://unpkg.com; font-src 'self'; img-src 'self' https://res.cloudinary.com https://*.basemaps.cartocdn.com data:; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://*.supabase.co https://unpkg.com https://formspree.io https://ssc-ops.netlify.app; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formspree.io"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-Du+OJKJSbdUgz5nrHeWWINvez6XKDDU/tyj/5c2uvwo=' 'sha256-gB7jxUn9wtzmhxPhvAFu5IgZzAxp6Bjq/nHnoea/jjA=' https://unpkg.com https://ssc-ops.netlify.app; style-src 'self' 'unsafe-inline' https://unpkg.com; font-src 'self'; img-src 'self' https://res.cloudinary.com https://*.basemaps.cartocdn.com data:; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://*.supabase.co https://unpkg.com https://formspree.io https://ssc-ops.netlify.app; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formspree.io"
     # SECURITY: Permissions Policy - restricts browser features
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
 

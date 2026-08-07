@@ -40,6 +40,28 @@ if (m) {
   check('the script body is the single expected statement', m[1] === "document.documentElement.classList.add('js')",
     `body is ${JSON.stringify(m[1])} — any change must update the netlify.toml hash in the same commit`);
 }
+check('no inline event-handler attribute exists in any built page', (() => {
+  // on{event}= attributes are ALSO CSP-blocked inline script, but they need
+  // 'unsafe-hashes' plus an attribute hash — a grant this policy deliberately
+  // refuses — so any on*= attribute in dist is dead code in production. This
+  // is exactly how booking-ops.html's login shipped broken (onsubmit= refused,
+  // form default-submitting forever) while the <script>-element sweep below
+  // stayed green: attributes were invisible to it. The regex is anchored to
+  // attribute position inside a tag — a bare /on\w+=/ matches inside content=
+  // ("c-ONTENT=") with 50+ false hits on today's pages.
+  const offenders = [];
+  for (const f of fs.readdirSync('dist', { recursive: true })) {
+    if (!String(f).endsWith('.html')) continue;
+    const page = fs.readFileSync(`dist/${f}`, 'utf8');
+    for (const tag of page.matchAll(/<[a-zA-Z][^>]*>/g)) {
+      const attr = tag[0].match(/\s(on\w+)\s*=\s*["']/);
+      if (attr) offenders.push(`${f}: ${attr[1]} in ${tag[0].slice(0, 60)}`);
+    }
+  }
+  if (offenders.length) { console.log(`      ${offenders.join('\n      ')}`); return false; }
+  return true;
+})(), 'an inline event handler is in the built output — CSP refuses it on Netlify (needs unsafe-hashes, which we do not grant)');
+
 check('no OTHER undeclared inline script exists in any built page', (() => {
   for (const f of fs.readdirSync('dist', { recursive: true })) {
     if (!String(f).endsWith('.html')) continue;
