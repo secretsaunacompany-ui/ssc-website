@@ -2783,6 +2783,20 @@ footer::before {
     font-size: var(--text-sm);
 }
 
+/* The colophon's one link. Inherits the colophon's quiet register rather than
+   the ember accent -- a legal link should be findable, not loud. */
+.footer-bottom__link {
+    margin-left: var(--spacing-sm);
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.footer-bottom__link:hover,
+.footer-bottom__link:focus-visible {
+    color: var(--ember);
+}
+
 /* ============================================
    Utility Classes
    ============================================ */

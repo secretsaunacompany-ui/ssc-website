@@ -1784,6 +1784,258 @@
       "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
       "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
       "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "added",
+      "tag": "A",
+      "kind": "element",
+      "contains": "class=\"footer-bottom__link\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "42f8a7f privacy: discoverable from every route, and the contact form says where the data goes",
+      "reason": "code-refresh 2026-08-06 D6. The Privacy link added to footer.njk's colophon (beside the copyright, where legal links are looked for), therefore on every route that renders the footer. It is keyed on its CLASS, not its href: /contact/ also gains a /privacy/ link inside its disclosure sentence, and an href-keyed entry would name both nodes -- a count standing in for an identity, which this file's specificity rule refuses. Before this, /privacy/ was linked ONLY from inside the quote modal, which ships on /saunas/ alone since the modal-scoping batch -- a PIPA-conscious site whose policy was undiscoverable from 18 of 19 routes. Sitewide by design, not leakage."
+    },
+    {
+      "op": "added",
+      "tag": "A",
+      "kind": "text",
+      "contains": "Privacy",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "42f8a7f privacy: discoverable from every route, and the contact form says where the data goes",
+      "reason": "code-refresh 2026-08-06 D6. The link text of the footer Privacy entry above. Declared separately from the element because this instrument treats a text addition as its own change class."
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"@type\": \"WebSite\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7c. The WebSite JSON-LD block's BODY changes on every page: the SearchAction potentialAction is deleted. It declared a ?q= query endpoint no page can serve -- the site has no search feature -- which is harmless at best and a sitelinks-eligibility strike at worst. The removed/added pair is one edit to one inline block, not two blocks; kind:code because it is an inline script body, per _notes.kind."
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"@type\": \"WebSite\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7c. The other half of the WebSite JSON-LD edit above -- the block as it now reads, name and url only."
+    },
+    {
+      "op": "removed",
+      "tag": "DIV",
+      "kind": "element",
+      "contains": "class=\"lightbox-overlay\" id=\"galleryLightbox\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "ae992bb lightbox: held to the bar the funnel modal set — the reachable half",
+      "reason": "code-refresh 2026-08-06 B4. The lightbox container gains role=dialog, aria-modal=true and aria-label -- an ATTRIBUTE change, which this instrument reports as a removed/added element pair. It ships on every route because lightbox.njk is included unguarded via footer.njk:58 (unlike the configurator modal, which is scoped to /saunas/). Wave A held the quote funnel to this bar; the lightbox was never held to it."
+    },
+    {
+      "op": "added",
+      "tag": "DIV",
+      "kind": "element",
+      "contains": "aria-label=\"Image gallery\" aria-modal=\"true\" class=\"lightbox-overlay\" id=\"galleryLightbox\" role=\"dialog\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "ae992bb lightbox: held to the bar the funnel modal set — the reachable half",
+      "reason": "code-refresh 2026-08-06 B4. The other half of the lightbox attribute change above."
+    },
+    {
+      "op": "removed",
+      "tag": "P",
+      "kind": "text",
+      "contains": "Book a session at our Aldergrove location",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7a, HOMEPAGE ONLY. A live false claim: the card advertised booking at 'our Aldergrove location', a venue doc 13:358's brief row orders removed sitewide. Declared with its exact text, per _notes.text."
+    },
+    {
+      "op": "added",
+      "tag": "P",
+      "kind": "text",
+      "contains": "Sit in one before you decide",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7a, HOMEPAGE ONLY. Doc 13's approved Try-a-Session card copy (13:80-82), used VERBATIM and venue-neutral by design -- it names no location, so no BAG claim doc 13 never approved was introduced in its place."
+    },
+    {
+      "op": "removed",
+      "tag": "FORM",
+      "kind": "element",
+      "contains": "id=\"loginForm\" onsubmit=",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "89c7217 ops console: fix the CSP-broken login, and make the whole attribute class impossible",
+      "reason": "code-refresh 2026-08-06 D1, /booking-ops.html ONLY. The inline onsubmit= attribute is removed. CSP hashes cover <script> ELEMENTS only; an attribute handler additionally needs 'unsafe-hashes', which this policy deliberately refuses -- so in production the handler was refused, the form default-submitted, and the login overlay looped forever."
+    },
+    {
+      "op": "added",
+      "tag": "FORM",
+      "kind": "element",
+      "contains": "id=\"loginForm\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "89c7217 ops console: fix the CSP-broken login, and make the whole attribute class impossible",
+      "reason": "code-refresh 2026-08-06 D1, /booking-ops.html ONLY. The form without the attribute; the submit binding moved into the already-hash-allowlisted inline script."
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "SESSION_KEY",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "89c7217 ops console: fix the CSP-broken login, and make the whole attribute class impossible",
+      "reason": "code-refresh 2026-08-06 D1, /booking-ops.html ONLY. The inline auth script's body gains the addEventListener('submit', handleLogin) binding at DOMContentLoaded. Its netlify.toml CSP hash was recomputed in the SAME commit -- csp-hash:test enforces that pairing and is green."
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "SESSION_KEY",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "89c7217 ops console: fix the CSP-broken login, and make the whole attribute class impossible",
+      "reason": "code-refresh 2026-08-06 D1, /booking-ops.html ONLY. The other half of the inline auth script edit above."
+    },
+    {
+      "op": "removed",
+      "tag": "FORM",
+      "kind": "element",
+      "contains": "data-action=\"contact-submit\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "f3a7b0d contact form: green status stops proving anything, here too",
+      "reason": "code-refresh 2026-08-06 D5, /contact/ ONLY. The contact form gains data-contact-email (from site.json, the single definition) so the failure path can offer a mailto escape without a second copy of the address. Attribute change, hence the removed/added pair."
+    },
+    {
+      "op": "added",
+      "tag": "FORM",
+      "kind": "element",
+      "contains": "data-action=\"contact-submit\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "f3a7b0d contact form: green status stops proving anything, here too",
+      "reason": "code-refresh 2026-08-06 D5, /contact/ ONLY. The other half of the data-contact-email attribute addition above."
+    },
+    {
+      "op": "added",
+      "tag": "DIV",
+      "kind": "element",
+      "contains": "id=\"contactError\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "f3a7b0d contact form: green status stops proving anything, here too",
+      "reason": "code-refresh 2026-08-06 D5, /contact/ ONLY. The inline failure surface, hidden until a send fails, aria-live=assertive. Replaces a blocking alert() that left no trace, no error code and no escape hatch. The client also stopped treating any 2xx as success -- the shape that silently discarded a submission on 2026-07-30."
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"@type\": \"FAQPage\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "8074a6d faq: the one schema block that escaped the jsonld sweep, and a guard for the class",
+      "reason": "code-refresh 2026-08-06 D4, /faq/ ONLY. The FAQPage JSON-LD body changes: its two holes now go through | jsonld | safe like every other schema block. Nunjucks autoescape had been writing HTML entities into the structured data (&#39;), live in Google's FAQ parser. Guarded going forward by the new jsonld:test."
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"@type\": \"FAQPage\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "8074a6d faq: the one schema block that escaped the jsonld sweep, and a guard for the class",
+      "reason": "code-refresh 2026-08-06 D4, /faq/ ONLY. The other half of the FAQPage edit above -- the same questions, now with apostrophes as apostrophes."
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "name=\"description\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7b, /locations/ ONLY. The description meta promised 'Aldergrove, Vancouver, and Squamish'; the page's real cards are Brackendale Art Gallery, The Good Sauna (Vancouver), Gatherwell-Ambleside and The Finnish Sauna Co. The description now matches the venues the page actually shows. All three description metas derive from the same front-matter field, so they move together."
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "name=\"description\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7b, /locations/ ONLY. The description meta promised 'Aldergrove, Vancouver, and Squamish'; the page's real cards are Brackendale Art Gallery, The Good Sauna (Vancouver), Gatherwell-Ambleside and The Finnish Sauna Co. The description now matches the venues the page actually shows. All three description metas derive from the same front-matter field, so they move together."
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "property=\"og:description\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7b, /locations/ ONLY. The og:description meta promised 'Aldergrove, Vancouver, and Squamish'; the page's real cards are Brackendale Art Gallery, The Good Sauna (Vancouver), Gatherwell-Ambleside and The Finnish Sauna Co. The description now matches the venues the page actually shows. All three description metas derive from the same front-matter field, so they move together."
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "property=\"og:description\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7b, /locations/ ONLY. The og:description meta promised 'Aldergrove, Vancouver, and Squamish'; the page's real cards are Brackendale Art Gallery, The Good Sauna (Vancouver), Gatherwell-Ambleside and The Finnish Sauna Co. The description now matches the venues the page actually shows. All three description metas derive from the same front-matter field, so they move together."
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "name=\"twitter:description\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7b, /locations/ ONLY. The twitter:description meta promised 'Aldergrove, Vancouver, and Squamish'; the page's real cards are Brackendale Art Gallery, The Good Sauna (Vancouver), Gatherwell-Ambleside and The Finnish Sauna Co. The description now matches the venues the page actually shows. All three description metas derive from the same front-matter field, so they move together."
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "name=\"twitter:description\"",
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7b, /locations/ ONLY. The twitter:description meta promised 'Aldergrove, Vancouver, and Squamish'; the page's real cards are Brackendale Art Gallery, The Good Sauna (Vancouver), Gatherwell-Ambleside and The Finnish Sauna Co. The description now matches the venues the page actually shows. All three description metas derive from the same front-matter field, so they move together."
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "SCRIPT",
+      "path": "html/head/script",
+      "span": 2,
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7c, HOMEPAGE ONLY. The whole LocalBusiness reviews/aggregateRating JSON-LD block, deleted. Declared as a SUBTREE because that is the only shape that identifies it: four ld+json blocks sit at this path and a `contains` on the type name matched two of them -- a count standing in for an identity, which the specificity rule refuses. Hash measured with scripts/dom-subtree-hash.mjs against the baseline build, not written from memory. Lee's ruling: Google's review-snippet policy makes self-serving reviews (an entity's own reviews in its own markup) ineligible and a manual-action risk, compounded by anonymous 'Private Client' authors. The visible testimonials stay as page copy; the LocalBusiness core in head.njk is untouched -- its street address and hours remain an open Lee decision (doc 13 NEEDS-LEE item 7).",
+      "textHash": "4266e83354b6dc19"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "P",
+      "path": "html/body/main/div/section/form/p",
+      "span": 5,
+      "count": 1,
+      "range": "7b506b5..0dd1540",
+      "commit": "42f8a7f privacy: discoverable from every route, and the contact form says where the data goes",
+      "reason": "code-refresh 2026-08-06 D6, /contact/ ONLY. The US-processor disclosure paragraph added under the submit button: the <p>, its two text runs, the /privacy/ link and its text -- ONE added subtree, declared as one thing because it is one thing. Its parts could not be declared individually with honest identity: the trailing period is a bare '.' text node that matches 27 paragraphs on /privacy/ alone, and the link's href also names the colophon link. Hash measured with scripts/dom-subtree-hash.mjs. The sentence is the quote modal's VERBATIM (George's approved copy); the contact form had been collecting name, email and phone for the same US endpoint with no notice at all.",
+      "textHash": "c61df123baef06c1"
     }
   ],
   "_notes": {
@@ -1807,6 +2059,8 @@
     "reprice1Range": "How to reproduce the reprice step-1 markup certificate. The 25 entries are range-scoped 62e533a..9941997, so the certifying invocation is `node scripts/dom-integrity.mjs --baseline 62e533a --candidate 9941997`, with the config read from the working tree. 9941997 is the last commit in the batch that changes delivered markup; the commit that adds these declarations touches only this config, which reaches no template and no hashed asset, so it produces byte-identical dist HTML and the entries stay live through descendant activation (see _notes.scope) rather than needing a hand re-point. Baselining on 62e533a rather than on main is deliberate and is what makes the certificate mean anything: main does not yet carry Wave B-1, so a run against it reports the whole unmerged wave -- roughly 400 changes per page -- and this batch's 25 real changes would be invisible inside it. A certificate whose diff is dominated by somebody else's work certifies nothing.",
     "batch4JsRunFailure": "The pricesVersion 4 catalogue restructure (commits 8e2bb3b and f9dd84e, baseline 8502fda, range end f9dd84e) reports a JS RUN FAILURE, and it is EXPECTED rather than waived -- the same shape as the precedents at _notes.reprice1JsRunFailure and _notes.b1JsRunFailure. The batch necessarily edits js/data.js (pricesVersion 4, the per-model standardElectricLabel / standardWoodLabel / woodPremium fields replacing woodFired) and js/modal.js (the four-option heater group, the declared-default rule in resetForm and handlePremiumPackageChange), so the boundary crossing is structural to the batch and cannot be designed away. THE MARKUP HALF IS CERTIFIED: of 38 page/width comparisons, exactly 4 changed -- /gallery/ and /saunas/ at both widths, the two routes carrying the sauna modal -- and every one reports 'identical ... (declared)' with no undeclared change and no stale entry. The 24 declarations consumed exactly their declared counts. TWO MARKUP DECISIONS WERE MADE FOR DECLARABILITY and are recorded here so they are not undone as arbitrary. (1) The included ELECTRIC heater row carries NO ids. It was given some at first, which changed the attributes of an otherwise-untouched <label>/<span> pair -- and on the REMOVED side those nodes are attribute-less, so no `contains` could identify them without the family-of-nodes match the specificity check exists to refuse, and no subtree entry fits either because the row was only partly replaced. modal.js reaches the row through its input's data-default instead, and the change reduces to one text token. (2) The premium wood row's PRE-JS default stays the generic Original-IKI at +$5,900 rather than the S4 Mini-IKI at +$5,000: '+$5,000' cannot identify itself, because the S2/S4 yakisugi exterior carries the same figure. modal.js repaints value, label and price per model on open, so no visitor with scripts sees the difference -- and the markup default was already the generic Original-IKI before this batch, so this is the existing convention kept, not a new one. The two new components -- the included wood-fired row and the whole Mounting group -- are pure additions and are declared as single add-subtree entries keyed on measured content hashes (102469fa5540b97b and 6ec6ef8f37476dd3), which is what scripts/dom-subtree-hash.mjs was added to make possible: until it existed the two subtree shapes this config documents were the two nobody could actually write, because the hash cannot be authored from memory.",
     "batch4Range": "How to reproduce the pricesVersion 4 catalogue restructure's markup certificate, and why its range ends where it does. The 24 entries are range-scoped 8502fda..f9dd84e, so the certifying invocation is `node scripts/dom-integrity.mjs --baseline 8502fda --candidate f9dd84e`, with the config read from the working tree. THE RANGE ENDS AT THE FIX-ROUND TIP, NOT AT 8e2bb3b, and that is the correction this note exists to record: the entries first shipped scoped 8502fda..8e2bb3b, but the commit that DECLARED them (f9dd84e) also edited src/_includes/modals/sauna.njk -- two markup decisions made for declarability, both argued at _notes.batch4JsRunFailure -- so 8e2bb3b is not the last commit in the batch that changes delivered markup and a range ending there described a comparison whose candidate markup no longer exists. SAME PRECEDENT, THIRD TIME: _notes.b1Range and _notes.reprice1Range both state the rule as 'the range ends at the last commit in the batch that changes delivered markup', and in both of those cases the declaring commit touched only configs and scripts, which reach no template and no hashed asset, so the range could stop short of it. Here it could not. The rule is unchanged; what differs is which commit satisfies it. A declaring commit that edits a template is part of the certified change, not a footnote to it. Baselining on 8502fda rather than on main is deliberate for the reason given at _notes.reprice1Range: main does not yet carry Wave B-1, so a run against it reports the whole unmerged wave and this batch's 24 real changes would be invisible inside it. Commits after f9dd84e that touch only this config produce byte-identical dist HTML, so the entries stay live through descendant activation (see _notes.scope) rather than needing a hand re-point -- and that activation is PROVEN per run, not assumed: the harness requires both `git merge-base --is-ancestor` and an identical fingerprint of the range-end's own build.",
-    "batch4FixRound": "The batch-4 FIX ROUND (SC heater string, the standard-wood label repaint, the trailer note split), baseline f9dd84e. IT CARRIES NO DECLARATIONS, AND THE ABSENCE IS THE FINDING -- it was specified as needing one for the SC compare-table cell, and that specification rested on a false premise which MEASUREMENT overturned. The compare table does not exist in delivered markup: js/compare.js builds it at runtime into #compareTable from window.SSC.saunaModels, so the only place the SC heater string ships is dist/js/data.js, an asset rather than a document. `grep -rl 'Harvia Pro 20' dist/` returns exactly that one file and no HTML. Confirmed end to end: `--baseline f9dd84e --candidate WORKING` reports ZERO changed page/width comparisons and all 188 whitelist entries inert. WRITING THE DECLARATION ANYWAY WOULD HAVE BROKEN THE GATE, which is why this note exists rather than an entry: _notes.authority states that 'a declared change that does not occur ALSO fails, because a stale entry is a hole nobody closed'. A declaration for a change that happens in JavaScript is precisely that -- it would have gone red on its first run, and the tempting repair would have been to widen or delete the check rather than the entry. Same discipline as _notes.glyphPrune: run the grep, then act on what it says. THE JS RUN FAILURE IS EXPECTED, same shape as the precedents at _notes.batch4JsRunFailure, _notes.reprice1JsRunFailure and _notes.b1JsRunFailure: the round edits js/data.js (the SC `heater` string) and js/modal.js (the standard wood-fired row's label now repaints on the unavailable branch too), so the boundary crossing is structural. WHAT CERTIFIES THIS ROUND IS THEREFORE A DIFFERENT INSTRUMENT, and that is the half to read: scripts/models-json-roundtrip.mjs drives the built site in a real browser with JavaScript ENABLED and asserts the SC compare-table Heater cell byte-equal to the canonical sheet -- which is the assertion that actually moved when this string changed, and the reason the change could not be made in canonical alone. Read the two together; a dom-integrity PASS here would have covered nothing, because there was nothing in the markup to cover."
+    "batch4FixRound": "The batch-4 FIX ROUND (SC heater string, the standard-wood label repaint, the trailer note split), baseline f9dd84e. IT CARRIES NO DECLARATIONS, AND THE ABSENCE IS THE FINDING -- it was specified as needing one for the SC compare-table cell, and that specification rested on a false premise which MEASUREMENT overturned. The compare table does not exist in delivered markup: js/compare.js builds it at runtime into #compareTable from window.SSC.saunaModels, so the only place the SC heater string ships is dist/js/data.js, an asset rather than a document. `grep -rl 'Harvia Pro 20' dist/` returns exactly that one file and no HTML. Confirmed end to end: `--baseline f9dd84e --candidate WORKING` reports ZERO changed page/width comparisons and all 188 whitelist entries inert. WRITING THE DECLARATION ANYWAY WOULD HAVE BROKEN THE GATE, which is why this note exists rather than an entry: _notes.authority states that 'a declared change that does not occur ALSO fails, because a stale entry is a hole nobody closed'. A declaration for a change that happens in JavaScript is precisely that -- it would have gone red on its first run, and the tempting repair would have been to widen or delete the check rather than the entry. Same discipline as _notes.glyphPrune: run the grep, then act on what it says. THE JS RUN FAILURE IS EXPECTED, same shape as the precedents at _notes.batch4JsRunFailure, _notes.reprice1JsRunFailure and _notes.b1JsRunFailure: the round edits js/data.js (the SC `heater` string) and js/modal.js (the standard wood-fired row's label now repaints on the unavailable branch too), so the boundary crossing is structural. WHAT CERTIFIES THIS ROUND IS THEREFORE A DIFFERENT INSTRUMENT, and that is the half to read: scripts/models-json-roundtrip.mjs drives the built site in a real browser with JavaScript ENABLED and asserts the SC compare-table Heater cell byte-equal to the canonical sheet -- which is the assertion that actually moved when this string changed, and the reason the change could not be made in canonical alone. Read the two together; a dom-integrity PASS here would have covered nothing, because there was nothing in the markup to cover.",
+    "codeRefresh20260806": "CODE REFRESH 2026-08-06, range 7b506b5..0dd1540 (Stage 6 equivalence gate). 26 declarations covering every change class across 38 page/width comparisons, every one declared above and every one traceable to a bucket-D live-defect fix or a bucket-B refactor authorized in .claude/plans/code-refresh-2026-08-06-remediation.md (three critic rounds, converged). SHAPE OF THE SET: three classes are SITEWIDE by design -- the footer Privacy link (D6), the WebSite JSON-LD losing its SearchAction (D7c), and the lightbox container gaining dialog semantics (B4, unguarded via footer.njk:58) -- and the rest are route-scoped to exactly the page whose defect they fix (/ reviews+copy, /booking-ops.html login, /contact/ failure surface + disclosure, /faq/ schema escaping, /locations/ meta). NOT DECLARED BECAUSE NOT PRESENT: no price, no option value, no pricesVersion moved anywhere in this range -- the pricing files were out of scope by standing constraint and git diff over js/data.js, src/_data/models.json and modals/sauna.njk's option values is empty. THE PIXEL HALF is certified separately: visual-diff 7b506b5..c015e00 (the behaviour-preserving bucket-A tail, incl. ~370 lines of dead CSS) reported ZERO visual change on all 38 pairs, and the full-range run's reds decompose exactly into these declared causes (+31px page height everywhere = the footer link; /contact/ +91px = the error surface and disclosure; / @390 reflow = the D7a copy), with /booking-ops.html at 0.000% as the untouched control.",
+    "codeRefresh20260806JsRunFailure": "The 2026-08-06 code-refresh range reports a JS RUN FAILURE, EXPECTED and waived nowhere -- the same shape as _notes.b1JsRunFailure, _notes.reprice1JsRunFailure and _notes.batch4JsRunFailure. The batch necessarily edits js/analytics.js (D3, the book_page_view ordering race), js/forms.js (D5, the Formspree success predicate and failure rendering), js/navigation.js (D8 Leaflet SRI + the dead booking hook) and js/gallery.js (B4 lightbox alt/focus), so the boundary crossing is structural to the work and cannot be designed away. This instrument certifies DELIVERED MARKUP with scripts disabled; what those scripts DO is certified elsewhere and was: quote-funnel 89, events 76 (incl. the new late-tracker scenario that reproduces production's real script ordering, and the contact-failure scenarios), lightbox 7, functions-gate 10, fonts 31, rhythm 77, plus csp-hash's new inline-event-attribute sweep. Read the two together; do not read this file's verdict as covering the JS."
   }
 }

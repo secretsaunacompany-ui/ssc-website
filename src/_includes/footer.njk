@@ -13,11 +13,6 @@
                 <a href="/faq/">FAQ</a>
                 <a href="/warranty/">Warranty</a>
                 <a href="/contact/">Contact</a>
-                {# Added 2026-08-06: until then /privacy/ was reachable ONLY
-                   from inside the quote modal, which ships on /saunas/ alone
-                   after the modal-scoping batch — a PIPA-conscious site whose
-                   policy was undiscoverable from 18 of 19 routes. #}
-                <a href="/privacy/">Privacy</a>
             </div>
             <div class="footer-section">
                 <h4>Service Areas</h4>
@@ -35,7 +30,17 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; {{ "" | currentYear }} Secret Sauna Company. All rights reserved.</p>
+            {# Privacy lives in the colophon, not Quick Links: it is a legal
+               link, not a navigational one, and this is where legal links are
+               looked for. Added 2026-08-06 — until then /privacy/ was reachable
+               ONLY from inside the quote modal, which ships on /saunas/ alone
+               after the modal-scoping batch, leaving a PIPA-conscious site's
+               policy undiscoverable from 18 of 19 routes. The class is what
+               gives the node its own identity: /contact/ also carries a
+               /privacy/ link inside its disclosure sentence, and a declaration
+               keyed on the href alone would name both. #}
+            <p>&copy; {{ "" | currentYear }} Secret Sauna Company. All rights reserved.
+                <a class="footer-bottom__link" href="/privacy/">Privacy</a></p>
         </div>
     </footer>
 

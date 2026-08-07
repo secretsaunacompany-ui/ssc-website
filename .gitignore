@@ -12,6 +12,11 @@ dist/
 .cache/
 _site/
 
+# MARVIN session-worktree metadata: local absolute paths and a session id,
+# written by the worktree tooling. Never a build input; it was swept into a
+# commit once by a `git add -A` (2026-08-06) and evicted here.
+.marvin-worktree.json
+
 # Visual diff harness working directory (builds, screenshots, asset cache)
 .visual-diff/
 
