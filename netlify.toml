@@ -15,7 +15,13 @@
 
 [build.environment]
   # Node version for functions
-  NODE_VERSION = "18"
+  # Bumped 18 -> 22 on 2026-08-06: Node 18 reached EOL April 2025 and AWS
+  # Lambda (the functions substrate) has deprecated nodejs18.x — rot with a
+  # deadline that would have fired during an unrelated deploy. Both functions
+  # are plain CommonJS (node --check clean on 22); the local toolchain already
+  # runs 22. Deploy-time checklist: one /ops auth round-trip + advisor 503 on
+  # the next draft deploy.
+  NODE_VERSION = "22"
 
 # Redirect rules (optional)
 [[redirects]]
