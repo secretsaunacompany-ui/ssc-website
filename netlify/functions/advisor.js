@@ -7,6 +7,22 @@ const { buildCorsHeaders, jsonResponse, parseJsonBody } = require('./lib/http');
 const { checkRateLimit, getClientIp } = require('./lib/rate-limit');
 const { getPromptConfig } = require('./prompts/index');
 
+// Dark front-end means dark back-end. The advisor UI is feature-flagged in
+// site.json; until 2026-08-06 the flag governed only the pages, leaving this
+// endpoint publicly POST-able as an unauthenticated LLM proxy while nothing
+// on the site could reach it. The same flag now gates the handler. The require
+// is bundled by Netlify's zisi (probed 2026-08-06: site.json lands in the zip;
+// prompts/faq.js has crossed the same boundary in production for months).
+// ADVISOR_ENABLED_OVERRIDE exists for scripts/functions-gate.test.mjs, which
+// must exercise both states without editing site.json; unset in production.
+const SITE = require('../../src/_data/site.json');
+function advisorEnabled() {
+  const override = process.env.ADVISOR_ENABLED_OVERRIDE;
+  if (override === 'true') return true;
+  if (override === 'false') return false;
+  return SITE.features && SITE.features.advisor === true;
+}
+
 const RATE_LIMIT_MAX = 10;       // requests per window per IP
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
 
@@ -54,6 +70,11 @@ exports.handler = async (event) => {
   // Only accept POST
   if (event.httpMethod !== 'POST') {
     return jsonResponse(405, headers, { error: 'Method not allowed' });
+  }
+
+  // Feature gate — before parsing, before rate-limit state, before the client.
+  if (!advisorEnabled()) {
+    return jsonResponse(503, headers, { error: 'advisor disabled' });
   }
 
   // Rate limiting
