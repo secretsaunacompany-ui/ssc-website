@@ -2,6 +2,7 @@
 // Endpoint: /.netlify/functions/booking-admin
 
 const { buildCorsHeaders, jsonResponse, parseJsonBody } = require('./lib/http');
+const { checkRateLimit, getClientIp } = require('./lib/rate-limit');
 const { getSupabaseClient } = require('./lib/supabase');
 const {
   SLOT_DEFINITIONS,
@@ -12,22 +13,12 @@ const {
 } = require('./lib/booking');
 let supabase;
 
-// Simple in-memory rate limiter (per serverless instance)
-const rateMap = new Map();
-const RATE_WINDOW_MS = 60 * 1000;
+// Rate limiting via lib/rate-limit.js (2026-08-06): this file hand-rolled a
+// second limiter beside the shared one — fixed window vs the lib's sliding
+// window, and it read only x-forwarded-for where the lib prefers Netlify's
+// x-nf-client-connection-ip, the header the platform itself stamps. One
+// limiter, the better IP source. Still 30/min per instance.
 const RATE_MAX_REQUESTS = 30;
-
-function isRateLimited(ip) {
-  const now = Date.now();
-  const entry = rateMap.get(ip);
-  if (!entry || now - entry.start > RATE_WINDOW_MS) {
-    rateMap.set(ip, { start: now, count: 1 });
-    return false;
-  }
-  entry.count++;
-  if (entry.count > RATE_MAX_REQUESTS) return true;
-  return false;
-}
 
 function addDays(dateStr, offset) {
   const date = new Date(`${dateStr}T00:00:00`);
@@ -57,8 +48,8 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers, body: '' };
   }
 
-  const clientIp = event.headers['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
-  if (isRateLimited(clientIp)) {
+  const clientIp = getClientIp(event.headers);
+  if (!checkRateLimit(clientIp, RATE_MAX_REQUESTS).allowed) {
     return jsonResponse(429, headers, { error: 'Too many requests' });
   }
 

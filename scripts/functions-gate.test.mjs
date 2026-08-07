@@ -72,5 +72,28 @@ delete process.env.ADVISOR_ENABLED_OVERRIDE;
     `site.json advisor=${site.features?.advisor}, got ${res.statusCode}`);
 }
 
+// ---- booking-admin: shared rate limiter (B5, 2026-08-06) -------------------
+{
+  const { getClientIp } = require(path.join(REPO_ROOT, 'netlify/functions/lib/rate-limit.js'));
+  check('getClientIp prefers Netlify\'s own header over x-forwarded-for',
+    getClientIp({ 'x-nf-client-connection-ip': '198.51.100.1', 'x-forwarded-for': '203.0.113.9' }) === '198.51.100.1',
+    'the platform-stamped header is the trustworthy one');
+
+  const { handler: bookingAdmin } = require(path.join(REPO_ROOT, 'netlify/functions/booking-admin.js'));
+  // 31 calls from one IP: the limiter (30/min, BEFORE any Supabase touch)
+  // must refuse the 31st with 429. Earlier calls may 500 on missing local
+  // Supabase env — irrelevant here; the refusal ordering is the claim.
+  let last;
+  for (let i = 0; i < 31; i++) {
+    last = await bookingAdmin({
+      httpMethod: 'GET',
+      headers: { 'x-nf-client-connection-ip': '198.51.100.77' },
+      queryStringParameters: { action: 'sessions' },
+    });
+  }
+  check('booking-admin: the 31st request in a minute from one IP is refused 429 before any backend touch',
+    last.statusCode === 429, `31st response was ${last.statusCode}`);
+}
+
 console.log(`\n${passes} passed, ${failures} failed`);
 process.exit(failures ? 1 : 0);
