@@ -64,7 +64,6 @@
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     # SECURITY: Content Security Policy - restricts what resources can be loaded
@@ -79,7 +78,16 @@
     # Fonts are self-hosted as of WP-1a, so this policy SHRANK:
     # https://fonts.googleapis.com left style-src and https://fonts.gstatic.com
     # left font-src. Nothing was added. font-src is now 'self' alone.
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-Du+OJKJSbdUgz5nrHeWWINvez6XKDDU/tyj/5c2uvwo=' 'sha256-/s69UjooOsNABgZKxKExBkkAM2ESQvTyX5KcH4FbS+I=' https://cdn.jsdelivr.net https://unpkg.com https://ssc-ops.netlify.app; style-src 'self' 'unsafe-inline' https://unpkg.com; font-src 'self'; img-src 'self' https://res.cloudinary.com https://*.basemaps.cartocdn.com data:; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://*.supabase.co https://unpkg.com https://formspree.io https://cdn.jsdelivr.net https://script.google.com https://ssc-ops.netlify.app; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formspree.io"
+    # Shrank again 2026-08-06: cdn.jsdelivr.net (script-src + connect-src) and
+    # script.google.com (connect-src) were inherited from the pre-redesign
+    # import (81d2c56) and nothing in js/, src/ or the built site references
+    # either -- each unused script-src origin is free supply-chain surface.
+    # unpkg.com STAYS in all three lists it appears in: navigation.js
+    # lazy-loads Leaflet from it (script-src + style-src), and connect-src is
+    # kept until a draft deploy proves the map needs no fetch to it.
+    # X-XSS-Protection was dropped the same day: deprecated, ignored by every
+    # modern browser, and its sniffer had real bypass history in old ones.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-Du+OJKJSbdUgz5nrHeWWINvez6XKDDU/tyj/5c2uvwo=' 'sha256-/s69UjooOsNABgZKxKExBkkAM2ESQvTyX5KcH4FbS+I=' https://unpkg.com https://ssc-ops.netlify.app; style-src 'self' 'unsafe-inline' https://unpkg.com; font-src 'self'; img-src 'self' https://res.cloudinary.com https://*.basemaps.cartocdn.com data:; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://*.supabase.co https://unpkg.com https://formspree.io https://ssc-ops.netlify.app; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://formspree.io"
     # SECURITY: Permissions Policy - restricts browser features
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
 
