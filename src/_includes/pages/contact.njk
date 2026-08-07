@@ -19,7 +19,7 @@
                definition for every form on the site. It used to be written out here AND
                hardcoded as a fallback in js/forms.js; the configurator form would have
                made it three copies. Never paste the literal back in. #}
-            <form class="contact-form contact-form--styled" method="POST" action="{{ site.forms.endpoint }}" data-action="contact-submit">
+            <form class="contact-form contact-form--styled" method="POST" action="{{ site.forms.endpoint }}" data-action="contact-submit" data-contact-email="{{ site.email }}">
                 <input type="hidden" name="_next" value="https://www.secretsaunacompany.ca/contact/thank-you/">
                 <input type="hidden" name="_subject" value="New Sauna Inquiry from Website">
                 <div class="form-group">
@@ -102,6 +102,13 @@
                 </div>
 
                 <button type="submit" class="btn btn--full-width">Get My Quote</button>
+
+                {# Failure surface for js/forms.js showFailure() — same
+                   vocabulary as the configurator's #quoteError. aria-live so
+                   AT hears the failure without focus theft; hidden until a
+                   send actually fails. The old path was a blocking alert()
+                   that left no trace and no escape hatch. #}
+                <div id="contactError" class="quote-error" hidden aria-live="assertive"></div>
             </form>
 
             <div class="contact-info">

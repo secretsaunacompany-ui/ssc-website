@@ -219,6 +219,7 @@ Events (name — payload — the question it answers):
 - `sessions_band_click`, `book_page_view` — `{paused: bool}`
 - `waitlist_submit_success` — the paused-state capture working
 - `contact_submit_success` — `{source: direct|configurator_fallback|commercial}`
+- `contact_submit_error` — `{source, error: rate_limited|rejected|network}` — **added 2026-08-06:** the contact form's failure paths joined the tripwire. Until then the contact client trusted `response.ok` alone (a 2xx with no `next` fired success and discarded the message — the shape proven live 2026-07-30) and its failures were a blocking `alert()` invisible to analytics. Same once-per-visible-failure contract as `quote_submit_error`; a streak of these on the contact path now means what a streak of quote errors means.
 - `commercial_page_view`, `commercial_contact_click`
 
 **Health checks (already-known failure classes):**

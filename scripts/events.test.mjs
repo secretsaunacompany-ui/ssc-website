@@ -513,6 +513,15 @@ async function stubFormspree(page, outcome) {
     if (outcome === 429) {
       return route.fulfill({ status: 429, contentType: 'application/json', body: JSON.stringify({ error: 'Too many requests' }) });
     }
+    if (outcome === 500) {
+      return route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
+    }
+    if (outcome === 'empty200') {
+      // The documented Formspree failure shape: HTTP success, no `next` in the
+      // body. Proven live 2026-07-30 -- a submission "accepted" this way was
+      // never delivered. Only the body discriminates.
+      return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+    }
     return route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -778,6 +787,60 @@ async function runInventory(base, browser) {
     check('book_page_view: arrives under REAL tracker timing (deferred, last in source)',
       !!view && view.data.paused === true, `events were ${JSON.stringify(events)}`);
     collected.push(...events);
+    await page.close();
+  }
+
+  // --- contact form: a 2xx that carries no `next` is a FAILURE ----------
+  //
+  // Formspree's documented silent-discard shape (proven live 2026-07-30):
+  // HTTP 200, success-shaped nothing in the body, message never delivered.
+  // The modal client was rebuilt around exactly this; until 2026-08-06 the
+  // contact client still trusted response.ok alone -- it fired
+  // contact_submit_success, reset the form, and navigated to the thank-you
+  // page while the visitor's message evaporated. These fixtures pin the
+  // honest behaviour: no success theater, the visitor's words survive, and
+  // the failure is visible to the doc 14 §8 tripwire as contact_submit_error.
+  {
+    const page = await newPage(browser);
+    await stubFormspree(page, 'empty200');
+    await page.goto(`${base}/contact/`, { waitUntil: 'networkidle' });
+    await page.fill('#name', 'Failure Path');
+    await page.fill('#email', 'failure@example.com');
+    await page.selectOption('#project-type', 'commercial');
+    await page.click('.contact-form button[type="submit"]');
+    await page.waitForTimeout(800);
+    const events = await readEvents(page);
+    check('contact 2xx-without-next: does NOT navigate to the thank-you page',
+      !page.url().includes('thank-you'), `url is ${page.url()}`);
+    check('contact 2xx-without-next: fires contact_submit_error (code rejected), never success',
+      !events.some((e) => e.type === 'contact_submit_success')
+      && one(events, 'contact_submit_error') && one(events, 'contact_submit_error').data.error === 'rejected',
+      `events were ${JSON.stringify(events)}`);
+    check('contact 2xx-without-next: the visitor\'s words survive (form not reset)',
+      (await page.inputValue('#name')) === 'Failure Path', 'form was reset on a failed send');
+    check('contact 2xx-without-next: an inline error with a mailto escape is visible',
+      await page.isVisible('#contactError') && await page.isVisible('#contactError a[href^="mailto:"]'),
+      'no visible inline error / mailto fallback');
+    await page.close();
+  }
+
+  // --- contact form: a hard 5xx fails visibly, not via alert() ----------
+  {
+    const page = await newPage(browser);
+    await stubFormspree(page, 500);
+    await page.goto(`${base}/contact/`, { waitUntil: 'networkidle' });
+    await page.fill('#name', 'Server Error');
+    await page.fill('#email', 'error@example.com');
+    await page.selectOption('#project-type', 'residential');
+    await page.click('.contact-form button[type="submit"]');
+    await page.waitForTimeout(800);
+    const events = await readEvents(page);
+    check('contact 5xx: fires contact_submit_error and stays on the page',
+      !page.url().includes('thank-you')
+      && one(events, 'contact_submit_error') && !events.some((e) => e.type === 'contact_submit_success'),
+      `url ${page.url()}, events ${JSON.stringify(events)}`);
+    check('contact 5xx: submit button recovers for a retry',
+      await page.isEnabled('.contact-form button[type="submit"]'), 'button left disabled');
     await page.close();
   }
 
