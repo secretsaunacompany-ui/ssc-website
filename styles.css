@@ -297,6 +297,11 @@
        vh, deliberately: NOT dvh (padding must not reflow when a mobile URL bar
        hides -- the whole page would jump mid-scroll) and not svh (wrong end of
        the same tradeoff, and no more stable here). */
+    /* How far the hero holds its ground while you scroll. Not a lock: the page
+       moves the whole time; the stage is sticky, so the photograph and title
+       stay composed for this distance and then leave normally. 70vh reads as
+       "one deliberate gesture" without becoming a tunnel. */
+    --hero-runway:       70vh;
     --section-pad:       clamp(3.5rem, min(14vh, 18vw), 10rem);
     --section-pad-tight: clamp(2rem, min(8vh, 10.5vw), 5rem);
     --section-pad-open:  clamp(5rem, min(18vh, 23vw), 13rem);
@@ -406,7 +411,15 @@ body {
        three components were re-fixing it locally. 1.65 is the long-form value;
        component roles take --leading-ui / --leading-tight. */
     line-height: var(--leading-body);
-    overflow-x: hidden;
+    /* `clip`, not `hidden` (2026-08-07). Identical clipping, one critical
+       difference: `overflow-x: hidden` forces the computed `overflow-y` to
+       `auto`, which makes BODY a scroll container — and a `position: sticky`
+       descendant then sticks to body's scrollport, which never scrolls, so it
+       silently does nothing. That is what defeated the hero stage on the first
+       attempt here, and it is a strong candidate for why sticky approaches
+       have felt impossible on this page before. `clip` creates no scroll
+       container and leaves overflow-y alone. */
+    overflow-x: clip;
     /* 300 on near-black thins strokes further (halation). Weight 300 at
        0.85-0.95rem in muted grey was the site's most common small-text recipe
        and its weakest. 300 survives only at >=--text-md in full-strength ink. */
@@ -788,13 +801,89 @@ nav .container {
 /* ============================================
    Hero Section
    ============================================ */
+/* THE HERO STAGE AND ITS RUNWAY (Lee 2026-08-07).
+   The complaint this solves: the title arrived on the first scroll and left on
+   the same gesture, so you had to scroll back UP to read the thing the scroll
+   had just revealed — which defeats the reveal.
+
+   The mechanism is NOT a scroll lock, and the standing "scroll is never
+   blocked" ruling (doc 21 N2, agreed by Jen and Wim and untouched by Lee's
+   Wave B addendum) is intact: every input still scrolls the page by exactly
+   what the browser says it should. What changed is that the hero now OWNS the
+   first --hero-runway of that scroll — the photograph and the title are
+   sticky, so they stay composed in front of you while the page travels
+   through the runway, and only then does the hero leave.
+
+   Why this was hard before: `overflow: hidden` here made .hero a scroll
+   container, and `position: sticky` inside a scroll container has nothing to
+   stick to. `overflow: clip` clips identically WITHOUT creating that
+   container. That one-property difference is the whole trick; the four
+   mechanisms in the ROADMAP's B7 entry were all attempts to retime a pending
+   CSS transition, which is a different problem than this one.
+
+   Grid rather than flex so the photograph, the scrim and the title share ONE
+   cell and overlap without absolute positioning fighting the sticky stage. */
 .hero {
     height: 100vh;
     position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    /* ONE row spanning the whole stage-plus-runway. This is the subtle part: a
+       sticky item travels within its CONTAINING BLOCK, so if the row were sized
+       to the 100vh stage the items would have exactly zero room to stick and
+       the whole effect would silently do nothing (measured: the photograph
+       scrolled straight off). The row is the full height; the ITEMS are 100vh
+       and start-aligned, which is what gives them the runway to hold through. */
+    grid-template-rows: 1fr;
+    overflow: clip;
+}
+
+.hero > .hero-image,
+.hero > .hero-content,
+.hero::after {
+    grid-area: 1 / 1;
+    align-self: start;
+    height: 100vh;
+}
+
+/* The runway is scoped to the band where the hero IS a clean 100vh stage.
+   Below 768 the hero is `height: auto; min-height: 80vh` on purpose (see the
+   mobile rule) so a phone never clips its own hero content, and a fixed-height
+   sticky stage there would fight that. Mobile keeps today's behaviour until the
+   desktop one has been looked at on a real device. */
+@media (min-width: 768px) {
+    .hero {
+        height: calc(100vh + var(--hero-runway));
+    }
+
+    .hero > .hero-image,
+    .hero > .hero-content,
+    .hero::after {
+        position: sticky;
+        top: 0;
+    }
+}
+
+/* The stage's own vertical centring, which the parent flex used to provide. */
+.hero > .hero-content {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+}
+
+/* Reduced motion composes the page instantly and gets no reveal to protect, so
+   the runway would be scroll distance bought for nothing. Collapsed. */
+@media (prefers-reduced-motion: reduce) {
+    .hero {
+        height: 100vh;
+    }
+
+    .hero > .hero-image,
+    .hero > .hero-content,
+    .hero::after {
+        position: static;
+    }
 }
 
 /* The held photograph. It is now HELD -- static, 100svh, and exactly its own
@@ -832,8 +921,8 @@ nav .container {
    UNCHANGED -- the scrim is added to it, not traded against it. */
 .hero::after {
     content: '';
-    position: absolute;
-    inset: 0;
+    /* position/grid-area/height come from the sticky-stage rule above, so the
+       scrim travels with the photograph instead of spanning the runway. */
     background: var(--hero-scrim);
     pointer-events: none;
 }
