@@ -1776,6 +1776,16 @@ nav .container {
     margin: var(--spacing-xl) auto;
 }
 
+/* The top margin exists to separate the form from whatever precedes it inside
+   the section — the advisor block, or the saved-quote banner. When the form IS
+   the first thing in the section (the ordinary state, with the advisor flag
+   off), that margin is a third helping of space after the hero's padding and
+   the section's own. Collapsed only in that case, so the separation still
+   appears the moment something is actually there to separate from. */
+.contact-form:first-child {
+    margin-top: 0;
+}
+
 /* Injected by navigation.js only when a saved configurator quote exists, so it
    is absent from every first paint. A configuration pasted silently into a
    textarea reads as nothing having happened; this says it out loud. */

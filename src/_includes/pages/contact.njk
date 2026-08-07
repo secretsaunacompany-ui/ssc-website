@@ -5,7 +5,13 @@
             <p>Tell us about your space and we'll create a custom design plan—no obligation, no pressure</p>
         </section>
 
-        <section class="container">
+        {# section--tight because this section follows the page hero directly,
+           which is the pattern /saunas/ already uses on its first section. Full
+           --section-pad here stacked a third vertical space on top of the hero's
+           own bottom padding and the form's margin: 96 + 126 + 48 = 270px of air
+           between "Get Your Quote" and the first field it asks for (measured at
+           1440; Lee 2026-08-07). #}
+        <section class="container section--tight">
 {% if site.features.advisor %}
             <div class="advisor-container reveal"
                  data-advisor-type="inquiry"
