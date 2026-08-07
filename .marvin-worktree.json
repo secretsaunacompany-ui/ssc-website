@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "projectId": "ssc-website",
+  "projectPath": "/home/leesalo/Projects/ssc-website",
+  "branch": "marvin/session-f1ef70",
+  "slug": "session-f1ef70",
+  "tmuxName": "marvin_ssc-website_session-f1ef70",
+  "startPoint": "3a8c5e07821aef2169fa24df237626117d47dc18",
+  "createdAt": "2026-08-07T01:55:45.019Z",
+  "keep": false,
+  "keptAt": null
+}

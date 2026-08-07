@@ -153,7 +153,8 @@ module.exports = function(eleventyConfig) {
     return stamped;
   });
 
-  // Date formatting filter for blog posts and sitemap
+  // Date formatting filter for the sitemap (its only remaining consumer --
+  // the blog plumbing that co-owned it was deleted 2026-08-06)
   eleventyConfig.addFilter("date", (dateObj, format) => {
     if (!dateObj) return '';
     const d = new Date(dateObj);
@@ -165,11 +166,6 @@ module.exports = function(eleventyConfig) {
       return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
     }
     return d.toISOString();
-  });
-
-  // Blog collection
-  eleventyConfig.addCollection("blog", function(collectionApi) {
-    return collectionApi.getFilteredByTag("blog").sort((a, b) => a.date - b.date);
   });
 
   eleventyConfig.addPassthroughCopy("js");
