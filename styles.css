@@ -859,6 +859,13 @@ nav .container {
 .hero-subtitle {
     font-size: var(--text-md);
     font-weight: 300;
+    /* SANCTIONED EXCEPTION (code-refresh 2026-08-06): raw tracking on
+       the mixed-case hero subtitle (0.05em). Doc 11's rule as written says never track lowercase
+       text, and the --tracking-* system claims to have replaced the em zoo.
+       Whether this register keeps its tracking is a design ruling for
+       Jen/WP-2, not a mechanical fix -- normalizing moves visible letterfit.
+       Recorded like the font-size disables: an exception with a name,
+       not silent drift. */
     letter-spacing: 0.05em;
     margin-bottom: var(--spacing-xl);
     margin-left: auto;
@@ -1538,6 +1545,13 @@ nav .container {
     text-decoration: none;
     font-size: var(--text-base);
     font-weight: 500;
+    /* SANCTIONED EXCEPTION (code-refresh 2026-08-06): raw tracking on
+       mixed-case buttons (0.05em). Doc 11's rule as written says never track lowercase
+       text, and the --tracking-* system claims to have replaced the em zoo.
+       Whether this register keeps its tracking is a design ruling for
+       Jen/WP-2, not a mechanical fix -- normalizing moves visible letterfit.
+       Recorded like the font-size disables: an exception with a name,
+       not silent drift. */
     letter-spacing: 0.05em;
     /* Colour only. "No lighting up of call-to-action buttons" is a hard rule for
        the Threshold .btn (Jen 10 §5.2): no lift, no glow, no pulse. Both hover
@@ -2403,7 +2417,10 @@ select[aria-invalid="true"]:focus {
     font-family: var(--font-primary);
     font-size: var(--text-sm);
     font-weight: 500;
-    letter-spacing: 0.05em;
+    /* Uppercase (text-transform below), so doc 11's one-value rule applies:
+       ALL uppercase micro-type uses --tracking-caps. Was a raw 0.05em that
+       survived the WP-1a consolidation (code-refresh 2026-08-06). */
+    letter-spacing: var(--tracking-caps);
     cursor: pointer;
     transition: all var(--transition-fast);
     border-radius: var(--radius-sm);
@@ -2596,6 +2613,11 @@ select[aria-invalid="true"]:focus {
     transform: translateX(-50%);
     color: var(--ink);
     font-size: var(--text-sm);
+    /* SANCTIONED EXCEPTION (code-refresh 2026-08-06): numeric counter
+       ('1 / 25'), not lowercase prose -- doc 11's caps rule does not
+       obviously claim it and 0.1em on tabular numerals is a legibility
+       choice. Jen/WP-2 may fold it into --tracking-caps; recorded, not
+       silently drifting. */
     letter-spacing: 0.1em;
     opacity: 0.7;
 }
@@ -3050,6 +3072,13 @@ section.surface--elevated:has(> .wide-container) {
     color: var(--ember);
     text-decoration: none;
     font-size: var(--text-sm);
+    /* SANCTIONED EXCEPTION (code-refresh 2026-08-06): raw tracking on
+       mixed-case accent links (0.03em). Doc 11's rule as written says never track lowercase
+       text, and the --tracking-* system claims to have replaced the em zoo.
+       Whether this register keeps its tracking is a design ruling for
+       Jen/WP-2, not a mechanical fix -- normalizing moves visible letterfit.
+       Recorded like the font-size disables: an exception with a name,
+       not silent drift. */
     letter-spacing: 0.03em;
     position: relative;
     display: inline;
