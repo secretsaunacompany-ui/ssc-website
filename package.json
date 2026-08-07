@@ -38,6 +38,8 @@
     "jsonld:test": "node scripts/jsonld.test.mjs",
     "//lightbox:test": "Requires a build first. Drives the gallery lightbox in a real Chromium: modal semantics, focus to close button, alt propagation, w_1600 upgrade, Escape + focus restore. Known limit documented in the header: no keyboard path to OPEN it yet (Wave B residual).",
     "lightbox:test": "node scripts/lightbox.test.mjs",
+    "//model-thumbs:test": "Gates the /saunas/ index thumbnail against js/data.js: models.json thumb must equal the first non-video image the configurator opens on. No build needed.",
+    "model-thumbs:test": "node scripts/model-thumbs.test.mjs",
     "//csp-hash:test": "Requires a build first. Recomputes every inline script hash from dist/ and asserts each is declared in netlify.toml script-src — CSP headers exist only on Netlify, so a blocked inline script is invisible to every local instrument (learned when the reveal-boot shipped blocked)."
   },
   "dependencies": {

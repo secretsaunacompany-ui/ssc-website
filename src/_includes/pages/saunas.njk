@@ -66,6 +66,7 @@
                      construction -- the same gap delete-subtree exists to close
                      on the removal side. -->
                 <div class="model-index__head" aria-hidden="false">
+                    <span class="model-index__label model-index__label--thumb"></span>
                     <span class="model-index__label model-index__label--model">Model</span>
                     <span class="model-index__label model-index__label--size">Size</span>
                     <span class="model-index__label model-index__label--capacity">Capacity</span>
@@ -82,6 +83,31 @@
                      computes from the content and carries every fact the sighted
                      row carries, from the same gated data file. -->
                 <div class="model-row reveal" role="button" tabindex="0" data-action="open-modal" data-model="{{ m.id }}">
+                    <!-- alt="" deliberately, and for the same reason the row
+                         carries no aria-label (Razor W2b): this <img> sits
+                         INSIDE a role="button", so any alt text would join the
+                         row's computed name and push the price further from the
+                         front of it. The row already names the model in text;
+                         the photograph is what the sighted reader gets and the
+                         accessible name is left exactly as it was.
+                         `sizes` is authored so the transform's candidate list
+                         resolves to a thumbnail rather than the 800px default —
+                         the same per-element override the hero uses.
+
+                         NO width/height, and that is the considered choice, not
+                         an oversight: those attributes are a claim about the
+                         DELIVERED derivative's aspect, and these five frames are
+                         not square (400×340, 400×320, …). Declaring 72×72 to
+                         match the CSS box states a shape the bytes do not have —
+                         rhythm's B2 check caught exactly that, which is the
+                         check that exists because two rotation bugs shipped as
+                         false aspect claims. The reason CLS is not at stake is
+                         that .model-row__thumb pins both dimensions in CSS, so
+                         the box is reserved before the bytes arrive; same
+                         precedent as the service-area plate sized by
+                         .img--full-cover-500. -->
+                    <img class="model-row__thumb" src="{{ m.thumb }}" alt=""
+                         sizes="72px" loading="lazy" decoding="async">
                     <span class="model-row__designation">{{ m.designation }}</span>
                     <span class="model-row__size">{{ m.size | replace(" x ", " × ") | safe }}</span>
                     <span class="model-row__capacity">{{ m.capacity | replace("-", "–") | safe }}</span>
@@ -210,15 +236,33 @@
             <p class="compare-ledger__link reveal"><a href="/faq/" class="link--accent">The full comparison →</a></p>
         </section>
 
-        <!-- 7. Science thesis (Jen §2.3) -- archetype B, one stat, on ground.
-             The 66% and 24% stats and the elevated photo-overlay treatment are
-             deleted from this page. No claim is reworded: the 40% line is the
-             copy that was already here. -->
+        <!-- 7. Science thesis. Jen §2.3 specified archetype B -- ONE stat, on
+             ground -- and the 66% and 24% lines were deleted to meet it.
+             OVERRIDDEN BY LEE 2026-08-07: a single figure floating under the
+             comparison ledger reads as an orphan rather than as evidence, and
+             three read as a considered body of it. The two restored claims are
+             the ones that were removed, verbatim and with their original
+             attributions (recovered from 43bd943) -- no claim is reworded and
+             no figure is new. The elevated photo-overlay treatment stays
+             deleted; this remains type on ground, which is the half of Jen's
+             archetype the objection was never about. -->
         <section class="container section--open">
-            <div class="thesis reveal">
-                <p class="thesis__stat">40%</p>
-                <p class="thesis__claim">Lower risk of cardiovascular disease with regular sauna use (4–7×/week)</p>
-                <p class="thesis__source">JAMA Internal Medicine</p>
+            <div class="thesis-set reveal">
+                <div class="thesis">
+                    <p class="thesis__stat">40%</p>
+                    <p class="thesis__claim">Lower risk of cardiovascular disease with regular sauna use (4–7×/week)</p>
+                    <p class="thesis__source">JAMA Internal Medicine</p>
+                </div>
+                <div class="thesis">
+                    <p class="thesis__stat">66%</p>
+                    <p class="thesis__claim">Reduction in dementia risk for frequent sauna bathers</p>
+                    <p class="thesis__source">University of Eastern Finland</p>
+                </div>
+                <div class="thesis">
+                    <p class="thesis__stat">24%</p>
+                    <p class="thesis__claim">Lower all-cause mortality for those who sauna 4+ times weekly</p>
+                    <p class="thesis__source">20-year Finnish study</p>
+                </div>
             </div>
         </section>
 
