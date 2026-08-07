@@ -69,12 +69,18 @@ try {
     'navigation moved neither counter nor alt');
 
   await page.keyboard.press('Escape');
-  await page.waitForSelector('#galleryLightbox.active', { state: 'detached' }).catch(() => {});
-  check('Escape closes and focus is restored to the captured invoker (body, until the grid is focusable)',
-    await page.evaluate(() =>
-      !document.getElementById('galleryLightbox').classList.contains('active')
-      && document.activeElement === document.body),
-    `activeElement after close: ${await page.evaluate(() => document.activeElement?.tagName)}`);
+  // Wait for the state the assertion is about, rather than racing it: the
+  // class going away is the observable close. (A .catch()-swallowed
+  // waitForSelector was letting this assertion read a half-closed lightbox.)
+  await page.waitForFunction(
+    () => !document.getElementById('galleryLightbox').classList.contains('active'),
+    null, { timeout: 5000 });
+  check('Escape closes, and focus never strands on the hidden close button',
+    await page.evaluate(() => {
+      const box = document.getElementById('galleryLightbox');
+      return !box.classList.contains('active') && !box.contains(document.activeElement);
+    }),
+    `activeElement after close: ${await page.evaluate(() => document.activeElement?.outerHTML?.slice(0, 60))}`);
 } finally {
   await browser.close();
   server.close();

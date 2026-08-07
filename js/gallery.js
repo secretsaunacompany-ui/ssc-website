@@ -83,7 +83,18 @@
         close() {
             this.lightbox.classList.remove('active');
             document.body.style.overflow = '';
-            if (this.invoker && typeof this.invoker.focus === 'function') {
+            // Order matters. document.body.focus() is a NO-OP (body is not
+            // focusable), so restoring to a body invoker would leave focus
+            // stranded on the close button we just hid -- worse than doing
+            // nothing. Blur first, unconditionally, then restore only to an
+            // invoker that can actually take focus (none today: the gallery
+            // grid is not keyboard-reachable; see the note in open()).
+            const active = document.activeElement;
+            if (active && this.lightbox.contains(active) && typeof active.blur === 'function') {
+                active.blur();
+            }
+            if (this.invoker && this.invoker !== document.body
+                && typeof this.invoker.focus === 'function') {
                 this.invoker.focus();
             }
         }
