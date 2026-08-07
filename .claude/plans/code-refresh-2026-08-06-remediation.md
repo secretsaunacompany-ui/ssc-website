@@ -162,7 +162,14 @@ Migrate the 3 live entries in visual-diff.config.json: attribute + stamp expirie
 (60d), preserving their reason text — EXCEPT (CRITIC ROUND 2) the '/' entry's clause
 "the schema has no expiry field for expectedToChange", which this change makes false:
 amend that one clause to record the field's 2026-08-06 arrival, leave the rest
-verbatim.
+verbatim. CRITIC ROUND 3 — the schema-doc sweep has THREE surfaces, same commit:
+(1) that reason clause; (2) visual-diff.config.json `_notes.expectedToChange` (add
+`expires` to the documented shape, horizon + fail-loud noted, mirroring
+`_notes.pageOverrides`); (3) scripts/README.md:72-82, whose example also omits the
+already-mandatory `waive`. Advisory adopted: fixture stamps are computed from the
+suite's injected `now`, never the live clock; the :1468-1478 rejection fixtures keep
+their validation-order discipline and get stamps only where the parser reaches the
+expiry check.
 CRITIC ROUND 2, fixture migration: making `expires` mandatory crashes the suite's own
 synthetic fixtures at loadConfig (the F1 waiver-immunity fixture ~:656-658 and the
 G-fixture ~:770-777 pipe expiry-less expectedToChange entries through the same
@@ -217,8 +224,12 @@ gallery invokers are non-focusable divs (no tabindex/role, direct click listener
 so activeElement at open is <body> and the restore silently no-ops; there is no
 keyboard path to OPEN the lightbox at all. Scope decision, recorded up front: B4
 ships the reachable half (alt propagation, focus-to-close-button on open, w_1600;
-on close, focus goes to document.body explicitly — a no-op today, coded so it starts
-working the day invokers become focusable). Making gallery invokers keyboard-
+on close, focus RESTORES to the element captured from document.activeElement at
+open — body today, the invoker the day invokers become focusable; also un-strands
+focus from the hidden close button at identical cost. CRITIC ROUND 3 fold.)
+Equivalence-gate note: B4's role/aria-modal markup delta ships on ALL routes
+(lightbox.njk is unguarded via footer.njk:58) — enumerate it beside D6's adds in the
+gate declarations. Making gallery invokers keyboard-
 reachable is a VISIBLE interaction-design change (tabbable grid on /saunas/ +
 /locations/) that belongs to Jen's lane — recorded as a named Wave B residual in the
 report, not smuggled into a refresh.
