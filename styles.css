@@ -4009,7 +4009,11 @@ section.surface--elevated:has(> .wide-container) {
 }
 
 .advisor__error p {
-    color: #c0887a;
+    /* Was the raw hex #c0887a -- a second, off-system error red predating the
+       Jen Stage 3 --error work (c68cb0e) that never got migrated. The advisor
+       is dark (site.features.advisor: false), so this aligns the failure state
+       with the sanctioned validation vocabulary before revival can diverge. */
+    color: var(--error);
     font-size: var(--text-sm);
     margin-bottom: 0.75rem;
 }
