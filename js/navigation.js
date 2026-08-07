@@ -30,24 +30,40 @@
     let leafletLoaded = false;
 
     function loadLeaflet() {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             if (leafletLoaded) {
                 resolve();
                 return;
             }
 
+            // SRI on both artifacts (added 2026-08-06). The version is pinned,
+            // so the hashes are stable; without them a compromised CDN response
+            // executes arbitrary JS on /locations/ under our own CSP grant —
+            // the polyfill.io class. SHA-384 computed from the pinned unpkg
+            // files and cross-checked byte-identical against jsdelivr's copy
+            // of the same version before embedding. A hash mismatch or CDN
+            // failure now REJECTS (it used to hang the promise forever), so
+            // the caller's .catch degrades loudly instead of never settling.
+
             // Load CSS
             const link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            link.integrity = 'sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H';
+            link.crossOrigin = 'anonymous';
             document.head.appendChild(link);
 
             // Load JS
             const script = document.createElement('script');
             script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            script.integrity = 'sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH';
+            script.crossOrigin = 'anonymous';
             script.onload = () => {
                 leafletLoaded = true;
                 resolve();
+            };
+            script.onerror = () => {
+                reject(new Error('Leaflet failed to load (CDN unreachable or SRI mismatch)'));
             };
             document.head.appendChild(script);
         });
@@ -65,6 +81,11 @@
                         window.SSC.initMap();
                     }
                 }, 100);
+            }).catch((err) => {
+                // The map degrades to the static venue cards below it —
+                // acceptable — but the reason lands in the console instead of
+                // a promise that never settles.
+                console.error('SSC: locations map unavailable —', err.message);
             });
         }
 
