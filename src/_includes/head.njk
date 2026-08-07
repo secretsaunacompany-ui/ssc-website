@@ -149,18 +149,17 @@
     </script>
     {% endif %}
 
-    <!-- Schema.org - WebSite (sitelinks search box eligibility) -->
+    {# WebSite schema. The SearchAction block was removed 2026-08-06: it
+       declared a ?q= query endpoint no page can serve (the site has no search
+       feature) — harmless at best, a sitelinks-eligibility strike at worst.
+       Re-add it only alongside an actual search. #}
+    <!-- Schema.org - WebSite -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "Secret Sauna Company",
-        "url": "https://www.secretsaunacompany.ca",
-        "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://www.secretsaunacompany.ca/?q={search_term_string}",
-            "query-input": "required name=search_term_string"
-        }
+        "url": "https://www.secretsaunacompany.ca"
     }
     </script>
 
@@ -198,62 +197,14 @@
     }
     </script>
 
-    {% if bodyClass == "page-home" %}
-    <!-- Schema.org - Reviews & AggregateRating -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "LocalBusiness",
-        "name": "Secret Sauna Company",
-        "url": "https://www.secretsaunacompany.ca",
-        "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "5",
-            "reviewCount": "3",
-            "bestRating": "5",
-            "worstRating": "1"
-        },
-        "review": [
-            {
-                "@type": "Review",
-                "reviewRating": {
-                    "@type": "Rating",
-                    "ratingValue": "5"
-                },
-                "author": {
-                    "@type": "Person",
-                    "name": "Private Client, Squamish BC"
-                },
-                "reviewBody": "Great sauna, great people! Anthony and Lee provide the best authentic sauna experience in the Sea to Sky."
-            },
-            {
-                "@type": "Review",
-                "reviewRating": {
-                    "@type": "Rating",
-                    "ratingValue": "5"
-                },
-                "author": {
-                    "@type": "Person",
-                    "name": "Private Client, Squamish BC"
-                },
-                "reviewBody": "Secret sauna co. Has the highest build quality saunas I've seen making them the ultimate sauna for rental or purchase."
-            },
-            {
-                "@type": "Review",
-                "reviewRating": {
-                    "@type": "Rating",
-                    "ratingValue": "5"
-                },
-                "author": {
-                    "@type": "Person",
-                    "name": "Private Client, Squamish BC"
-                },
-                "reviewBody": "Outstanding quality sauna. Great experience with them. Highly recommend."
-            }
-        ]
-    }
-    </script>
-    {% endif %}
+    {# The LocalBusiness reviews/aggregateRating block was removed 2026-08-06
+       (Lee's ruling, code-refresh D7): Google's review-snippet policy makes
+       self-serving reviews — reviews embedded in an entity's markup on its
+       own site — ineligible and a manual-action risk, and anonymous "Private
+       Client" authors compounded it. The testimonials remain as visible page
+       copy on the homepage, which is fine; only the structured-data wrapper
+       was against policy. If real attributable reviews ever back it (Google
+       Business Profile), that lives on GBP, not here. #}
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768254526/CircleWhite2025_gqtclg.png">
