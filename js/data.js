@@ -112,7 +112,7 @@
             electricOnly: false,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250653/IMG_6404_hrncws.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250654/IMG_6592_ln0gz8.jpg',
+                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,a_90/v1768250654/IMG_6592_ln0gz8.jpg',
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768272421/20250313_124032-EDIT_uu36i8.jpg',
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,a_90,w_1200/v1768250654/IMG_6812_xpzjwk.jpg'
             ]
