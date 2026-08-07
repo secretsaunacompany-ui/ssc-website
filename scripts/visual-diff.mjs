@@ -9,6 +9,14 @@
  *   node scripts/visual-diff.mjs --baseline main --candidate WORKING
  *
  * See scripts/README.md for what the output means.
+ *
+ * ONE RUN AT A TIME. The work dir (.visual-diff/) and the asset cache it
+ * shares with dom-integrity.mjs are fixed paths, and the cache's two-file
+ * write is not atomic -- two concurrent runs interleave builds, screenshots
+ * and cache entries into one garbled report (same hazard class the
+ * models-json selftest documents in its header; worst case here is a wasted
+ * run, not a corrupted tree). The fixed dirs are deliberate: the ~91MB asset
+ * cache is reused across runs by design.
  */
 import fs from 'node:fs';
 import path from 'node:path';

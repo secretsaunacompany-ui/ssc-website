@@ -962,10 +962,17 @@
                         if (baseline) baseline.checked = true;
                     }
                 } else if (wasOn) {
-                    // Package just cleared. The baseline was only checked
-                    // because the package put it there -- leaving it checked
-                    // would start billing cedar the moment the package came
-                    // off, which is the same double-bill wearing the other hat.
+                    // Package just cleared. Leaving the baseline checked would
+                    // start billing cedar the moment the package came off --
+                    // the same double-bill wearing the other hat -- so it
+                    // resets to the group default. KNOWN SACRIFICE (2026-08-06):
+                    // "the baseline was only checked because the package put it
+                    // there" is untrue for one ordering -- a visitor who picked
+                    // the baseline option a la carte BEFORE trying the package
+                    // loses that pick when they toggle it off. The reset lands
+                    // on a $0 default, the summary always matches the total,
+                    // and the loss is one visible click; remembering per-slot
+                    // pre-package state is more machinery than that justifies.
                     // Same default test as resetForm; keep them in step.
                     const current = inputs.find((i) => i.checked);
                     if (current && current.value === slot.baseline) {

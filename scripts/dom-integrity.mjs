@@ -19,6 +19,12 @@
  *
  * See scripts/README.md for what the output means. Exits 0 when every page is
  * identical modulo the whitelist, 1 when any page is not, 2 on a crash.
+ *
+ * ONE RUN AT A TIME -- and not concurrently with visual-diff.mjs either. The
+ * work dir (.dom-integrity/) is a fixed path and the asset cache is SHARED
+ * with the pixel harness (.visual-diff/asset-cache) with a non-atomic two-file
+ * write, so overlapping runs can replay a partially-written cache entry.
+ * Worst case is a garbled run to be discarded, not a corrupted tree.
  */
 import fs from 'node:fs';
 import path from 'node:path';
