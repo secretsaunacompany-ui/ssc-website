@@ -1865,6 +1865,23 @@ nav .container {
     margin: var(--spacing-xl) auto;
 }
 
+/* The section that holds the contact form takes the tight tier — the same
+   treatment /saunas/ gives the section directly after its hero. Three vertical
+   spaces were stacking between "Get Your Quote" and the first field it asks
+   for: the hero's 96px bottom padding, this section's full --section-pad, and
+   the form's own margin. 270px measured at 1440 (Lee 2026-08-07); 168 now.
+
+   Keyed on :has() rather than a class in the template DELIBERATELY: a
+   `section--tight` there is an attribute change on a <section class="container">,
+   and "container" names a family of sections sitewide, so no dom-integrity
+   declaration could identify THAT one node — a count would stand in for an
+   identity, which the whitelist's specificity rule refuses. This selector needs
+   no markup change at all, so there is nothing to declare. Where :has() is
+   unsupported the page simply keeps its old, roomier spacing. */
+.container:has(> .contact-form) {
+    padding-block: var(--section-pad-tight);
+}
+
 /* The top margin exists to separate the form from whatever precedes it inside
    the section — the advisor block, or the saved-quote banner. When the form IS
    the first thing in the section (the ordinary state, with the advisor flag
