@@ -280,7 +280,10 @@ check('A14 no raw font-size below the 11px floor survives in styles.css', () => 
 check('A15 tabular numerals are declared on the price and spec selectors', () => {
   const block = /font-variant-numeric: lining-nums tabular-nums;/.exec(css);
   assert(block, 'no tabular-nums declaration found');
-  for (const sel of ['.price-row', '.model-price', '.compare-table td', '.spec-item span', '.booking-option__price']) {
+  // .booking-option__price was in this list until 2026-08-06: the embedded
+  // booking system's CSS (dead since e710007) was removed, and with it the
+  // selector this assertion pinned. The four below all render on live pages.
+  for (const sel of ['.price-row', '.model-price', '.compare-table td', '.spec-item span']) {
     const re = new RegExp(`${sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^{]*\\{[^}]*font-variant-numeric`, 's');
     const inList = css.includes(sel) && /([^{}]*)\{\s*font-variant-numeric: lining-nums tabular-nums/s.test(css);
     assert(re.test(css) || inList, `${sel} is not covered by a tabular-nums rule`);

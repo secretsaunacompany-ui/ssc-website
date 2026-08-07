@@ -68,14 +68,11 @@
             });
         }
 
-        // Initialize booking system if on book page
-        if (document.getElementById('bookingCalendar') || document.querySelector('.booking-section')) {
-            setTimeout(() => {
-                if (window.SSC.initBookingSystem) {
-                    window.SSC.initBookingSystem();
-                }
-            }, 100);
-        }
+        // Embedded-booking init hook removed 2026-08-06: #bookingCalendar,
+        // .booking-section and SSC.initBookingSystem have had no definition
+        // anywhere since e710007 (2026-02-27) deleted the embedded booking
+        // system. Revival targets book.secretsaunacompany.ca and ships its
+        // own script -- re-add a hook there if one is ever needed.
 
         initQuoteHandoff();
     });

@@ -573,7 +573,7 @@ p {
    This lands WITH the size tokens deliberately: a price that got its size token
    without its figure style still fails to align, so the two travel together. */
 .model-price, .price-row, .price-summary, .addon-price,
-.booking-option__price, .booking-summary__row, .compare-table td,
+.compare-table td,
 .spec-item span, .lightbox-counter,
 .model-row__size, .model-row__capacity {
     font-variant-numeric: lining-nums tabular-nums;
@@ -986,41 +986,9 @@ nav .container {
    js/animations.js's GROUP_SELECTOR, and `.model-price` below is LIVE on
    /saunas/ and asserted by scripts/fonts.test.mjs -- a region-wide sweep here
    would have deleted a rule the type suite depends on. See the ROADMAP harness
-   entry for the held pair. */
-
-.model-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-sm);
-    padding-bottom: var(--spacing-sm);
-    border-bottom: 1px solid var(--rule);
-}
-
-.model-header h3 {
-    font-size: var(--text-lg);
-    margin: 0;
-    color: var(--ember);
-}
-
-.model-capacity {
-    font-size: var(--text-xs);
-    color: var(--ink-quiet);
-    letter-spacing: var(--tracking-caps);
-}
-
-.model-specs {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: var(--spacing-sm);
-    border-top: 1px solid var(--rule);
-    font-size: var(--text-sm);
-}
-
-.model-specs span:first-child {
-    color: var(--ink-quiet);
-}
+   entry for the held pair. The pre-redesign rules that sat between them
+   (.model-header / .model-capacity / .model-specs) were removed 2026-08-06
+   after the same measured live-reference check. */
 
 .model-price {
     color: var(--ember);
@@ -1626,12 +1594,6 @@ nav .container {
 /* ============================================
    Images & Media
    ============================================ */
-.full-width-image-wrap {
-    overflow: hidden;
-    margin: var(--spacing-2xl) 0;
-    height: 70vh;
-}
-
 /* A standalone Plate is a photograph, not a rig. No parallax, no hover scale --
    the image-hover grammar applies ONLY to images inside an interactive card or
    row (Jen 10 §5.2/§5.3). `will-change: transform` went with the transform it
@@ -2359,23 +2321,19 @@ textarea {
 /* C27. Every invalid field gets the SAME treatment. Previously only the name
    field took a border, so email and location announced their problem in a line
    of text with nothing tying it to the control it was about -- the field a
-   person is looking at stayed unmarked. Keyed on aria-invalid as well as :invalid
-   so the JS validator and the browser's own agree. */
+   person is looking at stayed unmarked. Keyed on aria-invalid, which the JS
+   validator (js/modal.js) sets and assistive tech announces. A `.has-error`
+   selector arm sat here until 2026-08-06 with no setter anywhere -- removed
+   rather than left to imply a class contract that never existed. */
 input[aria-invalid="true"],
 textarea[aria-invalid="true"],
-select[aria-invalid="true"],
-.form-group.has-error input,
-.form-group.has-error textarea,
-.form-group.has-error select {
+select[aria-invalid="true"] {
     border-color: var(--error);
 }
 
 input[aria-invalid="true"]:focus,
 textarea[aria-invalid="true"]:focus,
-select[aria-invalid="true"]:focus,
-.form-group.has-error input:focus,
-.form-group.has-error textarea:focus,
-.form-group.has-error select:focus {
+select[aria-invalid="true"]:focus {
     border-color: var(--error);
 }
 
@@ -3039,15 +2997,6 @@ section.surface--elevated:has(> .wide-container) {
 }
 
 /* ============================================
-   Booking & Calendar Base Styles
-   ============================================ */
-#bookingCalendar {
-    max-width: 100%;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-/* ============================================
    Extracted Inline Styles
    Organized by component/pattern type
    ============================================ */
@@ -3283,11 +3232,6 @@ section.surface--elevated:has(> .wide-container) {
     margin: 0 auto;
 }
 
-.content-wrapper--800 {
-    max-width: 800px;
-    margin: 2rem auto 0;
-}
-
 /* --- CTA Section --- */
 .cta__text {
     margin-bottom: 2.5rem;
@@ -3456,205 +3400,6 @@ section.surface--elevated:has(> .wide-container) {
 /* --- Button Full Width --- */
 .btn--full-width {
     width: 100%;
-}
-
-/* --- Booking Option Card --- */
-.booking-option {
-    display: block;
-    background: var(--elevated);
-    border: 2px solid var(--rule);
-    padding: clamp(1rem, 3vw, 1.5rem);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.booking-option--selected {
-    border-color: var(--ember);
-}
-
-.booking-option__input {
-    display: none;
-}
-
-.booking-option__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-}
-
-.booking-option__title {
-    font-size: var(--text-md);
-    font-weight: 600;
-    color: var(--ink);
-}
-
-.booking-option__title--accent {
-    color: var(--ember);
-}
-
-/* Serif survives here only by clearing the Cormorant floor: bumped from 1.3rem
-   to --text-xl, which puts it in the 500-weight band of the optical scale. */
-.booking-option__price {
-    font-size: var(--text-xl);
-    font-family: var(--font-heading);
-    font-weight: 500;
-    color: var(--ink);
-}
-
-.booking-option__price--accent {
-    color: var(--ember);
-}
-
-.booking-option__price-suffix {
-    font-size: var(--text-xs);
-    font-weight: normal;
-}
-
-.booking-option__desc {
-    margin: 0;
-    font-size: var(--text-sm);
-    color: var(--ink-quiet);
-}
-
-/* --- Booking Options Grid --- */
-.booking-options {
-    display: grid;
-    gap: 1rem;
-}
-
-/* --- Info Section --- */
-.info-section {
-    margin-bottom: 2rem;
-}
-
-.info-section__title {
-    font-size: var(--text-md);
-    margin-bottom: 1rem;
-}
-
-.info-section__intro {
-    font-size: var(--text-md);
-    margin-bottom: 2rem;
-}
-
-/* --- Included List --- */
-.included-box {
-    background: var(--elevated);
-    padding: 2rem;
-    margin-bottom: 2rem;
-}
-
-.included-list {
-    list-style: none;
-    padding: 0;
-}
-
-.included-list__item {
-    padding: 0.5rem 0;
-    padding-left: 1.5rem;
-    position: relative;
-}
-
-.included-list__check {
-    position: absolute;
-    left: 0;
-    color: var(--ember);
-}
-
-.included-box__note {
-    font-size: var(--text-sm);
-    color: var(--ink-quiet);
-    margin-top: 1rem;
-    /* No italic. Outfit ships no italic face, so this was a synthesized
-       oblique -- a mechanically slanted roman, which is the tell this program
-       exists to remove. Metadata carries its quietness with size and colour. */
-}
-
-/* --- Booking Form Container --- */
-.booking-form-container {
-    background: var(--elevated);
-    padding: clamp(1rem, 3vw, 2rem);
-    border: 1px solid var(--rule);
-    max-width: 100%;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-.booking-form-container__title {
-    margin-bottom: 1.5rem;
-}
-
-/* --- Calendar Container --- */
-.calendar-container {
-    background: var(--color-black);
-    border: 1px solid var(--rule);
-    padding: clamp(0.5rem, 2vw, 1rem);
-    max-width: 100%;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-/* --- Time Slots Grid --- */
-.time-slots-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-}
-
-/* --- No Slots Message --- */
-.no-slots-message {
-    color: var(--ink-quiet);
-    font-size: var(--text-sm);
-    margin-top: 0.5rem;
-    display: none;
-}
-
-/* --- Booking Summary --- */
-.booking-summary {
-    background: var(--color-warm-wood-alpha-10);
-    border: 1px solid var(--color-warm-wood-alpha-30);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    display: none;
-}
-
-.booking-summary__title {
-    color: var(--ember);
-    margin-bottom: 1rem;
-    font-size: var(--text-base);
-}
-
-.booking-summary__row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-    font-size: var(--text-sm);
-}
-
-.booking-summary__row--subtotal {
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--color-warm-wood-alpha-30);
-}
-
-.booking-summary__row--total {
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--color-warm-wood-alpha-30);
-    font-size: var(--text-md);
-}
-
-.booking-summary__total-value {
-    color: var(--ember);
-}
-
-/* --- Booking Confirmation Note --- */
-.booking-note {
-    text-align: center;
-    margin-top: 1rem;
-    font-size: var(--text-sm);
-    color: var(--ink-quiet);
 }
 
 /* --- Footer Logo --- */
@@ -3987,26 +3732,6 @@ section.surface--elevated:has(> .wide-container) {
         font-size: 16px !important;
     }
 
-    #bookingCalendar {
-        padding: 0.5rem !important;
-    }
-
-    /* Tighter time slot buttons on mobile */
-    #timeSlots button {
-        padding: 0.75rem 0.5rem !important;
-        font-size: var(--text-sm) !important;
-    }
-
-    /* Booking summary flex rows: prevent overflow on narrow screens */
-    #bookingSummary div[style*="display: flex"] {
-        gap: 0.5rem;
-    }
-
-    #bookingSummary div[style*="display: flex"] strong {
-        text-align: right;
-        word-break: break-word;
-    }
-
     .feature-image--overflow {
         width: 100%;
         margin-left: 0;
@@ -4305,16 +4030,6 @@ section.surface--elevated:has(> .wide-container) {
     }
 }
 
-@media (max-width: 400px) {
-    #bookingCalendar {
-        padding: 0.25rem !important;
-    }
-
-    /* Single-column time slots on very narrow screens */
-    #timeSlots {
-        grid-template-columns: 1fr !important;
-    }
-}
 
 @media print {
     body::after {
