@@ -15,6 +15,15 @@
  */
 import fs from 'node:fs';
 import crypto from 'node:crypto';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { assertDistFresh } from './lib/stale-dist.mjs';
+
+// REPO_ROOT anchoring (2026-08-06): this was the one suite reading cwd-relative
+// paths — it fail-closed by crashing when run from elsewhere, but uninformatively,
+// and unlike its siblings. Paths now anchor to the script's own location.
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const DIST = path.join(REPO_ROOT, 'dist');
 
 let passes = 0, failures = 0;
 const check = (name, ok, detail) => {
@@ -22,12 +31,17 @@ const check = (name, ok, detail) => {
   ok ? passes++ : failures++;
 };
 
-const html = fs.readFileSync('dist/index.html', 'utf8');
+// This suite certifies inline-script hashes against netlify.toml — a stale
+// dist certifies a hash pairing production will not have (the exact file the
+// 2026-08-06 ops-console fix edits). Refuse before reading anything.
+assertDistFresh(REPO_ROOT);
+
+const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
 const m = html.match(/<script data-ssc="reveal-boot">([\s\S]*?)<\/script>/);
 check('the reveal-boot inline script exists in the built output', !!m,
   'F5\'s parse-time hidden state has no carrier — the reveal system regresses to fade-out-then-in');
 
-const toml = fs.readFileSync('netlify.toml', 'utf8');
+const toml = fs.readFileSync(path.join(REPO_ROOT, 'netlify.toml'), 'utf8');
 const declared = [...toml.matchAll(/'sha256-([A-Za-z0-9+/=]+)'/g)].map((x) => x[1]);
 check('netlify.toml declares at least one script hash', declared.length > 0,
   'the CSP has no inline allowance — the boot script is blocked on Netlify');
@@ -50,9 +64,9 @@ check('no inline event-handler attribute exists in any built page', (() => {
   // attribute position inside a tag — a bare /on\w+=/ matches inside content=
   // ("c-ONTENT=") with 50+ false hits on today's pages.
   const offenders = [];
-  for (const f of fs.readdirSync('dist', { recursive: true })) {
+  for (const f of fs.readdirSync(DIST, { recursive: true })) {
     if (!String(f).endsWith('.html')) continue;
-    const page = fs.readFileSync(`dist/${f}`, 'utf8');
+    const page = fs.readFileSync(path.join(DIST, String(f)), 'utf8');
     for (const tag of page.matchAll(/<[a-zA-Z][^>]*>/g)) {
       const attr = tag[0].match(/\s(on\w+)\s*=\s*["']/);
       if (attr) offenders.push(`${f}: ${attr[1]} in ${tag[0].slice(0, 60)}`);
@@ -63,9 +77,9 @@ check('no inline event-handler attribute exists in any built page', (() => {
 })(), 'an inline event handler is in the built output — CSP refuses it on Netlify (needs unsafe-hashes, which we do not grant)');
 
 check('no OTHER undeclared inline script exists in any built page', (() => {
-  for (const f of fs.readdirSync('dist', { recursive: true })) {
+  for (const f of fs.readdirSync(DIST, { recursive: true })) {
     if (!String(f).endsWith('.html')) continue;
-    const page = fs.readFileSync(`dist/${f}`, 'utf8');
+    const page = fs.readFileSync(path.join(DIST, String(f)), 'utf8');
     for (const s of page.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/g)) {
       if (s[1].includes('application/ld+json') || s[1].includes('application/json')) continue;
       const h = crypto.createHash('sha256').update(s[2]).digest('base64');

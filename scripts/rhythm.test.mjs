@@ -53,6 +53,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { assertDistFresh } from './lib/stale-dist.mjs';
 import { startServer } from './lib/server.mjs';
 import { installRouting } from './lib/capture.mjs';
 
@@ -1286,6 +1287,14 @@ async function main() {
       + 'This suite measures COMPUTED style in a real browser against dist/, because a '
       + 'token\'s declared value and the value that reaches the element are different '
       + 'claims. Without a build it can only pass vacuously, so it refuses.\n');
+    return 2;
+  }
+  // The header's rebuild warning was a comment, not a mechanism, until
+  // 2026-08-06: a PRESENT-but-stale dist certified last week's stylesheet.
+  try {
+    assertDistFresh(REPO_ROOT);
+  } catch (err) {
+    console.error(`\n${err.message}\n`);
     return 2;
   }
   fs.mkdirSync(WORK, { recursive: true });

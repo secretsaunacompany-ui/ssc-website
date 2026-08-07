@@ -30,6 +30,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { startServer } from './lib/server.mjs';
+import { assertDistFresh } from './lib/stale-dist.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FONT_DIR = path.join(REPO_ROOT, 'src', 'fonts');
@@ -297,6 +298,9 @@ if (!fs.existsSync(path.join(DIST, 'index.html'))) {
   console.log('  dist/ is missing -- run `npm run build` first.');
   process.exit(1);
 }
+// A PRESENT-but-stale dist is the sneakier failure: it certifies last week's
+// build. Refuse loudly instead (2026-08-06).
+assertDistFresh(REPO_ROOT);
 
 const server = await startServer(DIST);
 const baseUrl = server.url;
