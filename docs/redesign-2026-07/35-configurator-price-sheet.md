@@ -2,6 +2,7 @@
 
 **Date:** 2026-07-28
 **Status:** FINAL — implementable. Remaining unknowns are listed in §7 and none of them block Ted; every one is priced on its safe side.
+**SUPERSEDED IN PART (2026-08-06):** the number authority is now `41-models-v2.json` (canonical models.json, pricesVersion 4). The base-price reprice + complete-sauna catalogue (Lee, 2026-08-03) re-derived the heater lines: a standard heater (electric, or wood on S4/S6/S8 per Lee's field ruling) is INCLUDED in the base price at $0, and the IKI premium tier is priced OVER the standard at the ~30% stove-category convention — so rows 3–5 below (+$9,800/+$10,800/+$8,200) are historical derivations, NOT the live prices (live: wood premium +$5,000/+$5,900/+$5,900/+$6,500 by model). Canonical's `optionGroups.heater._note` warns these must not be "corrected" back up to 45% by a future audit. The item-18 sentence "pays the $500 delta on top of the package" is likewise superseded: audio is ADDITIVE at full price (canonical `packages._upgradableGroupsNote`, the documented audio exception). Everything else in this sheet still reconciles line-for-line with the live site.
 **Basis (per Lee, 2026-07-28):** incremental cost plus margin. When an upgrade replaces a standard item, the cost is the upgrade stack minus the standard item not being fitted, plus the labour delta. House target **45% GM stress-tested**; the audit's **40% is the floor**. Where a sourced range exists, the top of the range is used (Lee: "I would rather that these numbers stay higher").
 **Currency:** CAD, pre-tax.
 

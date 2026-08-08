@@ -70,12 +70,15 @@ When a redesign *intends* to change the homepage, list it in
 
 ```json
 "expectedToChange": [
-  { "route": "/", "reason": "new hero type scale, per spec section 3" }
+  { "route": "/", "reason": "new hero type scale, per spec section 3",
+    "waive": ["changedPct"], "expires": "2026-10-05" }
 ]
 ```
 
-Every entry needs a `route`, a `reason`, and a **`waive` list naming exactly
-which metrics it excuses**. A bare route string is rejected.
+Every entry needs a `route`, a `reason`, a **`waive` list naming exactly
+which metrics it excuses**, and an **`expires` date (YYYY-MM-DD, ≤90 days
+out — same discipline as `pageOverrides`; an expired entry fails the run
+loudly)**. A bare route string is rejected.
 
 Waivable: `changedPct`, `heightDelta`, `structural` (a page appearing or
 disappearing). **Never waivable: `layoutShiftMaxPx` and `shiftCoverage`** — a

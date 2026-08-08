@@ -1,6 +1,49 @@
 module.exports = function(eleventyConfig) {
   eleventyConfig.addFilter("currentYear", () => new Date().getFullYear());
 
+  /**
+   * Interpolate a data-file string into a JSON-LD document body, safely.
+   *
+   * The JSON-LD blocks on /saunas/ and in head.njk are hand-written JSON with
+   * `{{ ... }}` holes in it, and Nunjucks autoescaping is HTML escaping, which
+   * is the wrong alphabet for the inside of a <script type="application/ld+json">
+   * -- it would turn an apostrophe in "7' x 12'" into `&#39;` and leave a double
+   * quote free to terminate the string it sits in. So every hole carried `| safe`,
+   * which is correct for today's data and a loaded gun for tomorrow's: one
+   * product name with a quote in it ("Sauna 7\" clearance") silently emits
+   * structured data that no parser can read, on nineteen pages, and nothing
+   * fails. Google would just stop seeing the products.
+   *
+   * Not hypothetical. Writing this batch's own census note into
+   * src/_data/models.json with a quoted string in it broke that file the same
+   * way -- caught only because a suite happened to JSON.parse it.
+   *
+   * JSON.stringify does the escaping the medium actually requires; slicing the
+   * surrounding quotes leaves a fragment that drops into an existing pair. It
+   * FAILS CLOSED on anything that is not a string, because a stray object or
+   * undefined reaching a JSON-LD hole means the template is wrong, and emitting
+   * "undefined" as structured data is worse than not building.
+   */
+  eleventyConfig.addFilter("jsonld", (value) => {
+    if (typeof value !== "string") {
+      throw new Error(`jsonld filter: expected a string, got ${typeof value} `
+        + `(${JSON.stringify(value)}). A JSON-LD hole must be filled by a string from the `
+        + `data file; anything else means the template names a field that does not exist.`);
+    }
+    // `<` is escaped on top of JSON's own alphabet, because JSON.stringify does
+    // not escape it and the medium here is not JSON -- it is JSON inside an HTML
+    // <script>. The HTML parser looks for the literal `</script` before any JSON
+    // parser sees a byte, so a data value containing `</script>` closes the block
+    // early and everything after it is parsed as MARKUP. That is script injection
+    // through a data file, and it fails open: the page still builds, still
+    // renders, and the only symptom is structured data that stops working.
+    // < is valid JSON and reads back as `<`, so no consumer sees a
+    // difference. Measured across all 19 routes at the time of the change: zero
+    // JSON-LD blocks contain a `<`, so this moves no byte today -- it is the
+    // guard for the day a product name or FAQ answer contains one. (Razor N1.)
+    return JSON.stringify(value).slice(1, -1).replace(/</g, "\\u003c");
+  });
+
   // Content-hashed asset URLs (P-A).
   //
   // styles.css and js/* are served with `max-age=31536000, immutable`
@@ -110,7 +153,8 @@ module.exports = function(eleventyConfig) {
     return stamped;
   });
 
-  // Date formatting filter for blog posts and sitemap
+  // Date formatting filter for the sitemap (its only remaining consumer --
+  // the blog plumbing that co-owned it was deleted 2026-08-06)
   eleventyConfig.addFilter("date", (dateObj, format) => {
     if (!dateObj) return '';
     const d = new Date(dateObj);
@@ -122,11 +166,6 @@ module.exports = function(eleventyConfig) {
       return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
     }
     return d.toISOString();
-  });
-
-  // Blog collection
-  eleventyConfig.addCollection("blog", function(collectionApi) {
-    return collectionApi.getFilteredByTag("blog").sort((a, b) => a.date - b.date);
   });
 
   eleventyConfig.addPassthroughCopy("js");
@@ -196,29 +235,132 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy("booking-ops.js");
   eleventyConfig.addPassthroughCopy({ "src/robots.txt": "robots.txt" });
 
-  // Auto-add responsive srcset to Cloudinary images
+  // Auto-add responsive srcset to Cloudinary images.
+  //
+  // ONE generator. The transform below writes the srcset that ships on <img>
+  // elements, and the two filters beside it write the SAME list for a
+  // <link rel="preload" as="image"> so the preload and the element agree
+  // candidate-for-candidate. They agree because they read the same two
+  // constants -- a preload whose list drifts from the element's is not a
+  // preload, it is a second download.
+  var cloudinaryBase = "https://res.cloudinary.com/dlhqdgmih/image/upload/";
+  var widths = [400, 800, 1200, 1920];
+
+  // The accepted shape: `q_auto,f_auto`, then an OPTIONAL rotation, then the
+  // path. Capture 1 is the angle segment (",a_90" / ",a_-90" / ",a_180") or
+  // undefined; capture 2 is the image path.
+  //
+  // The angle tolerance exists because several photographs on this site carry
+  // EXIF rotation their derivative does not honour, and the fix for that was a
+  // hand-written `a_90` in the URL. That hand-written angle silently OPTED THE
+  // IMAGE OUT of responsive delivery: the old pattern demanded `q_auto,f_auto/`
+  // exactly, so an angle-carrying URL simply did not match, no srcset was
+  // generated, and the browser fetched the full-size original. Measured on
+  // three <img> elements (about :27, about :95, home :54) -- the correction that
+  // made the picture the right way up was also the thing making it enormous.
+  //
+  // A WIDTH is still rejected, and deliberately so: the angle is a property of
+  // the SOURCE (this photograph is on its side), while a width is a decision
+  // about DELIVERY, which is the generator's job. `q_auto,f_auto,w_1200/...`
+  // and `q_auto,f_auto,a_90,w_600/...` both fail to match and both still throw
+  // from the filters, which is the B1 guard that stopped the homepage fetching
+  // its LCP photograph twice. Tolerating rotation must not widen that hole.
+  //
+  // Order within the component is angle-then-width (`a_90,w_400`), matching the
+  // hand-written URLs already in the templates: Cloudinary applies the
+  // transforms left to right, so rotating before scaling is what keeps the
+  // requested width meaning "width of the upright picture".
+  var CLOUDINARY_BARE = /^https:\/\/res\.cloudinary\.com\/dlhqdgmih\/image\/upload\/q_auto,f_auto(,a_-?\d+)?\/(.+)$/;
+
+  /** Build a delivery URL at width `w`, preserving any source rotation. */
+  function cloudinaryAt(angle, imagePath, w) {
+    return cloudinaryBase + "q_auto,f_auto" + (angle || "") + ",w_" + w + "/" + imagePath;
+  }
+
+  // The URL the transform puts in `src`: the w_800 candidate. A preload's href
+  // is what a browser without imagesrcset support fetches, so it must be this
+  // exact string or that browser fetches a second file.
+  // Both filters REFUSE a URL that already carries a width, loudly, rather than
+  // degrading.
+  //
+  // The shape they reject is the exact shape `src/index.njk` had before this
+  // batch (`.../q_auto,f_auto,w_1200/...`), so it is not hypothetical -- it is
+  // one careless edit away, and it is the shape every other preload page still
+  // uses. Failing soft was the real hazard: `cloudinarySrcset` returning ""
+  // emits `imagesrcset=""`, which no browser reports and which silently
+  // reinstates the double fetch this whole commit exists to remove, while
+  // `cloudinaryDefaultSrc` handing back the URL unchanged makes the page look
+  // correct. A build that throws is a build somebody fixes.
+  function bareCloudinaryPath(url, filterName) {
+    var m = CLOUDINARY_BARE.exec(url || "");
+    if (!m) {
+      throw new Error(
+        filterName + ": expected a Cloudinary URL with NO width transform "
+        + '(".../q_auto,f_auto/<path>" or ".../q_auto,f_auto,a_<angle>/<path>"), got '
+        + JSON.stringify(url) + ". "
+        + "A page that sets `preload_responsive_sizes` must give `preload_image` "
+        + "the same widthless src the <img> carries, because the responsive "
+        + "preload's candidate list is generated from it. Hard-coding a width "
+        + "here is what made the homepage fetch its LCP photograph twice.");
+    }
+    // { angle, path } -- angle is "" when the source needs no rotation, so
+    // callers can concatenate it unconditionally.
+    return { angle: m[1] || "", path: m[2] };
+  }
+
+  eleventyConfig.addFilter("cloudinaryDefaultSrc", function(url) {
+    var src = bareCloudinaryPath(url, "cloudinaryDefaultSrc");
+    return cloudinaryAt(src.angle, src.path, 800);
+  });
+
+  eleventyConfig.addFilter("cloudinarySrcset", function(url) {
+    var src = bareCloudinaryPath(url, "cloudinarySrcset");
+    return widths.map(function(w) {
+      return cloudinaryAt(src.angle, src.path, w) + " " + w + "w";
+    }).join(", ");
+  });
+
   eleventyConfig.addTransform("cloudinaryResponsive", function(content, outputPath) {
     if (!outputPath || !outputPath.endsWith(".html")) return content;
 
-    var cloudinaryBase = "https://res.cloudinary.com/dlhqdgmih/image/upload/";
-    var widths = [400, 800, 1200, 1920];
-
     return content.replace(
-      /<img([^>]*?)src="https:\/\/res\.cloudinary\.com\/dlhqdgmih\/image\/upload\/q_auto,f_auto\/([^"]+)"([^>]*?)>/g,
-      function(match, before, imagePath, after) {
+      /<img([^>]*?)src="https:\/\/res\.cloudinary\.com\/dlhqdgmih\/image\/upload\/q_auto,f_auto(,a_-?\d+)?\/([^"]+)"([^>]*?)>/g,
+      function(match, before, angleRaw, imagePath, after) {
+        var angle = angleRaw || "";
         // Skip if already has srcset
         if (before.indexOf("srcset") !== -1 || after.indexOf("srcset") !== -1) return match;
-        // Skip logo/favicon (small images that don't need responsive)
-        if (imagePath.indexOf("FINAL_LOGO") !== -1 || imagePath.indexOf("Circle") !== -1) return match;
+        // The logo/favicon marks: a responsive candidate list is the wrong tool
+        // for them (they render at a fixed ~48px of chrome, identically at every
+        // breakpoint), but "no srcset" used to mean "no width either", and the
+        // browser therefore fetched the ORIGINAL -- CircleWhite2025 is
+        // 1257x1251. So they are pinned to a single small derivative instead of
+        // being handed back untouched. w_192 is 4x the rendered box, which
+        // covers a 3x display with room to spare and is still a rounding error
+        // next to the full-size PNG.
+        if (imagePath.indexOf("FINAL_LOGO") !== -1 || imagePath.indexOf("Circle") !== -1) {
+          return '<img' + before + 'src="' + cloudinaryAt(angle, imagePath, 192) + '"' + after + '>';
+        }
 
         var srcset = widths.map(function(w) {
-          return cloudinaryBase + "q_auto,f_auto,w_" + w + "/" + imagePath + " " + w + "w";
+          return cloudinaryAt(angle, imagePath, w) + " " + w + "w";
         }).join(", ");
 
-        var defaultSrc = cloudinaryBase + "q_auto,f_auto,w_800/" + imagePath;
-        var sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px';
+        var defaultSrc = cloudinaryAt(angle, imagePath, 800);
 
-        return '<img' + before + 'src="' + defaultSrc + '" srcset="' + srcset + '" sizes="' + sizes + '"' + after + '>';
+        // The default `sizes` describes the site's ordinary case: a card or a
+        // plate inside a contained column, which is why it tops out at 800px.
+        // The hero is not that case -- it renders full-bleed 100vw (styles.css
+        // .hero-image), so the default made the browser resolve w_800 for the
+        // LCP element on a 1440px viewport. A GLOBAL change here would be
+        // wrong in the other direction, so instead the transform now RESPECTS
+        // a `sizes` an author put on the element: per-element override, one
+        // srcset generator, no hand-authored srcset anywhere.
+        var authored = /\ssizes\s*=\s*"([^"]*)"/.exec(before) || /\ssizes\s*=\s*"([^"]*)"/.exec(after);
+        var sizes = authored ? authored[1] : '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px';
+        var strippedBefore = before.replace(/\ssizes\s*=\s*"[^"]*"/, '');
+        var strippedAfter = after.replace(/\ssizes\s*=\s*"[^"]*"/, '');
+
+        return '<img' + strippedBefore + 'src="' + defaultSrc + '" srcset="' + srcset + '" sizes="' + sizes + '"' + strippedAfter + '>';
       }
     );
   });

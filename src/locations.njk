@@ -1,11 +1,17 @@
 ---
 layout: base.njk
 title: "Sauna Locations | Secret Sauna Company"
-description: "Experience our saunas in person. Visit our partner locations across British Columbia including Aldergrove, Vancouver, and Squamish."
+description: "Experience our saunas in person. Visit our partner locations across British Columbia including Brackendale, Vancouver, and West Vancouver."
 canonical: "https://www.secretsaunacompany.ca/locations/"
 breadcrumb_name: "Locations"
 sitemap_priority: "0.7"
 sitemap_changefreq: "monthly"
-preload_image: "https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/v1768616089/PXL_20250907_221307193_dtioaf.jpg"
+# NO preload_image, deliberately. This page carried a preload for
+# PXL_20250907_221307193 (448.8KB at w_1920) that NOTHING on the page renders --
+# verified by grep across src/, js/ and styles.css: the URL appeared here and
+# nowhere else. A preload for an element that does not exist is not a hint, it
+# is a guaranteed extra download on every visit, and it was the single largest
+# byte on the route. The LCP element on /locations/ is the map, which is script-
+# driven and not preloadable this way. (B7 stream 2b.)
 ---
 {% include "pages/locations.njk" %}

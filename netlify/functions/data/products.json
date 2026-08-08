@@ -1,11 +1,11 @@
 {
-  "_comment": "SSC product data for advisor system prompts. Keep in sync with js/data.js and _includes/modals/sauna.njk when pricing or models change. Price sheet version 2 (WP-0b-ii, 2026-07-31) -- these are the prices the configurator quotes.",
-  "_pricesVersion": 2,
+  "_comment": "SSC product data for advisor system prompts. Keep in sync with js/data.js and _includes/modals/sauna.njk when pricing or models change. Price sheet version 4 (catalogue restructure, 2026-08-03) -- these are the prices the configurator quotes. The base price buys a COMPLETE sauna: a standard heater, electric or wood-fired where offered, is included at $0 and no add-on is ever required to make the build work. Delivery is not quoted; it is arranged at order.",
+  "_pricesVersion": 4,
   "models": {
     "s2": {
       "name": "S2",
       "fullName": "S2 Standard Sauna",
-      "basePrice": 22500,
+      "basePrice": 23500,
       "size": "5' x 7'",
       "capacity": "2-3 people",
       "heater": "Homecraft 7.5kW H Series (electric)",
@@ -17,7 +17,7 @@
     "s4": {
       "name": "S4",
       "fullName": "S4 Standard Sauna",
-      "basePrice": 29000,
+      "basePrice": 29500,
       "size": "7' x 7'",
       "capacity": "4-5 people",
       "heater": "Harvia M3 or Homecraft 7.5kW (wood-fired or electric)",
@@ -56,7 +56,7 @@
       "basePrice": 57000,
       "size": "7' x 12' or larger",
       "capacity": "10-12+ people",
-      "heater": "Harvia Pro 20 or Homecraft Revive 9kW (wood-fired or electric)",
+      "heater": "Homecraft Revive 9kW (electric)",
       "electricOnly": false,
       "interiorUpgrade": 5000,
       "premiumFinishPrice": 12500,
@@ -66,12 +66,19 @@
   "addons": {
     "heaterUpgrade": {
       "options": [
-        { "name": "Standard (included)", "price": 0 },
+        { "name": "Standard electric heater (included)", "price": 0 },
+        { "name": "Standard wood-fired heater, Harvia M3 (included, S4/S6/S8)", "price": 0, "note": "No standard wood-fired build on S2 (clearances) or SC (commercial spec)." },
         { "name": "Homecraft Revive 9kW Electric (S2-S8)", "price": 3500 },
         { "name": "Homecraft 15kW Apex Electric (SC)", "price": 2800 },
-        { "name": "Mini-IKI Wood-fired (S4)", "price": 9800 },
-        { "name": "Original-IKI Wood-fired (S6, S8)", "price": 10800 },
-        { "name": "Original-IKI Wood-fired (SC)", "price": 8200, "note": "Wood-fired not available on S2" }
+        { "name": "Mini-IKI Wood-fired (S4)", "price": 5000 },
+        { "name": "Original-IKI Wood-fired (S6, S8)", "price": 5900 },
+        { "name": "Original-IKI Wood-fired (SC)", "price": 6500, "note": "Priced over the standard ELECTRIC stack, because SC has no standard wood build -- which is why it costs more than S6/S8 despite the same stove." }
+      ]
+    },
+    "mounting": {
+      "options": [
+        { "name": "Skid-mounted (included)", "price": 0 },
+        { "name": "Trailer integration", "price": 3500, "note": "Integration labour only, flat on every model. The trailer is client-supplied; if SSC sources one it is quoted separately by final box length." }
       ]
     },
     "changingRoom": {
@@ -94,7 +101,8 @@
       "options": [
         { "name": "Standard metal (included)", "price": 0 },
         { "name": "Standing seam metal", "price": "varies by model (S2/S4 $3,000, S6 $3,500, S8/SC $4,000)" },
-        { "name": "Cedar exterior", "price": "varies by model (S2/S4 $2,500, S6/S8/SC $3,000)" }
+        { "name": "Cedar exterior", "price": "varies by model (S2/S4 $2,500, S6/S8/SC $3,000)" },
+        { "name": "Yakisugi (charred cedar) exterior", "price": "varies by model (S2/S4 $5,000, S6/S8/SC $6,000)" }
       ]
     },
     "interiorWood": {

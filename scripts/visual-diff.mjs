@@ -9,6 +9,14 @@
  *   node scripts/visual-diff.mjs --baseline main --candidate WORKING
  *
  * See scripts/README.md for what the output means.
+ *
+ * ONE RUN AT A TIME. The work dir (.visual-diff/) and the asset cache it
+ * shares with dom-integrity.mjs are fixed paths, and the cache's two-file
+ * write is not atomic -- two concurrent runs interleave builds, screenshots
+ * and cache entries into one garbled report (same hazard class the
+ * models-json selftest documents in its header; worst case here is a wasted
+ * run, not a corrupted tree). The fixed dirs are deliberate: the ~91MB asset
+ * cache is reused across runs by design.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -19,6 +27,7 @@ import { captureAll } from './lib/capture.mjs';
 import { comparePair } from './lib/diff.mjs';
 import {
   loadConfig as loadGateConfig, evaluatePair, overBudget, evaluateFitDivergence,
+  unconsumedWaivers,
 } from './lib/gate.mjs';
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
@@ -387,6 +396,14 @@ async function main() {
         + `  ${(`${p.heightDeltaPx > 0 ? '+' : ''}${p.heightDeltaPx}px`).padStart(7)}`
         + `   ${p.status}${p.expectedReason ? ` (${p.expectedReason})` : ''}`);
     }
+  }
+  // Waivers that fired on nothing this run: said out loud, not failed (yet) —
+  // a baseline advance legitimately zeroes a waiver before retirement, but an
+  // unconsumed waiver left in silence becomes cover for the NEXT change to
+  // that route, which nobody reviewed.
+  for (const route of unconsumedWaivers(config, pages)) {
+    log(`  WARN  expectedToChange waiver for ${route} fired on ZERO compared pages this run — `
+      + `if its change is now in the baseline, retire the entry (its expiry will force the question).`);
   }
   // Say WHY each failing page failed, not just that it did.
   for (const p of pages) {

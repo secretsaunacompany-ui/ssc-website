@@ -10,8 +10,17 @@
      *
      * Bump this in the SAME commit as any change to a price -- `basePrice`,
      * `interiorUpgrade`, `premiumFinishPrice`, `electricHeaterUpgrade`,
-     * `woodFired`, `exteriorStandingSeam`, `exteriorCedar` here, or any option
+     * `woodPremium`, `exteriorStandingSeam`, `exteriorCedar`,
+     * `exteriorYakisugi` here, or any option
      * value in `_includes/modals/sauna.njk`.
+     *
+     * The heater fields at pricesVersion 4 encode the complete-sauna rule:
+     * `standardElectricLabel` and `standardWoodLabel` name the heaters this
+     * model INCLUDES at $0, and a null `standardWoodLabel` means the model has
+     * no wood-fired build (S2 on clearances, SC on commercial spec).
+     * `woodPremium` is the IKI tier priced OVER whichever standard that model
+     * carries -- which is why SC's is the largest step despite sharing a stove
+     * with S6 and S8. Neither standard heater is ever a priced line.
      *
      * This is not a convention anyone has to remember: `npm run
      * prices-version:test` hashes the whole price table and fails if the hash
@@ -23,7 +32,7 @@
      * recomputed from live prices, with a visible note. Without the stamp, a
      * week-old saved total would silently contradict its own line items.
      */
-    const pricesVersion = 2;
+    const pricesVersion = 4;
 
     // ============================================
     // Sauna Model Data
@@ -31,17 +40,24 @@
     const saunaModels = {
         s2: {
             name: 'S2 Standard Sauna',
-            basePrice: 22500,
+            basePrice: 23500,
             size: "5' x 7'",
             capacity: '2-3 people',
             heater: 'Homecraft 7.5kW H Series',
             interiorUpgrade: 2200,
             premiumFinishPrice: 9200,
             electricHeaterUpgrade: 3500,
-            woodFired: null,
-            woodFiredLabel: null,
+            standardElectricLabel: 'Homecraft 7.5kW H-Series',
+            standardWoodLabel: null,
+            woodPremium: null,
+            // Named even though it is never sellable here. The option still
+            // RENDERS on S2 -- disabled -- and a disabled row must say what it
+            // is that S2 cannot have, not keep whichever model's stove the
+            // visitor happened to look at last.
+            woodPremiumLabel: 'Original-IKI (Wood-fired)',
             exteriorStandingSeam: 3000,
             exteriorCedar: 2500,
+            exteriorYakisugi: 5000,
             electricOnly: true,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768410759/Gemini_Generated_Image_ot1l9lot1l9lot1l_1_ukzekw.png',
@@ -52,25 +68,28 @@
         },
         s4: {
             name: 'S4 Standard Sauna',
-            basePrice: 29000,
+            basePrice: 29500,
             size: "7' x 7'",
             capacity: '4-5 people',
             heater: 'Harvia M3 or Homecraft 7.5kW',
             interiorUpgrade: 2600,
             premiumFinishPrice: 9600,
             electricHeaterUpgrade: 3500,
-            woodFired: 9800,
-            woodFiredLabel: 'Mini-IKI (Wood-fired)',
+            standardElectricLabel: 'Homecraft 7.5kW H-Series',
+            standardWoodLabel: 'Harvia M3',
+            woodPremium: 5000,
+            woodPremiumLabel: 'Mini-IKI (Wood-fired)',
             exteriorStandingSeam: 3000,
             exteriorCedar: 2500,
+            exteriorYakisugi: 5000,
             electricOnly: false,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768272416/PXL_20240808_173352968.MP_yhb9bq.jpg',
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324981/PXL_20240911_022834882.MP_wtnwtj.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768275843/IMG_2891_wfwy7y.jpg',
+                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,a_-90,w_1200/v1768275843/IMG_2891_wfwy7y.jpg',
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768410756/PXL_20240911_021105407_snxau7.jpg',
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768486021/PXL_20250930_183317338_acg3cj.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768487213/20250918_121317_twpyv8.jpg',
+                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,a_90,w_1200/v1768487213/20250918_121317_twpyv8.jpg',
                 'https://res.cloudinary.com/dlhqdgmih/video/upload/q_auto,f_auto/v1768415361/PXL_20240808_172958194.TS_eqp8zy.mp4'
             ]
         },
@@ -83,16 +102,19 @@
             interiorUpgrade: 3000,
             premiumFinishPrice: 10500,
             electricHeaterUpgrade: 3500,
-            woodFired: 10800,
-            woodFiredLabel: 'Original-IKI (Wood-fired)',
+            standardElectricLabel: 'Homecraft 7.5kW H-Series',
+            standardWoodLabel: 'Harvia M3',
+            woodPremium: 5900,
+            woodPremiumLabel: 'Original-IKI (Wood-fired)',
             exteriorStandingSeam: 3500,
             exteriorCedar: 3000,
+            exteriorYakisugi: 6000,
             electricOnly: false,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250653/IMG_6404_hrncws.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250654/IMG_6592_ln0gz8.jpg',
+                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,a_90/v1768250654/IMG_6592_ln0gz8.jpg',
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768272421/20250313_124032-EDIT_uu36i8.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250654/IMG_6812_xpzjwk.jpg'
+                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,a_90,w_1200/v1768250654/IMG_6812_xpzjwk.jpg'
             ]
         },
         s8: {
@@ -104,14 +126,17 @@
             interiorUpgrade: 3500,
             premiumFinishPrice: 11000,
             electricHeaterUpgrade: 3500,
-            woodFired: 10800,
-            woodFiredLabel: 'Original-IKI (Wood-fired)',
+            standardElectricLabel: 'Homecraft 7.5kW H-Series',
+            standardWoodLabel: 'Harvia M3',
+            woodPremium: 5900,
+            woodPremiumLabel: 'Original-IKI (Wood-fired)',
             exteriorStandingSeam: 4000,
             exteriorCedar: 3000,
+            exteriorYakisugi: 6000,
             electricOnly: false,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324977/DSC03225-EDIT_crqtkp.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324976/20250117_192120_yeltdd.jpg',
+                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,a_90,w_1200/v1768324976/20250117_192120_yeltdd.jpg',
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324985/IMG_7463_fevmyz.jpg',
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324982/IMG_7354_qbg7dz.jpg'
             ]
@@ -121,14 +146,17 @@
             basePrice: 57000,
             size: "7' x 12' or larger",
             capacity: '10-12+ people',
-            heater: 'Harvia Pro 20 or Homecraft Revive 9kW',
+            heater: 'Homecraft Revive 9kW (electric)',
             interiorUpgrade: 5000,
             premiumFinishPrice: 12500,
             electricHeaterUpgrade: 2800,
-            woodFired: 8200,
-            woodFiredLabel: 'Original-IKI (Wood-fired)',
+            standardElectricLabel: 'Homecraft Revive 9kW',
+            standardWoodLabel: null,
+            woodPremium: 6500,
+            woodPremiumLabel: 'Original-IKI (Wood-fired)',
             exteriorStandingSeam: 4000,
             exteriorCedar: 3000,
+            exteriorYakisugi: 6000,
             electricOnly: false,
             images: [
                 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409622/IMG_5228_1_z2bz8q.jpg',
@@ -221,10 +249,10 @@
         { name: 'Brackendale Area', coords: [49.7695, -123.1558], model: 'S4', year: '2023', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768410756/PXL_20240911_021105407_snxau7.jpg' },
         { name: 'Brackendale Area', coords: [49.7750, -123.1650], model: 'S6', year: '2024', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250653/20250313_124025-EDIT_h1v6bm.jpg' },
         { name: 'Pemberton Area', coords: [50.3186, -122.8022], model: 'S4', year: '2024', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768620435/20250206_123417_nnpsrg.jpg' },
-        { name: 'Squamish Area', coords: [49.7016, -123.1558], model: 'S4', year: '2025', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768487213/20250918_121317_twpyv8.jpg' },
+        { name: 'Squamish Area', coords: [49.7016, -123.1558], model: 'S4', year: '2025', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,a_90,w_400/v1768487213/20250918_121317_twpyv8.jpg' },
         { name: 'California', coords: [36.7783, -119.4179], model: 'S8', year: '2024', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768620572/20250425_132951-EDIT_z5qkii.jpg' },
         { name: 'Abbotsford Area', coords: [49.0504, -122.3200], model: 'S2', year: '2025', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768486096/20250610_124511_dtirpu.jpg' },
-        { name: 'Williams Lake Area', coords: [52.1417, -122.1417], model: 'S6', year: '2025', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250654/IMG_6812_xpzjwk.jpg' }
+        { name: 'Williams Lake Area', coords: [52.1417, -122.1417], model: 'S6', year: '2025', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,a_90,w_400/v1768250654/IMG_6812_xpzjwk.jpg' }
     ];
 
     // ============================================

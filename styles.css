@@ -145,7 +145,6 @@
        --ember (34.5deg) so it is not a darker ember; and it never carries the
        message alone -- an invalid field gets a border AND text. */
     --error: #c9695e;
-    --ember-dark:  #a08060;   /* one consumer: .comparison-header.ours */
 
     /* Ember alphas. All five now share ONE base, rgb(196,165,123). Three of them
        were silently built on rgb(184,156,104) -- a different accent (21 R9). */
@@ -167,7 +166,45 @@
 
     /* ===== Scrims ===== */
     --nav-scrim:  rgba(12, 12, 12, 0.72);   /* nav bg; the ONE sanctioned blur */
-    --hero-scrim: linear-gradient(transparent 40%, rgba(12, 12, 12, 0.72));
+    /* Jen, Stage 3, specified verbatim. The previous value was
+       `linear-gradient(transparent 40%, rgba(12,12,12,0.72))` and it was never
+       applied to anything -- the token was declared here and referenced only in
+       a COMMENT on .hero-content claiming "contrast is carried by the scrim".
+       Nothing painted it, so contrast was carried by `filter: brightness(0.7)`
+       on the photograph alone, which is why the h1 and subtitle read thin over
+       the bright cedar band. The rule that paints it is on .hero::after below.
+
+       Shape: light at the very top so the photograph is not crushed under the
+       nav, a long even 0.55 plateau from 28% to 72% where the type actually
+       sits, and a slightly heavier foot at 100%. */
+    --hero-scrim: linear-gradient(
+        180deg,
+        rgba(12, 12, 12, 0.2) 0%,
+        rgba(12, 12, 12, 0.55) 28%,
+        rgba(12, 12, 12, 0.55) 72%,
+        rgba(12, 12, 12, 0.7) 100%
+    );
+
+    /* ===== The fixed nav's own height =====
+       DERIVED from the three things that actually build it, so it cannot drift
+       away from the nav the way a pasted literal would: the logo image, the
+       nav's block padding (`nav { padding: var(--spacing-sm) 2.5% }`), and its
+       1px bottom rule. Verified against a real browser at both breakpoints --
+       115 + 32 + 1 = 148px desktop, 58 + 32 + 1 = 91px at <=768px, both matching
+       getBoundingClientRect to the pixel (measured 2026-08-02).
+
+       This exists because the nav is `position: fixed`: it is painted over the
+       top --nav-band of every page while occupying no space in flow. Anything
+       that centres content in a full-viewport box is therefore centring inside
+       a box whose top --nav-band is covered. The hero does exactly that, which
+       is what put the h1 behind the nav at phone widths.
+
+       scripts/rhythm.test.mjs asserts the token against the nav's measured
+       height at both breakpoints, so this derivation is machine-checked rather
+       than trusted. NOT to be confused with the queued `--nav-clear` token
+       (ROADMAP), which is about .page-hero's 12rem and is a separate question. */
+    --logo-size: 115px;
+    --nav-band: calc(var(--logo-size) + 2 * var(--spacing-sm) + 1px);
 
     /* Typography */
     --font-primary: 'Outfit', 'Outfit Fallback', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -222,10 +259,52 @@
 
     /* ===== Section rhythm -- three tiers, not one metronome (Jen 10 §2.0; 21 R3)
        One rhythm is a metronome: compression only reads as compression against a
-       default, so density needs its own tier rather than a global tightening. */
-    --section-pad:       clamp(6rem, 14vh, 10rem);
-    --section-pad-tight: clamp(3.5rem, 8vh, 5rem);
-    --section-pad-open:  clamp(8rem, 18vh, 13rem);
+       default, so density needs its own tier rather than a global tightening.
+
+       B2 changed two things here, and they bite on different axes. Stated from
+       measurement (computed values, real browser, both scales side by side),
+       because the first draft of this comment argued from a convergence that
+       does not happen and Razor caught it:
+
+       1. THE PREFERRED ARM IS min(vh, vw), NOT vh ALONE. This bites on WIDTH.
+          The old tiers were not broken at 390 -- their RATIOS were fine
+          (390x844 resolved 118/67/152, ratio 0.57 : 1 : 1.29). The problem was
+          absolute: 118px of padding above and below every section is a desktop
+          quantity charged to a 390px screen, and it pushes the content that
+          justifies the space off the first screenful. The vw arm cuts it ~41%
+          (118 -> 70 at 390x844) while the ratios hold (0.58 : 1 : 1.28), so
+          the density suits the screen and compression still reads AS
+          compression. min() only ever takes away, never adds.
+
+       2. THE FLOORS DROPPED (6/3.5/8rem -> 3.5/2/5rem). This bites on HEIGHT,
+          at ANY width, and it is the part worth declaring out loud: a viewport
+          shorter than roughly 686px now gets LESS padding than before, because
+          the old floor used to catch it and the new one sits lower. Measured:
+          1440x640 goes 96 -> 89.6 per edge, 1440x500 goes 96 -> 70. A
+          1366x768 laptop with browser chrome lands near 620px of viewport and
+          sits inside that band. This is a deliberate consequence of letting
+          short viewports scale rather than clamp, not an oversight -- but it
+          is a real rendering change for a real class of screen.
+
+       SHORT-VIEWPORT BEHAVIOR: Jen ratifies or adjusts at Stage 3 (Wave B-1).
+       If she adjusts, only these three clamp floors move.
+
+       "Desktop does not move" is certified at 1440x900 specifically, where the
+       tiers resolve 72/126/162px before and after -- which is what keeps this
+       batch's desktop rendering a clean control for the F-1 fix alone. It also
+       holds at 1440x768. It does NOT hold below the floor crossover; see 2.
+
+       vh, deliberately: NOT dvh (padding must not reflow when a mobile URL bar
+       hides -- the whole page would jump mid-scroll) and not svh (wrong end of
+       the same tradeoff, and no more stable here). */
+    /* How far the hero holds its ground while you scroll. Not a lock: the page
+       moves the whole time; the stage is sticky, so the photograph and title
+       stay composed for this distance and then leave normally. 70vh reads as
+       "one deliberate gesture" without becoming a tunnel. */
+    --hero-runway:       70vh;
+    --section-pad:       clamp(3.5rem, min(14vh, 18vw), 10rem);
+    --section-pad-tight: clamp(2rem, min(8vh, 10.5vw), 5rem);
+    --section-pad-open:  clamp(5rem, min(18vh, 23vw), 13rem);
 
     /* ===== Layout -- container tiers (21 R1/R2/R8) =====
        ONE contained tier. Jen's 72rem and the live 1200px would have coexisted
@@ -236,7 +315,6 @@
     --hold:           75rem;      /* 1200px -- the contained tier */
     --hold-wide:      87.5rem;    /* 1400px -- .wide-container */
     --width-frame:    120rem;     /* 1920px -- body frame */
-    --overflow-reach: 4rem;       /* essay image outward overflow */
 
     /* Measures -- reading widths, not containers */
     --measure:        65ch;    /* prose; law for p */
@@ -259,6 +337,37 @@
     --transition-reveal: 1000ms cubic-bezier(0.22, 0.61, 0.36, 1);
     --reveal-shift: 28px;
     --stagger-step: 120ms;   /* per-child delay; --i capped at 4 */
+    /* The beat the homepage holds before anything arrives over the photograph.
+
+       STILL ONE MOTION SYSTEM (21 N2), and still the same .reveal transition --
+       but the hold is no longer spent as a `transition-delay` here. It is spent
+       as the moment RevealManager GRANTS `.seen` to the held pair, on the clock
+       it already keeps. The delay moved from the CSS property to the grant
+       timing; the transition, the observer and the stagger are untouched.
+
+       Why it had to move: a `transition-delay` of 1600ms on an element whose
+       `.seen` arrives from JS leaves a PENDING transition sitting on the
+       element. When the escape hatch then retimed that transition, Chrome
+       UPDATED the pending one rather than starting a new one, so the shortened
+       fade inherited 1600/1000 no matter what the computed values said
+       (measured: computed 0s/0.35s, actual 1600/1000). With no delay declared,
+       no pending transition exists and the escape hatch gets a fresh one.
+
+       THIS TOKEN IS STILL THE ONE AUTHORITATIVE VALUE. js/animations.js reads
+       it off the computed root at init (HERO_HOLD_MS) rather than carrying a
+       copy, so a retune here still moves the hold.
+
+       RETUNE FROM DATA, not taste: the hero_hold_skipped:complete ratio on
+       post-cutover views is the instrument, and N2 pre-authorises the change.
+       Moving it moves SETTLE_MS in js/animations.js, and the events suite's
+       agreement fixture fails until both agree. */
+    --hero-hold: 1600ms;
+
+    /* The escape hatch's fade. Early input during the hold used to SNAP the
+       held pair to visible with an inline `transition: none`; Lee's fixed
+       decision is that it fades gently instead. Short enough to read as
+       yielding to the gesture, long enough not to be a snap. */
+    --transition-quick-reveal: 350ms;
 
     /* ===== Elevation -- ONE shadow, and it is a hover affordance =====
        --shadow-sm/-md had zero consumers; -lg/-xl unify here (21 A4). No
@@ -302,7 +411,15 @@ body {
        three components were re-fixing it locally. 1.65 is the long-form value;
        component roles take --leading-ui / --leading-tight. */
     line-height: var(--leading-body);
-    overflow-x: hidden;
+    /* `clip`, not `hidden` (2026-08-07). Identical clipping, one critical
+       difference: `overflow-x: hidden` forces the computed `overflow-y` to
+       `auto`, which makes BODY a scroll container — and a `position: sticky`
+       descendant then sticks to body's scrollport, which never scrolls, so it
+       silently does nothing. That is what defeated the hero stage on the first
+       attempt here, and it is a strong candidate for why sticky approaches
+       have felt impossible on this page before. `clip` creates no scroll
+       container and leaves overflow-y alone. */
+    overflow-x: clip;
     /* 300 on near-black thins strokes further (halation). Weight 300 at
        0.85-0.95rem in muted grey was the site's most common small-text recipe
        and its weakest. 300 survives only at >=--text-md in full-strength ink. */
@@ -469,8 +586,9 @@ p {
    This lands WITH the size tokens deliberately: a price that got its size token
    without its figure style still fails to align, so the two travel together. */
 .model-price, .price-row, .price-summary, .addon-price,
-.booking-option__price, .booking-summary__row, .compare-table td,
-.spec-item span, .lightbox-counter {
+.compare-table td,
+.spec-item span, .lightbox-counter,
+.model-row__size, .model-row__capacity {
     font-variant-numeric: lining-nums tabular-nums;
     font-feature-settings: "tnum" 1;
 }
@@ -497,9 +615,21 @@ p {
    deliberately, rather than reference an undefined token and reproduce the exact
    bug (P0-3) the colour package existed to fix. WP-1b defines --ember and this
    is now wired to it directly, per 21 R10. */
+/* W5, Jen Stage 3: FIX, not amend. `--wide` is written as a modifier of
+   `.eyebrow` but its one consumer -- the "Standard Builds" kicker on /saunas/,
+   which `grep -rn "eyebrow--wide" src/` finds as the single hit -- wears it
+   ALONE, so it never inherited the base class's
+   `text-transform` and the site's one section kicker rendered sentence-case
+   against a 0.2em caps tracking cut for capitals. Tracking that wide under
+   lowercase is not a style, it is a spacing bug you can read. Declared here
+   rather than fixed in the markup because the kicker IS all-caps by definition
+   -- the wayfinding element the mood board established -- and a class whose
+   whole job is a voice should carry that voice without a second class present
+   to supply it. */
 .eyebrow--wide {
     font-size: var(--text-2xs);
     letter-spacing: var(--tracking-caps-wide);
+    text-transform: uppercase;
     color: var(--ember);
 }
 
@@ -510,16 +640,24 @@ p {
    silently produced a different gutter on a section, on the body, and inside a
    nav -- three gutters that looked like one rule. --gutter is one value, viewport
    -relative, and it is the same everywhere it appears (21 R1). */
+/* padding-INLINE, not the `padding` shorthand. The shorthand also wrote the
+   BLOCK axis to 0, and at (0,1,0) it beat `section`'s tier rule (0,0,1) at every
+   width -- so 44 of the 68 sections in the source carried a container class and
+   therefore no vertical rhythm at all, desktop included (F-1, doc 21 §6.2a
+   amendment 2026-08-01). Naming only the axis this rule has an opinion about
+   lets the tier system reach them for the first time. Nested non-section
+   `.container` divs are unaffected: they had 0 block padding because no
+   `section` rule applies to them, and they still do. */
 .container {
     max-width: var(--hold);
     margin: 0 auto;
-    padding: 0 var(--gutter);
+    padding-inline: var(--gutter);
 }
 
 .wide-container {
     max-width: var(--hold-wide);
     margin: 0 auto;
-    padding: 0 var(--gutter);
+    padding-inline: var(--gutter);
 }
 
 /* Section rhythm. Was a flat --spacing-3xl (8rem) on every section: a metronome.
@@ -530,11 +668,6 @@ section {
     padding: var(--section-pad) var(--gutter);
 }
 
-section.wide-container {
-    padding-top: var(--section-pad);
-    padding-bottom: var(--section-pad);
-}
-
 .section--tight {
     padding-block: var(--section-pad-tight);
 }
@@ -543,11 +676,12 @@ section.wide-container {
     padding-block: var(--section-pad-open);
 }
 
-/* Elevated ground marks a REGISTER CHANGE, not decoration -- Voice sections and
-   the Threshold only, never two in a row, and never per-card (Jen 10 §4.3). */
-.section--elevated {
-    background: var(--elevated);
-}
+/* `.section--elevated` lived here and was deleted in B2: zero consumers in the
+   markup, and byte-identical to `.surface--elevated` (7 consumers), which is the
+   name that survived. Two names for one declaration is a vocabulary that has to
+   be looked up before it can be used. The register-change rule it documented
+   (Voice sections and the Threshold only, never two in a row, never per-card --
+   Jen 10 §4.3) belongs to `.surface--elevated`. */
 
 /* Full-bleed figures sit BETWEEN sections and carry no rhythm of their own. */
 .section--bleed {
@@ -620,8 +754,8 @@ nav .container {
 }
 
 .logo img {
-    height: 115px;
-    width: 115px;
+    height: var(--logo-size);
+    width: var(--logo-size);
     object-fit: contain;
     display: block;
     flex-shrink: 0;
@@ -667,13 +801,89 @@ nav .container {
 /* ============================================
    Hero Section
    ============================================ */
+/* THE HERO STAGE AND ITS RUNWAY (Lee 2026-08-07).
+   The complaint this solves: the title arrived on the first scroll and left on
+   the same gesture, so you had to scroll back UP to read the thing the scroll
+   had just revealed — which defeats the reveal.
+
+   The mechanism is NOT a scroll lock, and the standing "scroll is never
+   blocked" ruling (doc 21 N2, agreed by Jen and Wim and untouched by Lee's
+   Wave B addendum) is intact: every input still scrolls the page by exactly
+   what the browser says it should. What changed is that the hero now OWNS the
+   first --hero-runway of that scroll — the photograph and the title are
+   sticky, so they stay composed in front of you while the page travels
+   through the runway, and only then does the hero leave.
+
+   Why this was hard before: `overflow: hidden` here made .hero a scroll
+   container, and `position: sticky` inside a scroll container has nothing to
+   stick to. `overflow: clip` clips identically WITHOUT creating that
+   container. That one-property difference is the whole trick; the four
+   mechanisms in the ROADMAP's B7 entry were all attempts to retime a pending
+   CSS transition, which is a different problem than this one.
+
+   Grid rather than flex so the photograph, the scrim and the title share ONE
+   cell and overlap without absolute positioning fighting the sticky stage. */
 .hero {
     height: 100vh;
     position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    /* ONE row spanning the whole stage-plus-runway. This is the subtle part: a
+       sticky item travels within its CONTAINING BLOCK, so if the row were sized
+       to the 100vh stage the items would have exactly zero room to stick and
+       the whole effect would silently do nothing (measured: the photograph
+       scrolled straight off). The row is the full height; the ITEMS are 100vh
+       and start-aligned, which is what gives them the runway to hold through. */
+    grid-template-rows: 1fr;
+    overflow: clip;
+}
+
+.hero > .hero-image,
+.hero > .hero-content,
+.hero::after {
+    grid-area: 1 / 1;
+    align-self: start;
+    height: 100vh;
+}
+
+/* The runway is scoped to the band where the hero IS a clean 100vh stage.
+   Below 768 the hero is `height: auto; min-height: 80vh` on purpose (see the
+   mobile rule) so a phone never clips its own hero content, and a fixed-height
+   sticky stage there would fight that. Mobile keeps today's behaviour until the
+   desktop one has been looked at on a real device. */
+@media (min-width: 768px) {
+    .hero {
+        height: calc(100vh + var(--hero-runway));
+    }
+
+    .hero > .hero-image,
+    .hero > .hero-content,
+    .hero::after {
+        position: sticky;
+        top: 0;
+    }
+}
+
+/* The stage's own vertical centring, which the parent flex used to provide. */
+.hero > .hero-content {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+}
+
+/* Reduced motion composes the page instantly and gets no reveal to protect, so
+   the runway would be scroll distance bought for nothing. Collapsed. */
+@media (prefers-reduced-motion: reduce) {
+    .hero {
+        height: 100vh;
+    }
+
+    .hero > .hero-image,
+    .hero > .hero-content,
+    .hero::after {
+        position: static;
+    }
 }
 
 /* The held photograph. It is now HELD -- static, 100svh, and exactly its own
@@ -699,6 +909,24 @@ nav .container {
     filter: brightness(0.7);
 }
 
+/* The scrim, finally painted (Jen Stage 3). It sits between the photograph and
+   the type by DOCUMENT ORDER rather than by a z-index of its own: .hero-image
+   and this pseudo-element are both positioned at z-index auto, so the later one
+   wins, and .hero-content is already z-index 1 so it stays above both. Adding a
+   third z-index here would be a number to keep in sync for no benefit.
+
+   `pointer-events: none` because it covers the whole hero including the two
+   call-to-action buttons, and a full-bleed overlay that eats clicks on the
+   primary CTA is the classic way to ship this. brightness(0.7) on the image is
+   UNCHANGED -- the scrim is added to it, not traded against it. */
+.hero::after {
+    content: '';
+    /* position/grid-area/height come from the sticky-stage rule above, so the
+       scrim travels with the photograph instead of spanning the runway. */
+    background: var(--hero-scrim);
+    pointer-events: none;
+}
+
 .hero-content {
     position: relative;
     z-index: 1;
@@ -720,6 +948,13 @@ nav .container {
 .hero-subtitle {
     font-size: var(--text-md);
     font-weight: 300;
+    /* SANCTIONED EXCEPTION (code-refresh 2026-08-06): raw tracking on
+       the mixed-case hero subtitle (0.05em). Doc 11's rule as written says never track lowercase
+       text, and the --tracking-* system claims to have replaced the em zoo.
+       Whether this register keeps its tracking is a design ruling for
+       Jen/WP-2, not a mechanical fix -- normalizing moves visible letterfit.
+       Recorded like the font-size disables: an exception with a name,
+       not silent drift. */
     letter-spacing: 0.05em;
     margin-bottom: var(--spacing-xl);
     margin-left: auto;
@@ -840,81 +1075,566 @@ nav .container {
     gap: var(--spacing-md);
 }
 
-.model-card {
-    background: var(--elevated);
-    border: 1px solid var(--rule);
-    transition: transform var(--transition-fast),
-                border-color var(--transition-fast),
-                box-shadow var(--transition-fast);
-    overflow: hidden;
-    cursor: pointer;
-}
-
-.model-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--rule-hover);
-    box-shadow: var(--shadow-hover);
-}
-
-.model-card-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    transition: transform var(--transition-image);
-}
-
-.model-card:hover .model-card-image {
-    transform: scale(1.03);
-}
-
-.model-card-content {
-    padding: var(--spacing-md);
-}
-
-.model-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-sm);
-    padding-bottom: var(--spacing-sm);
-    border-bottom: 1px solid var(--rule);
-}
-
-.model-header h3 {
-    font-size: var(--text-lg);
-    margin: 0;
-    color: var(--ember);
-}
-
-.model-capacity {
-    font-size: var(--text-xs);
-    color: var(--ink-quiet);
-    letter-spacing: var(--tracking-caps);
-}
-
-.model-card p {
-    font-size: var(--text-sm);
-    color: var(--ink-quiet);
-    line-height: var(--leading-ui);
-    margin-bottom: var(--spacing-md);
-}
-
-.model-specs {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: var(--spacing-sm);
-    border-top: 1px solid var(--rule);
-    font-size: var(--text-sm);
-}
-
-.model-specs span:first-child {
-    color: var(--ink-quiet);
-}
+/* `.model-card*` DELETED in B6's dead-CSS sweep -- B4 replaced the card grid
+   with the Ledger and took the markup with it. Inertness measured, not assumed:
+   the class appears in no built page, no template and no script. NOT swept with
+   them, deliberately: `.model-grid` above still has a live reference in
+   js/animations.js's GROUP_SELECTOR, and `.model-price` below is LIVE on
+   /saunas/ and asserted by scripts/fonts.test.mjs -- a region-wide sweep here
+   would have deleted a rule the type suite depends on. See the ROADMAP harness
+   entry for the held pair. The pre-redesign rules that sat between them
+   (.model-header / .model-capacity / .model-specs) were removed 2026-08-06
+   after the same measured live-reference check. */
 
 .model-price {
     color: var(--ember);
     font-weight: 500;
+}
+
+/* ── THE MODEL INDEX ──────────────────────────────────────────────────────
+   Jen Stage 0.7 §1. Archetype E: an El Croquis credits block, not a card grid.
+   One CSS grid is shared by the header row and the data rows, which is the
+   whole point of the register -- the five prices form a single flush column
+   with their thousands separators stacked. Ruled, never filled: radius 0, no
+   side borders, no fill and no shadow at rest. It is a table.
+
+   HOVER IS THE COLOUR HALF ONLY, and that is a recorded AMENDMENT to Jen 10
+   §5.2 rather than an omission of it (her §1.6). The sitewide surface-hover
+   grammar lifts a card and drops a shadow under it; a row that lifts tears the
+   hairline it shares with its neighbours. Background, border colour and text
+   colour move. Nothing translates, nothing scales, nothing glows.
+
+   The card CSS above (.model-grid/.model-card/...) is left in place by this
+   batch: its markup is gone, so it is provably inert, and deleting dead rules
+   is B6's hygiene pass where it can be swept as a class rather than one
+   instance at a time. */
+/* ONE grid, and it has to be ONE grid OBJECT, not two with matching track lists
+   (Razor W1). The first version gave the header and each row their own
+   `grid-template-columns`, which reads as shared and is not: track 4 is
+   `max-content`, and max-content resolves against the contents of ITS OWN
+   container. The header's fourth track sized to the word "PRICE" (38.7px) while
+   the rows' sized to "From $23,500" (~89px), so the capacity column stood 25.1px
+   out of register at 1440 and 768 -- a misalignment in the one component whose
+   entire argument is that its columns line up. The comment above claimed the
+   shared grid; the CSS did not deliver it.
+
+   Subgrid is the fix that keeps Jen's track list verbatim rather than trading it
+   for a fixed width: the tracks are defined ONCE here, and `max-content` now
+   resolves across every subgrid item at once -- header and all five rows -- so
+   the price track fits the widest price and every column shares one register by
+   construction. */
+.model-index {
+    margin-top: var(--spacing-lg);
+    display: grid;
+    /* A sixth track, first: the model's photograph (Lee 2026-08-07 — the index
+       told you what the models cost and nothing about what they look like).
+       4.5rem holds the 72px thumbnail the <img> declares, so the track cannot
+       drift from the box the image reserves. */
+    grid-template-columns: 4.5rem 7rem minmax(0, 1fr) minmax(0, 1fr) max-content 7.5rem;
+    column-gap: var(--spacing-lg);
+}
+
+/* The rows align on the BASELINE of their type; a photograph has no baseline
+   worth sharing, so it centres against the row instead of hanging off it. */
+.model-row__thumb {
+    width: 4.5rem;
+    height: 4.5rem;
+    object-fit: cover;
+    align-self: center;
+    display: block;
+    background-color: var(--elevated);
+}
+
+.model-index__head,
+.model-row {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    align-items: baseline;
+    padding-inline: 0;
+    border-bottom: 1px solid var(--rule);
+}
+
+/* Jen §1.2, as ruled 2026-08-02. The grid holds from 768 up; the tighter gap
+   belongs to the TABLET BAND, not to a single pixel. Her reasoning: the spec's
+   breakpoints are 1440/768/390, and a one-pixel rule would leave 769-1439 with
+   no defined gap at all — which contradicts "the same grid holds".
+   Set on the parent now: a subgrid item inherits the parent's gap, so one
+   declaration moves header and rows together and they cannot drift apart. */
+@media (min-width: 768px) and (max-width: 1439px) {
+    .model-index {
+        column-gap: var(--spacing-md);
+    }
+}
+
+.model-index__head {
+    padding-block: var(--spacing-sm);
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--ink-quiet);
+}
+
+.model-index__label--price {
+    text-align: right;
+}
+
+.model-row {
+    padding-block: var(--spacing-md);
+    line-height: var(--leading-ui);
+    cursor: pointer;
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast),
+                color var(--transition-fast);
+}
+
+.model-row__designation {
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    font-weight: 500;
+    color: var(--ink);
+    transition: color var(--transition-fast);
+}
+
+.model-row__size,
+.model-row__capacity {
+    font-size: var(--text-sm);
+    color: var(--ink-quiet);
+}
+
+/* --ink, not --ember, and the override is deliberate: .model-price above paints
+   the card's price ember. Ember is this site's one ACTION colour, and the
+   action here is the row, not the number. The number is a fact. */
+.model-row__price {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--ink);
+    text-align: right;
+}
+
+/* The affordance -- how a row says "opens the configurator". Present at rest,
+   because discoverability is not a hover reward, and identical on touch. One
+   small ember label: no button chrome, no border, no chevron. */
+.model-row__affordance {
+    font-size: var(--text-2xs);
+    font-weight: 500;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--ember);
+    text-align: right;
+    transition: color var(--transition-fast);
+}
+
+.model-row:hover {
+    background: var(--color-white-alpha-03);
+    border-bottom-color: var(--rule-hover);
+}
+
+.model-row:hover .model-row__designation,
+.model-row:hover .model-row__affordance {
+    color: var(--ember-hover);
+}
+
+.model-row:focus-visible {
+    background: var(--color-white-alpha-03);
+    outline: 1px solid var(--ember);
+    outline-offset: -1px;
+}
+
+.model-row:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.model-row:active {
+    background: var(--color-white-alpha-05);
+}
+
+.advisor-container--after-index {
+    margin-top: var(--spacing-xl);
+}
+
+/* Two lines below 768: designation + price, then "size · capacity" +
+   affordance. The header row is hidden -- the stacked form is self-labelling.
+
+   THREE columns, not Jen's two, and the reason is structural rather than
+   aesthetic: her line 2 joins size and capacity into ONE cell separated by a
+   middle dot, and they are two sibling grid items with no wrapper to share a
+   cell with. Adding a wrapper would put a div into the desktop grid that the
+   desktop layout does not want. So they keep their own auto-width columns, the
+   dot is generated between them at exactly ` · `, and the third column is 1fr
+   so the right-hand items stay flush -- which is the property her --spacing-md
+   column-gap was buying. Same rendered line, no extra element. */
+@media (max-width: 767.98px) {
+    /* The shared register is a DESKTOP property. Below 768 each row is its own
+       two-line block, so the parent stops being a grid and the rows stop being
+       subgrid items -- otherwise they would inherit five desktop tracks they no
+       longer use. */
+    .model-index {
+        display: block;
+        column-gap: normal;
+    }
+
+    .model-index__head {
+        display: none;
+    }
+
+    .model-row {
+        grid-column: auto;
+        /* The photograph takes a leading track and spans both rows, so the
+           two-line block sits beside it rather than under it. Everything else
+           keeps its shape and moves one column right. */
+        grid-template-columns: 3.5rem auto auto 1fr;
+        grid-template-rows: auto auto;
+        row-gap: 0.25rem;
+        column-gap: 0;
+        padding-block: var(--spacing-sm);
+    }
+
+    .model-row__thumb {
+        grid-row: 1 / 3;
+        grid-column: 1;
+        width: 3.25rem;
+        height: 3.25rem;
+        align-self: center;
+        margin-inline-end: var(--spacing-sm);
+    }
+
+    .model-row__designation {
+        grid-row: 1;
+        grid-column: 2 / 4;
+    }
+
+    .model-row__price {
+        grid-row: 1;
+        grid-column: 4;
+        justify-self: end;
+    }
+
+    .model-row__size {
+        grid-row: 2;
+        grid-column: 2;
+    }
+
+    /* The middle dot is GENERATED, never typed into the markup, so the capacity
+       cell's text content stays the canonical string that the round-trip gate
+       reads back out of the rendered page. */
+    .model-row__capacity {
+        grid-row: 2;
+        grid-column: 3;
+    }
+
+    /* `content: "·" / ""` — the slash gives the generated content ALTERNATIVE
+       TEXT, here empty, so the separator is drawn and not announced. Measured
+       via the CDP accessibility tree, which is where it showed up: without the
+       alt the row's computed name read "5' × 7' ·2–3 people", the dot glued to
+       the capacity as though it were part of the figure. A separator is
+       punctuation for the eye. */
+    .model-row__capacity::before {
+        content: "·" / "";
+        margin-inline: 0.5ch;
+        color: var(--ink-quiet);
+    }
+
+    .model-row__affordance {
+        grid-row: 2;
+        grid-column: 4;
+        justify-self: end;
+    }
+}
+
+/* ── THE COMPARISON LEDGER ────────────────────────────────────────────────
+   Jen's B7 mini-spec. Archetype E, tight tier, ground, --hold containment.
+
+   This replaces the asymmetric Essay that replaced the three comparison cards.
+   The reason it keeps moving is that the section has one job -- put our
+   construction beside the two things a buyer is actually cross-shopping -- and
+   prose is the wrong instrument for it. A paragraph delivers three columns of
+   fact one clause at a time and asks the reader to hold the other two in their
+   head. Rows and columns hand them the comparison already aligned, which is
+   what a Ledger is for.
+
+   Structurally it is the model index's grammar, deliberately: parent grid,
+   subgrid rows, one rule per row, radius 0, no fills. The two ledgers on this
+   page should read as the same instrument. What it does NOT take from the model
+   index is the interaction half -- these rows are not actionable, so there is no
+   hover state, no focus ring, no cursor change and no ember affordance. A row
+   that lights up under the pointer promises a click that does not exist. */
+.ledger-lede {
+    max-width: var(--measure);
+}
+
+/* --text-2xl, not --text-3xl: the section defends, it no longer leads. */
+.ledger-lede__heading {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    color: var(--ink);
+}
+
+.ledger-lede p {
+    color: var(--ink);
+    margin-bottom: 0;
+}
+
+.compare-ledger {
+    margin-top: var(--spacing-lg);
+    display: grid;
+    grid-template-columns: 9rem repeat(3, minmax(0, 1fr));
+    column-gap: var(--spacing-lg);
+}
+
+.compare-ledger__head,
+.compare-ledger__row {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    /* Baseline, not start: the three value cells wrap to different line counts
+       (construction runs three lines, evidence one), and aligning their boxes
+       would leave the first lines of a row sitting on three different heights.
+       Baseline puts the first line of every cell on one line, which is the
+       whole reading affordance of a comparison table. */
+    align-items: baseline;
+    padding-inline: 0;
+    border-bottom: 1px solid var(--rule);
+}
+
+.compare-ledger__head {
+    padding-block: var(--spacing-sm);
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--ink-quiet);
+}
+
+/* The one ember on the table, and it is doing the section's argument: of the
+   three columns, this is the one being recommended. */
+.compare-ledger__label--ours {
+    color: var(--ember);
+}
+
+.compare-ledger__row {
+    padding-block: var(--spacing-md);
+    line-height: var(--leading-ui);
+}
+
+.compare-ledger__dimension {
+    font-family: var(--font-primary);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--ink);
+}
+
+.compare-ledger__value {
+    font-size: var(--text-sm);
+    font-weight: 400;
+    color: var(--ink-quiet);
+}
+
+/* Our column reads at full --ink against the alternatives' --ink-quiet. The
+   contrast IS the comparison; no badge, no tick, no fill is needed to say it. */
+.compare-ledger__value--ours {
+    color: var(--ink);
+}
+
+/* The source label belongs to the STACKED form only -- VISUALLY. On desktop the
+   column header names the source once for the whole column, and repeating it in
+   every cell would be noise. It lives in the markup rather than in generated
+   content because it is a label, not punctuation -- the model index at :1223
+   draws the same line, generating its middle dot and never its data.
+
+   It used to be `display: none` here, which is noise removed from the EYE and
+   meaning removed from everything else (Razor W-2). A column header associates
+   with its cells visually, by alignment; that association does not exist for a
+   screen reader reading this grid linearly, so each row arrived as three bare
+   claims with nothing saying whose they were. The third one is the reason this
+   is a defect and not a nicety: "Often made with cheap materials" is a claim
+   about INFRARED, and unattributed, in a row that opens with our own product,
+   it reads as a confession.
+
+   So the label is hidden from the eye and kept for the ear. No sr-only utility
+   exists in this stylesheet and one class does not justify inventing a system,
+   so the standard clip pattern is scoped to this class. `clip` is the legacy
+   half and `clip-path` the current one; both ship because the combination is
+   what actually works across the range, and neither alone does.
+
+   The 1px box with a -1px margin is the part people delete as superstition: a
+   zero-size clipped element is skipped by some AT, and an unclipped absolute
+   one can still extend the scroll region. Nothing here is decorative.
+
+   UNCONDITIONAL, not `@media (min-width: 768px)` (Razor N3). Pairing a
+   min-width:768 block against the stacked form's max-width:767.98 left a 0.02px
+   band matching NEITHER, and a viewport can land in it -- fractional widths are
+   ordinary on scaled displays. In that band the label had no rule at all, so it
+   fell back to a plain inline span and DREW ITSELF beside every value. The fix
+   is not a narrower sliver, it is no sliver: the clip is the base state at every
+   width, and the stacked form below undoes it explicitly. Complementary media
+   queries cannot be made gapless; a base rule plus one override has no gap to
+   begin with. */
+.compare-ledger__source {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* A space, inside the clipped box, so the label and the claim are not run
+   together into "OursFully insulated" by anything that concatenates text nodes.
+   Invisible by construction -- it is inside the clip. */
+.compare-ledger__source::after {
+    content: " ";
+}
+
+.compare-ledger__link {
+    margin-top: var(--spacing-lg);
+    margin-bottom: 0;
+}
+
+/* Below 768 the columns cannot survive: four tracks in 342px gives each value
+   about 60px, which wraps every cell to a column of single words. So each
+   dimension becomes its own block and each value labels itself. */
+@media (max-width: 767.98px) {
+    .compare-ledger {
+        display: block;
+        column-gap: normal;
+    }
+
+    /* The header names columns that no longer exist. */
+    .compare-ledger__head {
+        display: none;
+    }
+
+    .compare-ledger__row {
+        grid-column: auto;
+        display: block;
+        padding-block: var(--spacing-md);
+    }
+
+    .compare-ledger__dimension {
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .compare-ledger__value {
+        display: block;
+    }
+
+    /* The stacked form SHOWS the label, so every clipping declaration from the
+       base rule is undone here -- explicitly, property by property. A partial
+       reset (display alone, as this block used to carry) leaves the element
+       absolutely positioned inside a 1px clip and the label stays invisible on
+       exactly the form that depends on it most. */
+    .compare-ledger__source {
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0;
+        padding: 0;
+        overflow: visible;
+        clip: auto;
+        clip-path: none;
+        white-space: normal;
+        display: inline;
+        font-size: var(--text-2xs);
+        letter-spacing: var(--tracking-caps);
+        text-transform: uppercase;
+        color: var(--ink-quiet);
+    }
+
+    /* `content: "·" / " "` -- the slash gives the separator its ALTERNATIVE
+       TEXT, and that text is a SPACE rather than empty (Razor N4). Empty was
+       the wrong call: it silenced the dot, but it also removed the only
+       boundary between the label and the claim, so a linear read ran them
+       together as "BARRELNo insulation". A space is punctuation for the eye and
+       a word boundary for the ear, which is what was actually wanted -- and it
+       matches the trailing space the clipped desktop form already carries, so
+       both forms now read the same way aloud. */
+    .compare-ledger__source::after {
+        content: "·" / " ";
+        margin-inline: 0.5ch;
+    }
+}
+
+/* ── THE SCIENCE THESIS ───────────────────────────────────────────────────
+   Jen §2.3. Archetype B, ONE stat, 34rem, left-aligned, on GROUND. The
+   elevated photo-overlay stat-wall is gone: elevation marks a voice register
+   change and belongs to the Threshold on this page, not to a figure. The
+   numeral is --ink, because the number is the thesis, not a call to action. */
+/* Three stats, one body of evidence (Lee 2026-08-07, overriding Jen's §2.3
+   one-stat archetype). Even columns on desktop; stacked on narrow, where three
+   full-measure blocks read as a list rather than a row. The stat type scale is
+   unchanged -- this is a change of number, not of treatment. */
+.thesis-set {
+    display: grid;
+    gap: var(--spacing-xl);
+}
+
+@media (min-width: 769px) {
+    .thesis-set {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-lg);
+    }
+}
+
+.thesis {
+    max-width: var(--measure-narrow);
+}
+
+.thesis__stat {
+    font-family: var(--font-heading);
+    font-size: var(--text-4xl);
+    font-weight: 500;
+    line-height: var(--leading-display);
+    color: var(--ink);
+    font-variant-numeric: lining-nums tabular-nums;
+    margin-bottom: var(--spacing-sm);
+}
+
+.thesis__claim {
+    font-size: var(--text-md);
+    line-height: var(--leading-subhead);
+    color: var(--ink);
+    max-width: var(--measure-narrow);
+    margin-bottom: var(--spacing-sm);
+}
+
+.thesis__source {
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--ink-quiet);
+    margin-bottom: 0;
+}
+
+/* ── THE THRESHOLD ────────────────────────────────────────────────────────
+   Jen §2.4. Archetype G, elevated ground, left-aligned AT THE GUTTER. Centred
+   CTAs are the template gesture this system retired. */
+.threshold__line {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    color: var(--ink);
+    max-width: var(--measure-thesis);
+    margin-bottom: var(--spacing-lg);
+}
+
+.threshold__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.threshold__aside {
+    color: var(--ink-quiet);
+    transition: color var(--transition-fast);
+}
+
+.threshold__aside:hover {
+    color: var(--ember);
 }
 
 /* Comparison Cards */
@@ -924,130 +1644,27 @@ nav .container {
     gap: var(--spacing-md);
 }
 
-.comparison-card {
-    background: var(--elevated);
-    border: 1px solid var(--rule);
-    overflow: hidden;
-    transition: transform var(--transition-fast);
-}
+/* `.comparison-card`, `.comparison-header*`, `.comparison-badge`,
+   `.comparison-badge-alt` and `.comparison-list*` DELETED in B6's dead-CSS
+   sweep. B4 removed the three comparison cards and all 21 tick/cross bullets
+   from /saunas/, which were their only markup; measured inert here (no built
+   page, no template, no script references any of them). `.comparison-grid`
+   above SURVIVES the sweep on purpose -- js/animations.js's GROUP_SELECTOR
+   still names it, and deleting a rule while leaving its reference standing is
+   half a change; the pair retires together in the post-wave harness pass.
 
-.comparison-card:hover {
-    transform: translateY(-5px);
-}
+   `.comparison-header.ours` was the site's last gradient fill and the sole
+   consumer of `--ember-dark`; B2 flattened it to `var(--ember)` and retired the
+   token, and it is now gone entirely with its markup. doc 21 §6.5 is CLOSED.
 
-.comparison-header {
-    padding: var(--spacing-md);
-    text-align: center;
-}
-
-.comparison-header.ours {
-    background: linear-gradient(135deg, var(--ember), var(--ember-dark));
-}
-
-.comparison-header.ours h3 {
-    color: var(--color-black);
-}
-
-.comparison-header.barrels,
-.comparison-header.infrared {
-    background: var(--rule);
-}
-
-.comparison-header h3 {
-    margin: 0 0 var(--spacing-xs) 0;
-    font-size: var(--text-lg);
-}
-
-.comparison-badge {
-    display: inline-block;
-    background: var(--color-black-alpha-30);
-    color: var(--color-white);
-    padding: 0.25rem 0.75rem;
-    border-radius: var(--radius-lg);
-    font-size: var(--text-xs);
-    letter-spacing: var(--tracking-caps);
-}
-
-.comparison-badge-alt {
-    display: inline-block;
-    background: var(--color-white-alpha-10);
-    color: var(--ink-quiet);
-    padding: 0.25rem 0.75rem;
-    border-radius: var(--radius-lg);
-    font-size: var(--text-xs);
-    letter-spacing: var(--tracking-caps);
-}
-
-.comparison-list {
-    list-style: none;
-    padding: var(--spacing-md);
-    margin: 0;
-}
-
-.comparison-list li {
-    padding: 0.6rem 0;
-    border-bottom: 1px solid var(--rule);
-    font-size: var(--text-sm);
-    color: var(--ink-quiet);
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-}
-
-.comparison-list li:last-child {
-    border-bottom: none;
-}
-
-.comparison-list .check {
-    color: var(--ember);
-    font-weight: bold;
-}
-
-.comparison-list .x {
-    color: var(--ink-quiet);
-}
-
-/* Stat Cards */
-.stat-card {
-    background: var(--elevated);
-    padding: var(--spacing-lg);
-    text-align: center;
-    border: 1px solid var(--rule);
-}
-
-.stat-number {
-    display: block;
-    /* CLOSED by Jen at Stage 3, ruling (d): display-by-function. The raw 3.5rem
-       was held open on the argument that this figure's size is a display
-       decision rather than a hierarchy one -- and that is exactly the argument
-       FOR --text-4xl, which is the display step. A number that exists to be read
-       across a room is display type; it does not need a step of its own between
-       two existing ones. The stylelint exception retires with it. */
-    font-size: var(--text-4xl);
-    line-height: var(--leading-display);
-    /* It is a FIGURE, and figures in a column must align. Cormorant ships tnum;
-       without asking for it the numerals are proportional and a stack of stats
-       reads ragged down its left edge. */
-    font-variant-numeric: lining-nums tabular-nums;
-    font-weight: 400;
-    color: var(--ember);
-    font-family: var(--font-heading);
-    margin-bottom: var(--spacing-sm);
-}
-
-.stat-card p {
-    font-size: var(--text-sm);
-    color: var(--ink-quiet);
-    margin-bottom: var(--spacing-sm);
-}
-
-.stat-source {
-    font-size: var(--text-xs);
-    color: var(--ink-quiet);
-    /* No italic. Outfit ships no italic face, so this was a synthesized
-       oblique -- a mechanically slanted roman, which is the tell this program
-       exists to remove. Metadata carries its quietness with size and colour. */
-}
+   `.stat-*` DELETED in the same sweep -- B4 removed the 66% and 24% stat cards
+   and the surviving 40% figure is not built from them. Note for anyone
+   grepping: booking-ops.html defines its OWN `.stat-card`/`.stat-label`/
+   `.stat-value` in an inline <style> and does not link styles.css at all (its
+   only <link> is a favicon), so those rules were never serving it. The
+   `.stat-number` stylelint exception had already retired at Jen's Stage 3
+   ruling (d), so this deletion does not move stylelint-gate's exception count,
+   which stays at 5. */
 
 /* ============================================
    Buttons
@@ -1060,6 +1677,13 @@ nav .container {
     text-decoration: none;
     font-size: var(--text-base);
     font-weight: 500;
+    /* SANCTIONED EXCEPTION (code-refresh 2026-08-06): raw tracking on
+       mixed-case buttons (0.05em). Doc 11's rule as written says never track lowercase
+       text, and the --tracking-* system claims to have replaced the em zoo.
+       Whether this register keeps its tracking is a design ruling for
+       Jen/WP-2, not a mechanical fix -- normalizing moves visible letterfit.
+       Recorded like the font-size disables: an exception with a name,
+       not silent drift. */
     letter-spacing: 0.05em;
     /* Colour only. "No lighting up of call-to-action buttons" is a hard rule for
        the Threshold .btn (Jen 10 §5.2): no lift, no glow, no pulse. Both hover
@@ -1116,12 +1740,6 @@ nav .container {
 /* ============================================
    Images & Media
    ============================================ */
-.full-width-image-wrap {
-    overflow: hidden;
-    margin: var(--spacing-2xl) 0;
-    height: 70vh;
-}
-
 /* A standalone Plate is a photograph, not a rig. No parallax, no hover scale --
    the image-hover grammar applies ONLY to images inside an interactive card or
    row (Jen 10 §5.2/§5.3). `will-change: transform` went with the transform it
@@ -1245,6 +1863,33 @@ nav .container {
 .contact-form {
     max-width: 600px;
     margin: var(--spacing-xl) auto;
+}
+
+/* The section that holds the contact form takes the tight tier — the same
+   treatment /saunas/ gives the section directly after its hero. Three vertical
+   spaces were stacking between "Get Your Quote" and the first field it asks
+   for: the hero's 96px bottom padding, this section's full --section-pad, and
+   the form's own margin. 270px measured at 1440 (Lee 2026-08-07); 168 now.
+
+   Keyed on :has() rather than a class in the template DELIBERATELY: a
+   `section--tight` there is an attribute change on a <section class="container">,
+   and "container" names a family of sections sitewide, so no dom-integrity
+   declaration could identify THAT one node — a count would stand in for an
+   identity, which the whitelist's specificity rule refuses. This selector needs
+   no markup change at all, so there is nothing to declare. Where :has() is
+   unsupported the page simply keeps its old, roomier spacing. */
+.container:has(> .contact-form) {
+    padding-block: var(--section-pad-tight);
+}
+
+/* The top margin exists to separate the form from whatever precedes it inside
+   the section — the advisor block, or the saved-quote banner. When the form IS
+   the first thing in the section (the ordinary state, with the advisor flag
+   off), that margin is a third helping of space after the hero's padding and
+   the section's own. Collapsed only in that case, so the separation still
+   appears the moment something is actually there to separate from. */
+.contact-form:first-child {
+    margin-top: 0;
 }
 
 /* Injected by navigation.js only when a saved configurator quote exists, so it
@@ -1849,23 +2494,19 @@ textarea {
 /* C27. Every invalid field gets the SAME treatment. Previously only the name
    field took a border, so email and location announced their problem in a line
    of text with nothing tying it to the control it was about -- the field a
-   person is looking at stayed unmarked. Keyed on aria-invalid as well as :invalid
-   so the JS validator and the browser's own agree. */
+   person is looking at stayed unmarked. Keyed on aria-invalid, which the JS
+   validator (js/modal.js) sets and assistive tech announces. A `.has-error`
+   selector arm sat here until 2026-08-06 with no setter anywhere -- removed
+   rather than left to imply a class contract that never existed. */
 input[aria-invalid="true"],
 textarea[aria-invalid="true"],
-select[aria-invalid="true"],
-.form-group.has-error input,
-.form-group.has-error textarea,
-.form-group.has-error select {
+select[aria-invalid="true"] {
     border-color: var(--error);
 }
 
 input[aria-invalid="true"]:focus,
 textarea[aria-invalid="true"]:focus,
-select[aria-invalid="true"]:focus,
-.form-group.has-error input:focus,
-.form-group.has-error textarea:focus,
-.form-group.has-error select:focus {
+select[aria-invalid="true"]:focus {
     border-color: var(--error);
 }
 
@@ -1935,7 +2576,10 @@ select[aria-invalid="true"]:focus,
     font-family: var(--font-primary);
     font-size: var(--text-sm);
     font-weight: 500;
-    letter-spacing: 0.05em;
+    /* Uppercase (text-transform below), so doc 11's one-value rule applies:
+       ALL uppercase micro-type uses --tracking-caps. Was a raw 0.05em that
+       survived the WP-1a consolidation (code-refresh 2026-08-06). */
+    letter-spacing: var(--tracking-caps);
     cursor: pointer;
     transition: all var(--transition-fast);
     border-radius: var(--radius-sm);
@@ -2128,6 +2772,11 @@ select[aria-invalid="true"]:focus,
     transform: translateX(-50%);
     color: var(--ink);
     font-size: var(--text-sm);
+    /* SANCTIONED EXCEPTION (code-refresh 2026-08-06): numeric counter
+       ('1 / 25'), not lowercase prose -- doc 11's caps rule does not
+       obviously claim it and 0.1em on tabular numerals is a legibility
+       choice. Jen/WP-2 may fold it into --tracking-caps; recorded, not
+       silently drifting. */
     letter-spacing: 0.1em;
     opacity: 0.7;
 }
@@ -2293,11 +2942,68 @@ footer::before {
     font-size: var(--text-sm);
 }
 
+/* The colophon's one link. Inherits the colophon's quiet register rather than
+   the ember accent -- a legal link should be findable, not loud. */
+.footer-bottom__link {
+    margin-left: var(--spacing-sm);
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.footer-bottom__link:hover,
+.footer-bottom__link:focus-visible {
+    color: var(--ember);
+}
+
 /* ============================================
    Utility Classes
    ============================================ */
 .surface--elevated {
     background: var(--elevated);
+}
+
+/* The canonical G spends the gutter ONCE (Jen RULING 3).
+ *
+ * The Threshold's shape is a full-width ground with contained content inside it:
+ *
+ *   <section class="surface--elevated">   <- ground, edge to edge
+ *     <div class="container">             <- content, capped and guttered
+ *
+ * Both elements are gutter-bearing by default -- the bare `section` rule sets
+ * `padding: var(--section-pad) var(--gutter)` and `.container` sets
+ * `padding-inline: var(--gutter)` -- so nesting them spent the gutter TWICE and
+ * the content column came out one gutter narrower than every other column on the
+ * site. Measured at 390 before this rule: 294px against the 342px a contained
+ * column is supposed to be. It was not introduced by the B5 fix round; /saunas/
+ * and /about/ had carried it for as long as they have had this shape, and the
+ * conversion of home and service-area to the canonical structure simply spread
+ * the existing defect to six more routes and made it loud enough to measure.
+ *
+ * The ground keeps its padding-BLOCK, because the vertical rhythm belongs to the
+ * section and the tier system sets it. Only the inline axis is surrendered, to
+ * the one element that is actually responsible for horizontal containment.
+ *
+ * SCOPED, and deliberately so. Jen's operative rule was `section.surface--elevated
+ * { padding-inline: 0 }`, and her stated intent was "scoped to the canonical
+ * structure so nothing else moves" -- but written plainly it reaches EVERY
+ * elevated section, including any that has no inner container to put the gutter
+ * back. Such a section would render its text flush to the viewport edge: exactly
+ * the C-1 defect this same round was convened to fix. A census of all seven
+ * elevated sections in src/ (eleven rendered, across /, /about/ x2, /saunas/,
+ * /warranty/, and the five service-area routes) found a direct-child container on
+ * every one and direct text on none, so the plain rule would in fact be safe
+ * TODAY. It is scoped anyway, because "safe today" is precisely the property the
+ * unscoped `.section--bleed` gutter pin had right up until the mosaic put text in
+ * a bleed section (Razor N-4, same round). A rule that happens to be correct is
+ * not the same as a rule that stays correct, and this one now fails SAFE: an
+ * elevated section without a container keeps its gutter rather than losing it.
+ *
+ * `:has()` sets no new browser floor -- `grid-template-columns: subgrid` above
+ * already requires the same Baseline-2023 cohort. */
+section.surface--elevated:has(> .container),
+section.surface--elevated:has(> .wide-container) {
+    padding-inline: 0;
 }
 
 .section--fade-edges {
@@ -2374,26 +3080,115 @@ footer::before {
     transform: none;
 }
 
+/* ---- The held hero (B1) ----------------------------------------------------
+
+   Lee's fixed decision: the photograph arrives alone, and the title comes over
+   it after a beat. The old implementation of that idea was a scroll LOCK and it
+   is not coming back. This one still adds no lock, no second transition and no
+   second easing curve -- same .reveal, same transition, same stagger, and the
+   page scrolls from the first frame. That is 21 N2's mechanism ruling honoured;
+   the only clause of N2 superseded is its ban on content over the photograph.
+
+   WHAT CHANGED, and it is deliberately NOT a rule in this file: the hold used
+   to be `transition-delay: calc(var(--hero-hold) + ...)` on the held pair, at
+   (0,4,0) so it beat the generic (0,3,0) stagger rule. That rule is gone. The
+   hold is now the moment `.seen` is granted (js/animations.js, RevealManager's
+   hold scheduler) -- see the --hero-hold token's note for the pending-transition
+   defect that forced the move. The held pair therefore resolves the ORDINARY
+   stagger delay here, and arrives 1600ms later than everything else because
+   that is when it is told to, not because it is waiting on a longer clock.
+
+   The hero <img> is deliberately absent from all of this. It carries no reveal
+   class ever: it is the LCP element and it composites on first paint. Only the
+   things ARRIVING over it are held.
+
+   `.reveal--held` keeps its class in the markup: it is how the scheduler and
+   the escape hatch NAME the held pair, and it is the declared markup change in
+   dom-integrity.config.json. A class with no rule of its own is the correct
+   shape for a hook that JS reads. */
+
+/* animations.js also writes this inline as part of the load-in ordering; the
+   declaration is here so the index is right before a line of JS has run. */
+.hero-content.reveal--held {
+    --i: 1;
+}
+
+/* The nav is held too, at --i:0, but its markup is NOT touched: a bare <nav>
+   cannot be named by a dom-integrity `contains` (empty attributes are rejected,
+   dom-fingerprint.mjs:316-324), so declaring a class on it is impossible and an
+   undeclarable markup change is not a change we make. Instead its hidden state
+   is keyed on body.page-home, which is in the markup already and therefore
+   resolves before first paint -- no flash of a nav that then hides itself.
+
+   Gated on .js so a visitor without JS is never left with an invisible nav.
+   `.js body.page-home nav` is (0,2,2). */
+.js body.page-home nav {
+    opacity: 0;
+    transform: translateY(var(--reveal-shift));
+}
+
+/* (0,3,2). It used to carry the HELD delay so it would beat the generic
+   (0,3,0) stagger rule; the held delay is gone (see above) and what remains is
+   the transition itself, declared here so the nav has one even in the frame
+   before animations.js has added `.reveal` to it. The stagger delay resolves
+   from the generic rule, and at --i:0 it is 0ms. */
+.js.reveal-ready body.page-home nav {
+    transition: opacity var(--transition-reveal), transform var(--transition-reveal);
+}
+
+/* ---- The escape hatch's fade -----------------------------------------------
+
+   Early input during the hold (scroll, key incl. Tab, pointer) ends the beat.
+   It used to end it by writing an inline `transition: none` and snapping. Lee's
+   fixed decision is a gentle fade instead, so `.reveal--quick` is added by
+   js/animations.js in the same task as `.seen`: one style recalculation, one
+   fresh transition, at the short duration.
+
+   Only the DURATION is overridden. The easing stays --transition-reveal's
+   curve, because the fade that yields to a gesture should be the same gesture
+   of a fade, just faster. `transition-delay: 0s` because a held element that
+   has just been interrupted must not then sit through its stagger slot.
+
+   BOTH held selectors are named at their own specificity. The generic form is
+   (0,4,0) against the (0,3,0) it must beat; the nav form is (0,4,2) against
+   (0,3,2). Naming only the generic one would leave the nav -- the element the
+   Tab case is entirely about -- fading at 1000ms. */
+.js.reveal-ready .reveal.reveal--quick,
+.js.reveal-ready body.page-home nav.reveal--quick {
+    transition-duration: var(--transition-quick-reveal);
+    transition-delay: 0s;
+}
+
+/* (0,3,2), beating the hidden state's (0,2,2). animations.js grants .seen the
+   same way it grants it to every other reveal target. */
+.js body.page-home nav.seen {
+    opacity: 1;
+    transform: none;
+}
+
 /* Both layers, not just one. The JS bails before constructing the observer, and
    this rule composes the page even if a stale .reveal ships without a .seen --
-   a reduced-motion visitor must never be able to land on invisible content. */
+   a reduced-motion visitor must never be able to land on invisible content.
+
+   EVERY selector introduced above is mirrored here, at its own specificity. A
+   reduced-motion mirror that names only the generic forms is a mirror with a
+   hole in it: the held rules and the body-scoped nav rules would keep their
+   1600ms delay and a visitor who asked for no motion would watch the page
+   arrive anyway. */
 @media (prefers-reduced-motion: reduce) {
     .js .reveal,
-    .js.reveal-ready .reveal {
+    .js.reveal-ready .reveal,
+    .js.reveal-ready .reveal.reveal--held,
+    .js.reveal-ready .reveal.reveal--quick,
+    .js body.page-home nav,
+    .js.reveal-ready body.page-home nav,
+    .js.reveal-ready body.page-home nav.reveal--quick,
+    .js body.page-home nav.seen {
         opacity: 1;
         transform: none;
         transition: none;
         transition-delay: 0s;
     }
-}
-
-/* ============================================
-   Booking & Calendar Base Styles
-   ============================================ */
-#bookingCalendar {
-    max-width: 100%;
-    overflow: hidden;
-    box-sizing: border-box;
 }
 
 /* ============================================
@@ -2407,13 +3202,27 @@ footer::before {
 }
 
 /* --- Section Spacing --- */
-.section--pt-6 {
-    padding-top: 6rem;
-}
+/* `.section--pt-6 { padding-top: 6rem }` lived here. It was a hand-patch for
+   F-1: four `section.container` sites where somebody noticed the missing top
+   padding and forced it back one call site at a time. B2 fixes the cause, but
+   the patch does not fall away on its own -- at (0,1,0) it still outranks the
+   tier rule, so it would have rendered 6rem on top against --section-pad on the
+   bottom: visibly asymmetric, and worse than either the before or the after.
+   Deleting the RULE is CSS-only, which is why it lands in this batch; the four
+   now-inert class attributes come out with the other markup in B5. */
+/* B5 removed those four class attributes. `grep section--pt-6 src/` is now empty. */
 
-.section--no-padding {
-    padding: 0;
-    margin: 4rem 0;
+/* `.section--no-padding { padding: 0; margin: 4rem 0 }` lived here, on one node:
+   the home video plate. It retired in B5 because it bundled two unrelated claims
+   under a name that only admitted to one. The padding half IS the bleed tier and
+   is now said as `.section--bleed`, which is the vocabulary every other plate on
+   the site already uses. The margin half is the plate's separation from the
+   sections either side -- a real 4rem that would have vanished silently with the
+   class, since `.section--bleed` zeroes padding and says nothing about margin.
+   It is restated below at the same value, as a token rather than the literal
+   `4rem` the old rule hardcoded (--spacing-2xl IS 4rem: no pixel moves). */
+.plate--video {
+    margin-block: var(--spacing-2xl);
 }
 
 /* --- Text Styles --- */
@@ -2436,6 +3245,13 @@ footer::before {
     color: var(--ember);
     text-decoration: none;
     font-size: var(--text-sm);
+    /* SANCTIONED EXCEPTION (code-refresh 2026-08-06): raw tracking on
+       mixed-case accent links (0.03em). Doc 11's rule as written says never track lowercase
+       text, and the --tracking-* system claims to have replaced the em zoo.
+       Whether this register keeps its tracking is a design ruling for
+       Jen/WP-2, not a mechanical fix -- normalizing moves visible letterfit.
+       Recorded like the font-size disables: an exception with a name,
+       not silent drift. */
     letter-spacing: 0.03em;
     position: relative;
     display: inline;
@@ -2618,11 +3434,6 @@ footer::before {
     margin: 0 auto;
 }
 
-.content-wrapper--800 {
-    max-width: 800px;
-    margin: 2rem auto 0;
-}
-
 /* --- CTA Section --- */
 .cta__text {
     margin-bottom: 2.5rem;
@@ -2793,205 +3604,6 @@ footer::before {
     width: 100%;
 }
 
-/* --- Booking Option Card --- */
-.booking-option {
-    display: block;
-    background: var(--elevated);
-    border: 2px solid var(--rule);
-    padding: clamp(1rem, 3vw, 1.5rem);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.booking-option--selected {
-    border-color: var(--ember);
-}
-
-.booking-option__input {
-    display: none;
-}
-
-.booking-option__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-}
-
-.booking-option__title {
-    font-size: var(--text-md);
-    font-weight: 600;
-    color: var(--ink);
-}
-
-.booking-option__title--accent {
-    color: var(--ember);
-}
-
-/* Serif survives here only by clearing the Cormorant floor: bumped from 1.3rem
-   to --text-xl, which puts it in the 500-weight band of the optical scale. */
-.booking-option__price {
-    font-size: var(--text-xl);
-    font-family: var(--font-heading);
-    font-weight: 500;
-    color: var(--ink);
-}
-
-.booking-option__price--accent {
-    color: var(--ember);
-}
-
-.booking-option__price-suffix {
-    font-size: var(--text-xs);
-    font-weight: normal;
-}
-
-.booking-option__desc {
-    margin: 0;
-    font-size: var(--text-sm);
-    color: var(--ink-quiet);
-}
-
-/* --- Booking Options Grid --- */
-.booking-options {
-    display: grid;
-    gap: 1rem;
-}
-
-/* --- Info Section --- */
-.info-section {
-    margin-bottom: 2rem;
-}
-
-.info-section__title {
-    font-size: var(--text-md);
-    margin-bottom: 1rem;
-}
-
-.info-section__intro {
-    font-size: var(--text-md);
-    margin-bottom: 2rem;
-}
-
-/* --- Included List --- */
-.included-box {
-    background: var(--elevated);
-    padding: 2rem;
-    margin-bottom: 2rem;
-}
-
-.included-list {
-    list-style: none;
-    padding: 0;
-}
-
-.included-list__item {
-    padding: 0.5rem 0;
-    padding-left: 1.5rem;
-    position: relative;
-}
-
-.included-list__check {
-    position: absolute;
-    left: 0;
-    color: var(--ember);
-}
-
-.included-box__note {
-    font-size: var(--text-sm);
-    color: var(--ink-quiet);
-    margin-top: 1rem;
-    /* No italic. Outfit ships no italic face, so this was a synthesized
-       oblique -- a mechanically slanted roman, which is the tell this program
-       exists to remove. Metadata carries its quietness with size and colour. */
-}
-
-/* --- Booking Form Container --- */
-.booking-form-container {
-    background: var(--elevated);
-    padding: clamp(1rem, 3vw, 2rem);
-    border: 1px solid var(--rule);
-    max-width: 100%;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-.booking-form-container__title {
-    margin-bottom: 1.5rem;
-}
-
-/* --- Calendar Container --- */
-.calendar-container {
-    background: var(--color-black);
-    border: 1px solid var(--rule);
-    padding: clamp(0.5rem, 2vw, 1rem);
-    max-width: 100%;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-/* --- Time Slots Grid --- */
-.time-slots-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-}
-
-/* --- No Slots Message --- */
-.no-slots-message {
-    color: var(--ink-quiet);
-    font-size: var(--text-sm);
-    margin-top: 0.5rem;
-    display: none;
-}
-
-/* --- Booking Summary --- */
-.booking-summary {
-    background: var(--color-warm-wood-alpha-10);
-    border: 1px solid var(--color-warm-wood-alpha-30);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    display: none;
-}
-
-.booking-summary__title {
-    color: var(--ember);
-    margin-bottom: 1rem;
-    font-size: var(--text-base);
-}
-
-.booking-summary__row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-    font-size: var(--text-sm);
-}
-
-.booking-summary__row--subtotal {
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--color-warm-wood-alpha-30);
-}
-
-.booking-summary__row--total {
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--color-warm-wood-alpha-30);
-    font-size: var(--text-md);
-}
-
-.booking-summary__total-value {
-    color: var(--ember);
-}
-
-/* --- Booking Confirmation Note --- */
-.booking-note {
-    text-align: center;
-    margin-top: 1rem;
-    font-size: var(--text-sm);
-    color: var(--ink-quiet);
-}
-
 /* --- Footer Logo --- */
 /* C2. The <img> already carried width and height attributes; this rule was
    defeating them. `width: auto` AND `height: auto` leaves aspect-ratio with no
@@ -3026,83 +3638,6 @@ footer::before {
 
 .service-area-links a {
     font-size: var(--text-base);
-}
-
-/* ============================================
-   Blog
-   ============================================ */
-.blog-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.blog-card {
-    display: block;
-    padding: var(--spacing-lg);
-    background: var(--elevated);
-    border: 1px solid var(--rule);
-    text-decoration: none;
-    transition: transform var(--transition-fast), border-color var(--transition-fast);
-}
-
-.blog-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--ember);
-}
-
-.blog-card__date {
-    font-size: var(--text-xs);
-    color: var(--ink-quiet);
-    letter-spacing: var(--tracking-caps);
-}
-
-.blog-card__title {
-    font-size: var(--text-lg);
-    color: var(--ink);
-    margin-bottom: var(--spacing-xs);
-    margin-top: var(--spacing-xs);
-}
-
-.blog-card__excerpt {
-    color: var(--ink-quiet);
-    font-size: var(--text-sm);
-    margin: 0;
-}
-
-.blog-post__meta {
-    color: var(--ink-quiet);
-    font-size: var(--text-sm);
-}
-
-.blog-post__content {
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.blog-post__content h2 {
-    margin-top: var(--spacing-2xl);
-}
-
-.blog-post__content img {
-    border-radius: var(--radius-lg);
-    margin: var(--spacing-lg) 0;
-}
-
-.blog-post__footer {
-    max-width: 700px;
-    margin: var(--spacing-2xl) auto var(--spacing-xl);
-    padding-top: var(--spacing-lg);
-    border-top: 1px solid var(--rule);
-}
-
-.blog-empty {
-    text-align: center;
-    padding: var(--section-pad-tight) 0;
-    color: var(--ink-quiet);
 }
 
 /* ============================================
@@ -3184,17 +3719,80 @@ footer::before {
         display: none;
     }
 
-    section {
-        padding: var(--spacing-2xl) 5%;
+    /* `section { padding: var(--spacing-2xl) 5% }` lived here and is gone. It
+       was the third percentage gutter 21 R1 was written to delete, and a media
+       query adds no specificity, so it only ever reached 8 of 68 sections --
+       never the 44 containers whose rhythm it was blamed for flattening (doc 21
+       §6.2a amendment). The three tiers now compress on their own, through the
+       min(vh, vw) arm in --section-pad, at every width and with no breakpoint. */
+
+    /* Drives .logo img AND --nav-band together, so the reserved band below can
+       never disagree with the nav that is actually painted. */
+    :root {
+        --logo-size: 58px;
     }
 
-    .logo img {
-        height: 58px;
-        width: 58px;
-    }
+    /* THE HERO RESERVES THE NAV BAND.
 
+       The hero centres its content with flex `align-items: center` inside a box
+       that starts at y=0 -- but the top --nav-band of that box is covered by the
+       fixed nav, which is opaque enough to swallow text (--nav-scrim is
+       rgba(12,12,12,0.72) over an 8px blur). So the geometry was always centring
+       into an occluded strip, and how far the h1 intruded into it was decided by
+       one thing: how many lines the h1 happened to wrap to. Every extra line
+       adds a full line-height to the content block and, because the block is
+       CENTRED, lifts its top edge by HALF a line-height (~23.7px here).
+
+       Measured on the real built page, first-line glyph box vs nav bottom,
+       settled state (2026-08-02):
+
+                     webfont loaded        webfont unresolved
+           360px     5 lines   -28.1       5 lines   -39.3
+           390px     4 lines    -7.5       5 lines   -29.3
+           414px     4 lines    -9.6       4 lines    -7.6
+           430px     4 lines    +2.2       4 lines    +5.2
+
+       Two triggers, one geometry. At 360 the h1 wraps to five lines with the
+       real font and is already behind the nav on a shipped page. At 390 it
+       wraps to five only when the webfont has not resolved -- which is not
+       hypothetical: the metric-tuned 'Cormorant Garamond Fallback' is
+       `src: local('Georgia')`, and Georgia does not exist on Android or on most
+       Linux, so on those devices the override never applies and the h1 renders
+       in an untuned serif for the whole swap window (or forever). That is the
+       -29px the behavioural eval recorded, reproduced here exactly by blocking
+       /fonts/ (-29.3 at 390).
+
+       Padding on .hero-content could not have fixed this and it is worth saying
+       why, because it is the obvious move: for a centred block the h1's top is
+       `(boxH - contentH)/2 + paddingTop`, and contentH already includes both
+       paddings, so symmetric padding CANCELS. Only an asymmetric pad or a change
+       to the box itself moves a centred child.
+
+       So the box changes: reserve exactly the band the nav occupies, and centre
+       in what is left. `min-height` rather than `height` because at 360 with an
+       unresolved font the content plus the reserved band exceeds 80vh, and a
+       fixed height there would trade text-behind-nav for text clipped by
+       `overflow: hidden` -- a worse bug and a silent one. The box grows instead;
+       page height is already a waived metric on `/`.
+
+       This is Jen's "clearance, not type-size" ruling, applied to the box that
+       actually controls the clearance.
+
+       One more thing had to be said explicitly rather than inherited. `.hero` is
+       a <section>, so it picks up the section rhythm tier's block padding --
+       70.2px on both edges in this build (64px before B2 retuned the tier; that
+       is the "padding-top 70.2 vs 64" the eval reported, and it is real, but it
+       is SYMMETRIC and the box height was fixed, so by the cancellation above it
+       moved the h1 by exactly nothing). Rhythm padding is meaningful for a
+       section that sits in the document flow between its neighbours; it is not
+       meaningful for a full-bleed hero whose content is optically centred over a
+       photograph. Left alone it would stack under the reserved band and push the
+       box 54px taller at every phone width. So both edges are stated here:
+       the band on top, nothing on the bottom. */
     .hero {
-        height: 80vh;
+        height: auto;
+        min-height: 80vh;
+        padding-block: var(--nav-band) 0;
     }
 
     .gallery-mosaic {
@@ -3257,26 +3855,6 @@ footer::before {
            terms -- a token that later moves would silently re-enable the zoom.
            This is the one place a magic number is more correct than a token. */
         font-size: 16px !important;
-    }
-
-    #bookingCalendar {
-        padding: 0.5rem !important;
-    }
-
-    /* Tighter time slot buttons on mobile */
-    #timeSlots button {
-        padding: 0.75rem 0.5rem !important;
-        font-size: var(--text-sm) !important;
-    }
-
-    /* Booking summary flex rows: prevent overflow on narrow screens */
-    #bookingSummary div[style*="display: flex"] {
-        gap: 0.5rem;
-    }
-
-    #bookingSummary div[style*="display: flex"] strong {
-        text-align: right;
-        word-break: break-word;
     }
 
     .feature-image--overflow {
@@ -3556,7 +4134,11 @@ footer::before {
 }
 
 .advisor__error p {
-    color: #c0887a;
+    /* Was the raw hex #c0887a -- a second, off-system error red predating the
+       Jen Stage 3 --error work (c68cb0e) that never got migrated. The advisor
+       is dark (site.features.advisor: false), so this aligns the failure state
+       with the sanctioned validation vocabulary before revival can diverge. */
+    color: var(--error);
     font-size: var(--text-sm);
     margin-bottom: 0.75rem;
 }
@@ -3577,16 +4159,6 @@ footer::before {
     }
 }
 
-@media (max-width: 400px) {
-    #bookingCalendar {
-        padding: 0.25rem !important;
-    }
-
-    /* Single-column time slots on very narrow screens */
-    #timeSlots {
-        grid-template-columns: 1fr !important;
-    }
-}
 
 @media print {
     body::after {

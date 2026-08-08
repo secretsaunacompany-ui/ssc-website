@@ -15,6 +15,9 @@ PRODUCT RANGE:
 ${productRange}
 - Custom builds and mobile saunas also available
 - Addons: changing room ($${products.addons.changingRoom.options[1].price.toLocaleString()}-${products.addons.changingRoom.options[2].price.toLocaleString()}), front deck ($${products.addons.frontDeck.options[1].price.toLocaleString()}-${products.addons.frontDeck.options[2].price.toLocaleString()}), cedar exterior ($${products.addons.exteriorCladding.options[2].price.toLocaleString()}), premium finish package (${products.addons.premiumFinishPackage.price})
+- Every base price already includes a heater, electric or wood-fired where offered. Never imply a heater costs extra.
+- Builds are skid-mounted as standard. Trailer integration is $${products.addons.mounting.options[1].price.toLocaleString()} and the trailer itself is client-supplied.
+- Delivery is NOT quoted here. It is arranged at order and discussed at consultation.
 
 SERVICE AREAS: ${products.serviceAreas.primary}, ${products.serviceAreas.extended.split(' (')[0]}.
 

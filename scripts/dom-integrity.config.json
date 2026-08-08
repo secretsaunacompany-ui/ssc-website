@@ -206,24 +206,6 @@
     },
     {
       "op": "removed",
-      "tag": "IMG",
-      "contains": "style=\"border-radius: var(--radius-sm);\"",
-      "count": 1,
-      "range": "198c0bb..c208508",
-      "reason": "Photography is never rounded (Jen 4.2; doc 21 6.2's last row names this inline style specifically). Five location-page images carried the radius as an INLINE style, so the change is an attribute deletion on a surviving node and arrives as a removed/added element pair -- there is no node appearing or disappearing, and this entry plus its `added` twin is the honest way to say that. One per page on 5 routes, verified 1 match per page in the baseline.",
-      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
-    },
-    {
-      "op": "added",
-      "tag": "IMG",
-      "contains": "class=\"img--full-cover-500\"",
-      "count": 1,
-      "range": "198c0bb..c208508",
-      "reason": "The `added` half of the five inline-radius removals above: the same five <img> nodes, now without the inline style. Keyed on the class rather than the absent attribute, because an entry cannot name a thing by what it lacks; verified to match exactly 1 node per page, so it identifies the node rather than a family of them. Consumes 10 across the run (5 routes x 2 widths) -- the two img--full-cover-500 images that did NOT change produce no op and are not consumed.",
-      "commit": "156c073 relay batch WP-1b: colour, shape, spacing, motion"
-    },
-    {
-      "op": "removed",
       "kind": "code",
       "tag": "STYLE",
       "contains": "--color-bg: #0f0f0f",
@@ -258,42 +240,6 @@
       "count": 1,
       "range": "83421b9..dec32ac",
       "reason": "The `added` half of the mobile menu toggle pair, keyed on the new state attribute rather than on the class, so it names this change rather than a family of buttons.",
-      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
-    },
-    {
-      "op": "removed",
-      "tag": "SPAN",
-      "contains": "class=\"check\"",
-      "count": 7,
-      "range": "83421b9..dec32ac",
-      "reason": "The seven comparison ticks on /saunas/ become aria-hidden: they are decoration, the sentence beside each already carries the meaning, and a screen reader announcing 'check mark' seven times adds nothing to it. Removed/added pair on surviving nodes; 7 measured in the baseline.",
-      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
-    },
-    {
-      "op": "added",
-      "tag": "SPAN",
-      "contains": "aria-hidden=\"true\" class=\"check\"",
-      "count": 7,
-      "range": "83421b9..dec32ac",
-      "reason": "The `added` half of the seven ticks.",
-      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
-    },
-    {
-      "op": "removed",
-      "tag": "SPAN",
-      "contains": "class=\"x\"",
-      "count": 14,
-      "range": "83421b9..dec32ac",
-      "reason": "The fourteen comparison crosses on /saunas/, same reasoning as the ticks. 14 measured in the baseline.",
-      "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
-    },
-    {
-      "op": "added",
-      "tag": "SPAN",
-      "contains": "aria-hidden=\"true\" class=\"x\"",
-      "count": 14,
-      "range": "83421b9..dec32ac",
-      "reason": "The `added` half of the fourteen crosses.",
       "commit": "dec32ac relay batch WP-0b-i fix round: step-1 persistence, live revalidation, a11y"
     },
     {
@@ -633,6 +579,1226 @@
       "reason": "F2. The same wrapper, now plain `page`. NOT declared as a global class removal: `page--has-bg` is still correct on the fourteen pages that still have a layer, and a rename entry would rewrite them all.",
       "range": "c41dec1..2a23c8d",
       "commit": "c68cb0e + 1eee7e0 + 323f04d + 2a23c8d (Jen Stage 3 batch)"
+    },
+    {
+      "op": "removed",
+      "tag": "LINK",
+      "contains": "href=\"https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1200/v1768250655/IMG_7991-EDIT_gz1kqt.jpg\" rel=\"preload\"",
+      "count": 1,
+      "reason": "The homepage LCP preload, keyed on the w_1200 href that identifies it. w_1200 is a candidate the hero <img> never selects, so this link fetched a second copy of the photograph at a width nothing rendered. Identified by its exact href rather than the word \"preload\", which also matches the two font preloads that must survive.",
+      "commit": "ecc006b relay batch B1: LCP delivery — one hero fetch, at the width the viewport deserves",
+      "range": "fc65d61..c3ed9cd"
+    },
+    {
+      "op": "added",
+      "tag": "LINK",
+      "contains": "imagesizes=\"100vw\"",
+      "count": 1,
+      "reason": "Its replacement: same preload, now carrying imagesrcset/imagesizes generated from the SAME list the build transform writes onto the element, so preload and element agree candidate-for-candidate and the photograph is fetched once. Keyed on imagesizes, which appears nowhere else in the site. This is opt-in per page: on the other eleven preload pages the preload markup is UNCHANGED, verified by a full dist diff against a build of the parent commit at the time the LCP commit landed, when only .eleventy.js/head.njk/index.njk had moved. Note the precise claim — those pages' HTML is not byte-identical across the batch as a whole, because styles.css and js/ changed and every page carries a ?v= cache-bust stamp derived from them. What is identical is the preload element.",
+      "commit": "ecc006b relay batch B1: LCP delivery — one hero fetch, at the width the viewport deserves",
+      "range": "fc65d61..c3ed9cd"
+    },
+    {
+      "op": "removed",
+      "tag": "DIV",
+      "contains": "class=\"hero-content\"",
+      "count": 1,
+      "reason": "The homepage hero title block before B1's choreography. One node on one page.",
+      "commit": "9d8eb9c relay batch B1: the photograph arrives first, and then the page arrives over it",
+      "range": "fc65d61..c3ed9cd"
+    },
+    {
+      "op": "added",
+      "tag": "DIV",
+      "contains": "class=\"hero-content reveal reveal--held\"",
+      "count": 1,
+      "reason": "The same block, now a held reveal target: it arrives over the photograph after --hero-hold at --i:1. This is the ONLY markup class change B1 makes. The nav is held too but its markup is untouched, because a bare <nav> cannot be named by a `contains` (empty attributes are rejected, dom-fingerprint.mjs:316-324) and an undeclarable markup change is not one we make; its hidden state is CSS keyed on body.page-home instead.",
+      "commit": "9d8eb9c relay batch B1: the photograph arrives first, and then the page arrives over it",
+      "range": "fc65d61..c3ed9cd"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/div",
+      "textHash": "e379071f602ee944",
+      "count": 1,
+      "reason": "B3. The configurator modal, deleted from every page that cannot open it. This is the change WP-0b-i wrote, measured and REVERTED rather than ship (see _notes.wp0bi_fix): the include was sitewide, so 16 built pages carried id=\"saunaModal\" and exactly one of them -- /saunas/, the only page with data-action=\"open-modal\" -- could use it, leaving 15 routes shipping a second inert <form> beside their real contact form. It could not be certified then because delete-subtree capped its slice search at MAX_SUBTREE_TOKENS = 64 and this subtree is 355 tokens, and raising a cap to make its own batch go green is the move this instrument exists to refuse. It ships here as its own batch carrying the cap raise (64 -> 400) as a separately reviewed subject, with Z18-Z20 and D-m16 certifying the raised cap independently of this entry. SPAN AND HASH RE-MEASURED against this comparison's own baseline build, not carried forward: WP-0b-i recorded span 352 / hash c3a120b59594b6b1 and BOTH have moved (355 / e379071f602ee944) because the modal markup changed between then and now. The old hash is dead and is not what this entry declares. Measured uniformly -- every route, both widths, identical hash and span -- so the modal is not width- or page-dependent. COUNT is 1 per page/width comparison, and it consumes on 32 of them. That is 16 routes x 2 widths, not the 15 pages the grep finds: /process/ and /gallery/ are meta-refresh redirect stubs (to /about/ and /saunas/), and the browser follows them, so /process/ fingerprints /about/'s DOM and reports /about/'s deletion under its own route name, while /gallery/ fingerprints /saunas/ and reports nothing because /saunas/ keeps the modal. That is a pre-existing property of enumerating redirect stubs as routes, NOT something this batch introduces, and it is recorded rather than smoothed: 32 = the 15 genuinely changed pages + /process/'s duplicate of /about/, at two widths. Post-change route count verified by grep on the real candidate build: exactly 1 page carries id=\"saunaModal\" and it is /saunas/. The JS RUN FAILURE on this run is expected and waived nowhere -- js/modal.js changes by design, and this instrument certifies delivered markup with scripts disabled. scripts/quote-funnel.test.mjs drives the real thing in a real browser through every funnel state, and now also asserts the presence invariant in both directions. Read the two together. RANGE EXTENDED (deploy-1 fix round): 5748de8..24768c6 -> 5748de8..b1576e1. The entry is scope-matched to ONE comparison, so when the fix round advanced the branch tip past B3's markup commit it went inert and all 32 comparisons reported the modal deletion as undeclared -- the scope mechanism behaving exactly as _notes.scope describes, not a fault. The candidate is re-pointed at the real tip rather than the run being aimed at a stale ref, because the run has to certify what is actually shipping. Nothing else about the entry moves: the deletion, its span 355 and its hash e379071f602ee944 are all measured against the SAME baseline (5748de8) and are unchanged. That the extension is honest is checkable from the run it replaces -- against b1576e1 the harness reported 32 comparisons of exactly 355 undeclared tokens each and nothing else, i.e. the modal subtree is still the ONLY markup delta in the range. The deploy-1 fix round is CSS, JS, tests and config only and declares no markup of its own.",
+      "commit": "24768c6 relay batch B3: the configurator modal stops shipping to the fifteen pages that cannot open it",
+      "range": "5748de8..b1576e1"
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "10-14 person commercial-grade Finnish sauna for resorts and gyms",
+      "count": 1,
+      "reason": "The sitewide OfferCatalog JSON-LD in head.njk, hand-maintained and carrying a capacity that had drifted from canonical: '10-14 person' against models.json's '10-12+ people'. It is now GENERATED from src/_data/models.json, which models-json-roundtrip gates against canonical field by field. Keyed on the wrong string itself, which appears exactly once per page and nowhere else on the site, so the entry names this drift and not the block around it. Consumed on all 17 pages that emit head.njk's LocalBusiness block, at both widths.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "10-12+ person commercial-grade Finnish sauna for resorts and gyms",
+      "count": 1,
+      "reason": "Its replacement, interpolated from the gated `capacity` field. Same block, same position, one corrected fact.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "10-14+ person commercial-grade Finnish sauna. 7' x 12'+ exterior",
+      "count": 1,
+      "reason": "The /saunas/ ItemList JSON-LD, the second of the four drifted capacity sites (and a THIRD spelling of it: '10-14+' here against the OfferCatalog's '10-14' and the card's '10-14'). Its size string had drifted too, reversed to 7' x 12'+ against canonical's \"7' x 12' or larger\". Now generated from the same gated data file.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "10-12+ person commercial-grade Finnish sauna. 7' x 12' or larger exterior",
+      "count": 1,
+      "reason": "Its replacement. Every fact in all five descriptions -- capacity, size, price -- is now interpolated from a canonical-gated field, so prose cannot carry a stale number.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "74e6d241d3afaefb",
+      "count": 1,
+      "reason": "The three-card comparison section (111 tokens): 'Why Traditional Finnish Saunas?' plus three .comparison-card blocks and their 21 tick/cross bullets. Doc 10 §3.2 demotes the argument to one asymmetric essay of two paragraphs and a link; Jen §2.2 makes the deletion of the checklists explicit ('the 21-bullet checklists die, no tick/cross lists survive'). Declared as ONE deletion because it is one section, and the hash is measured from the baseline rather than written.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "91f16d3cfedf2a5d",
+      "count": 1,
+      "reason": "The elevated 'Rooted in Science' stat-wall (28 tokens): three stat-cards on a photo-overlay elevated ground. Jen §2.3 reduces it to a single 40% stat on GROUND -- elevation marks a voice register change and belongs to the Threshold on this page, not to a figure. The 66% and 24% claims are deleted from this page, not reworded: no new or altered claim ships (the plan's X3 constraint).",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "55f880f87ca37cfa",
+      "count": 1,
+      "reason": "The 'Standard Builds' section carrying .model-grid (84 tokens): five .model-card blocks with their images, and the centred 'Get Your Quote' button. Replaced by the ledger below. The card grid was where two of the four wrong SC capacities lived -- the visible '10-14 Person' and its image alt text.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "d179d454662a0274",
+      "count": 1,
+      "reason": "The 'Commercial & Custom' section (24 tokens): two .offering-card inquiry links and the commercial advisor container. Removed outright per Jen §2.1 -- its job is the SC row and the threshold now, and its full answer is /commercial/, which does not exist yet (WP-4). /contact/ remains one click away via the threshold's text link.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "08ec8b5dd7d1ceb6",
+      "count": 1,
+      "reason": "THE MODEL INDEX (69 tokens): the page's new spine. A header row and five rule-separated .model-row elements, each ONE Playwright-actionable node carrying data-action=open-modal + data-model + role=button + tabindex=0 + an aria-label, because three suites click that compound selector and init.js synthesises Enter and Space off that role. Rendered from src/_data/models.json. This entry is why add-subtree exists: as 69 individual `added` declarations it was undeclarable inside the plan's ~40-entry tripwire, and five of its nodes -- the bare column labels -- could not be named at all until they were given classes (e009f49). HASH RE-MEASURED in the fix round: the row markup changed (Razor W2 deleted the shadowing aria-label and restored Jen's aria-hidden=false), so the subtree the entry describes is not the one it originally hashed. Re-measured, not adjusted until it matched -- and the old hash going stale is the mechanism working: descendant activation refused to carry the entry past markup it had not seen, and all 14 went inert with every change reporting undeclared. Fail-closed, loudly, exactly as designed.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "a740566165f2dcf6",
+      "count": 1,
+      "reason": "The comparison essay (14 tokens), archetype D at 40/60 with the text left. Two paragraphs and one link to /faq/ replacing three cards and 21 bullets. Every claim in the prose is a compression of copy that was already on this page -- nothing asserted here is new.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "0cc395f8e8a8ba95",
+      "count": 1,
+      "reason": "The science thesis (8 tokens), archetype B on ground: one 40% numeral in --ink (the number is the thesis, not a call to action), the existing verified JAMA claim unaltered, and its source line. 34rem, left-aligned.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "b525cda099d1bd5d",
+      "count": 1,
+      "reason": "The threshold (9 tokens), archetype G and the one elevated ground on the page. Left at the gutter, not centred. 'Get a Quote' anchors to #models rather than opening a preselected model, because inventing a default model would be a business decision wearing design clothes (Jen §2.4).",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "removed",
+      "tag": "P",
+      "kind": "text",
+      "contains": "14-person+ commercial units",
+      "count": 1,
+      "reason": "The homepage's offerings copy, the FIFTH capacity site and the one the original census could not see (Razor W4). It read '14-person+ commercial units' -- a third distinct wrong figure for the SC, against the card's 10-14 and the ItemList's 10-14+ -- while canonical says 10-12+. The census grepped for the string '10-14' and this copy never contained it. Keyed on the number phrase itself, which appears once on the site. Corrected to 12-person+; George's sentence shape is untouched, only the figure moved. FLAGGED TO LEE: if the SC really seats 14, canonical is the wrong side and this is his one-line override.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "added",
+      "tag": "P",
+      "kind": "text",
+      "contains": "12-person+ commercial units",
+      "count": 1,
+      "reason": "Its replacement, at the canonical figure.",
+      "commit": "e791132 relay batch 4 + fix round: /saunas/ recomposed as a ledger (82c3981..33b3644), Razor W1/W2/W3/W4 + notes (cff0322..e791132)",
+      "range": "ab83ed6..e791132"
+    },
+    {
+      "op": "removed",
+      "tag": "SECTION",
+      "contains": "class=\"container section--pt-6\"",
+      "count": 1,
+      "reason": "The four inert `.section--pt-6` attributes, removed sitewide (about :11, warranty :12, privacy :10, service-area :9). The RULE died in B2 -- at (0,1,0) it outranked the tier rule and would have rendered 6rem on top against --section-pad on the bottom -- and B2's comment explicitly deferred these attributes to B5. One per page, so count 1.",
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "removed",
+      "tag": "SECTION",
+      "contains": "class=\"surface--elevated hero-overlay\"",
+      "count": 2,
+      "reason": "The two sections that LOSE elevation: home :69 and service-area :21. Jen §3.1 row 5 and §3.13 row 3 -- rule 4 says elevation marks a VOICE register change, and a feature grid wearing story clothes (home) and a feature list (service-area) have not earned it. Count is 2, not 1, because /about/ carries two sections with this exact class that do NOT change (:44 and :68, genuine voice register, kept); the specificity gate measures the worst page in the BASELINE and refuses an entry narrower than that. The unused budget on /about/ consumes nothing, because /about/ produces no ops for it.",
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "removed",
+      "tag": "SECTION",
+      "contains": "class=\"section--no-padding\"",
+      "count": 1,
+      "reason": "The home video plate, the class's only consumer. `.section--no-padding` retired with its rule: it bundled padding and margin under a name admitting to one. See the added-side entry for what replaced it.",
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "removed",
+      "tag": "SECTION",
+      "contains": "class=\"container text-center\"",
+      "count": 1,
+      "reason": "The two Thresholds that GAIN elevation: home :148 and service-area :45, archetype G (§3.1 row 10, §3.13 row 5). On service-area this replaces the retired `section--warm-glow` register. One per page.",
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "added",
+      "tag": "SECTION",
+      "contains": "class=\"container section--open\"",
+      "count": 1,
+      "reason": "The open tier's new consumers, archetype B: about :11 intro, warranty :12 summary, book status, 404, thank-you. The two utility pages are Jen's §3.11/§3.12 ruling that a single quiet statement wants air, not density. One per page. Asserted by R2d.",
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "added",
+      "tag": "SECTION",
+      "contains": "class=\"hero-overlay\"",
+      "count": 1,
+      "reason": "Home :69 after losing `.surface--elevated`. The overlay background image stays -- it is §2.3 work, later; B5 removes only the ground class.",
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "added",
+      "tag": "SECTION",
+      "contains": "class=\"hero-overlay section--tight\"",
+      "count": 1,
+      "reason": "Service-area :21 after losing elevation and gaining the compressed tier in the same edit (Jen §3.13 row 3). Shared include, so this lands on all five area routes; the budget is per page, so count is 1.",
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "added",
+      "tag": "SECTION",
+      "contains": "class=\"section--bleed plate--video\"",
+      "count": 1,
+      "reason": "The home video plate's replacement for `.section--no-padding`. Two classes because the retired one made two claims: `.section--bleed` is the padding half and the vocabulary every other plate already uses, `.plate--video` restates the margin half at --spacing-2xl, which IS 4rem -- the same value the old rule hardcoded. Measured at 0/0 padding and 64px margin on both edges: no pixel moves. Without the second class the 4rem would have vanished silently, since `.section--bleed` says nothing about margin.",
+      "commit": "117030b relay batch 5 (+ fix round C-1/W-3): tier assignment sitewide, mosaic contained, canonical G",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "added",
+      "tag": "SECTION",
+      "contains": "class=\"text-center surface--elevated\"",
+      "count": 1,
+      "reason": "The two Thresholds' section element after Jen RULING 2 (Razor W-3): home :148 and service-area :45. B5 first wrote `container text-center surface--elevated` -- ground and containment on ONE element -- and `.container` caps at 1200px, so the dark ground was capped with it and the Threshold rendered as a slab floating in the page background instead of a full-width band. The canonical G puts the ground on the full-width <section> and the content in an inner contained <div>; this is the outer half. `text-center` stays where it was. Measured on all eight thresholds @1440: ground x=0 w=1440, inner 1200px at x=120, zero elements carrying both classes.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "9e849cdce8ee7551",
+      "count": 1,
+      "reason": "Home :148 Threshold, old depth (14 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 30 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "389d24370ab83657",
+      "count": 1,
+      "reason": "Home :148 Threshold, new depth inside `<div class=\"container\">` (15 tokens: the container itself plus the 14 re-parented). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 30 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "289f8cc67c186a74",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /squamish/, old depth (10 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "1fe5884c592cf9ca",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /squamish/, new depth inside `<div class=\"container\">` (11 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "3cdc3c0d9727d1eb",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /whistler/, old depth (10 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "933707aa60ffc859",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /whistler/, new depth inside `<div class=\"container\">` (11 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "4c2e34aeee4f6007",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /vancouver/, old depth (10 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "9976e0355ac6c0d7",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /vancouver/, new depth inside `<div class=\"container\">` (11 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "880cf52fb578102e",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /north-shore/, old depth (10 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "7a0dbeb45d27f8c1",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /north-shore/, new depth inside `<div class=\"container\">` (11 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "3cf02747e426a309",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /sea-to-sky/, old depth (10 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "1b1411159c630d00",
+      "count": 1,
+      "reason": "Service-area :45 Threshold on /sea-to-sky/, new depth inside `<div class=\"container\">` (11 tokens). The canonical G nests the Threshold's content one level deeper, inside a new `<div class=\"container\">`. Nothing about the content changes -- same copy, same links, same order -- but every descendant's PATH gains a segment, and the fingerprint keys on path, so the whole subtree reads as removed-at-the-old-depth and added-at-the-new. That is a re-parenting, and the honest declaration is a subtree pair: a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 22 lines of noise describing one structural move. Hashes are per-route because the copy carries the area name, which makes each entry match its own route and nothing else -- more specific than a shared entry could be, not less.",
+      "commit": "117030b relay batch 5 fix (C-1, W-3): the mosaic comes back inside, and the ground goes full width",
+      "range": "9747e25..117030b"
+    },
+    {
+      "op": "removed",
+      "tag": "LINK",
+      "contains": "PXL_20250907_221307193",
+      "reason": "B7 stream 2b. /locations/ preloaded a 448.8KB image that NOTHING on the page renders -- verified by grep across src/, js/ and styles.css, where the URL appeared in the page's front matter and nowhere else. A preload for an element that does not exist is not a hint, it is a guaranteed extra download on every visit, and it was the single largest byte on the route. The page's LCP element is the map, which is script-driven and not preloadable this way, so there is no replacement preload.",
+      "count": 1,
+      "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
+      "range": "a5c07f7..8df11ac"
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "a740566165f2dcf6",
+      "reason": "The essay, removed. B7 stream 4 (Jen's mini-spec). The comparison ESSAY becomes a comparison LEDGER: a one-paragraph lede over a five-row table with three source columns, the FAQ link beneath it, and the 60-side plate deleted. The section is rewritten wholesale rather than edited -- different element vocabulary, different depth, different child count -- so the honest declaration is a subtree pair, a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 110 lines of noise describing one replacement. Span 14 becomes span 93, well inside the 400 cap, so no split at children is needed. Every cell traces to a bullet in the three comparison cards as they stood at ab83ed6 (saunas.njk:110-163); two cells are deliberately empty because the source recorded no heat-retention claim for infrared and no evidence claim for barrels. LOSSY IN ONE DIRECTION, recorded 2026-08-02 (Razor N-5): that sentence says every CELL traces to a bullet, and it is true, but the converse is not. One source bullet did not survive the rewrite -- the infrared card's \"No authentic sauna experience\" (ab83ed6 saunas.njk:156) has no cell in any of the five rows. It is a verdict rather than a dimension, so there is no row it belongs to without inventing one, and the ledger's own argument already carries it: the heat row says infrared cannot make loyly and caps at 60C, which is the same claim stated as a fact instead of a judgement. Kept as a deliberate omission rather than restored, and named here so the next reader does not have to re-derive whether it was dropped on purpose. Jen ratifies either way; if she prefers it back it is a sixth row, not a sixth cell. The hashes match /saunas/ and its /gallery/ redirect capture, and nothing else on the site has a section at this path with this content.",
+      "count": 1,
+      "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
+      "range": "a5c07f7..8df11ac"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "SECTION",
+      "path": "html/body/main/div/section",
+      "textHash": "c4aa0cde9b1d3f3a",
+      "reason": "The ledger, added. B7 stream 4 (Jen's mini-spec). The comparison ESSAY becomes a comparison LEDGER: a one-paragraph lede over a five-row table with three source columns, the FAQ link beneath it, and the 60-side plate deleted. The section is rewritten wholesale rather than edited -- different element vocabulary, different depth, different child count -- so the honest declaration is a subtree pair, a delete-subtree measured against the baseline and an add-subtree measured against the candidate, each hash taken with the harness's own primitive. Per-token entries would be 110 lines of noise describing one replacement. Span 14 becomes span 93, well inside the 400 cap, so no split at children is needed. Every cell traces to a bullet in the three comparison cards as they stood at ab83ed6 (saunas.njk:110-163); two cells are deliberately empty because the source recorded no heat-retention claim for infrared and no evidence claim for barrels. LOSSY IN ONE DIRECTION, recorded 2026-08-02 (Razor N-5): that sentence says every CELL traces to a bullet, and it is true, but the converse is not. One source bullet did not survive the rewrite -- the infrared card's \"No authentic sauna experience\" (ab83ed6 saunas.njk:156) has no cell in any of the five rows. It is a verdict rather than a dimension, so there is no row it belongs to without inventing one, and the ledger's own argument already carries it: the heat row says infrared cannot make loyly and caps at 60C, which is the same claim stated as a fact instead of a judgement. Kept as a deliberate omission rather than restored, and named here so the next reader does not have to re-derive whether it was dropped on purpose. Jen ratifies either way; if she prefers it back it is a sixth row, not a sixth cell. The hashes match /saunas/ and its /gallery/ redirect capture, and nothing else on the site has a section at this path with this content.",
+      "count": 1,
+      "commit": "03692a7 relay batch B7: the pictures stand up, the bytes come down, and the argument becomes a table",
+      "range": "a5c07f7..8df11ac"
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"priceRange\": \"$22,500 - $57,000+\"",
+      "reason": "The sitewide LocalBusiness JSON-LD carries a priceRange whose low end is the S2 entry price. S2 moved 22500 -> 23500 in the Lee-ratified step-1 reprice, so the structured data moves with it. The high end ($57,000+) is SC, which is held at current list this step and is unchanged. Keyed on the whole priceRange pair rather than on \"22,500\" alone so the entry names this field and not any other price string in the block. One per page, on every page that emits head.njk.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"priceRange\": \"$23,500 - $57,000+\"",
+      "reason": "Its replacement. Same field, new S2 low end, SC high end untouched.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"@type\": \"ItemList\"",
+      "reason": "The /saunas/ ItemList JSON-LD states an offer price per model, rendered from src/_data/models.json, which models-json-roundtrip gates against canonical field by field. The S2 and S4 offers move with the reprice; this is one token carrying all five, so the whole block reads as changed. Keyed on \"@type\": \"ItemList\" rather than on the S2 offer price, because the sitewide LocalBusiness block in head.njk carries an OfferCatalog with the SAME price strings -- two nodes, and an entry keyed on the price would have been held in check by its count alone and could have absorbed the wrong one. The specificity check refused it and was right to. That head block is a separate declared change (the priceRange pair). Rendered on /saunas/, which /gallery/ also serves.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"@type\": \"ItemList\"",
+      "reason": "Its replacement: same single ItemList block, now carrying S2 23500 and S4 29500. S6/S8/SC offers unchanged, held pending step 2. Keyed on the block identity for the same reason as its removed twin.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "SPAN",
+      "kind": "text",
+      "contains": "From $22,500",
+      "reason": "The S2 ledger row price cell on /saunas/, rendered from src/_data/models.json priceDisplay, which the round-trip gate asserts carries exactly basePrice. Moves with the S2 reprice.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "SPAN",
+      "kind": "text",
+      "contains": "From $23,500",
+      "reason": "Its replacement, and the gate proves it still carries basePrice 23500 rather than merely being present.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "SPAN",
+      "kind": "text",
+      "contains": "$29,000",
+      "count": 4,
+      "reason": "The four S4 price spans that move together: the S4 ledger row cell (\"From $29,000\") plus the sauna modal's three pre-JS placeholders -- specPrice, summaryBase and summaryTotal -- which are the S4 default the modal opens on before modal.js repaints them from the model. Declared as ONE entry of count 4 rather than four entries, because \"From $29,000\" contains \"$29,000\" and two entries would race for the same node; the count is what pins the number of them. Four on /saunas/ and four on /gallery/, which carries the same modal.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "SPAN",
+      "kind": "text",
+      "contains": "$29,500",
+      "count": 4,
+      "reason": "Their replacements. Same four spans, S4 at 29500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "LABEL",
+      "path": "html/body/div/div/div/div/div/div/label",
+      "textHash": "f9967f248893c36c",
+      "reason": "THE YAKISUGI OPTION (6 tokens): a new radio in the modal's Exterior Cladding group -- label, input, the label span and its text, the price span and its text. Declared as a subtree rather than as six added nodes because two of them (the bare <label class=\"addon-option\"> and the <span class=\"addon-label\">) carry no attribute that distinguishes them from the twenty-odd other option rows, so no honest \"contains\" could name them; the specificity check refuses an entry held in check by its count alone, and it is right to. The input's value is the per-model TOKEN exteriorYakisugi, never a literal price: modal.js resolves it to the model's own figure (5000 on S2/S4, 6000 on S6/S8/SC) and repaints the visible span from the same field, which the round-trip gate verifies per model in a real browser. Hash MEASURED against the candidate build, not written by hand. Present on /saunas/ and /gallery/ at both widths.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "P",
+      "kind": "text",
+      "contains": "Finnish style construction starting at $22,500.",
+      "reason": "The homepage Standard Builds card, the one homepage carrier of the entry price. THIS sentence already ties the figure to the S2-through-SC range rather than to S4, so only the number moves here. Note what that does NOT mean (Razor N2): the standing open task (state/current.md: \"link $22,500 to S2 entry point, not $29K\") is SITEWIDE, and this entry originally recorded it as disposed on the strength of this one card. That was wrong. The og:description fallback in head.njk was still hanging the same figure on \"custom builds\", and a corrected number on the wrong noun is the defect, not the fix -- it is disposed by the re-attribution declared at range 9fc7a73.., not here. Nothing else in this sentence changes.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "P",
+      "kind": "text",
+      "contains": "Finnish style construction starting at $23,500.",
+      "reason": "Its replacement. S2 entry price, S2 attribution, same sentence.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Traditional construction with Western Red Cedar. Custom builds starting at $22,500.",
+      "reason": "The og:description DEFAULT in head.njk, used by the one page that supplies no description of its own. Carries the entry price, so it moves with S2.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Traditional construction with Western Red Cedar. Custom builds starting at $23,500.",
+      "reason": "Its replacement AT THIS RANGE -- and only the number moved, which Razor N2 identifies as the defect rather than the fix: $23,500 is the S2 standard-model floor and a custom build has never started there, so the batch corrected the figure while leaving it on the wrong noun. This entry stays exactly as it is, because it is the true record of what 62e533a..9941997 did. The re-attribution to \"Models from $23,500\" is a LATER change and is declared on its own range further down, where it belongs.",
+      "count": 1,
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Compare our Finnish sauna models from the compact S2 ($22,500) to the commercial SC ($57,000+).",
+      "count": 3,
+      "reason": "The entry-price figure in src/saunas.njk -- the only route meta that names the model behind the figure, and it names S2, which is the one that moved. SC ($57,000+) is held and unchanged. Emitted on /saunas/ and /gallery/.. One front-matter `description` value reaches the page three times -- name=\"description\", property=\"og:description\" and name=\"twitter:description\" -- so one edit is three changed META nodes, which is what count 3 records. Only the price moves; the sentence is otherwise untouched.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Compare our Finnish sauna models from the compact S2 ($23,500) to the commercial SC ($57,000+).",
+      "count": 3,
+      "reason": "Its replacement in src/saunas.njk -- the only route meta that names the model behind the figure, and it names S2, which is the one that moved. SC ($57,000+) is held and unchanged. Emitted on /saunas/ and /gallery/.. Same three metas, S2 entry price at 23500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Western Red Cedar construction from $22,500.",
+      "count": 3,
+      "reason": "The entry-price figure in src/squamish.njk. One front-matter `description` value reaches the page three times -- name=\"description\", property=\"og:description\" and name=\"twitter:description\" -- so one edit is three changed META nodes, which is what count 3 records. Only the price moves; the sentence is otherwise untouched.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Western Red Cedar construction from $23,500.",
+      "count": 3,
+      "reason": "Its replacement in src/squamish.njk. Same three metas, S2 entry price at 23500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Custom builds from $22,500.",
+      "count": 3,
+      "reason": "The entry-price figure in src/vancouver.njk. One front-matter `description` value reaches the page three times -- name=\"description\", property=\"og:description\" and name=\"twitter:description\" -- so one edit is three changed META nodes, which is what count 3 records. Only the price moves; the sentence is otherwise untouched.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Custom builds from $23,500.",
+      "count": 3,
+      "reason": "Its replacement in src/vancouver.njk. Same three metas, S2 entry price at 23500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Mobile and permanent builds from $22,500.",
+      "count": 3,
+      "reason": "The entry-price figure in src/sea-to-sky.njk. One front-matter `description` value reaches the page three times -- name=\"description\", property=\"og:description\" and name=\"twitter:description\" -- so one edit is three changed META nodes, which is what count 3 records. Only the price moves; the sentence is otherwise untouched.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Mobile and permanent builds from $23,500.",
+      "count": 3,
+      "reason": "Its replacement in src/sea-to-sky.njk. Same three metas, S2 entry price at 23500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Western Red Cedar from $22,500.",
+      "count": 3,
+      "reason": "The entry-price figure in src/north-shore.njk. One front-matter `description` value reaches the page three times -- name=\"description\", property=\"og:description\" and name=\"twitter:description\" -- so one edit is three changed META nodes, which is what count 3 records. Only the price moves; the sentence is otherwise untouched.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Western Red Cedar from $23,500.",
+      "count": 3,
+      "reason": "Its replacement in src/north-shore.njk. Same three metas, S2 entry price at 23500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Cedar construction designed for alpine conditions. From $22,500.",
+      "count": 3,
+      "reason": "The entry-price figure in src/whistler.njk. One front-matter `description` value reaches the page three times -- name=\"description\", property=\"og:description\" and name=\"twitter:description\" -- so one edit is three changed META nodes, which is what count 3 records. Only the price moves; the sentence is otherwise untouched.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Cedar construction designed for alpine conditions. From $23,500.",
+      "count": 3,
+      "reason": "Its replacement in src/whistler.njk. Same three metas, S2 entry price at 23500.",
+      "commit": "9941997 relay batch 1: base-price reprice step 1, the yakisugi exterior, and the cost-basis gate",
+      "range": "62e533a..9941997"
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Traditional construction with Western Red Cedar. Custom builds starting at $23,500.",
+      "reason": "RAZOR N2, THE RE-ATTRIBUTION. The og:description default in head.njk carried the right number on the wrong noun: $23,500 is the S2 standard-model floor, and it was being offered as what a CUSTOM build starts at. That is the standing open task's exact defect (state/current.md: \"link $22,500 to S2 entry point, not $29K\") surviving the reprice with corrected digits, which is the shape of it that is hardest to notice -- nothing about the figure looks wrong. No price moves in this change; only the claim the price is attached to.",
+      "count": 1,
+      "commit": "0506d3d relay batch 1 fixes: the margin floor leaves the file it polices, and the total becomes the witness",
+      "range": "9fc7a73..0506d3d"
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "Traditional construction with Western Red Cedar. Models from $23,500.",
+      "reason": "Its replacement. \"Models from\" attributes the figure to the thing it is actually the price of, and matches the wording already used around it: the homepage Standard Builds card (\"Our S2 through SC models ... starting at $23,500\") and the LocalBusiness priceRange \"$23,500 - $57,000+\" emitted from this same head. Reaches only the ONE page that supplies no description of its own, which is why the count is 1 rather than the 3 the per-route descriptions carry.",
+      "count": 1,
+      "commit": "0506d3d relay batch 1 fixes: the margin floor leaves the file it polices, and the total becomes the witness",
+      "range": "9fc7a73..0506d3d"
+    },
+    {
+      "op": "removed",
+      "tag": "H4",
+      "kind": "text",
+      "contains": "Heater Upgrade",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The heater group's heading. It read 'Heater Upgrade' when everything below it except a placeholder cost money; the group now opens with two INCLUDED builds, so 'Upgrade' had become the wrong noun for the category.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "added",
+      "tag": "H4",
+      "kind": "text",
+      "contains": "Heater",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The heater group's heading. It read 'Heater Upgrade' when everything below it except a placeholder cost money; the group now opens with two INCLUDED builds, so 'Upgrade' had become the wrong noun for the category.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "removed",
+      "tag": "SPAN",
+      "kind": "text",
+      "contains": "Standard heater (included)",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The included ELECTRIC row's label, which now NAMES the heater instead of standing in for whichever one the model shipped (modal.js repaints it to the Revive 9kW on SC). The row itself is untouched -- same <label>, same <span>, no ids -- precisely so this is a text change and not an undeclarable attribute change on nodes that have no attributes to key on.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "added",
+      "tag": "SPAN",
+      "kind": "text",
+      "contains": "Standard electric heater — Homecraft 7.5kW H-Series (included)",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The included ELECTRIC row's label, which now NAMES the heater instead of standing in for whichever one the model shipped (modal.js repaints it to the Revive 9kW on SC). The row itself is untouched -- same <label>, same <span>, no ids -- precisely so this is a text change and not an undeclarable attribute change on nodes that have no attributes to key on.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "LABEL",
+      "path": "html/body/div/div/div/div/div/div/label",
+      "textHash": "102469fa5540b97b",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). THE INCLUDED WOOD-FIRED BUILD, whole, and the point of the batch: the base price buys a complete sauna, so choosing wood-fired costs nothing. A pure addition, so it is declared as one subtree keyed on its measured content hash. modal.js renders it disabled on S2 (clearances) and SC (commercial spec).",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "removed",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "data-addon=\"heater\" name=\"heater\" type=\"radio\" value=\"10800\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The premium wood tier, repriced. Its <label>, its product name and its per-model machinery are unchanged -- the pre-JS default stays the generic Original-IKI, as it was before this batch -- so only the value and the price text move: +$10,800 becomes +$5,900, the S6/S8 figure at the new 30% stove-category margin.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "added",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "data-addon=\"heater\" name=\"heater\" type=\"radio\" value=\"5900\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The premium wood tier, repriced. Its <label>, its product name and its per-model machinery are unchanged -- the pre-JS default stays the generic Original-IKI, as it was before this batch -- so only the value and the price text move: +$10,800 becomes +$5,900, the S6/S8 figure at the new 30% stove-category margin.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "removed",
+      "tag": "SPAN",
+      "kind": "text",
+      "contains": "+$10,800",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The premium wood tier, repriced. Its <label>, its product name and its per-model machinery are unchanged -- the pre-JS default stays the generic Original-IKI, as it was before this batch -- so only the value and the price text move: +$10,800 becomes +$5,900, the S6/S8 figure at the new 30% stove-category margin.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "added",
+      "tag": "SPAN",
+      "kind": "text",
+      "contains": "+$5,900",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). The premium wood tier, repriced. Its <label>, its product name and its per-model machinery are unchanged -- the pre-JS default stays the generic Original-IKI, as it was before this batch -- so only the value and the price text move: +$10,800 becomes +$5,900, the S6/S8 figure at the new 30% stove-category margin.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/div/div/div/div/div/div",
+      "textHash": "6ec6ef8f37476dd3",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). THE MOUNTING GROUP, whole -- new, declared as one subtree because every part of it is an addition. Mounting was never a configurator choice, so a trailer build's chassis lived nowhere and the base price silently carried whatever the build needed. Skid is the included default; trailer integration is a flat $3,500 because marrying a box to a chassis does not get harder as the box gets longer -- the chassis does, and it is quoted separately by final box length, which is what the note under the price says.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "removed",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "checked=\"\" data-addon=\"heater\" name=\"heater\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "added",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "checked=\"\" data-addon=\"heater\" data-default=\"\" name=\"heater\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "removed",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "checked=\"\" data-addon=\"changing\" name=\"changing\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "added",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "checked=\"\" data-addon=\"changing\" data-default=\"\" name=\"changing\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "removed",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "checked=\"\" data-addon=\"deck\" name=\"deck\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "added",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "checked=\"\" data-addon=\"deck\" data-default=\"\" name=\"deck\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "removed",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "checked=\"\" data-addon=\"exterior\" name=\"exterior\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "added",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "checked=\"\" data-addon=\"exterior\" data-default=\"\" name=\"exterior\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "removed",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "checked=\"\" data-addon=\"interior\" name=\"interior\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "added",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "checked=\"\" data-addon=\"interior\" data-default=\"\" name=\"interior\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "removed",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "checked=\"\" data-addon=\"speakers\" name=\"speakers\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "added",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "checked=\"\" data-addon=\"speakers\" data-default=\"\" name=\"speakers\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "removed",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "data-addon=\"premiumPackage\" name=\"premiumPackage\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "added",
+      "tag": "INPUT",
+      "kind": "element",
+      "contains": "data-addon=\"premiumPackage\" data-default=\"\" name=\"premiumPackage\" type=\"radio\" value=\"0\"",
+      "count": 1,
+      "reason": "The pricesVersion 4 catalogue restructure (Lee-ratified 2026-08-03). data-default, added to every select-one group's default. resetForm inferred the default from a $0 value, which broke the moment the heater group gained a SECOND $0 option: it checked both and the last silently won, resetting visitors onto a wood-fired sauna including on models that cannot have one. Defaults are declared now, never inferred from price.",
+      "commit": "8e2bb3b relay batch 4: the configurator stops charging for a sauna the base price already bought",
+      "range": "8502fda..f9dd84e"
+    },
+    {
+      "op": "added",
+      "tag": "A",
+      "kind": "element",
+      "contains": "class=\"footer-bottom__link\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "42f8a7f privacy: discoverable from every route, and the contact form says where the data goes",
+      "reason": "code-refresh 2026-08-06 D6. The Privacy link added to footer.njk's colophon (beside the copyright, where legal links are looked for), therefore on every route that renders the footer. It is keyed on its CLASS, not its href: /contact/ also gains a /privacy/ link inside its disclosure sentence, and an href-keyed entry would name both nodes -- a count standing in for an identity, which this file's specificity rule refuses. Before this, /privacy/ was linked ONLY from inside the quote modal, which ships on /saunas/ alone since the modal-scoping batch -- a PIPA-conscious site whose policy was undiscoverable from 18 of 19 routes. Sitewide by design, not leakage."
+    },
+    {
+      "op": "added",
+      "tag": "A",
+      "kind": "text",
+      "contains": "Privacy",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "42f8a7f privacy: discoverable from every route, and the contact form says where the data goes",
+      "reason": "code-refresh 2026-08-06 D6. The link text of the footer Privacy entry above. Declared separately from the element because this instrument treats a text addition as its own change class."
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"@type\": \"WebSite\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7c. The WebSite JSON-LD block's BODY changes on every page: the SearchAction potentialAction is deleted. It declared a ?q= query endpoint no page can serve -- the site has no search feature -- which is harmless at best and a sitelinks-eligibility strike at worst. The removed/added pair is one edit to one inline block, not two blocks; kind:code because it is an inline script body, per _notes.kind."
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"@type\": \"WebSite\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7c. The other half of the WebSite JSON-LD edit above -- the block as it now reads, name and url only."
+    },
+    {
+      "op": "removed",
+      "tag": "DIV",
+      "kind": "element",
+      "contains": "class=\"lightbox-overlay\" id=\"galleryLightbox\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "ae992bb lightbox: held to the bar the funnel modal set — the reachable half",
+      "reason": "code-refresh 2026-08-06 B4. The lightbox container gains role=dialog, aria-modal=true and aria-label -- an ATTRIBUTE change, which this instrument reports as a removed/added element pair. It ships on every route because lightbox.njk is included unguarded via footer.njk:58 (unlike the configurator modal, which is scoped to /saunas/). Wave A held the quote funnel to this bar; the lightbox was never held to it."
+    },
+    {
+      "op": "added",
+      "tag": "DIV",
+      "kind": "element",
+      "contains": "aria-label=\"Image gallery\" aria-modal=\"true\" class=\"lightbox-overlay\" id=\"galleryLightbox\" role=\"dialog\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "ae992bb lightbox: held to the bar the funnel modal set — the reachable half",
+      "reason": "code-refresh 2026-08-06 B4. The other half of the lightbox attribute change above."
+    },
+    {
+      "op": "removed",
+      "tag": "P",
+      "kind": "text",
+      "contains": "Book a session at our Aldergrove location",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7a, HOMEPAGE ONLY. A live false claim: the card advertised booking at 'our Aldergrove location', a venue doc 13:358's brief row orders removed sitewide. Declared with its exact text, per _notes.text."
+    },
+    {
+      "op": "added",
+      "tag": "P",
+      "kind": "text",
+      "contains": "Sit in one before you decide",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7a, HOMEPAGE ONLY. Doc 13's approved Try-a-Session card copy (13:80-82), used VERBATIM and venue-neutral by design -- it names no location, so no BAG claim doc 13 never approved was introduced in its place."
+    },
+    {
+      "op": "removed",
+      "tag": "FORM",
+      "kind": "element",
+      "contains": "id=\"loginForm\" onsubmit=",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "89c7217 ops console: fix the CSP-broken login, and make the whole attribute class impossible",
+      "reason": "code-refresh 2026-08-06 D1, /booking-ops.html ONLY. The inline onsubmit= attribute is removed. CSP hashes cover <script> ELEMENTS only; an attribute handler additionally needs 'unsafe-hashes', which this policy deliberately refuses -- so in production the handler was refused, the form default-submitted, and the login overlay looped forever."
+    },
+    {
+      "op": "added",
+      "tag": "FORM",
+      "kind": "element",
+      "contains": "id=\"loginForm\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "89c7217 ops console: fix the CSP-broken login, and make the whole attribute class impossible",
+      "reason": "code-refresh 2026-08-06 D1, /booking-ops.html ONLY. The form without the attribute; the submit binding moved into the already-hash-allowlisted inline script."
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "SESSION_KEY",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "89c7217 ops console: fix the CSP-broken login, and make the whole attribute class impossible",
+      "reason": "code-refresh 2026-08-06 D1, /booking-ops.html ONLY. The inline auth script's body gains the addEventListener('submit', handleLogin) binding at DOMContentLoaded. Its netlify.toml CSP hash was recomputed in the SAME commit -- csp-hash:test enforces that pairing and is green."
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "SESSION_KEY",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "89c7217 ops console: fix the CSP-broken login, and make the whole attribute class impossible",
+      "reason": "code-refresh 2026-08-06 D1, /booking-ops.html ONLY. The other half of the inline auth script edit above."
+    },
+    {
+      "op": "removed",
+      "tag": "FORM",
+      "kind": "element",
+      "contains": "data-action=\"contact-submit\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "f3a7b0d contact form: green status stops proving anything, here too",
+      "reason": "code-refresh 2026-08-06 D5, /contact/ ONLY. The contact form gains data-contact-email (from site.json, the single definition) so the failure path can offer a mailto escape without a second copy of the address. Attribute change, hence the removed/added pair."
+    },
+    {
+      "op": "added",
+      "tag": "FORM",
+      "kind": "element",
+      "contains": "data-action=\"contact-submit\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "f3a7b0d contact form: green status stops proving anything, here too",
+      "reason": "code-refresh 2026-08-06 D5, /contact/ ONLY. The other half of the data-contact-email attribute addition above."
+    },
+    {
+      "op": "added",
+      "tag": "DIV",
+      "kind": "element",
+      "contains": "id=\"contactError\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "f3a7b0d contact form: green status stops proving anything, here too",
+      "reason": "code-refresh 2026-08-06 D5, /contact/ ONLY. The inline failure surface, hidden until a send fails, aria-live=assertive. Replaces a blocking alert() that left no trace, no error code and no escape hatch. The client also stopped treating any 2xx as success -- the shape that silently discarded a submission on 2026-07-30."
+    },
+    {
+      "op": "removed",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"@type\": \"FAQPage\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "8074a6d faq: the one schema block that escaped the jsonld sweep, and a guard for the class",
+      "reason": "code-refresh 2026-08-06 D4, /faq/ ONLY. The FAQPage JSON-LD body changes: its two holes now go through | jsonld | safe like every other schema block. Nunjucks autoescape had been writing HTML entities into the structured data (&#39;), live in Google's FAQ parser. Guarded going forward by the new jsonld:test."
+    },
+    {
+      "op": "added",
+      "tag": "SCRIPT",
+      "kind": "code",
+      "contains": "\"@type\": \"FAQPage\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "8074a6d faq: the one schema block that escaped the jsonld sweep, and a guard for the class",
+      "reason": "code-refresh 2026-08-06 D4, /faq/ ONLY. The other half of the FAQPage edit above -- the same questions, now with apostrophes as apostrophes."
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "name=\"description\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7b, /locations/ ONLY. The description meta promised 'Aldergrove, Vancouver, and Squamish'; the page's real cards are Brackendale Art Gallery, The Good Sauna (Vancouver), Gatherwell-Ambleside and The Finnish Sauna Co. The description now matches the venues the page actually shows. All three description metas derive from the same front-matter field, so they move together."
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "name=\"description\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7b, /locations/ ONLY. The description meta promised 'Aldergrove, Vancouver, and Squamish'; the page's real cards are Brackendale Art Gallery, The Good Sauna (Vancouver), Gatherwell-Ambleside and The Finnish Sauna Co. The description now matches the venues the page actually shows. All three description metas derive from the same front-matter field, so they move together."
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "property=\"og:description\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7b, /locations/ ONLY. The og:description meta promised 'Aldergrove, Vancouver, and Squamish'; the page's real cards are Brackendale Art Gallery, The Good Sauna (Vancouver), Gatherwell-Ambleside and The Finnish Sauna Co. The description now matches the venues the page actually shows. All three description metas derive from the same front-matter field, so they move together."
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "property=\"og:description\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7b, /locations/ ONLY. The og:description meta promised 'Aldergrove, Vancouver, and Squamish'; the page's real cards are Brackendale Art Gallery, The Good Sauna (Vancouver), Gatherwell-Ambleside and The Finnish Sauna Co. The description now matches the venues the page actually shows. All three description metas derive from the same front-matter field, so they move together."
+    },
+    {
+      "op": "removed",
+      "tag": "META",
+      "kind": "element",
+      "contains": "name=\"twitter:description\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7b, /locations/ ONLY. The twitter:description meta promised 'Aldergrove, Vancouver, and Squamish'; the page's real cards are Brackendale Art Gallery, The Good Sauna (Vancouver), Gatherwell-Ambleside and The Finnish Sauna Co. The description now matches the venues the page actually shows. All three description metas derive from the same front-matter field, so they move together."
+    },
+    {
+      "op": "added",
+      "tag": "META",
+      "kind": "element",
+      "contains": "name=\"twitter:description\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7b, /locations/ ONLY. The twitter:description meta promised 'Aldergrove, Vancouver, and Squamish'; the page's real cards are Brackendale Art Gallery, The Good Sauna (Vancouver), Gatherwell-Ambleside and The Finnish Sauna Co. The description now matches the venues the page actually shows. All three description metas derive from the same front-matter field, so they move together."
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "SCRIPT",
+      "path": "html/head/script",
+      "span": 2,
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "be0ff3c copy+schema: the site stops claiming places and praise it does not have",
+      "reason": "code-refresh 2026-08-06 D7c, HOMEPAGE ONLY. The whole LocalBusiness reviews/aggregateRating JSON-LD block, deleted. Declared as a SUBTREE because that is the only shape that identifies it: four ld+json blocks sit at this path and a `contains` on the type name matched two of them -- a count standing in for an identity, which the specificity rule refuses. Hash measured with scripts/dom-subtree-hash.mjs against the baseline build, not written from memory. Lee's ruling: Google's review-snippet policy makes self-serving reviews (an entity's own reviews in its own markup) ineligible and a manual-action risk, compounded by anonymous 'Private Client' authors. The visible testimonials stay as page copy; the LocalBusiness core in head.njk is untouched -- its street address and hours remain an open Lee decision (doc 13 NEEDS-LEE item 7).",
+      "textHash": "4266e83354b6dc19"
+    },
+    {
+      "op": "add-subtree",
+      "tag": "P",
+      "path": "html/body/main/div/section/form/p",
+      "span": 5,
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "42f8a7f privacy: discoverable from every route, and the contact form says where the data goes",
+      "reason": "code-refresh 2026-08-06 D6, /contact/ ONLY. The US-processor disclosure paragraph added under the submit button: the <p>, its two text runs, the /privacy/ link and its text -- ONE added subtree, declared as one thing because it is one thing. Its parts could not be declared individually with honest identity: the trailing period is a bare '.' text node that matches 27 paragraphs on /privacy/ alone, and the link's href also names the colophon link. Hash measured with scripts/dom-subtree-hash.mjs. The sentence is the quote modal's VERBATIM (George's approved copy); the contact form had been collecting name, email and phone for the same US endpoint with no notice at all.",
+      "textHash": "c61df123baef06c1"
+    },
+    {
+      "op": "added",
+      "tag": "SPAN",
+      "kind": "element",
+      "contains": "class=\"model-index__label model-index__label--thumb\"",
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "60f1d3d saunas: the index shows the saunas",
+      "reason": "Lee review 2026-08-07. The sixth column label in the index head, empty and classed — the photograph's column. Classed rather than bare for the reason this file's own head comment gives: an attribute-less span cannot be named by a `contains` and would be undeclarable."
+    },
+    {
+      "op": "delete-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "9c82ae7ee42c6946",
+      "span": 7,
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "60f1d3d saunas: the science stops being one orphan stat",
+      "reason": "Lee review 2026-08-07. The single-stat thesis block, removed whole. Jen's doc-10 §2.3 specified archetype B — one stat — and Lee overrode it: a lone figure under the comparison ledger reads as an orphan rather than as evidence. Declared as a subtree because it is one thing; its parts (a bare '40%' text node, a bare source line) could not carry honest individual identity. Hash measured with dom-subtree-hash.mjs against the baseline build."
+    },
+    {
+      "op": "add-subtree",
+      "tag": "DIV",
+      "path": "html/body/main/div/section/div",
+      "textHash": "44e5c3545a6138ba",
+      "span": 22,
+      "count": 1,
+      "range": "7b506b5..9a19319",
+      "commit": "60f1d3d saunas: the science stops being one orphan stat",
+      "reason": "Lee review 2026-08-07. The three-stat set that replaces it. The two restored claims are the ones deleted when archetype B was implemented, VERBATIM and with their original attributions (recovered from 43bd943): no figure is new and no claim is reworded. The elevated photo-overlay treatment stays deleted — this is still type on ground, which is the half of Jen's archetype the objection was never about."
+    },
+    {
+      "op": "added",
+      "tag": "IMG",
+      "kind": "element",
+      "contains": "class=\"model-row__thumb\"",
+      "count": 5,
+      "range": "7b506b5..9a19319",
+      "commit": "60f1d3d saunas: the index shows the saunas",
+      "reason": "Lee review 2026-08-07. The model-index rows gain a photograph — the first non-video frame from js/data.js's images array for that model, which is the same frame the configurator opens on (gated by scripts/model-thumbs.test.mjs). Five per page, on /saunas/ and on /gallery/, the meta-refresh stub that renders the same page. The list told you what each model cost and nothing about what it looks like. No width/height attributes, deliberately: those are a claim about the delivered bytes and these frames are not square — rhythm's B2 check refused the square claim, and .model-row__thumb pins both dimensions in CSS so CLS is 0.0000 measured."
     }
   ],
   "_notes": {
@@ -647,7 +1813,18 @@
     "renameMap": "An \"op\": \"rename\" entry declares an old->new CLASS TOKEN pair, applied to the BASELINE's vocabulary before anything is compared. Whole tokens only, never substrings, so renaming `fade-in` cannot touch `fade-in-late`. Everything the map does not explain survives into the comparison and still fails: a rename plus a smuggled extra class fails naming the smuggled token. A rename whose `from` never appears is flagged stale, so dead declarations cannot accumulate. A \"to\" of null declares that the token was REMOVED rather than renamed: the element survives and one of its class tokens goes, which no node entry can express. Same strictness -- an undeclared removal on the same node still fails.",
     "deleteSubtree": "A \"delete-subtree\" entry names a deleted node by tag + ancestry path + a HASH of its own serialized content, and consumes the whole run of removed tokens or nothing. It exists for attribute-less nodes, where the only substrings a `contains` entry could use are exactly the lazy kind the specificity check rejects. The hash cannot be written from memory -- it is measured from the baseline build -- and an entry whose hash matches nothing there is reported before any verdict rests on it. A nested subtree is ONE entry, not one per element.",
     "kind": "A removed/added entry names an ELEMENT unless it declares kind:\"code\" or kind:\"text\", in which case `contains` is matched against the token's TEXT. Without it an edit to an inline <style> body is undeclarable by construction, which is how booking-ops.html's :root reconciliation had no way to be certified. Kind is part of the entry's identity: a code entry cannot consume an element change even when its substring appears in an attribute.",
-    "wp0bi_fix": "WP-0b-i's fix round, range-scoped to 83421b9..dec32ac. Two change classes: aria-expanded and aria-controls on the mobile menu toggle, and aria-hidden on 21 decorative comparison glyphs on /saunas/. NOT DONE, and recorded here rather than quietly dropped: scoping the configurator modal to /saunas/, the only page with anything that opens it. Sitewide it puts a second inert <form> on 18 routes whose empty `configuration`, `model` and `estimated_total` hidden inputs sit in the DOM beside the real contact form -- a behavioural reviewer read the /contact/ one as a live field that had lost its data. The change is right and it was written and measured (one deleted subtree, span 352, hash c3a120b59594b6b1). It cannot be CERTIFIED today: delete-subtree caps its slice search at MAX_SUBTREE_TOKENS = 64, stated in the harness as a real limit whose safe direction is to fail loudly. Raising the cap to make this batch's own change pass is the tuning-until-green move this instrument exists to refuse, and a harness change does not belong in a fix round. Reverted, and handed on as its own small batch that carries the harness change with it. The honeypot's inline padding was left alone for a related reason: it is offscreen and untappable, its 34x34 measurement is an artefact of the global input rule, and its markup is identical to the copy inside the modal, so any declaration naming one would consume the other. The JS RUN FAILURE is expected here and waived nowhere: this instrument certifies delivered markup with scripts disabled, and the batch changes modal.js and navigation.js by design. What the scripts do is certified by scripts/quote-funnel.test.mjs, which drives them in a real browser through every state including the two defects this round fixed. Read the two together.",
-    "stage3": "Jen Stage 3 final polish, range-scoped to c41dec1..2a23c8d. Sixteen items shipped; only FOUR touch delivered markup and all four are declared here. The other twelve (F1 tracking, F6/(c) hero pair, F7 inputs, F10 white->ink, F11 pin colours, (d) stat-number, C26/C27 error token, C4 CTA alignment) are CSS-only and produce no DOM delta -- confirmed by measurement, not assumed: they do not appear in the residual at all. C34's hamburger glyph is a runtime textContent swap and this check runs with scripts disabled, so it is correctly invisible here; C2's footer fix is CSS-only for the same reason. The 22 FAQ text entries are declared one question at a time with exact strings rather than as a count of eleven anonymous moves, because 'eleven texts changed somewhere on this page' is not a declaration of which."
+    "wp0bi_fix": "WP-0b-i's fix round, range-scoped to 83421b9..dec32ac. Two change classes: aria-expanded and aria-controls on the mobile menu toggle, and aria-hidden on 21 decorative comparison glyphs on /saunas/. NOT DONE, and recorded here rather than quietly dropped: scoping the configurator modal to /saunas/, the only page with anything that opens it. Sitewide it puts a second inert <form> on 15 routes whose empty `configuration`, `model` and `estimated_total` hidden inputs sit in the DOM beside the real contact form (route count MEASURED and corrected 2026-08-01, was recorded as 18 from memory: `grep -rl 'id=\"saunaModal\"' dist/` after a clean build returns 16 built pages carrying the modal, of 19 HTML pages total, and `grep -rl 'open-modal' dist/` returns exactly one of them -- /saunas/ -- so 15 carry the modal and cannot open it) -- a behavioural reviewer read the /contact/ one as a live field that had lost its data. The change is right and it was written and measured (one deleted subtree, span 352, hash c3a120b59594b6b1). It cannot be CERTIFIED today: delete-subtree caps its slice search at MAX_SUBTREE_TOKENS = 64, stated in the harness as a real limit whose safe direction is to fail loudly. Raising the cap to make this batch's own change pass is the tuning-until-green move this instrument exists to refuse, and a harness change does not belong in a fix round. Reverted, and handed on as its own small batch that carries the harness change with it. The honeypot's inline padding was left alone for a related reason: it is offscreen and untappable, its 34x34 measurement is an artefact of the global input rule, and its markup is identical to the copy inside the modal, so any declaration naming one would consume the other. The JS RUN FAILURE is expected here and waived nowhere: this instrument certifies delivered markup with scripts disabled, and the batch changes modal.js and navigation.js by design. What the scripts do is certified by scripts/quote-funnel.test.mjs, which drives them in a real browser through every state including the two defects this round fixed. Read the two together. SHIPPED in B3 (commit 24768c6 markup + the cap raise alongside it): the delete-subtree entry at the end of this whitelist, range 5748de8..24768c6, declares the deletion with a RE-MEASURED span 355 and hash e379071f602ee944 -- the 352/c3a120b59594b6b1 recorded above belong to that dead comparison and the markup has moved since. The cap now stands at 400, argued from the measurement and fixture-proven at both bounds rather than tuned to clear this entry.",
+    "stage3": "Jen Stage 3 final polish, range-scoped to c41dec1..2a23c8d. Sixteen items shipped; only FOUR touch delivered markup and all four are declared here. The other twelve (F1 tracking, F6/(c) hero pair, F7 inputs, F10 white->ink, F11 pin colours, (d) stat-number, C26/C27 error token, C4 CTA alignment) are CSS-only and produce no DOM delta -- confirmed by measurement, not assumed: they do not appear in the residual at all. C34's hamburger glyph is a runtime textContent swap and this check runs with scripts disabled, so it is correctly invisible here; C2's footer fix is CSS-only for the same reason. The 22 FAQ text entries are declared one question at a time with exact strings rather than as a count of eleven anonymous moves, because 'eleven texts changed somewhere on this page' is not a declaration of which.",
+    "b1JsRunFailure": "Wave B-1 batch B1 (hero-first reveal) reports a JS RUN FAILURE against fc65d61, and it is expected rather than waived. This instrument certifies DELIVERED MARKUP with scripts disabled and refuses to vouch for a comparison whose client JavaScript changed; B1 necessarily edits js/animations.js (SETTLE_MS retarget, the load-in ordering, the escape hatch), so the run failure is structural to the batch and cannot be designed away -- the same shape as the precedent recorded on the B3 modal delete-subtree entry (commit 24768c6, \"the JS RUN FAILURE on this run is expected and waived nowhere -- js/modal.js changes by design\"). That entry is cited by its COMMIT, not by a line number: this sentence previously read \":650 narrative\" and had already gone stale -- line 650 of this file is now part of B1's own LCP preload entry, so the citation pointed at unrelated text. Same defect class as B5's N-2 ruling on styles.css line numbers in comments, in a config rather than a stylesheet: a line number is not a stable address and must not be used as one. The markup half IS certified: the six declarations above consumed 1 each per page/width across both widths and no undeclared change remains. The behavioural half is certified by the events suite, which drives the real built site in a real browser -- 64 passing as of 2026-08-02 (was 56 earlier the same day, and 49 when this note was written; B1 re-review, B5, and the hero graceful-cancel added fixtures since, and the figure is re-read from the suite rather than carried forward), including the agreement fixture, the LCP invariant (the hero <img> is never a reveal target), the Tab-during-the-beat fixtures, and the untouched anti-lock invariants. The agreement fixture's contract CHANGED on 2026-08-02 when the hold moved out of `transition-delay` and into the reveal clock: it was `computed transition delay + duration === SETTLE_MS`, and it is now three terms -- `SSC.reveal.holdMs === the computed --hero-hold` (the JS reads the token rather than copying it), the held pair's computed delay is its ORDINARY stagger and nothing more, and hold + delay + duration === SETTLE_MS. A fourth fixture asserts the hold BEHAVIOURALLY (nothing over the photograph at 900ms, both arrived by the boundary), because a computed style can no longer see a scheduled grant; mutations M14-M16 are what prove that fixture can fail. Read the two instruments together; do not read a dom-integrity PASS as covering the script.",
+    "b1Range": "How to reproduce Wave B-1 batch B1's markup certificate, and why its range ends where it does. The six B1 entries are range-scoped fc65d61..c3ed9cd, and entries apply only when the RUN's candidate sha matches the range end -- so the certifying invocation is `node scripts/dom-integrity.mjs --baseline fc65d61 --candidate c3ed9cd`, with the config read from the working tree. c3ed9cd is the last B1 commit that changes delivered markup; the commits after it touch only scripts/, configs and ROADMAP.md, none of which reach a template or a hashed asset, so they produce byte-identical dist HTML. (Within the batch as a whole that is NOT true of the eighteen non-home pages: styles.css and js/ changed, so their ?v= cache-bust stamps moved. The dom-integrity instrument normalizes that stamp -- see _notes.volatile -- which is why those pages still compare identical.) Running with the default candidate WORKING reports the six as undeclared, which is the range mechanism behaving correctly, not a regression -- a declaration that stayed live past the commits it describes is the 'load-bearing forever' failure the scope rule at _notes.scope exists to prevent. The next batch baselines on B1's tip, where these entries correctly go inert.",
+    "glyphPrune": "The four /saunas/ tick-and-cross entries (range 83421b9..dec32ac) each carry a `_b4FixtureCheck` field recording B4's zero-reference grep result. They are prunable and their subject markup is gone as of B4. B6 prunes them. DONE 2026-08-02 (B6): the four entries are pruned, whitelist 116 -> 112. The recorded zero-reference result was RE-VERIFIED here rather than trusted -- `grep -rlF` for `class=\"check\"` and `class=\"x\"` across scripts/ (excluding this file), src/, js/ and dist/ returns nothing, and the styles.css rules that carried them (.comparison-list .check / .x) are deleted in the same batch's dead-CSS sweep. CONTRAST with the WP-1a four, which STAY: those are referenced BY fixtures as test data, so pruning them would delete a fixture's input, not a stale waiver. The discipline is the same in both cases -- run the grep, then act on what it says.",
+    "reprice1JsRunFailure": "The base-price reprice step 1 (S2 22500 -> 23500, S4 29000 -> 29500, the yakisugi exterior, commit 9941997) reports a JS RUN FAILURE against 62e533a, and it is expected rather than waived -- the same shape as the precedent recorded at _notes.b1JsRunFailure and on the B3 modal delete-subtree entry (commit 24768c6). The batch necessarily edits js/data.js (two basePrice values, pricesVersion 3, the new per-model exteriorYakisugi field) and js/modal.js (the yakisugi token in PER_MODEL_PRICE_KEYS and its setPrice repaint), so the boundary crossing is structural to the batch and cannot be designed away. THE MARKUP HALF IS CERTIFIED: the 25 declarations above consumed exactly their declared counts across all 38 page/width comparisons -- 19 built pages x 2 widths -- of which 36 actually changed, every changed page reports 'identical ... (declared)', and no undeclared change remains. THE TWO NUMBERS ARE BOTH RIGHT AND MEAN DIFFERENT THINGS (Razor N1 read the run as contradicting this line; it does not). 38 is the SCOPE the declarations were consumed across; 36 is how many of those comparisons the reprice touched. The two that did not move are booking-ops.html at both widths, the one built page carrying no LocalBusiness schema and therefore no priceRange. The run prints an 'ok ... (declared)' line only for a comparison that CHANGED, so counting those lines yields 36 and counting fingerprints yields 38; a clean run states the latter as 'PASS -- 38 page/width fingerprint(s) identical modulo the whitelist'. Verified against `--baseline 62e533a --candidate 9941997` and `find dist -name '*.html' | wc -l` = 19. THE SCRIPT HALF IS CERTIFIED BY A DIFFERENT INSTRUMENT, and this is the important half to read: scripts/models-json-roundtrip.mjs drives the real built site in a real browser with JavaScript ENABLED, opens the configurator modal for all five models, and asserts every resolved option price -- including exterior_yakisugi at 5000 on S2/S4 and 6000 on S6/S8/SC -- and every base price against the canonical sheet. That is precisely the script-rendered content dom-integrity disclaims, and it is where the per-model token resolution is actually proven. CORRECTION, per Razor W3: this note previously claimed 'the yakisugi price exists in no markup literal at all'. It does. The span ships a PLACEHOLDER literal (+$5,000, the S2/S4 figure), and `updatePrices` only repaints it when the model's field is a number -- so a per-model key going missing on one model left the placeholder on screen while calculateTotal's `|| 0` silently dropped the money from the total, and the label-reading assertions all stayed green. Razor reproduced it on S2. The real compensating control is therefore NOT the absence of a literal: it is that models-json-roundtrip.mjs now SELECTS each per-model exterior and interior option, per model, and asserts #summaryTotal moved by exactly the canonical amount. That delta comes out of the token-resolution path itself, so no placeholder can absorb a missing key. Encoded as selftest mutation M16. scripts/prices-version.test.mjs independently hashes the same resolved surface in a real browser and refuses a moved price without a version bump. Read the three instruments together; do not read a dom-integrity PASS as covering the script, and do not read this run failure as an uncertified change.",
+    "reprice1Range": "How to reproduce the reprice step-1 markup certificate. The 25 entries are range-scoped 62e533a..9941997, so the certifying invocation is `node scripts/dom-integrity.mjs --baseline 62e533a --candidate 9941997`, with the config read from the working tree. 9941997 is the last commit in the batch that changes delivered markup; the commit that adds these declarations touches only this config, which reaches no template and no hashed asset, so it produces byte-identical dist HTML and the entries stay live through descendant activation (see _notes.scope) rather than needing a hand re-point. Baselining on 62e533a rather than on main is deliberate and is what makes the certificate mean anything: main does not yet carry Wave B-1, so a run against it reports the whole unmerged wave -- roughly 400 changes per page -- and this batch's 25 real changes would be invisible inside it. A certificate whose diff is dominated by somebody else's work certifies nothing.",
+    "batch4JsRunFailure": "The pricesVersion 4 catalogue restructure (commits 8e2bb3b and f9dd84e, baseline 8502fda, range end f9dd84e) reports a JS RUN FAILURE, and it is EXPECTED rather than waived -- the same shape as the precedents at _notes.reprice1JsRunFailure and _notes.b1JsRunFailure. The batch necessarily edits js/data.js (pricesVersion 4, the per-model standardElectricLabel / standardWoodLabel / woodPremium fields replacing woodFired) and js/modal.js (the four-option heater group, the declared-default rule in resetForm and handlePremiumPackageChange), so the boundary crossing is structural to the batch and cannot be designed away. THE MARKUP HALF IS CERTIFIED: of 38 page/width comparisons, exactly 4 changed -- /gallery/ and /saunas/ at both widths, the two routes carrying the sauna modal -- and every one reports 'identical ... (declared)' with no undeclared change and no stale entry. The 24 declarations consumed exactly their declared counts. TWO MARKUP DECISIONS WERE MADE FOR DECLARABILITY and are recorded here so they are not undone as arbitrary. (1) The included ELECTRIC heater row carries NO ids. It was given some at first, which changed the attributes of an otherwise-untouched <label>/<span> pair -- and on the REMOVED side those nodes are attribute-less, so no `contains` could identify them without the family-of-nodes match the specificity check exists to refuse, and no subtree entry fits either because the row was only partly replaced. modal.js reaches the row through its input's data-default instead, and the change reduces to one text token. (2) The premium wood row's PRE-JS default stays the generic Original-IKI at +$5,900 rather than the S4 Mini-IKI at +$5,000: '+$5,000' cannot identify itself, because the S2/S4 yakisugi exterior carries the same figure. modal.js repaints value, label and price per model on open, so no visitor with scripts sees the difference -- and the markup default was already the generic Original-IKI before this batch, so this is the existing convention kept, not a new one. The two new components -- the included wood-fired row and the whole Mounting group -- are pure additions and are declared as single add-subtree entries keyed on measured content hashes (102469fa5540b97b and 6ec6ef8f37476dd3), which is what scripts/dom-subtree-hash.mjs was added to make possible: until it existed the two subtree shapes this config documents were the two nobody could actually write, because the hash cannot be authored from memory.",
+    "batch4Range": "How to reproduce the pricesVersion 4 catalogue restructure's markup certificate, and why its range ends where it does. The 24 entries are range-scoped 8502fda..f9dd84e, so the certifying invocation is `node scripts/dom-integrity.mjs --baseline 8502fda --candidate f9dd84e`, with the config read from the working tree. THE RANGE ENDS AT THE FIX-ROUND TIP, NOT AT 8e2bb3b, and that is the correction this note exists to record: the entries first shipped scoped 8502fda..8e2bb3b, but the commit that DECLARED them (f9dd84e) also edited src/_includes/modals/sauna.njk -- two markup decisions made for declarability, both argued at _notes.batch4JsRunFailure -- so 8e2bb3b is not the last commit in the batch that changes delivered markup and a range ending there described a comparison whose candidate markup no longer exists. SAME PRECEDENT, THIRD TIME: _notes.b1Range and _notes.reprice1Range both state the rule as 'the range ends at the last commit in the batch that changes delivered markup', and in both of those cases the declaring commit touched only configs and scripts, which reach no template and no hashed asset, so the range could stop short of it. Here it could not. The rule is unchanged; what differs is which commit satisfies it. A declaring commit that edits a template is part of the certified change, not a footnote to it. Baselining on 8502fda rather than on main is deliberate for the reason given at _notes.reprice1Range: main does not yet carry Wave B-1, so a run against it reports the whole unmerged wave and this batch's 24 real changes would be invisible inside it. Commits after f9dd84e that touch only this config produce byte-identical dist HTML, so the entries stay live through descendant activation (see _notes.scope) rather than needing a hand re-point -- and that activation is PROVEN per run, not assumed: the harness requires both `git merge-base --is-ancestor` and an identical fingerprint of the range-end's own build.",
+    "batch4FixRound": "The batch-4 FIX ROUND (SC heater string, the standard-wood label repaint, the trailer note split), baseline f9dd84e. IT CARRIES NO DECLARATIONS, AND THE ABSENCE IS THE FINDING -- it was specified as needing one for the SC compare-table cell, and that specification rested on a false premise which MEASUREMENT overturned. The compare table does not exist in delivered markup: js/compare.js builds it at runtime into #compareTable from window.SSC.saunaModels, so the only place the SC heater string ships is dist/js/data.js, an asset rather than a document. `grep -rl 'Harvia Pro 20' dist/` returns exactly that one file and no HTML. Confirmed end to end: `--baseline f9dd84e --candidate WORKING` reports ZERO changed page/width comparisons and all 188 whitelist entries inert. WRITING THE DECLARATION ANYWAY WOULD HAVE BROKEN THE GATE, which is why this note exists rather than an entry: _notes.authority states that 'a declared change that does not occur ALSO fails, because a stale entry is a hole nobody closed'. A declaration for a change that happens in JavaScript is precisely that -- it would have gone red on its first run, and the tempting repair would have been to widen or delete the check rather than the entry. Same discipline as _notes.glyphPrune: run the grep, then act on what it says. THE JS RUN FAILURE IS EXPECTED, same shape as the precedents at _notes.batch4JsRunFailure, _notes.reprice1JsRunFailure and _notes.b1JsRunFailure: the round edits js/data.js (the SC `heater` string) and js/modal.js (the standard wood-fired row's label now repaints on the unavailable branch too), so the boundary crossing is structural. WHAT CERTIFIES THIS ROUND IS THEREFORE A DIFFERENT INSTRUMENT, and that is the half to read: scripts/models-json-roundtrip.mjs drives the built site in a real browser with JavaScript ENABLED and asserts the SC compare-table Heater cell byte-equal to the canonical sheet -- which is the assertion that actually moved when this string changed, and the reason the change could not be made in canonical alone. Read the two together; a dom-integrity PASS here would have covered nothing, because there was nothing in the markup to cover.",
+    "codeRefresh20260806": "CODE REFRESH 2026-08-06, range 7b506b5..0dd1540 (Stage 6 equivalence gate). 26 declarations covering every change class across 38 page/width comparisons, every one declared above and every one traceable to a bucket-D live-defect fix or a bucket-B refactor authorized in .claude/plans/code-refresh-2026-08-06-remediation.md (three critic rounds, converged). SHAPE OF THE SET: three classes are SITEWIDE by design -- the footer Privacy link (D6), the WebSite JSON-LD losing its SearchAction (D7c), and the lightbox container gaining dialog semantics (B4, unguarded via footer.njk:58) -- and the rest are route-scoped to exactly the page whose defect they fix (/ reviews+copy, /booking-ops.html login, /contact/ failure surface + disclosure, /faq/ schema escaping, /locations/ meta). NOT DECLARED BECAUSE NOT PRESENT: no price, no option value, no pricesVersion moved anywhere in this range -- the pricing files were out of scope by standing constraint and git diff over js/data.js, src/_data/models.json and modals/sauna.njk's option values is empty. THE PIXEL HALF is certified separately: visual-diff 7b506b5..c015e00 (the behaviour-preserving bucket-A tail, incl. ~370 lines of dead CSS) reported ZERO visual change on all 38 pairs, and the full-range run's reds decompose exactly into these declared causes (+31px page height everywhere = the footer link; /contact/ +91px = the error surface and disclosure; / @390 reflow = the D7a copy), with /booking-ops.html at 0.000% as the untouched control.",
+    "codeRefresh20260806JsRunFailure": "The 2026-08-06 code-refresh range reports a JS RUN FAILURE, EXPECTED and waived nowhere -- the same shape as _notes.b1JsRunFailure, _notes.reprice1JsRunFailure and _notes.batch4JsRunFailure. The batch necessarily edits js/analytics.js (D3, the book_page_view ordering race), js/forms.js (D5, the Formspree success predicate and failure rendering), js/navigation.js (D8 Leaflet SRI + the dead booking hook) and js/gallery.js (B4 lightbox alt/focus), so the boundary crossing is structural to the work and cannot be designed away. This instrument certifies DELIVERED MARKUP with scripts disabled; what those scripts DO is certified elsewhere and was: quote-funnel 89, events 76 (incl. the new late-tracker scenario that reproduces production's real script ordering, and the contact-failure scenarios), lightbox 7, functions-gate 10, fonts 31, rhythm 77, plus csp-hash's new inline-event-attribute sweep. Read the two together; do not read this file's verdict as covering the JS.",
+    "leeReview20260807": "LEE REVIEW 2026-08-07, folded into the same deploy train as the code refresh (range 7b506b5..9a19319). Four findings, all his: the /saunas/ index showed prices but not saunas (now a photograph per row, mirroring the configurator's opening frame); a single 40% stat floated under the comparison ledger (Jen's archetype B overridden — three stats, the two restored ones verbatim with their original sources); the /contact/ form sat 270px below its own heading (the tight tier applied via :has() so no markup changes, plus a first-child margin collapse); and the hero title arrived on the first scroll and left on the same gesture (the hero stage is now position:sticky over a 70vh runway — CSS ONLY, no markup change, so it appears in the pixel harness and not here). A fifth, the dead info@ contact address, lived in the ssc-booking repo and shipped there separately."
   }
 }

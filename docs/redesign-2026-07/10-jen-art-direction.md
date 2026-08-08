@@ -84,7 +84,7 @@ Every section on the site must be one of these. If a design need doesn't fit, th
 The brand doc's 40/60 ratio becomes a strict alternation on archetype D:
 - Grid: `grid-template-columns: 2fr 3fr` (40/60, text left) and `3fr 2fr` reversed (60/40, image left, i.e. text right at 40). Gap `var(--spacing-2xl)` (4rem).
 - **Alternate strictly down the page**: first Essay on a page is text-left, second is text-right, and so on. The alternation is per page, not per template — it makes a long page read as a woven column rather than a left-heavy list.
-- The image in an Essay may overflow its column by up to `4rem` toward the outer edge only (the existing `.feature-image--overflow` gesture, kept, tokenized as `--overflow-reach: 4rem`) — never toward the center gutter.
+- The image in an Essay may overflow its column toward the outer edge only — never toward the center gutter. ~~tokenized as `--overflow-reach: 4rem`~~ **STALE, corrected 2026-08-03 (Razor N8):** the token was written into the spec but never consumed. `.feature-image--overflow` implements the gesture with `width: 160%; margin-left: -60%`, which is a percentage of the column and not `4rem` — so the "up to 4rem" figure never described what shipped either. `--overflow-reach` was deleted (zero consumers, verified by grep across `styles.css`, `src/`, `js/` and `scripts/`); the gesture itself is unchanged and still ships. Retune it at the rule, not at a token.
 - Below 768px: single column, image first, text second, overflow disabled.
 - The 40-side never contains more than heading + 2 paragraphs + 1 link. More than that → it's two sections.
 
