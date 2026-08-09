@@ -195,6 +195,8 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy("booking-ops.html");
   eleventyConfig.addPassthroughCopy("booking-ops.js");
   eleventyConfig.addPassthroughCopy({ "src/robots.txt": "robots.txt" });
+  eleventyConfig.addPassthroughCopy({ "src/img": "img" });
+  eleventyConfig.addPassthroughCopy({ "src/video": "video" });
 
   // Auto-add responsive srcset to Cloudinary images
   eleventyConfig.addTransform("cloudinaryResponsive", function(content, outputPath) {
