@@ -1,5 +1,5 @@
     <div id="{{ area_id }}" class="page page--has-bg">
-        <div class="page-bg--fixed page-bg--opacity-15" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/{{ hero_image }}');"></div>
+        <div class="page-bg--fixed page-bg--opacity-15" style="background-image: url('/img/{{ hero_image }}-1920w.webp');"></div>
 
         <section class="page-hero">
             <h1>{{ page_h1 }}</h1>
@@ -12,14 +12,14 @@
                     {{ intro_content | safe }}
                 </div>
                 <div class="reveal">
-                    <img loading="lazy" src="https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/{{ intro_image }}" alt="{{ intro_image_alt }}" class="img--full-cover-500">
+                    <img loading="lazy" src="/img/{{ intro_image }}-1200w.webp" alt="{{ intro_image_alt }}" class="img--full-cover-500">
                 </div>
             </div>
         </section>
 
         {% if features %}
         <section class="surface--elevated hero-overlay">
-            <div class="hero-overlay__bg hero-overlay__bg--opacity-15" style="background-image: url('https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto,w_1920/{{ features_bg_image }}');"></div>
+            <div class="hero-overlay__bg hero-overlay__bg--opacity-15" style="background-image: url('/img/{{ features_bg_image }}-1920w.webp');"></div>
             <div class="hero-overlay__content container">
                 <h2 class="text-center reveal">{{ features_heading }}</h2>
                 <div class="grid-3">
