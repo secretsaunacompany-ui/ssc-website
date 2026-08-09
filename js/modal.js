@@ -489,8 +489,7 @@
         }
 
         isVideoUrl(url) {
-            return url.includes('/video/upload/') ||
-                   url.includes('.mp4') ||
+            return url.includes('.mp4') ||
                    url.includes('.mov') ||
                    url.includes('.TS') ||
                    url.includes('.webm') ||
@@ -510,11 +509,9 @@
             const isVideo = this.isVideoUrl(mediaUrl);
 
             if (isVideo) {
-                // Convert Cloudinary video URL to MP4 format with proper codec
-                const videoUrl = mediaUrl.replace('/upload/', '/upload/vc_h264/');
                 container.innerHTML = `
                 <video controls autoplay muted loop playsinline preload="metadata" style="background: #000;">
-                    <source src="${videoUrl}" type="video/mp4">
+                    <source src="${mediaUrl}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
             `;
