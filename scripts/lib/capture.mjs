@@ -105,6 +105,13 @@ const FROZEN_EPOCH = 1767268800000;
  * Specificity matters here: `.js .reveal` is (0,2,0), so pinning only `.reveal`
  * would lose to it even with !important. Every gating form is listed.
  */
+/* UNCHANGED by B1, deliberately: `.reveal--held` is a MODIFIER that rides on
+   `.reveal`, never a replacement for it, so every held element is already
+   matched by the entries below and pinning the modifier separately would add a
+   selector that can only ever match a subset of an existing one. If a future
+   batch ever gives something a held delay WITHOUT `.reveal`, that element is
+   unpinned and this list is wrong -- which is the whole reason the convention
+   is written down here rather than assumed. */
 export const REVEAL_PIN_SELECTORS = Object.freeze([
   '.js .reveal',
   '.js.reveal-ready .reveal',
@@ -133,7 +140,12 @@ const DETERMINISM_CSS = `
     transition: none !important;
     transition-delay: 0s !important;
   }
-  /* Homepage hero intro: skip straight to revealed, unlock scrolling. */
+  /* Homepage hero intro: skip straight to revealed.
+     These two are now the PRIMARY determinism guard for this page rather than a
+     belt-and-braces one. B1 holds both for --hero-hold before they arrive, and
+     the nav's hidden state is CSS keyed on body.page-home, so without this pin
+     a capture that raced the beat would photograph a page with no navigation
+     and no headline on it. */
   body.page-home nav,
   body.page-home .hero-content {
     opacity: 1 !important;
@@ -146,11 +158,28 @@ const DETERMINISM_CSS = `
   .page-hero {
     opacity: 1 !important;
   }
-  body.page-home.hero-locked {
-    overflow: auto !important;
-    overscroll-behavior: auto !important;
-    touch-action: auto !important;
-  }
+  /* The body.page-home.hero-locked unlock pin that used to sit here is gone.
+     It undid HeroIntroAnimation's scroll lock, and WP-1b deleted that animation
+     along with the class. The events suite asserts the class cannot come back
+     ("no scroll-lock class or style survives on the body"), so this is a pin
+     with a fixture standing behind its absence rather than a pin removed on the
+     assumption nothing needs it.
+
+     B1 is the batch that re-examined the hold, and it deliberately reintroduces
+     no lock of any kind: the hold was a transition-delay until 2026-08-02, when
+     it moved into the reveal clock (a withheld .seen class) so an early gesture
+     could fade the held pair in rather than snap it. Either way it is a hold and
+     never a lock, and the first scroll gesture always works -- which is the
+     claim this pin's absence rests on.
+
+     The two opacity pins ABOVE are what keep the capture deterministic across
+     that change: they force the held pair visible whatever is or is not
+     withholding it, which is why the move produced byte-identical numbers on all
+     38 page/width rows.
+
+     NOTE: this block is inside a JS template literal. No backticks in these
+     comments, or the string terminates here and the whole capture module throws
+     on import. That happened once already this batch. */
   /* Parallax: SSC.initHeroParallax writes a scroll-position-dependent inline
      style on every scroll event, so each target lands wherever scrolling
      stopped. Pin them to their untransformed positions. A stylesheet

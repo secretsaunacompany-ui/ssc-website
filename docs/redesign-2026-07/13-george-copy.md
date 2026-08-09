@@ -1,6 +1,8 @@
 # SSC Website — Replacement Copy (Revision 2, sourced)
 George (copywriter) — 2026-07-28, revised same day after source-integrity review
 
+**PRICE FIGURES SUPERSEDED (2026-08-06):** every dollar figure in this document predates the pricesVersion 3–4 reprices and is stale ($22,500 S2 is now $23,500; $29,000 S4 is now $29,500; the /saunas/ schema price list at §item 9 is wholly superseded). The number authority is `41-models-v2.json` (canonical models.json + `js/data.js`, pricesVersion lock enforced by `npm run prices-version:test`). A WP-3 implementer quoting this doc's copy verbatim MUST re-derive every price from the live source — the prose and structure here remain the copy authority; the numbers do not.
+
 Every factual sentence below carries one of five annotations:
 `[src: path:line]` verifiable in the repo · `[src: brief]` in the design brief, quoted accurately · `[src: per Lee, 2026-07-28]` Lee's verbatim interview material carried in the brief · `[UNSOURCED — CUT]` claim removed · `[NEEDS LEE]` visible placeholder, cannot ship as written.
 Anything I couldn't annotate is gone. A weaker sentence that is true beats a stronger one that is not.

@@ -53,7 +53,7 @@ function runBuild(dir) {
  * which is the more frequent event by far. Kept as a denylist deliberately;
  * revisit if a non-`.env` secret ever lands at the repo root.
  */
-const WORKING_COPY_EXCLUDE = new Set([
+export const WORKING_COPY_EXCLUDE = new Set([
   'node_modules', '.git', 'dist', '_site', '.visual-diff', '.netlify',
   '.cache', 'tmp', '.env',
 ]);

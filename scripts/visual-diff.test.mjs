@@ -35,10 +35,16 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
+
+// expectedToChange entries gained a mandatory `expires` 2026-08-06. Synthetic
+// fixtures stamp theirs RELATIVE TO THE CLOCK loadConfig will validate against
+// (its default `now`), never as hardcoded ISO dates -- a literal date either
+// rots into a time bomb or trips the 90-day horizon check. (Critic r2.)
+const stampDays = (days) => new Date(Date.now() + days * 864e5).toISOString().slice(0, 10);
 import { startServer } from './lib/server.mjs';
 import { captureAll, REVEAL_PIN_SELECTORS } from './lib/capture.mjs';
 import { comparePair, estimateAffine } from './lib/diff.mjs';
-import { loadConfig, evaluatePair, evaluateFitDivergence } from './lib/gate.mjs';
+import { loadConfig, evaluatePair, evaluateFitDivergence, unconsumedWaivers } from './lib/gate.mjs';
 import { resolveRef } from './lib/build-ref.mjs';
 import { comparePairs, tallyFailures, redirectFailures } from './visual-diff.mjs';
 
@@ -655,7 +661,7 @@ async function main() {
         (() => {
           const waived = loadConfig(CONFIG_FILE, () => JSON.stringify({
             ...JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')),
-            expectedToChange: [{ route: '/', reason: 'test', waive: ['changedPct', 'heightDelta'] }],
+            expectedToChange: [{ route: '/', reason: 'test', waive: ['changedPct', 'heightDelta'], expires: stampDays(30) }],
           }));
           return evaluatePair(waived, '/', r).status === 'FAIL';
         })(),
@@ -772,6 +778,7 @@ async function main() {
           route: '/g/',
           reason: 'uniform translation fixture: page height legitimately changes',
           waive: ['changedPct', 'heightDelta'],
+          expires: stampDays(30),
         }],
         pageOverrides: [],
       }));
@@ -1476,12 +1483,25 @@ async function main() {
       withCfg({ expectedToChange: [{ route: '/a/', reason: 'r', waive: ['vibes'] }] }), 'unknown metric');
     expectThrows('a waiver without a reason is rejected',
       withCfg({ expectedToChange: [{ route: '/a/', waive: ['changedPct'] }] }), 'reason');
+    expectThrows('a waiver without an expires date is rejected',
+      withCfg({ expectedToChange: [{ route: '/a/', reason: 'r', waive: ['changedPct'] }] }), 'expires');
+    expectThrows('an EXPIRED waiver fails the run loudly, never silently returns to the gate',
+      withCfg({ expectedToChange: [{ route: '/a/', reason: 'r', waive: ['changedPct'], expires: stampDays(-1) }] }), 'expired on');
+    expectThrows('a waiver expiry past the 90-day horizon is rejected',
+      withCfg({ expectedToChange: [{ route: '/a/', reason: 'r', waive: ['changedPct'], expires: stampDays(120) }] }), 'horizon');
     expectThrows('a missing budget is an error, not a default',
       withCfg({ minShiftCoverage: undefined }), 'must be a number');
 
     const ok = loadConfig('test.json', () => JSON.stringify({
-      ...base, expectedToChange: [{ route: '/a/', reason: 'restyle', waive: ['changedPct'] }],
+      ...base, expectedToChange: [{ route: '/a/', reason: 'restyle', waive: ['changedPct'], expires: stampDays(30) }],
     }));
+    check('a waiver that fired on zero pages is reported as unconsumed',
+      (() => {
+        const zero = unconsumedWaivers(ok, [{ route: '/a/', status: 'PASS', waivedReasons: [] }]);
+        const fired = unconsumedWaivers(ok, [{ route: '/a/', status: 'EXPECTED', waivedReasons: ['x'] }]);
+        return zero.length === 1 && zero[0] === '/a/' && fired.length === 0;
+      })(),
+      'the zero-fire report must name exactly the routes whose waivers consumed nothing');
     check('a changedPct waiver leaves the shift gate armed',
       evaluatePair(ok, '/a/', {
         layoutShiftMaxPx: 9, shiftCoverage: 1, shiftMeasurable: true,

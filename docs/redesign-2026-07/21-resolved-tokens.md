@@ -74,7 +74,14 @@ Canonical names follow the mood board's vocabulary (`--ground`, `--ink`, `--rule
     --hold:           75rem;     /* 1200px — the one contained tier, see R8 */
     --hold-wide:      87.5rem;   /* 1400px — .wide-container, unchanged */
     --width-frame:    120rem;    /* 1920px — body frame, unchanged */
-    --overflow-reach: 4rem;      /* Essay image outward overflow — Jen §2.4, Saul caps at 769–1024px */
+    /* --overflow-reach: 4rem;   DELETED 2026-08-02 (Razor N-6). Jen §2.4 tokenized
+       the Essay image's outward overflow, but the rule that implements the gesture
+       (.feature-image--overflow, styles.css:3230) never consumed it — it hard-codes
+       `width: 160%; margin-left: -60%`, which is not 4rem and never was. The token
+       had ZERO consumers, verified by grep across styles.css, src/, js/ and scripts/.
+       A token nothing reads is a value that looks retunable and is not; changing it
+       would have moved nothing while reading as though it had. The gesture itself is
+       unchanged and still ships. */
 
     /* ===== Section rhythm — three tiers (Jen §2.0; see R3) ===== */
     --section-pad:       clamp(6rem, 14vh, 10rem);
@@ -202,12 +209,88 @@ Five changes to the first issue's block, each with its reason. No R-numbered res
 | # | Decision | Chosen | Lost | Why |
 |---|---|---|---|---|
 | N1 | **Nav mark** | Wordmark SVG, `currentColor`, **22px** desktop / **18px** mobile (monogram 20px on mobile if the wordmark crowds the hamburger). Badge leaves the chrome entirely; its one web home is the **footer at 72px** as the maker's seal. Favicon = monogram, designed in the mark phase. | Jen (48px naked badge, 10 §4.2); current site (115px pill) | Saul's position is an argument; Jen's is a size. A detailed circular badge — steam curls, text ring — is illegible as chrome at any nav-plausible scale, and the studios this register borrows from (Olson Kundig, Norm, Nakashima) identify by name and sign with a seal. Jen herself deferred the call to her Stage 3 gate rather than defending 48px (12 §5.1 handoff), and Saul's footer-seal placement preserves the badge's meaning instead of deleting it. **Gated: see E1 — Lee must sign off on removing the badge from the nav before any WP-2 mark work ships.** Asset dependency: wordmark re-cut as clean SVG from `~/marvin/content/assets/logo-original.pdf` (the existing `logo.svg` is raster-in-SVG-clothing, 12 §5.5); 2x PNGs are the sanctioned stopgap. |
-| N2 | **Hero choreography** | Mood board / Jen §5.3: **nothing on the photograph** — image, nav, scroll cue only. The `<h1>` lives in the Thesis section immediately below (SEO intact; George's home copy is already written this way). **One** motion system: `.reveal` + IntersectionObserver, observed on load, `--i` stagger — image `--i:0`, nav `--i:1`, cue `--i:2`, settle ≈1.24s. Scroll is never blocked. | Wim (14:121 — heading and subline fade up over the photo at t≈2.0s; and his separate 1.2s/2.0s/3.0s timer choreography) | The approved artifact is unambiguous: the hero section is commented "empty on purpose" and its own annotation reads "**No headline over it, no button, no logo competing for the frame.**" A timed fade-up of a heading onto the photo is the opposite of what Lee approved. On mechanism, Jen's spec *is* the board's shipped implementation (`15:590–611`), and a second timer-based system alongside the reveal system is exactly the "no separate intro system" failure her §5.1 rules out. What survives from Wim, explicitly: scroll-never-blocked (both agree), reduced-motion renders fully composed, the mobile `w_828` srcset requirement, and his `hero_hold_complete/skipped` instrumentation — which is the *right* way to revisit hold timing later: with data, not taste. |
+| N2 | **Hero choreography** | **AMENDED 2026-08-02 (Wave B-1 B6) — ONE clause superseded, the mechanism ruling RE-AFFIRMED. See the N2 amendment note below this table.** Mood board / Jen §5.3: ~~**nothing on the photograph** — image, nav, scroll cue only~~ **[SUPERSEDED — the title now arrives over the photograph after a held beat, per doc 00's Post-Wave-A addendum item 1]**. The `<h1>` lives in the Thesis section immediately below (SEO intact; George's home copy is already written this way). **One** motion system: `.reveal` + IntersectionObserver, observed on load, `--i` stagger — image `--i:0`, nav `--i:1`, cue `--i:2`, settle ≈1.24s. Scroll is never blocked. | Wim (14:121 — heading and subline fade up over the photo at t≈2.0s; and his separate 1.2s/2.0s/3.0s timer choreography) | The approved artifact is unambiguous: the hero section is commented "empty on purpose" and its own annotation reads "**No headline over it, no button, no logo competing for the frame.**" A timed fade-up of a heading onto the photo is the opposite of what Lee approved. On mechanism, Jen's spec *is* the board's shipped implementation (`15:590–611`), and a second timer-based system alongside the reveal system is exactly the "no separate intro system" failure her §5.1 rules out. What survives from Wim, explicitly: scroll-never-blocked (both agree), reduced-motion renders fully composed, the mobile `w_828` srcset requirement, and his `hero_hold_complete/skipped` instrumentation — which is the *right* way to revisit hold timing later: with data, not taste. |
 | N3 | **Hero link** | No link on the photograph. Rung-1 asks ("See the saunas" etc.) begin in the Thesis section on first scroll. | Wim (14:127, "the hero's own single quiet link"); George's conditional hero-link fallback (13:26) becomes moot | Same evidence as N2 — "no button" is in the approved board's own caption. George's primary copy already puts no button in the first block; his fallback was conditioned on the journey design wanting one, and the resolved journey doesn't. |
 | N4 | **Configurator buttons** | Wim's two-step structure governs: Step 1 button **"Request This Quote"** (transitions in place, never navigates), Step 2 submit **"Send Quote Request"**. George's helper, success, and failure lines carry into Step 2 — with the reply-time promise now answered: **"within three business days, usually the next day"** (E3 closed 2026-07-30). Sitewide primary CTA **"Get a Quote"** (George §1) stands, with his one sanctioned variant on the contact submit. | George's modal button "Send This Configuration" (13:377) | Conversion architecture is Wim's lane and his six-state table is the best-specified artifact in the corpus. George's label was written for a one-step flow that no longer exists — in a two-step modal, "Send This Configuration" on Step 1 would promise a send the button doesn't perform, violating George's own rule 6 ("buttons promise exactly what they do"). Wim's pair keeps the promise honest at both steps: the request begins in place, the send happens where the send button is. |
 | N5 | **Configurator storage** | `localStorage`, keyed `ssc_quote_config`, stored timestamp, 7-day expiry checked on read, cleared only on confirmed success. | Wim as written (14:45, `sessionStorage` + 7-day expiry) | Implementer trap, recorded here so 14 §1 is not implemented verbatim: `sessionStorage` is per-tab and dies on tab close — a 7-day expiry against it is incoherent. Wim's *intent* (survive a return visit within a week) is the part that stands; `localStorage` is the mechanism that delivers it. (Matches the critic's Approach-soundness fix.) |
 | N6 | **`_subject` string** *(arbitrated 2026-07-30, critic rev.4 finding 3.4)* | Doc 33 §6's string: **`Configurator Quote — {Model} — ${Total} — {location}`** | Doc 14 §1:34 (`Configurator Quote Request — {Model} — ${Total}`) | The two authorities disagreed and nothing arbitrated it. Doc 33 is the later document by the same specialist and carries `{location}`, which is load-bearing twice over: inbox triage (an unscopeable lead is the failure the location field exists to prevent) and the WP-0a weekly stream count, which distinguishes configurator traffic from contact-form traffic by this exact string. |
 | N7 | **Step 2 field set — five fields** *(recorded 2026-07-30, critic rev.4 finding 8.4)* | Name, email, notes, **location**, **site access** — doc 33 §6:160's explicit self-override of doc 14. | Doc 14 §1 (three fields) | The override was real, well-argued, and by the same specialist — but it lived only in doc 33 while this file is where a mid-relay implementer looks. Recorded here so the plan's own stop-the-batch rule doesn't fire on a conflict that was already resolved. |
+
+### N2 amendment — 2026-08-02, Wave B-1 batch B6
+
+**Authority:** doc `00-design-brief.md`, "Post-Wave-A feedback — Lee, 2026-08-01
+(FIXED DECISIONS, Wave B scope)", item 1. That block carries the same authority as
+doc 00's original fixed-constraints table, and it post-dates this file.
+
+**Exactly one clause is superseded.** The content-on-photograph BAN — "nothing on
+the photograph", "image, nav, scroll cue only" — no longer describes the shipped
+design. Lee's fixed decision is a *sequence*, not a bare permission: the hero image
+arrives FIRST, clean and unobstructed, and is held alone for a beat so the visitor
+can take in the photograph; THEN the nav and the hero title come in over it. The
+title on the photograph is now the specified end state, and the `<h1>` is no longer
+exiled to the Thesis section.
+
+**Why the original clause was right and still lost.** It was not a
+misreading — the approved mood board really does comment its hero "empty on purpose"
+and annotate it "No headline over it, no button, no logo competing for the frame."
+The clause failed for a reason no amount of care inside this file could have caught:
+Lee's preference for the image-first *reveal* pre-dated the audits and was never
+captured in doc 00, so the corpus this table arbitrated over did not contain it. The
+board's annotation described the hero's RESTING first frame, and the resolved
+decision read it as describing the hero forever. Doc 00's addendum names this
+explicitly as a capture failure. The instrument lesson: a resolved decision derived
+from a complete-looking corpus is only as good as the corpus, and "unambiguous" was
+a statement about the documents, not about the client.
+
+**RE-AFFIRMED, explicitly, and NOT superseded by the above** — this is the half of
+N2 that survives intact and governs:
+
+- **One motion system.** `.reveal` + IntersectionObserver, observed on load, `--i`
+  stagger. A second timer-based choreography alongside it remains exactly the "no
+  separate intro system" failure Jen §5.1 rules out. Lee's addendum agrees in its own
+  words: the old `HeroIntroAnimation` "stays dead", and it grants total implementation
+  freedom while fixing only the sequence. B1 shipped the amended sequence *inside* the
+  re-affirmed mechanism — a longer image-first hold (`--hero-hold`) — adding no second
+  system. **Amended 2026-08-02 (hero graceful-cancel):** B1 originally spent that hold
+  as `transition-delay` on the held `--i` members. It is now spent as the moment
+  `RevealManager` grants `.seen` to them, because a long pending transition made a
+  gentle cancel impossible to implement (four attempts; see the ROADMAP entry). This
+  does not open a second system and the ruling above is not weakened: it is the same
+  `RevealManager`, the same `.reveal` transition, the same `--i` stagger and the same
+  observer, and the `.seen` grant was already JS-driven. Only its TIMING moved, from a
+  CSS property to the clock the manager already keeps. There is still exactly one thing
+  on the page that reveals elements. `--hero-hold` remains the single authoritative
+  value; `animations.js` reads it rather than copying it.
+- **Scroll is never blocked.** Both Jen and Wim agreed on this and Lee's addendum does
+  not touch it. The beat is a hold, never a lock: a scroll, keypress or tap during it
+  cancels the hold instantly. Since 2026-08-02 the cancel resolves as a ~350ms fade
+  rather than a snap (Lee's fixed decision); "instantly" describes when the beat ENDS,
+  which is on the input itself, not how long the pixels take to catch up.
+- **Reduced motion renders fully composed.**
+- The mobile `w_828` srcset requirement.
+- The `hero_hold_complete` / `hero_hold_skipped` instrumentation, and with it N2's own
+  pre-authorisation to **retune the hold with data, not taste**. The ROADMAP's
+  hero_hold reading note is the live instrument; `--hero-hold` at 1600ms was chosen at
+  the patient end of the band precisely so the skip ratio could argue it down.
+
+**Also NOT superseded: N3 stands unchanged.** The amendment carries the TITLE onto the
+photograph and nothing else. No link, no button, and no logo compete for the frame —
+"no button" survives on the board's own caption, and the Rung-1 asks still begin in
+the Thesis section on first scroll. Reading this amendment as a general licence to put
+content on the hero is a misreading of its scope.
+
+**Settle semantics moved with it.** `SETTLE_MS` is 2720ms (`--hero-hold` 1600 +
+`--transition-reveal` 1000 + one `--stagger-step` 120, the last held member being
+`.hero-content` at `--i:1`), not the ≈1.24s this row still quotes for the pre-amendment
+choreography. The 1240 figure is retained above as the historical record of what N2
+originally resolved; the live number is asserted by `scripts/events.test.mjs` against
+the browser's own computed style, so it cannot drift from the note that reads it.
+`SETTLE_MS` survived the 2026-08-02 mechanism change unaltered, and the arithmetic
+above still holds term for term: `.seen` used to land at t=0 with the transition
+waiting out a 1600ms delay, and now lands at t=1600 with the transition starting at
+once. Same visible timeline, same boundary. The agreement fixture now checks three
+terms rather than two (the token, the JS value read from it, and the ordinary stagger
+plus duration the browser resolved).
 
 ---
 
@@ -359,6 +442,31 @@ The third is the one worth flagging. It is invisible at desktop width, invisible
 
 Not fixed here: this is a rendered-output change on every page at the mobile width, so it belongs in its own batch under the harness's own eyes, not folded into a certification round. Pinned by rule in `scripts/rhythm.test.mjs` so a fourth deviation fails and so migrating one of the three has to be a deliberate edit.
 
+**AMENDMENT 2026-08-01 (Wave B-1 B0) — the third row's blast radius, corrected, and the deeper finding underneath it.**
+
+The paragraph above is wrong about what the mobile override reaches, and it is wrong in the direction that hides a larger defect. Both corrections are measured, not reasoned:
+
+- **Blast radius is 8 sections, not "every page" — and not the 22 this amendment first claimed.** The 22 was derived by subtraction (68 − 46) and never checked against a rendered page; the specificity insight in the next bullet applies one step further than it was carried. Source census, 68 `<section>` elements total:
+  ```
+  $ grep -rho '<section class="[^"]*"' src/ | wc -l                     -> 68
+  $ grep -rho '<section class="[^"]*"' src/ | grep -c '\bcontainer\b'   -> 46   (44 plain + 2 wide)
+  $ grep -rho '<section class="[^"]*"' src/ | grep -v '\bcontainer\b' | sort | uniq -c
+        10  <section class="page-hero"
+         6  <section class="surface--elevated hero-overlay"
+         3  <section class="page-hero hero-overlay"
+         1  <section class="surface--elevated section--fade-edges"
+         1  <section class="section--no-padding"
+         1  <section class="hero"
+  ```
+  Of those 22 non-container sections, **14 are equally INERT for the same reason**: all 13 `.page-hero` (`padding: 12rem 5% 6rem`, `styles.css:729-730`, specificity 0,1,0) and the 1 `.section--no-padding` (`padding: 0`, `styles.css:2414`, 0,1,0) both beat the override's (0,0,1). **Reached = 8**: the 6 `.surface--elevated.hero-overlay`, the 1 `.surface--elevated.section--fade-edges`, and the 1 `.hero` — none of which declares padding on any class, so each falls through to the override. Verified by computed style, not by arithmetic: `dist/` built, served over HTTP, all 19 built pages loaded at 390px with **JavaScript disabled**, `getComputedStyle` read on every `<section>`. Results, tallied by class over 100 rendered instances — `.page-hero` pt=192px/pb=96px (its own 12rem/6rem, override inert) · `.section--no-padding` 0/0/0 (inert) · `.surface--elevated.hero-overlay`, `.section--fade-edges`, `.hero` all pt=64px/pb=64px/pl=19.5px (= `--spacing-2xl` 4rem and 5% of 390 — the override, reaching) · `.container` 0/0 with pl=24px (F-1, below).
+- **The override is INERT for the 44 containers too.** `.container` declares `padding: 0 var(--gutter)` (`styles.css:513-517`) at specificity (0,1,0); the override is `@media (max-width: 768px) { section { padding: var(--spacing-2xl) 5% } }` (`styles.css:3187-3189`) at specificity (0,0,1). **A media query adds no specificity**, so on any `section.container` the class rule wins and the override never applies. Adding the 14 inert non-containers above: the override reaches 8 of 68 sections and never flattened the rhythm it was blamed for flattening on the other 60.
+- **The finding this exposes (F-1).** `.container`'s `padding` is a SHORTHAND, so it resets the block axis to `0`. It beats `section`'s tier rule (`padding: var(--section-pad) var(--gutter)`, `styles.css:529-531`, specificity 0,0,1) at every width, desktop included. Measured: **40 of 68 sections carry ZERO vertical padding on BOTH edges, and 4 more are zero on the bottom edge only** — the 4 `container section--pt-6` sites, where `.section--pt-6 { padding-top: 6rem }` (`styles.css:2410`, 0,1,0) wins the top edge and renders pt=96px/pb=0px. (The earlier "44 of 68 at ZERO" was right about the class census and wrong about 4 of the renderings.) Not flattened by the mobile override, never present at all. `.section--pt-6` exists only to hand-patch this by force at those 4 call sites: `about.njk:11`, `service-area.njk:9`, `privacy.njk:10`, `warranty.njk:12`.
+- **Census caveat.** The 68 includes 2 source-only blog sections (`<section class="container blog-post__content">` and `…blog-post__footer">`) that never render — no blog posts are built (`dist/blog` does not exist). Every "of 68" figure in this amendment is a source-class census, not a rendered-instance count; the 19 built pages render 100 `<section>` instances because layouts and the service-area template repeat.
+
+So Lee's 2026-08-01 "spacing not that well done" is not a tier-misapplication complaint. Two-thirds of the site's sections have never carried a tier. The mechanical fix is `padding` → `padding-inline` on `.container`/`.wide-container`, which stops resetting the block axis and lets the existing tier system reach all 44 — scheduled as Wave B-1 batch B2, whose primary certificate is a ZERO-delta dom-integrity run (the change is CSS-only by construction). The three-row table above stands as written for the nav and `.page-hero` rows.
+
+**B2 SCOPE CONSEQUENCE — `.section--pt-6` must die in the same batch.** `.section--pt-6` is a hand-patch for a defect B2 removes, and it does not fall away on its own: at (0,1,0) it still beats `section`'s tier rule after the flip. So the 4 sites would render 6rem on top against `--section-pad` on the bottom — visibly asymmetric, and worse than either the before or the intended after. **B2's scope therefore includes deleting the `.section--pt-6` CSS RULE** (`styles.css:2410-2412`). Deleting the rule is CSS-only, so B2 keeps its zero-DOM-delta property and its dom-integrity certificate stands unchanged. The 4 dangling `section--pt-6` class attributes in the markup are inert once the rule is gone and get removed in **B5** with the other declarations — a markup change, correctly kept out of B2.
+
 ### 6.3 Alpha-overlay consumers WP-1b re-homes (tokens stay until their counts hit zero)
 
 `nav` border-bottom (`-10`) → `--rule` · `.contact-form--styled` border (`-08`) → component deleted (Jen §4.2: frosted card dies) · `.map-filter-btn` border/fills (`-05`/`-08`/`-10`) → rule grammar · `.comparison-badge-alt`, `.price-row.total`, `.addon-category`, `.addon-option:hover`, `.spec-item`, `.lightbox-nav` — reviewed against the ruled-surface grammar in WP-1b; any that survive keep the tokens, which is why the tokens are Carried, not Retired.
@@ -367,9 +475,56 @@ Not fixed here: this is a rendered-output change on every page at the mobile wid
 
 `--color-white` as text at `.hero-content`, `.hero h1`, `.comparison-badge`, `.footer-section h4`, `.footer-section a:hover` — candidates for `--ink` under Jen §4.3's three-token ramp. The hero pair sits on photography behind `--hero-scrim` (image-dependent, not a token pairing). Jen's Stage 3 call; the token carries either way. `--color-black` text sites (`.btn`, `.btn-outline:hover`, `.comparison-header.ours h3`, `.map-filter-btn.active`) pass on every accent fill (§7) and stand.
 
-### 6.5 One-consumer oddity
+### 6.5 One-consumer oddity — **CLOSED 2026-08-02 (Wave B-1 batch B2)**
 
-`.comparison-header.ours` runs `linear-gradient(135deg, var(--ember), var(--ember-dark))` (quoted at its post-WP-1b names) — the only gradient fill on an interactive-adjacent surface. Saul bans gradient *meshes* and radial *glows*, not this; but it is the sole reason `--ember-dark` exists. WP-1b decides flat-ember vs keep; if flattened, the token retires with it. Flagged, not resolved — **still open after WP-1b**: the token was renamed with the rest of the accent family, not retired, so the one gradient consumer survives and this decision is inherited rather than made.
+**Resolution: FLAT EMBER. `--ember-dark` is retired.**
+
+The original finding, kept for the record: `.comparison-header.ours` ran
+`linear-gradient(135deg, var(--ember), var(--ember-dark))` (quoted at its post-WP-1b
+names) — the only gradient fill on an interactive-adjacent surface. Saul bans gradient
+*meshes* and radial *glows*, not this; but it was the sole reason `--ember-dark`
+existed. WP-1b was to decide flat-ember vs keep; instead the token was renamed with the
+rest of the accent family and not retired, so the decision was inherited rather than
+made and this section stood open after WP-1b.
+
+**It is made now.** B2 flattened the fill to `background: var(--ember)` and deleted the
+`--ember-dark` declaration from `:root` in the same change. Jen confirmed at her Wave
+B-1 spec gate — "the sole gradient consumer dies with the cards" — and her Stage 3
+review raised nothing against it.
+
+The argument, plainly: the token existed to serve the gradient and the gradient existed
+to have somewhere to spend the token. Neither justified the other. On a site built from
+rules and flat grounds, one 135° gradient on one card header was the last survivor of a
+different visual system, not a considered exception to this one — and §6.3's standing
+rule is that a token retires when its consumer count reaches zero.
+
+**Verification, by command rather than by claim — and read the result exactly:**
+
+- `grep -rn "ember-dark" styles.css src/ js/ booking-ops.html` → **exactly ONE match,
+  and it is prose.** The single hit is the retirement comment left behind by B6's
+  dead-CSS sweep, which names the token in order to record that it is gone. There are
+  **zero declarations and zero `var()` call sites**, which is the property this section
+  closes on. An earlier draft of this paragraph claimed the grep returns zero; it does
+  not, and a reader running the command would have found the claim false on its face.
+  The honest gate is "no declaration, no consumer", not "no occurrence of the string".
+- **There is no longer a live `.comparison-header.ours` rule to point at.** B2 flattened
+  it to `background: var(--ember)`, and then B6's dead-CSS sweep deleted the entire
+  `.comparison-header*` family along with `.comparison-card`, `.comparison-badge*` and
+  `.comparison-list*`, because B4 had removed their markup. An earlier draft cited a live
+  rule at `styles.css:1389`; that rule no longer exists, and line 1389 now falls inside
+  unrelated `.btn-outline` commentary. The flattening story is preserved in the sweep's
+  own retirement comment, and the two checks above find the same place: **the single
+  `ember-dark` hit from the first command IS that comment.** `grep -n "last gradient
+  fill" styles.css` reaches it too, and is the better anchor if the token name is ever
+  scrubbed. Cited by content rather than by line because a line number is not a stable
+  address (B5's N-2 ruling) — the same reason the `:1389` citation above went bad.
+- §5's token ledger and §2's `--ember-dark` row are struck through with this section.
+
+**Downstream note, now resolved rather than deferred:** B4 removed the three comparison
+cards from `/saunas/` outright, so `.comparison-header*` lost its markup consumers too.
+That was a separate question — dead rules, not a live gradient — and B6's dead-CSS sweep
+settled it by deleting them. §6.5 closes on the TOKEN; the selectors' fate is recorded in
+the ROADMAP harness entry and in the retirement comment itself.
 
 ### 6.6 Pure renames — alias-backed, mechanical, selector-independent
 

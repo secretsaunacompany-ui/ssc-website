@@ -212,10 +212,27 @@
         }
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', trackPageState);
-    } else {
+    /**
+     * Always wait for DOMContentLoaded. This script is deferred, so
+     * readyState is already 'interactive' when it evaluates -- the old
+     * readyState-branch called trackPageState() immediately, RACING the
+     * cross-origin tracker (also deferred, later in source, therefore not
+     * yet evaluated): window.analyticsTracker was undefined, track()
+     * returned false, and book_page_view was dropped on every production
+     * view of /book/ until 2026-08-06. Deferred scripts all evaluate before
+     * DOMContentLoaded fires, in source order, so at DCL the tracker global
+     * exists and the event has a carrier.
+     *
+     * The 'complete' guard covers injection after the load event (readyState
+     * never returns to 'loading'). Residual window, named for honesty: a copy
+     * injected between DCL and load would bind a listener that never fires --
+     * impossible for this file, which ships only as a static deferred
+     * include (src/_includes/scripts.njk).
+     */
+    if (document.readyState === 'complete') {
         trackPageState();
+    } else {
+        document.addEventListener('DOMContentLoaded', trackPageState);
     }
 
     // ============================================

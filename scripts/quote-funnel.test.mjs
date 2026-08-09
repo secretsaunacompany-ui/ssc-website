@@ -52,20 +52,14 @@ import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
 import { createRequire } from 'node:module';
+import { SCRATCH_SKIP, scratchSite as sharedScratchSite, serve } from './lib/scratch.mjs';
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const require = createRequire(path.join(REPO_ROOT, '/'));
 const Eleventy = require('@11ty/eleventy');
 const { chromium } = require('playwright');
 
-/** Directories never copied into the scratch site (mirrors package-claim.test.mjs). */
-const SKIP = new Set(['node_modules', '.git', 'dist', '_site', '.visual-diff', '.probe', 'tmp', '.env']);
-
-const MIME = {
-  '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
-  '.json': 'application/json', '.svg': 'image/svg+xml', '.xml': 'application/xml',
-  '.webmanifest': 'application/json', '.txt': 'text/plain',
-};
+const SKIP = SCRATCH_SKIP; // one list, lib/scratch.mjs — the private copies drifted
 
 const STORAGE_KEY = 'ssc_quote_config';
 /**
@@ -76,6 +70,15 @@ const STORAGE_KEY = 'ssc_quote_config';
  * funnel.
  */
 const WOOD_HEATER = 'Mini-IKI (Wood-fired)';
+/**
+ * The heater group's DEFAULT option as it renders for MODEL -- the included
+ * electric build. This is what "back to defaults" means for the heater, and it
+ * is named here for the same reason WOOD_HEATER is: pricesVersion 4 restructured
+ * the group so the base price buys a complete sauna, and the default's label
+ * went from a generic "Standard heater (included)" to one that names the actual
+ * heater per model.
+ */
+const DEFAULT_HEATER = 'Standard electric heater — Homecraft 7.5kW H-Series (included)';
 const MODEL = 's4';
 
 let failures = 0;
@@ -86,19 +89,7 @@ function check(name, condition, detail) {
   else { failures += 1; process.stdout.write(`  FAIL  ${name}\n        ${detail}\n`); }
 }
 
-function scratchSite() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ssc-quote-funnel-'));
-  fs.cpSync(REPO_ROOT, dir, {
-    recursive: true,
-    filter: (src) => {
-      const base = path.basename(src);
-      if (base.startsWith('.env')) return false; // never copy secrets into scratch
-      return !SKIP.has(base) || path.dirname(src) !== REPO_ROOT;
-    },
-  });
-  fs.symlinkSync(path.join(REPO_ROOT, 'node_modules'), path.join(dir, 'node_modules'));
-  return dir;
-}
+const scratchSite = () => sharedScratchSite('ssc-quote-funnel');
 
 /**
  * Apply a single exact substitution to a file in the scratch copy.
@@ -117,19 +108,6 @@ function mutate(file, find, replace) {
   fs.writeFileSync(file, parts.join(replace));
 }
 
-async function serve(root) {
-  const server = http.createServer((req, res) => {
-    let file = path.join(root, decodeURIComponent(req.url.split('?')[0]));
-    try { if (fs.statSync(file).isDirectory()) file = path.join(file, 'index.html'); } catch { /* 404 below */ }
-    fs.readFile(file, (err, buf) => {
-      if (err) { res.writeHead(404); res.end('not found'); return; }
-      res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
-      res.end(buf);
-    });
-  });
-  await new Promise((r) => server.listen(0, '127.0.0.1', r));
-  return { server, base: `http://127.0.0.1:${server.address().port}` };
-}
 
 /** Build a (possibly mutated) copy of the site and serve it. */
 async function bootSite(mutator) {
@@ -141,7 +119,7 @@ async function bootSite(mutator) {
     quietMode: true,
   }).write();
   const served = await serve(dist);
-  return { dir, ...served };
+  return { dir, dist, ...served };
 }
 
 /**
@@ -702,9 +680,9 @@ async function runStates(base, browser) {
     await page.click('[data-action="quote-start-over"]');
     check('start over: clears the record and returns to defaults',
       await readStore(page) === null
-      && await page.evaluate(() => !![...document.querySelectorAll('.modal-addons .addon-option')]
-        .find((o) => o.querySelector('.addon-label').textContent.trim() === 'Standard heater (included)')
-        .querySelector('input').checked),
+      && await page.evaluate((wanted) => !![...document.querySelectorAll('.modal-addons .addon-option')]
+        .find((o) => o.querySelector('.addon-label').textContent.trim() === wanted)
+        .querySelector('input').checked, DEFAULT_HEATER),
       'start over left either the record or the selections behind');
     await page.close();
   }
@@ -733,9 +711,9 @@ async function runStates(base, browser) {
     await openModal(page, base);
     check('expiry: a record older than 7 days is ignored and removed',
       await readStore(page) === null
-      && await page.evaluate(() => !![...document.querySelectorAll('.modal-addons .addon-option')]
-        .find((o) => o.querySelector('.addon-label').textContent.trim() === 'Standard heater (included)')
-        .querySelector('input').checked),
+      && await page.evaluate((wanted) => !![...document.querySelectorAll('.modal-addons .addon-option')]
+        .find((o) => o.querySelector('.addon-label').textContent.trim() === wanted)
+        .querySelector('input').checked, DEFAULT_HEATER),
       'an expired configuration was restored, or left on disk');
     await page.close();
   }
@@ -881,6 +859,75 @@ function runEndpointCheck() {
     offenders.length === 0,
     `the endpoint is also written out in: ${offenders.join(', ')}. It had three copies `
     + 'before this package; every extra one can drift independently.');
+}
+
+/**
+ * The presence invariant, asserted in BOTH directions over the real built site.
+ *
+ * B3 scoped the configurator modal to pages setting `configurator: true`, which
+ * today is /saunas/ alone. Before that the include was sitewide and 15 routes
+ * carried a modal nothing on them could open, each shipping a second inert
+ * <form> beside their real contact form.
+ *
+ * A one-directional check is not enough, and which direction you leave out
+ * decides which failure ships silently:
+ *
+ *   triggers => modal.  Without this, someone adds an open-modal button to a
+ *   page that has no modal and the button does nothing. This is the funnel
+ *   breaking outright.
+ *
+ *   modal => triggers.  Without this, someone sets `configurator: true` on a
+ *   page with no triggers -- or the guard breaks and reverts to sitewide
+ *   emission -- and the exact defect B3 removed comes back with nothing
+ *   objecting. dom-integrity would catch the markup change on the next run, but
+ *   only until its baseline advances past this batch; after that the inert
+ *   forms are just what the site looks like. This half is the durable one.
+ *
+ * Scanned over built HTML rather than templates on purpose: the guard is a
+ * template conditional, and what matters is what it actually emitted.
+ */
+function runPresenceInvariant(dist) {
+  const pages = [];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) { walk(full); continue; }
+      if (!entry.name.endsWith('.html')) continue;
+      const html = fs.readFileSync(full, 'utf8');
+      // Redirect stubs are meta-refresh shells with no content of their own.
+      if (/http-equiv="refresh"/.test(html)) continue;
+      pages.push({
+        route: path.relative(dist, full),
+        modal: html.includes('id="saunaModal"'),
+        triggers: (html.match(/data-action="open-modal"/g) || []).length,
+      });
+    }
+  };
+  walk(dist);
+
+  check('presence: the built site was actually scanned',
+    pages.length > 10,
+    `the invariant is vacuous if it walked nothing. found ${pages.length} pages`);
+
+  const triggersNoModal = pages.filter((p) => p.triggers > 0 && !p.modal);
+  check('presence: every page with an open-modal trigger also ships the modal',
+    triggersNoModal.length === 0,
+    `these pages carry a button that cannot open anything: `
+    + `${triggersNoModal.map((p) => p.route).join(', ')}`);
+
+  const modalNoTriggers = pages.filter((p) => p.modal && p.triggers === 0);
+  check('presence: every page shipping the modal also has something that opens it',
+    modalNoTriggers.length === 0,
+    `these pages ship the configurator modal -- a second, inert <form> with empty `
+    + `configuration/model/estimated_total inputs sitting beside the real contact form -- `
+    + `with nothing on the page able to open it: ${modalNoTriggers.map((p) => p.route).join(', ')}. `
+    + `Either the page should not set \`configurator: true\`, or the footer guard has `
+    + `reverted to emitting sitewide. This is the exact defect B3 removed.`);
+
+  const carriers = pages.filter((p) => p.modal).map((p) => p.route);
+  check('presence: exactly one page ships the modal, and it is /saunas/',
+    carriers.length === 1 && carriers[0].startsWith(`saunas${path.sep}`),
+    `the configurator lives on one route. got ${carriers.length}: ${carriers.join(', ')}`);
 }
 
 // ============================================================
@@ -1063,9 +1110,9 @@ const MUTATIONS = [
 
       // The wood heater block, whose removal shifts every later index by one.
       const WOOD_HEATER_BLOCK = `                        <label class="addon-option" id="heaterWoodUpgrade">
-                            <input type="radio" name="heater" value="10800" data-addon="heater">
+                            <input type="radio" name="heater" value="5900" data-addon="heater">
                             <span class="addon-label" id="heaterWoodLabel">Original-IKI (Wood-fired)</span>
-                            <span class="addon-price" id="heaterWoodPrice">+$10,800</span>
+                            <span class="addon-price" id="heaterWoodPrice">+$5,900</span>
                         </label>
 `;
       const removeOption = (dir) => mutate(
@@ -1193,6 +1240,7 @@ const MUTATIONS = [
     sites.push(baseline);
     await runStates(baseline.base, browser);
     runEndpointCheck();
+    runPresenceInvariant(baseline.dist);
 
     process.stdout.write('\nB. mutations -- each of these MUST be detectable\n\n');
     for (const m of MUTATIONS) {

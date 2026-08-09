@@ -274,18 +274,44 @@ export function loadWhitelist(file, raw) {
     // and two attribute-less siblings of the same tag hash differently the
     // moment their content differs. An entry whose hash matches nothing in the
     // baseline is flagged before any verdict rests on it.
-    if (e.op === 'delete-subtree') {
+    // ADD-SUBTREE is delete-subtree's mirror, and it exists because the
+    // vocabulary was ASYMMETRIC in a way that only showed up when something
+    // large was ADDED rather than removed.
+    //
+    // Measured, on B4's /saunas/ recomposition: the removals came to 249 tokens
+    // and were coverable by a handful of delete-subtree entries, while the 102
+    // ADDED tokens needed one entry each — 102 declarations for what a human
+    // would call five rows and three sections. The batch's own ~40-entry
+    // tripwire said "split", and splitting could not help: the five-row ledger
+    // alone is 69 added tokens and no sub-batch can ship fewer than one row
+    // without leaving a broken page between batches. The ceiling was structural,
+    // not a question of batch size.
+    //
+    // Worse, some additions were undeclarable in PRINCIPLE. A removed/added
+    // entry names a node by a `contains` substring of its attributes, so an
+    // attribute-less element has no `contains` that could ever match it — the
+    // identical argument the delete-subtree block above makes for a bare
+    // <style>, arriving from the other direction.
+    //
+    // Same shape, same discipline, same refusals: tag + ancestry path + a hash
+    // of the node's OWN content, measured (from the CANDIDATE build, since that
+    // is where an added node lives), capped at MAX_SUBTREE_TOKENS, consuming a
+    // whole run or nothing, and flagged before any verdict rests on it if the
+    // hash matches nothing.
+    if (e.op === 'delete-subtree' || e.op === 'add-subtree') {
+      const side = e.op === 'delete-subtree' ? 'deleted' : 'added';
+      const build = e.op === 'delete-subtree' ? 'baseline' : 'candidate';
       if (typeof e.tag !== 'string' || !e.tag) {
         throw new Error(`${file}: ${where} needs a "tag" (e.g. "STYLE").`);
       }
       if (typeof e.path !== 'string' || !e.path.trim()) {
-        throw new Error(`${file}: ${where} needs a "path": the deleted node's ancestry `
+        throw new Error(`${file}: ${where} needs a "path": the ${side} node's ancestry `
           + `chain of tag names, e.g. "html/body/section/div".`);
       }
       if (typeof e.textHash !== 'string' || !/^[0-9a-f]{8,64}$/.test(e.textHash)) {
         throw new Error(`${file}: ${where} needs a "textHash": the hex subtree hash of the `
-          + `deleted node's own content. Measure it, do not invent it — a wrong hash matches `
-          + `nothing and is reported as a stale declaration.`);
+          + `${side} node's own content, measured in the ${build}. Measure it, do not invent `
+          + `it — a wrong hash matches nothing and is reported as a stale declaration.`);
       }
       if (!Number.isInteger(e.count) || e.count < 1) {
         throw new Error(`${file}: ${where} needs an integer "count" >= 1.`);
@@ -293,8 +319,8 @@ export function loadWhitelist(file, raw) {
       return { ...e };
     }
     if (e.op !== 'removed' && e.op !== 'added') {
-      throw new Error(`${file}: ${where} needs "op" of "removed", "added", "rename" or `
-        + `"delete-subtree", got ${JSON.stringify(e.op)}.`);
+      throw new Error(`${file}: ${where} needs "op" of "removed", "added", "rename", `
+        + `"delete-subtree" or "add-subtree", got ${JSON.stringify(e.op)}.`);
     }
     if (typeof e.tag !== 'string' || !e.tag) {
       throw new Error(`${file}: ${where} needs a "tag" (e.g. "LINK").`);
@@ -360,7 +386,7 @@ export function loadWhitelist(file, raw) {
 export function checkWhitelistSpecificity(whitelist, baselinePrints, candidatePrints) {
   const problems = [];
   whitelist.forEach((e, idx) => {
-    if (e.op === 'rename' || e.op === 'delete-subtree') return;
+    if (e.op === 'rename' || e.op === 'delete-subtree' || e.op === 'add-subtree') return;
     if (typeof e.contains !== 'string') return;
     const prints = e.op === 'removed' ? baselinePrints : candidatePrints;
     const wantKind = e.kind || 'element';
@@ -406,8 +432,34 @@ function subtreeSpan(tokens, i) {
   return n;
 }
 
-/** Cap on how many tokens one delete-subtree entry may claim. See matchSubtreeDeletions. */
-const MAX_SUBTREE_TOKENS = 64;
+/**
+ * Cap on how many tokens one whole-subtree entry may claim, in EITHER direction.
+ * See matchSubtreeRuns for what the cap does and why failing loudly past it is
+ * the safe direction. One constant governs both delete-subtree and add-subtree:
+ * a component is the same size whichever way it crossed the diff, and two caps
+ * would be two places to retune and one place to forget.
+ *
+ * 64 → 400, and the number is chosen from a measurement rather than picked to
+ * clear one entry. The configurator modal -- the largest single component on
+ * the site, and the thing that made this cap bite -- measures 352-355 tokens
+ * depending on build (WP-0b-i recorded 352; re-measured for this batch against
+ * its own baseline). 400 is that need plus enough headroom that the component
+ * can grow a row or two without a harness change, and it is still ONE-COMPONENT
+ * scale: a modal, a nav, a card grid. It is deliberately nowhere near the size
+ * of a page section or a template.
+ *
+ * The property the cap protects is unchanged and must stay unchanged: a
+ * declared deletion LARGER than the cap does not match and fails loudly as
+ * undeclared. It never degrades to a looser check. Raising the ceiling changes
+ * where "too big to declare in one line" starts; it does not change what
+ * happens past it. Anything larger than one component is a human conversation
+ * about whether that really is one change, not a number to raise again.
+ *
+ * Exported READ-ONLY so the fixtures can assert the value and size their
+ * subtrees relative to it, rather than hard-coding 400 a second time.
+ */
+const MAX_SUBTREE_TOKENS = 400;
+export { MAX_SUBTREE_TOKENS };
 
 /**
  * Hash a subtree's OWN content, relative to the root path P: every token's key
@@ -477,11 +529,14 @@ function sliceFitsEntry(slice, entry) {
 }
 
 /**
- * Consume delete-subtree declarations out of a page's diff, returning the set of
- * op indices they claimed.
+ * Consume whole-subtree declarations out of a page's diff, returning the set of
+ * op indices they claimed. Runs twice per page: once for `delete-subtree` over
+ * `removed` runs, once for `add-subtree` over `added` runs. ONE implementation
+ * for both directions, deliberately — a second copy is how the two sides drift
+ * until only one of them enforces the cap.
  *
- * A subtree deletion arrives as a RUN of `removed` ops, so this runs as a
- * pre-pass over each maximal block of consecutive removals: within a block, take
+ * A subtree change arrives as a RUN of same-direction ops, so this runs as a
+ * pre-pass over each maximal block of consecutive ones: within a block, take
  * the shortest contiguous slice from each position whose content hash matches a
  * live entry, claim it whole, and move past it. Anything unclaimed falls through
  * to the ordinary per-op matching and fails there if nothing declares it.
@@ -490,22 +545,24 @@ function sliceFitsEntry(slice, entry) {
  * one subtree, and a second identical deletion still fails.
  *
  * The MAX_SUBTREE_TOKENS cap bounds the slice search. It is a real limit, stated
- * rather than hidden: a declared deletion larger than 64 tokens will not match
- * and will fail loudly as undeclared, which is the safe direction — the entries
- * this exists for are 2 to 4 tokens.
+ * rather than hidden: a declared deletion larger than the cap will not match and
+ * will fail loudly as undeclared, which is the safe direction. Most entries this
+ * exists for are 2 to 4 tokens; the cap is set at one-component scale so that a
+ * whole component — the configurator modal at ~355 — can be declared as one
+ * deletion. See the constant for the measurement behind the number.
  */
-function matchSubtreeDeletions(ops, whitelist, budget, consumed) {
+function matchSubtreeRuns(ops, whitelist, budget, consumed, entryOp, opKind) {
   const claimed = new Set();
   const entries = whitelist
     .map((e, idx) => ({ e, idx }))
-    .filter(({ e }) => e.op === 'delete-subtree');
+    .filter(({ e }) => e.op === entryOp);
   if (entries.length === 0) return claimed;
 
   let k = 0;
   while (k < ops.length) {
-    if (ops[k].op !== 'removed') { k += 1; continue; }
+    if (ops[k].op !== opKind) { k += 1; continue; }
     let end = k;
-    while (end < ops.length && ops[end].op === 'removed') end += 1;
+    while (end < ops.length && ops[end].op === opKind) end += 1;
 
     let i = k;
     while (i < end) {
@@ -540,24 +597,46 @@ function matchSubtreeDeletions(ops, whitelist, budget, consumed) {
  * identical from the consumption tally alone.
  */
 export function checkSubtreeDeclarations(whitelist, baselinePrints) {
+  return checkSubtreeSide(whitelist, baselinePrints, 'delete-subtree', 'baseline');
+}
+
+/**
+ * The add-subtree mirror: an entry whose hash matches nothing in the CANDIDATE
+ * is a declaration about a node that was never added. Same argument, same
+ * message shape, opposite build — and it needs its own call because
+ * checkSubtreeDeclarations is handed the baseline prints, where an added node
+ * is correctly absent.
+ */
+export function checkAddedDeclarations(whitelist, candidatePrints) {
+  return checkSubtreeSide(whitelist, candidatePrints, 'add-subtree', 'candidate');
+}
+
+function checkSubtreeSide(whitelist, prints, entryOp, buildName) {
   const problems = [];
+  const verb = entryOp === 'delete-subtree' ? 'deleted' : 'added';
   whitelist.forEach((e, idx) => {
-    if (e.op !== 'delete-subtree') return;
+    if (e.op !== entryOp) return;
     let matches = 0;
     let sameSpot = 0;
-    for (const [, tokens] of baselinePrints) {
+    // VACUITY, guarded in the same spirit as fingerprintsIdentical: a build that
+    // produced no pages cannot corroborate a declaration, and `matches === 0`
+    // already routes that to the loud branch below. Stated so nobody "optimises"
+    // an early return for the empty case, which would turn no evidence into a
+    // silent pass.
+    for (const [, tokens] of prints) {
       for (const found of findSubtreeHashes(tokens, e.path, e.tag)) {
         sameSpot += 1;
         if (found.hash === e.textHash) matches += 1;
       }
     }
     if (matches === 0) {
-      problems.push(`whitelist[${idx}]: delete-subtree declares <${e.tag.toLowerCase()}> at `
-        + `"${e.path}" with content hash ${e.textHash}, and NO node in the baseline hashes to `
-        + `that (${sameSpot} node(s) of that tag do sit at that path). Either the hash was `
-        + `written by hand instead of measured, or the node this entry was written for is `
-        + `already gone. Re-measure it or delete the entry — a declaration about a node that `
-        + `does not exist cannot certify anything.`);
+      problems.push(`whitelist[${idx}]: ${entryOp} declares <${e.tag.toLowerCase()}> at `
+        + `"${e.path}" with content hash ${e.textHash}, and NO node in the ${buildName} hashes `
+        + `to that (${sameSpot} node(s) of that tag do sit at that path; the ${buildName} `
+        + `contributed ${prints.size} page/width fingerprint(s)). Either the hash was written `
+        + `by hand instead of measured, or the node this entry was written for was never `
+        + `${verb}. Re-measure it or delete the entry — a declaration about a node that does `
+        + `not exist cannot certify anything.`);
     }
   });
   return problems;
@@ -566,8 +645,8 @@ export function checkSubtreeDeclarations(whitelist, baselinePrints) {
 /** Human-readable identity for a whitelist entry, for reports and logs. */
 export function describeEntry(e) {
   if (e.op === 'rename') return `rename ${e.from} -> ${e.to === null ? '(removed)' : e.to}`;
-  if (e.op === 'delete-subtree') {
-    return `delete-subtree <${e.tag.toLowerCase()}> at ${e.path} #${e.textHash}`;
+  if (e.op === 'delete-subtree' || e.op === 'add-subtree') {
+    return `${e.op} <${e.tag.toLowerCase()}> at ${e.path} #${e.textHash}`;
   }
   const kind = (e.kind || 'element') === 'element' ? '' : `${e.kind} in `;
   return `${e.op} ${kind}<${e.tag.toLowerCase()}> ${JSON.stringify(e.contains)}`;
@@ -592,7 +671,13 @@ export function applyWhitelist(ops, whitelist) {
   const consumed = new Map();
   const failures = [];
 
-  const claimed = matchSubtreeDeletions(ops, whitelist, budget, consumed);
+  // Both directions get first refusal, for the same reason: a whole-subtree
+  // entry consumes an entire run, and a per-node entry would otherwise eat the
+  // run's root token and leave the orphaned descendants failing on their own.
+  const claimed = matchSubtreeRuns(ops, whitelist, budget, consumed, 'delete-subtree', 'removed');
+  for (const i of matchSubtreeRuns(ops, whitelist, budget, consumed, 'add-subtree', 'added')) {
+    claimed.add(i);
+  }
 
   for (let k = 0; k < ops.length; k++) {
     if (claimed.has(k)) continue;
@@ -635,15 +720,81 @@ export function applyWhitelist(ops, whitelist) {
  * gone; the tolerant body is the whole test. Fixture Y1 pins the abbreviated
  * case ACTIVE so this cannot regress into politeness again.
  */
-export function partitionByScope(whitelist, baselineSha, candidateSha) {
+export function partitionByScope(whitelist, baselineSha, candidateSha, opts = {}) {
+  const descendantOk = opts.descendantOk || new Set();
   const applies = (e) => {
     const [b, c] = e.range.split('..');
-    return (candidateSha.startsWith(c) || c.startsWith(candidateSha))
-      && (baselineSha.startsWith(b) || b.startsWith(baselineSha));
+    // The BASELINE end is always exact-prefix. It is not negotiable and gets no
+    // descendant tolerance: every measurement an entry carries -- a subtree
+    // hash, a count -- was taken against that specific baseline, so an entry
+    // read against a different one is describing a document it never saw.
+    const baseOk = baselineSha.startsWith(b) || b.startsWith(baselineSha);
+    if (!baseOk) return false;
+    if (candidateSha.startsWith(c) || c.startsWith(candidateSha)) return true;
+    // DESCENDANT ACTIVATION. Only the candidate end moves, and only when the
+    // caller has PROVEN two things about it (see resolveDescendantScope): the
+    // candidate is a git descendant of the range end, and the harness's own
+    // built-markup fingerprints of the two are identical on every page and
+    // width. Absent that proof this is exactly the old behaviour.
+    return descendantOk.has(c);
   };
   const active = whitelist.filter(applies);
   const inert = whitelist.filter((e) => !applies(e));
   return { active, inert };
+}
+
+/**
+ * Are two builds' fingerprints the same markup, page for page and width for
+ * width?
+ *
+ * This is the self-verifying half of descendant activation. An entry says "this
+ * deletion happens between baseline B and candidate C". If the branch tip has
+ * moved past C to some descendant D, that claim still holds for D if and only if
+ * D's delivered markup is identical to C's -- and this instrument already knows
+ * how to answer that question, because comparing delivered markup is the only
+ * thing it does. So the check is made with the harness's own primitive rather
+ * than with a rule about which files are "allowed" to change between C and D.
+ * A commit that touches only a config file passes; a commit that quietly moves
+ * a <div> does not, and the entry goes inert, and the change it no longer covers
+ * reports as undeclared. Fail-closed: any doubt -- a missing page, a differing
+ * token -- is a NO.
+ *
+ * @returns {{identical: boolean, differences: string[]}}
+ */
+export function fingerprintsIdentical(aPrints, bPrints) {
+  const differences = [];
+  // VACUITY GUARD (Razor, B3 review). Two empty maps agree about nothing, and
+  // the loops below would return identical:true for them -- which in the one
+  // caller that matters would activate an entry on the strength of a build that
+  // produced no pages at all. "I measured nothing and found no difference" is
+  // the fail-OPEN direction for a mechanism whose every other error path closes.
+  if (aPrints.size === 0 || bPrints.size === 0) {
+    return {
+      identical: false,
+      differences: [`no fingerprints to compare (${aPrints.size} vs ${bPrints.size}); `
+        + 'an empty comparison cannot establish identity'],
+    };
+  }
+  const aKeys = [...aPrints.keys()].sort();
+  const bKeys = [...bPrints.keys()].sort();
+  for (const k of aKeys) if (!bPrints.has(k)) differences.push(`${k}: missing from the descendant`);
+  for (const k of bKeys) if (!aPrints.has(k)) differences.push(`${k}: present only in the descendant`);
+  for (const k of aKeys) {
+    if (!bPrints.has(k)) continue;
+    const a = aPrints.get(k);
+    const b = bPrints.get(k);
+    if (a.length !== b.length) {
+      differences.push(`${k}: ${a.length} tokens vs ${b.length}`);
+      continue;
+    }
+    for (let i = 0; i < a.length; i++) {
+      if (tokenKey(a[i]) !== tokenKey(b[i])) {
+        differences.push(`${k}: token ${i} differs (${describeToken(a[i])})`);
+        break;
+      }
+    }
+  }
+  return { identical: differences.length === 0, differences };
 }
 
 /**

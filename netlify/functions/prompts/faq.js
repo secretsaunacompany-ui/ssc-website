@@ -33,9 +33,12 @@ TIMELINE: ${products.timeline.typical}. ${products.timeline.note}
 SERVICE AREAS: ${products.serviceAreas.primary}. Extended: ${products.serviceAreas.extended}
 
 HEATING:
-- Electric: consistent temperature control, indoor-friendly, lower maintenance. Standard heater varies by model (Homecraft 7.5kW on S2-S8, Harvia Pro 20 or Homecraft Revive 9kW on SC).
-- Wood-fired: authentic Finnish experience, outdoor ideal, ritual of fire-tending. Harvia M3 included on S4-SC. IKI wood-fired stoves available as an upgrade (Mini-IKI +$9,800 on S4; Original-IKI +$10,800 on S6/S8, +$8,200 on SC).
-- S2 is electric only. All other models support both.
+- Every base price includes a complete heater. Nothing in this group is required to make the sauna work, and choosing wood-fired instead of electric costs nothing.
+- Standard electric (included, $0): Homecraft 7.5kW H-Series on S2-S8, Homecraft Revive 9kW on SC. Consistent temperature control, indoor-friendly, lower maintenance.
+- Standard wood-fired (included, $0): Harvia M3 on S4, S6 and S8. Authentic Finnish experience, outdoor ideal, ritual of fire-tending.
+- S2 has no wood-fired option at all. SC has no standard wood-fired build, but can take the premium IKI.
+- Premium electric upgrade: +$3,500 on S2-S8 (Revive 9kW), +$2,800 on SC (15kW Apex).
+- Premium wood-fired (IKI): +$5,000 on S4 (Mini-IKI), +$5,900 on S6/S8 and +$6,500 on SC (Original-IKI). SC's is dearest because it steps up from electric rather than from an included M3.
 
 RULES:
 - Answer directly and concisely. 1-2 paragraphs max

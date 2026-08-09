@@ -45,8 +45,56 @@
         interiorThermowood: 'interiorUpgrade',
         exteriorStandingSeam: 'exteriorStandingSeam',
         exteriorCedar: 'exteriorCedar',
+        exteriorYakisugi: 'exteriorYakisugi',
         premiumFinishPrice: 'premiumFinishPrice'
     };
+
+    /**
+     * The single-choice groups the Premium Finish Package OCCUPIES, and the
+     * option each one is occupied WITH.
+     *
+     * Mirrors `packages.premium_finish.upgradableGroups` in canonical
+     * models.json, which is the machine-readable statement of the same fact and
+     * is asserted against the package's `includes` by the quote generator.
+     * Keyed by radio-group NAME here because that is what the DOM offers.
+     *
+     * A slot's baseline is ALREADY PAID FOR inside the package price. Showing
+     * it checked and then adding its price on top is the double-bill; showing
+     * the group's own default checked instead is a different lie -- the page
+     * says "standard metal cladding" while the package it just sold includes
+     * cedar. Both were live. `calculateTotal()` bills a checked baseline at $0
+     * and labels it as included.
+     *
+     * `pricing: 'additive'` marks the documented audio exception: the package
+     * carries the standard set, and the premium tier is billed at its own full
+     * price on top rather than at a difference (optionGroups.audio._note). So
+     * audio is the one occupied group that stays SELECTABLE under the package.
+     */
+    const PACKAGE_SLOTS = {
+        exterior: { baseline: 'exteriorCedar' },
+        interior: { baseline: 'interiorClearCedar' },
+        speakers: { baseline: '1000', pricing: 'additive' }
+    };
+
+    /** The package's `select: "any"` includes. No slot, no baseline: locked off. */
+    const PACKAGE_CHECKBOX_INCLUDES = ['input[data-addon="wifi"]', 'input[data-addon="lighting"]'];
+
+    const PACKAGE_LABEL = 'Premium Finish Package';
+
+    /** Is the package currently selected? One reader, so nobody drifts. */
+    const isPackageSelected = () =>
+        !!document.querySelector('input[name="premiumPackage"][value="premiumFinishPrice"]:checked');
+
+    /**
+     * True when this input is the baseline of a slot the package occupies AND
+     * the package is on -- i.e. the customer already paid for it inside the
+     * package and it must not be billed a second time.
+     */
+    function isPackageIncluded(input) {
+        if (!isPackageSelected()) return false;
+        const slot = PACKAGE_SLOTS[input.name];
+        return !!slot && input.value === slot.baseline;
+    }
 
     /** Debounce and per-open ceiling for `configurator_option_change`. */
     const OPTION_EVENT_DEBOUNCE_MS = 500;
@@ -208,6 +256,12 @@
         }
 
         open(modelId) {
+            // Defence in depth. initModalManager() refuses to construct without
+            // a #saunaModal, so a manager reaching here should always have one;
+            // this catches the case where the root is removed after
+            // construction, and it means open() can never proceed to bind focus
+            // and paint against a null root.
+            if (!this.modal) return;
             const saunaModels = window.SSC.saunaModels;
             currentModel = saunaModels[modelId];
             currentModelId = modelId;
@@ -536,20 +590,30 @@
             setPrice('thermowoodPrice', currentModel.interiorUpgrade);
             setPrice('standingSeamPrice', currentModel.exteriorStandingSeam);
             setPrice('cedarExteriorPrice', currentModel.exteriorCedar);
+            setPrice('yakisugiExteriorPrice', currentModel.exteriorYakisugi);
             setPrice('premiumFinishPrice', currentModel.premiumFinishPrice);
         }
 
         /**
-         * Both heater upgrades are per-model in price AND in product.
+         * Four heater options, all per-model in product and two of them in
+         * price. The group's shape is the complete-sauna rule (per Lee,
+         * 2026-08-03): the base price buys a finished sauna, so the first two
+         * options are INCLUDED BUILDS at $0 -- electric, and wood-fired where
+         * the model offers it -- and the two tiers below them price over
+         * whichever standard that model carries.
          *
-         * This slot previously swapped only the LABEL and left one hardcoded
-         * $2,000 behind it, so SC's 15kW Apex and the S2-S8 Revive were sold at
-         * one price that had only ever been costed for one of them. Value,
-         * price text and label are now set together from the model, every time.
+         * The priced slots were the original defect: this group once swapped
+         * only the LABEL and left one hardcoded $2,000 behind it, so SC's 15kW
+         * Apex and the S2-S8 Revive sold at one price that had only ever been
+         * costed for one of them. Value, price text and label are now set
+         * together from the model, every time.
          *
-         * Wood-fired is per-model too: a model with no `woodFired` price has no
-         * wood-fired option, which is stronger than the old electricOnly flag
-         * -- it cannot be selected because there is no price for it to carry.
+         * Availability is per-model and expressed as an absent price rather
+         * than a flag, which is stronger: `standardWoodLabel` null means the
+         * model has no wood-fired BUILD (S2 on clearances, SC on commercial
+         * spec) and `woodPremium` null means no IKI tier. S2 has neither; SC
+         * has the tier but not the standard, which is exactly why its tier is
+         * the dearest -- it steps off electric rather than off a free M3.
          */
         handleHeaterOptions() {
             const electricLabel = document.getElementById('heaterElectricLabel');
@@ -564,14 +628,87 @@
                 electricInput.value = String(amount);
             }
 
+            // The two INCLUDED builds. Both are $0 on every model that offers
+            // them, so nothing here touches a value -- only the names, which
+            // differ by model (S2-S8 carry the H-Series, SC the Revive).
+            // Reached through the input's data-default rather than an id. The
+            // row carries no id deliberately: it is the same included row it has
+            // always been, and giving it one would have changed the attributes of
+            // an otherwise-untouched <label>/<span> pair -- a change the DOM
+            // integrity gate cannot be made to declare, because on the removed
+            // side those nodes have no attributes to key on.
+            const stdElecInput = document.querySelector('input[name="heater"][data-default]');
+            const stdElecLabel = stdElecInput
+                && stdElecInput.closest('.addon-option')
+                && stdElecInput.closest('.addon-option').querySelector('.addon-label');
+            if (stdElecLabel && currentModel.standardElectricLabel) {
+                stdElecLabel.textContent =
+                    `Standard electric heater — ${currentModel.standardElectricLabel} (included)`;
+            }
+
+            const stdWood = document.getElementById('heaterStandardWood');
+            if (stdWood) {
+                const stdWoodInput = stdWood.querySelector('input');
+                const stdWoodLabel = document.getElementById('heaterStandardWoodLabel');
+                const woodName = currentModel.standardWoodLabel;
+
+                // Label first, unconditionally -- the same rule as the premium
+                // row below, and the same defect: painting the name only on the
+                // available branch left the previously-viewed model's stove
+                // sitting under a greyed-out option. This row differs in one
+                // way that makes the bare hoist a no-op, which is why the
+                // fallback is here: a null `standardWoodLabel` is this row's
+                // availability signal AND its name, so unlike `woodPremiumLabel`
+                // (which S2 still carries with a null price) there is no
+                // per-model name to fall back on. The row therefore repaints to
+                // the GENERIC standard wood stove -- the same string the
+                // un-scripted markup already ships in sauna.njk -- so a disabled
+                // row names the stove the model cannot have rather than whichever
+                // one the visitor looked at last. Latent today because all three
+                // models that offer a standard wood build carry the M3; it stops
+                // being latent the first time one of them does not.
+                if (stdWoodLabel) {
+                    stdWoodLabel.textContent =
+                        `Standard wood-fired heater — ${woodName || 'Harvia M3'} (included)`;
+                }
+
+                // No standard wood build on this model: S2 on clearances, SC on
+                // commercial spec. Disabled exactly like the premium tier below,
+                // and if it was the live selection we fall back to the included
+                // ELECTRIC build -- never to a priced tier, which would raise the
+                // total by switching models.
+                if (!woodName) {
+                    stdWood.classList.add('disabled');
+                    if (stdWoodInput) {
+                        stdWoodInput.disabled = true;
+                        if (stdWoodInput.checked) {
+                            stdWoodInput.checked = false;
+                            const fallbackInput =
+                                document.querySelector('input[name="heater"][data-default]');
+                            if (fallbackInput) fallbackInput.checked = true;
+                        }
+                    }
+                } else {
+                    stdWood.classList.remove('disabled');
+                    if (stdWoodInput) stdWoodInput.disabled = false;
+                }
+            }
+
             const woodUpgrade = document.getElementById('heaterWoodUpgrade');
             if (!woodUpgrade) return;
 
             const woodInput = woodUpgrade.querySelector('input');
             const woodLabel = document.getElementById('heaterWoodLabel');
             const woodPrice = document.getElementById('heaterWoodPrice');
-            const woodAmount = currentModel.woodFired;
-            const unavailable = currentModel.electricOnly || typeof woodAmount !== 'number';
+            const woodAmount = currentModel.woodPremium;
+            const unavailable = typeof woodAmount !== 'number';
+
+            // Label first, unconditionally. A disabled row still has to name
+            // the right stove: setting it only on the available branch left the
+            // previous model's name sitting under a greyed-out option.
+            if (woodLabel && currentModel.woodPremiumLabel) {
+                woodLabel.textContent = currentModel.woodPremiumLabel;
+            }
 
             if (unavailable) {
                 woodUpgrade.classList.add('disabled');
@@ -582,8 +719,15 @@
                     // rather than leaving an unbuyable heater in the total.
                     if (woodInput.checked) {
                         woodInput.checked = false;
-                        const fallback = document.querySelector('input[name="heater"][value="0"]');
-                        if (fallback) fallback.checked = true;
+                        // Two radios carry value="0" since pricesVersion 4 (the
+                        // electric and wood-fired included builds), so target
+                        // the included ELECTRIC one by id rather than by value
+                        // -- a value selector would pick whichever came first
+                        // in the markup and could hand the visitor a wood build
+                        // on a model that has just been ruled out of wood.
+                        const fallbackInput =
+                            document.querySelector('input[name="heater"][data-default]');
+                        if (fallbackInput) fallbackInput.checked = true;
                     }
                 }
             } else {
@@ -592,20 +736,31 @@
                     woodInput.disabled = false;
                     woodInput.value = String(woodAmount);
                 }
-                if (woodLabel && currentModel.woodFiredLabel) woodLabel.textContent = currentModel.woodFiredLabel;
                 if (woodPrice) woodPrice.textContent = `+${formatCurrency(woodAmount)}`;
             }
         }
 
         resetForm() {
+            // The form is about to go back to defaults, package radio included,
+            // so the transition tracker must go with it -- a stale `true` from
+            // the previous open would make the next call think the package had
+            // just been cleared and reset a slot the visitor had chosen.
+            this.packageWasOn = false;
+
             // Reset radio buttons to default
             document.querySelectorAll('.modal-addons input[type="radio"]').forEach((input) => {
-                // Zero-valued radios are the "none / included" defaults for their group.
-                // Groups whose options are all non-priced (e.g. bench) mark their default
-                // explicitly with data-default so they still reset correctly.
-                // handlePremiumPackageChange applies the same two-clause test -- keep them
+                // The default is DECLARED (data-default), never inferred from a
+                // $0 value. It used to be inferred, and pricesVersion 4 broke
+                // that: the heater group now has two $0 options -- the included
+                // electric and wood-fired builds -- so the old test checked BOTH
+                // and the last one silently won the group, resetting every
+                // visitor onto a wood-fired sauna. Bench already had to be
+                // marked explicitly for the mirror-image reason (no $0 marker to
+                // infer from at all), so this is that same rule, applied to
+                // every group instead of the one that forced it.
+                // handlePremiumPackageChange applies the same test -- keep them
                 // in step, or the two paths disagree about what "default" means.
-                if (input.value === '0' || input.hasAttribute('data-default')) {
+                if (input.hasAttribute('data-default')) {
                     input.checked = true;
                 }
                 // Re-enable all inputs
@@ -652,6 +807,23 @@
             // Process radio button selections
             document.querySelectorAll('.modal-addons input[type="radio"]:checked').forEach((input) => {
                 let value = input.value;
+
+                // Already inside the package price. Named on the summary so the
+                // visitor can see what the package bought them, at $0 so they
+                // are not charged for it twice.
+                if (isPackageIncluded(input)) {
+                    const included = input.closest('.addon-option');
+                    const includedLabel = included ? included.querySelector('.addon-label') : null;
+                    if (includedLabel) {
+                        addonsHTML += `
+                        <div class="price-row addon">
+                            <span>${includedLabel.textContent}</span>
+                            <span>Included in package</span>
+                        </div>
+                    `;
+                    }
+                    return;
+                }
 
                 if (Object.prototype.hasOwnProperty.call(PER_MODEL_PRICE_KEYS, value)) {
                     value = currentModel[PER_MODEL_PRICE_KEYS[value]] || 0;
@@ -713,38 +885,98 @@
             if (stickyTotal) stickyTotal.textContent = formatCurrency(total);
         }
 
+        /**
+         * What selecting (or clearing) the package does to the rest of the form.
+         *
+         * The old version treated all five includes identically: disable the
+         * input, and for radios force the group's ZERO default checked. That was
+         * wrong in two different directions at once.
+         *
+         *   - It disabled `input[data-addon="speakers"]`, which is all THREE
+         *     audio radios, so premium audio became unreachable under the
+         *     package. Canonical says the opposite (the package carries the
+         *     standard set; premium is priced outside it) and so does the
+         *     comment directly above that markup. The page contradicted both.
+         *   - It forced "Standard metal cladding" and "Knotty Western Red Cedar"
+         *     checked while selling a package that includes CEDAR exterior and
+         *     CLEAR cedar interior. The visitor was shown a build the package
+         *     does not describe.
+         *
+         * Now: `select: "any"` includes stay locked off (nothing to upgrade
+         * from, so having them selected is a plain double-bill). Delta slots are
+         * locked TO the package's own included option, shown as included at $0.
+         * The additive slot (audio) stays open, seeded to the included standard
+         * set, with premium selectable and charged in full on top.
+         *
+         * The exterior and interior groups stay LOCKED for now. Letting a
+         * visitor swap them at the delta is a real product (Lee ruled the
+         * pricing on 2026-08-03 and the quote generator already implements it);
+         * it needs configurator UI this batch does not build. Tracked in
+         * ROADMAP `next`.
+         */
         handlePremiumPackageChange() {
-            const isPremiumSelected = document.querySelector('input[name="premiumPackage"][value="premiumFinishPrice"]:checked');
+            const on = isPackageSelected();
+            // This runs on every package radio change AND after every restore,
+            // so "the package is off" is not the same question as "the package
+            // was just turned off". Only the TRANSITION may clear a slot back to
+            // its default -- otherwise restoring a saved a-la-carte cedar
+            // exterior (or the standard speaker set) would wipe it, because the
+            // restore path calls this to re-apply the disabling rule.
+            const wasOn = this.packageWasOn === true;
+            this.packageWasOn = on;
 
-            // Elements that are included in Premium Finish Package
-            const conflictingAddons = [
-                'input[name="interior"]',           // Clear cedar interior
-                'input[name="exterior"]',           // Cedar exterior
-                'input[data-addon="wifi"]',         // WiFi controller
-                'input[data-addon="lighting"]',     // Lighting package
-                'input[data-addon="speakers"]'      // Bluetooth speakers
-            ];
-
-            conflictingAddons.forEach((selector) => {
+            // select:"any" includes -- no slot, no baseline, locked off entirely.
+            PACKAGE_CHECKBOX_INCLUDES.forEach((selector) => {
                 document.querySelectorAll(selector).forEach((input) => {
                     const addonOption = input.closest('.addon-option');
-                    if (isPremiumSelected) {
-                        // Disable and dim conflicting options
-                        input.disabled = true;
-                        if (addonOption) addonOption.classList.add('disabled');
-                        // Reset to default/included value
-                        if (input.type === 'checkbox') {
-                            input.checked = false;
-                        // Same default test as resetForm -- see the comment there.
-                        } else if (input.type === 'radio' && (input.value === '0' || input.hasAttribute('data-default'))) {
-                            input.checked = true;
-                        }
-                    } else {
-                        // Re-enable options
-                        input.disabled = false;
-                        if (addonOption) addonOption.classList.remove('disabled');
-                    }
+                    input.disabled = on;
+                    if (addonOption) addonOption.classList.toggle('disabled', on);
+                    if (on) input.checked = false;
                 });
+            });
+
+            Object.entries(PACKAGE_SLOTS).forEach(([groupName, slot]) => {
+                const inputs = [...document.querySelectorAll(`.modal-addons input[name="${groupName}"]`)];
+                const additive = slot.pricing === 'additive';
+
+                inputs.forEach((input) => {
+                    const addonOption = input.closest('.addon-option');
+                    // Additive slots stay live: the whole point is that the
+                    // premium tier remains buyable alongside the package.
+                    const lock = on && !additive;
+                    input.disabled = lock;
+                    if (addonOption) addonOption.classList.toggle('disabled', lock);
+                });
+
+                if (on) {
+                    // Show the package's own included choice. For the additive
+                    // slot only seed it -- a visitor who has already chosen
+                    // premium audio keeps it.
+                    const current = inputs.find((i) => i.checked);
+                    const atDefault = !current || current.hasAttribute('data-default');
+                    if (!additive || atDefault) {
+                        const baseline = inputs.find((i) => i.value === slot.baseline);
+                        if (baseline) baseline.checked = true;
+                    }
+                } else if (wasOn) {
+                    // Package just cleared. Leaving the baseline checked would
+                    // start billing cedar the moment the package came off --
+                    // the same double-bill wearing the other hat -- so it
+                    // resets to the group default. KNOWN SACRIFICE (2026-08-06):
+                    // "the baseline was only checked because the package put it
+                    // there" is untrue for one ordering -- a visitor who picked
+                    // the baseline option a la carte BEFORE trying the package
+                    // loses that pick when they toggle it off. The reset lands
+                    // on a $0 default, the summary always matches the total,
+                    // and the loss is one visible click; remembering per-slot
+                    // pre-package state is more machinery than that justifies.
+                    // Same default test as resetForm; keep them in step.
+                    const current = inputs.find((i) => i.checked);
+                    if (current && current.value === slot.baseline) {
+                        const def = inputs.find((i) => i.hasAttribute('data-default'));
+                        if (def) def.checked = true;
+                    }
+                }
             });
 
             this.calculateTotal();
@@ -775,7 +1007,14 @@
                 if (!labelEl) return;
 
                 const label = labelEl.textContent.trim();
-                const priceText = priceEl ? priceEl.textContent.trim() : '';
+                // The price SPAN still reads "+$2,500" on cedar, because it is
+                // the a-la-carte price and stays correct with the package off.
+                // Under the package that option is already paid for, and copying
+                // the span into the quote would put a charge in the text that is
+                // not in the total.
+                const priceText = isPackageIncluded(input)
+                    ? `(included in ${PACKAGE_LABEL})`
+                    : (priceEl ? priceEl.textContent.trim() : '');
                 lines.push(`\u2022 ${label}${priceText ? ` ${priceText}` : ''}`);
                 selections.push({
                     i: index,
@@ -1213,7 +1452,24 @@
     // ============================================
     let modalManager = null;
 
+    /**
+     * Returns null on any page that does not carry the modal.
+     *
+     * The include is now scoped to pages setting `configurator: true` (today
+     * /saunas/ alone), so on the other 15 routes this script still loads -- it
+     * is in the shared bundle -- and finds no #saunaModal. Constructing a
+     * ModalManager against a null root would bind listeners and query elements
+     * that are not there, so the manager is simply never created and
+     * `window.SSC.modalManager` stays undefined.
+     *
+     * That is safe because EVERY dispatch site already guards on it before
+     * calling: js/init.js lines 25, 28, 31, 34, 37, 75 and 121 each read
+     * `if (SSC.modalManager) SSC.modalManager.<method>(...)`. Those seven
+     * guards were written for the deferred-construction window and hold
+     * unchanged for permanent absence -- verified site by site, not assumed.
+     */
     function initModalManager() {
+        if (!document.getElementById('saunaModal')) return null;
         if (!modalManager) {
             modalManager = new ModalManager();
             window.SSC.modalManager = modalManager;

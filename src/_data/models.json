@@ -1,0 +1,86 @@
+{
+  "_comment": "The ONE place the website states a model fact. Rendered into the /saunas/ ledger rows, the /saunas/ ItemList JSON-LD, and the sitewide OfferCatalog JSON-LD in head.njk. Before this file those three said three different things about the SC's capacity (10-14+, 10-14, 10-14) while the canonical sheet and js/data.js both said 10-12+ -- the markup was the drifted copy, for the site's whole history. CENSUS CORRECTED 2026-08-02 (Razor W4): FIVE places, not four. The fifth is home.njk:31, '14-person+ commercial units' -- a THIRD wrong figure, and the reason the original census missed it is worth keeping: that grep searched for '10-14', and this copy never contained the string. A census built from one spelling of a wrong number cannot find the other spellings. Fixed to canonical in the same round, changing the number and nothing else about the sentence.",
+  "_canonical": "/home/leesalo/marvin/content/reference/operations/models.json",
+  "_gate": "scripts/models-json-roundtrip.mjs asserts, per model, that `name` `size` `capacity` `basePrice` here are byte-equal to the canonical sheet's, that `priceDisplay` carries exactly `basePrice`, and that the RENDERED capacity cell of each ledger row is the canonical string modulo the two sanctioned glyph substitutions. Without those assertions this file is a seventh drift source rather than a fix. Do not add a fact field here that the gate does not cover.",
+  "_glyphs": "Jen's Stage 0.7 spec sanctions two PURE-TYPOGRAPHY substitutions at render time, never in this file: `x` -> `×` (U+00D7) in sizes, and the hyphen -> en dash in capacity ranges. The strings stored here are the canonical strings, unaltered, so the gate compares like with like.",
+  "_presentational": "`id` `designation` `ldName` `ldSummary` `ldDetail` `ldShort` `alt` are FORM, not facts, and are deliberately outside the canonical gate -- the canonical sheet has no opinion about schema.org phrasing or alt text. Every fact inside the composed strings (capacity, size, price) is interpolated from the gated fields, so prose cannot carry a stale number. thumb (added 2026-08-07): the model-index row's photograph on /saunas/. NOT a canonical field and not gated by models-json-roundtrip -- it is a MIRROR of js/data.js's saunaModels[id].images[0] (first non-video entry), which is the image the configurator opens on, so the row and the modal show the same sauna. Kept in sync by scripts/model-thumbs.test.mjs, which fails if the two ever disagree; do not edit one without the other.",
+  "order": [
+    "S2",
+    "S4",
+    "S6",
+    "S8",
+    "SC"
+  ],
+  "models": {
+    "S2": {
+      "id": "s2",
+      "designation": "S2",
+      "name": "S2 Standard Sauna",
+      "size": "5' x 7'",
+      "capacity": "2-3 people",
+      "basePrice": 23500,
+      "priceDisplay": "From $23,500",
+      "ldName": "S2 Finnish Sauna",
+      "ldSummary": "compact Finnish sauna",
+      "ldDetail": "exterior with three-tier benches, Western Red Cedar interior, full insulation, and metal exterior cladding.",
+      "ldShort": "compact Finnish sauna with three-tier benches",
+      "thumb": "/img/Gemini_Generated_Image_ot1l9lot1l9lot1l_1_ukzekw-1200w.webp"
+    },
+    "S4": {
+      "id": "s4",
+      "designation": "S4",
+      "name": "S4 Standard Sauna",
+      "size": "7' x 7'",
+      "capacity": "4-5 people",
+      "basePrice": 29500,
+      "priceDisplay": "From $29,500",
+      "ldName": "S4 Finnish Sauna",
+      "ldSummary": "Finnish sauna",
+      "ldDetail": "exterior with Western Red Cedar interior, choice of bench configuration, and one large window.",
+      "ldShort": "Finnish sauna with Western Red Cedar interior",
+      "thumb": "/img/PXL_20240808_173352968.MP_yhb9bq-1200w.webp"
+    },
+    "S6": {
+      "id": "s6",
+      "designation": "S6",
+      "name": "S6 Standard Sauna",
+      "size": "7' x 9'",
+      "capacity": "6-7 people",
+      "basePrice": 35500,
+      "priceDisplay": "From $35,500",
+      "ldName": "S6 Finnish Sauna",
+      "ldSummary": "Finnish sauna",
+      "ldDetail": "exterior, available as mobile or semi-permanent. Western Red Cedar interior with full customization options.",
+      "ldShort": "Finnish sauna, available as mobile or semi-permanent",
+      "thumb": "/img/IMG_6404_hrncws-1200w.webp"
+    },
+    "S8": {
+      "id": "s8",
+      "designation": "S8",
+      "name": "S8 Standard Sauna",
+      "size": "7' x 11'",
+      "capacity": "8-10 people",
+      "basePrice": 44000,
+      "priceDisplay": "From $44,000",
+      "ldName": "S8 Finnish Sauna",
+      "ldSummary": "luxury Finnish sauna",
+      "ldDetail": "exterior with full customization, premium interior options, and commercial-grade construction.",
+      "ldShort": "luxury Finnish sauna with full customization",
+      "thumb": "/img/DSC03225-EDIT_crqtkp-1200w.webp"
+    },
+    "SC": {
+      "id": "sc",
+      "designation": "SC",
+      "name": "SC Commercial Sauna",
+      "size": "7' x 12' or larger",
+      "capacity": "10-12+ people",
+      "basePrice": 57000,
+      "priceDisplay": "From $57,000",
+      "ldName": "SC Commercial Sauna",
+      "ldSummary": "commercial-grade Finnish sauna",
+      "ldDetail": "exterior, built for resorts, spas, and commercial facilities. Fully custom specifications.",
+      "ldShort": "commercial-grade Finnish sauna for resorts and gyms",
+      "thumb": "/img/IMG_5228_1_z2bz8q-1200w.webp"
+    }
+  }
+}

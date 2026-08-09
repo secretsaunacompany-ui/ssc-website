@@ -84,6 +84,47 @@ const overrideKey = (page, metric) => `${page} :: ${metric}`;
  * @param {number} now  epoch ms used for override-expiry checks. Injectable so
  *   the fixtures can test an expired override without depending on the clock.
  */
+/**
+ * The one expiry discipline, shared by pageOverrides and (since 2026-08-06)
+ * expectedToChange. Until then expectedToChange was the single waiver
+ * vocabulary in this harness with neither expiry nor staleness detection —
+ * a waiver that stopped being needed persisted invisibly, silently covering
+ * the NEXT change to that route/metric, which nobody reviewed. Same rules
+ * for both: mandatory, YYYY-MM-DD, inside the 90-day horizon, and an
+ * expired entry is a loud config error, never a silent return to the gate.
+ */
+function validateExpiry(file, where, expires, now) {
+  if (typeof expires !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(expires)) {
+    throw new Error(
+      `${file}: ${where} needs an "expires" date as YYYY-MM-DD. An override with no `
+      + `end date is a permanent weakening of the gate wearing a temporary label.`);
+  }
+  // Valid through the whole of the named day, in UTC.
+  const deadline = Date.parse(`${expires}T23:59:59Z`);
+  if (Number.isNaN(deadline)) {
+    throw new Error(`${file}: ${where} has an unparseable "expires" date ${expires}.`);
+  }
+  // An expiry far enough out is a permanent hole wearing a date. 90 days is
+  // the plan's number: long enough for a batch to land, short enough that
+  // somebody has to look at it again.
+  const horizon = now + (MAX_OVERRIDE_DAYS * 24 * 60 * 60 * 1000);
+  if (deadline > horizon) {
+    throw new Error(
+      `${file}: ${where} expires on ${expires}, past the ${MAX_OVERRIDE_DAYS}-day horizon `
+      + `(measured from the current moment, so the practical boundary is ~${MAX_OVERRIDE_DAYS - 1} days). `
+      + `Nobody will revisit an expiry that distant. Pick a date inside `
+      + `${MAX_OVERRIDE_DAYS} days; if the change genuinely needs longer, renew it `
+      + `deliberately and say why.`);
+  }
+  if (deadline < now) {
+    throw new Error(
+      `${file}: ${where} expired on ${expires}. An expired override is a config `
+      + `error, not a silent return to the global budget: either the change it was `
+      + `written for has landed and the entry should be deleted, or it has not and `
+      + `somebody needs to say so with a new expiry.`);
+  }
+}
+
 export function loadConfig(file, readFile, now = Date.now()) {
   let raw;
   try {
@@ -172,6 +213,10 @@ export function loadConfig(file, readFile, now = Date.now()) {
     if (allow.has(entry.route)) {
       throw new Error(`${file}: duplicate expectedToChange entry for ${entry.route}.`);
     }
+    // Last in the entry's validation chain, deliberately: the rejection
+    // fixtures for the earlier checks stay valid without stamps, and only an
+    // entry the parser fully accepts needs a live expiry.
+    validateExpiry(file, `expectedToChange entry for ${entry.route}`, entry.expires, now);
     allow.set(entry.route, { reason: entry.reason, waive: new Set(entry.waive) });
   }
 
@@ -188,6 +233,21 @@ export function loadConfig(file, readFile, now = Date.now()) {
   const overrides = parsePageOverrides(file, raw.pageOverrides, budget, now);
 
   return { widths: raw.widths, ...budget, allow, expectedRedirects, overrides };
+}
+
+/**
+ * Waiver routes that fired on ZERO compared pages this run. Not (yet) a
+ * failure — a baseline advance legitimately zeroes a waiver in the runs
+ * before its retirement — but silence is how an unconsumed waiver becomes
+ * cover for the NEXT change to that route, which nobody reviewed. The run
+ * says it out loud instead. (2026-08-06; full unused-fails-loud parity with
+ * the dom-integrity whitelist revisits at the next refresh.)
+ */
+export function unconsumedWaivers(config, pages) {
+  const consumed = new Set(pages
+    .filter((p) => p.status === 'EXPECTED' || (p.waivedReasons && p.waivedReasons.length > 0))
+    .map((p) => p.route));
+  return [...config.allow.keys()].filter((route) => !consumed.has(route));
 }
 
 /**
@@ -278,35 +338,7 @@ function parsePageOverrides(file, rawOverrides, budget, now) {
         `${file}: ${where} needs a non-empty "reason". An override without a reason `
         + `is an unexplained hole in the acceptance gate.`);
     }
-    if (typeof o.expires !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(o.expires)) {
-      throw new Error(
-        `${file}: ${where} needs an "expires" date as YYYY-MM-DD. An override with no `
-        + `end date is a permanent weakening of the gate wearing a temporary label.`);
-    }
-    // Valid through the whole of the named day, in UTC.
-    const deadline = Date.parse(`${o.expires}T23:59:59Z`);
-    if (Number.isNaN(deadline)) {
-      throw new Error(`${file}: ${where} has an unparseable "expires" date ${o.expires}.`);
-    }
-    // An expiry far enough out is a permanent hole wearing a date. 90 days is
-    // the plan's number: long enough for a batch to land, short enough that
-    // somebody has to look at it again.
-    const horizon = now + (MAX_OVERRIDE_DAYS * 24 * 60 * 60 * 1000);
-    if (deadline > horizon) {
-      throw new Error(
-        `${file}: ${where} expires on ${o.expires}, past the ${MAX_OVERRIDE_DAYS}-day horizon `
-        + `(measured from the current moment, so the practical boundary is ~${MAX_OVERRIDE_DAYS - 1} days). `
-        + `Nobody will revisit an expiry that distant. Pick a date inside `
-        + `${MAX_OVERRIDE_DAYS} days; if the change genuinely needs longer, renew it `
-        + `deliberately and say why.`);
-    }
-    if (deadline < now) {
-      throw new Error(
-        `${file}: ${where} expired on ${o.expires}. An expired override is a config `
-        + `error, not a silent return to the global budget: either the change it was `
-        + `written for has landed and the entry should be deleted, or it has not and `
-        + `somebody needs to say so with a new expiry.`);
-    }
+    validateExpiry(file, where, o.expires, now);
 
     const key = overrideKey(o.page, o.metric);
     if (overrides.has(key)) {

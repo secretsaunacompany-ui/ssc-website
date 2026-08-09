@@ -1,5 +1,8 @@
     <!-- Gallery Lightbox -->
-    <div id="galleryLightbox" class="lightbox-overlay">
+    {# role/aria-modal added 2026-08-06: the funnel modal met this bar in Wave
+       A; the lightbox (shipped unguarded on every route via footer.njk) did
+       not. This is a sitewide DOM delta — declared at the equivalence gate. #}
+    <div id="galleryLightbox" class="lightbox-overlay" role="dialog" aria-modal="true" aria-label="Image gallery">
         <button class="lightbox-close" data-action="close-lightbox" aria-label="Close lightbox">&times;</button>
         <button class="lightbox-nav lightbox-prev" data-action="lightbox-nav" data-dir="-1" aria-label="Previous image">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

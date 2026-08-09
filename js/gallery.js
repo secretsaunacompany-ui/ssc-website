@@ -44,7 +44,16 @@
 
         collectGalleryImages() {
             const galleryItems = document.querySelectorAll('.gallery-item img');
-            this.galleryImages = Array.from(galleryItems).map((img) => img.src);
+            // {src, alt} pairs, not bare srcs (2026-08-06): every source image
+            // carries a descriptive alt, but the lightbox kept its static
+            // 'Gallery image' across navigation -- AT heard nothing change.
+            // The full-screen src also upgrades the grid's w_600/w_800
+            // Cloudinary variant to w_1600; the grid sizes were soft on large
+            // displays when shown full-screen.
+            this.galleryImages = Array.from(galleryItems).map((img) => ({
+                src: img.src.replace(/\bw_\d+\b/, 'w_1600'),
+                alt: img.alt || 'Gallery image'
+            }));
         }
 
         attachClickHandlers() {
@@ -56,14 +65,38 @@
 
         open(index) {
             this.currentIndex = index;
+            // Captured at open, restored at close. Today the invokers are
+            // non-focusable divs, so this captures <body> and the restore is
+            // a coded no-op -- written this way (not body.focus()) so it
+            // starts restoring to the real invoker the day the grid becomes
+            // keyboard-reachable (a Jen-lane interaction change, recorded as
+            // a Wave B residual; there is currently NO keyboard path to open
+            // this lightbox at all).
+            this.invoker = document.activeElement;
             this.updateImage();
             this.lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
+            const closeBtn = this.lightbox.querySelector('.lightbox-close');
+            if (closeBtn) closeBtn.focus();
         }
 
         close() {
             this.lightbox.classList.remove('active');
             document.body.style.overflow = '';
+            // Order matters. document.body.focus() is a NO-OP (body is not
+            // focusable), so restoring to a body invoker would leave focus
+            // stranded on the close button we just hid -- worse than doing
+            // nothing. Blur first, unconditionally, then restore only to an
+            // invoker that can actually take focus (none today: the gallery
+            // grid is not keyboard-reachable; see the note in open()).
+            const active = document.activeElement;
+            if (active && this.lightbox.contains(active) && typeof active.blur === 'function') {
+                active.blur();
+            }
+            if (this.invoker && this.invoker !== document.body
+                && typeof this.invoker.focus === 'function') {
+                this.invoker.focus();
+            }
         }
 
         navigate(direction) {
@@ -81,7 +114,9 @@
 
         updateImage() {
             if (this.lightboxImage && this.galleryImages[this.currentIndex]) {
-                this.lightboxImage.src = this.galleryImages[this.currentIndex];
+                const current = this.galleryImages[this.currentIndex];
+                this.lightboxImage.src = current.src;
+                this.lightboxImage.alt = current.alt;
 
                 // Update counter
                 const currentEl = document.getElementById('lightboxCurrent');
