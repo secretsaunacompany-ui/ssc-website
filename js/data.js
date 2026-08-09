@@ -86,10 +86,10 @@
             images: [
                 '/img/PXL_20240808_173352968.MP_yhb9bq-1200w.webp',
                 '/img/PXL_20240911_022834882.MP_wtnwtj-1200w.webp',
-                '/img/IMG_2891_wfwy7y-1200w.webp',
+                '/img/IMG_2891_wfwy7y-r-90-1200w.webp',
                 '/img/PXL_20240911_021105407_snxau7-1200w.webp',
                 '/img/PXL_20250930_183317338_acg3cj-1200w.webp',
-                '/img/20250918_121317_twpyv8-1200w.webp',
+                '/img/20250918_121317_twpyv8-r90-1200w.webp',
                 '/video/PXL_20240808_172958194.TS_eqp8zy.mp4'
             ]
         },
@@ -112,9 +112,9 @@
             electricOnly: false,
             images: [
                 '/img/IMG_6404_hrncws-1200w.webp',
-                '/img/IMG_6592_ln0gz8-1200w.webp',
+                '/img/IMG_6592_ln0gz8-r90-1200w.webp',
                 '/img/20250313_124032-EDIT_uu36i8-1200w.webp',
-                '/img/IMG_6812_xpzjwk-1200w.webp'
+                '/img/IMG_6812_xpzjwk-r90-1200w.webp'
             ]
         },
         s8: {
@@ -249,10 +249,10 @@
         { name: 'Brackendale Area', coords: [49.7695, -123.1558], model: 'S4', year: '2023', image: '/img/PXL_20240911_021105407_snxau7-1200w.webp' },
         { name: 'Brackendale Area', coords: [49.7750, -123.1650], model: 'S6', year: '2024', image: '/img/20250313_124025-EDIT_h1v6bm-1200w.webp' },
         { name: 'Pemberton Area', coords: [50.3186, -122.8022], model: 'S4', year: '2024', image: '/img/20250206_123417_nnpsrg-1200w.webp' },
-        { name: 'Squamish Area', coords: [49.7016, -123.1558], model: 'S4', year: '2025', image: '/img/20250918_121317_twpyv8-1200w.webp' },
+        { name: 'Squamish Area', coords: [49.7016, -123.1558], model: 'S4', year: '2025', image: '/img/20250918_121317_twpyv8-r90-1200w.webp' },
         { name: 'California', coords: [36.7783, -119.4179], model: 'S8', year: '2024', image: '/img/20250425_132951-EDIT_z5qkii-1200w.webp' },
         { name: 'Abbotsford Area', coords: [49.0504, -122.3200], model: 'S2', year: '2025', image: '/img/20250610_124511_dtirpu-1200w.webp' },
-        { name: 'Williams Lake Area', coords: [52.1417, -122.1417], model: 'S6', year: '2025', image: '/img/IMG_6812_xpzjwk-1200w.webp' }
+        { name: 'Williams Lake Area', coords: [52.1417, -122.1417], model: 'S6', year: '2025', image: '/img/IMG_6812_xpzjwk-r90-1200w.webp' }
     ];
 
     // ============================================
