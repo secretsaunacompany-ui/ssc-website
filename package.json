@@ -24,7 +24,8 @@
     "dom-integrity:test": "node scripts/dom-integrity.test.mjs",
     "//lint:css": "The guard that keeps the type scale and the radius collapse from drifting back: raw font-size and border-radius literals are rejected outside :root. Six exceptions exist and every one carries a stylelint-disable-next-line with its reason.",
     "lint:css": "npx stylelint styles.css",
-    "lint:css:test": "node scripts/stylelint-gate.test.mjs"
+    "lint:css:test": "node scripts/stylelint-gate.test.mjs",
+    "image-audit": "node scripts/image-audit.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
