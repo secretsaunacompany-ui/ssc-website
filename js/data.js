@@ -44,10 +44,10 @@
             exteriorCedar: 2500,
             electricOnly: true,
             images: [
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768410759/Gemini_Generated_Image_ot1l9lot1l9lot1l_1_ukzekw.png',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768411922/Gemini_Generated_Image_gkw2ipgkw2ipgkw2_jmvkle.png',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768410755/Gemini_Generated_Image_9lmyb49lmyb49lmy_dfnxak.png',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768410751/nano-banana-2025-09-12T21-15-12_kukbz0.png'
+                '/img/Gemini_Generated_Image_ot1l9lot1l9lot1l_1_ukzekw-1200w.webp',
+                '/img/Gemini_Generated_Image_gkw2ipgkw2ipgkw2_jmvkle-1200w.webp',
+                '/img/Gemini_Generated_Image_9lmyb49lmyb49lmy_dfnxak-1200w.webp',
+                '/img/nano-banana-2025-09-12T21-15-12_kukbz0-1200w.webp'
             ]
         },
         s4: {
@@ -65,13 +65,13 @@
             exteriorCedar: 2500,
             electricOnly: false,
             images: [
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768272416/PXL_20240808_173352968.MP_yhb9bq.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324981/PXL_20240911_022834882.MP_wtnwtj.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768275843/IMG_2891_wfwy7y.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768410756/PXL_20240911_021105407_snxau7.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768486021/PXL_20250930_183317338_acg3cj.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768487213/20250918_121317_twpyv8.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/video/upload/q_auto,f_auto/v1768415361/PXL_20240808_172958194.TS_eqp8zy.mp4'
+                '/img/PXL_20240808_173352968.MP_yhb9bq-1200w.webp',
+                '/img/PXL_20240911_022834882.MP_wtnwtj-1200w.webp',
+                '/img/IMG_2891_wfwy7y-1200w.webp',
+                '/img/PXL_20240911_021105407_snxau7-1200w.webp',
+                '/img/PXL_20250930_183317338_acg3cj-1200w.webp',
+                '/img/20250918_121317_twpyv8-1200w.webp',
+                '/video/PXL_20240808_172958194.TS_eqp8zy.mp4'
             ]
         },
         s6: {
@@ -89,10 +89,10 @@
             exteriorCedar: 3000,
             electricOnly: false,
             images: [
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250653/IMG_6404_hrncws.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250654/IMG_6592_ln0gz8.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768272421/20250313_124032-EDIT_uu36i8.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250654/IMG_6812_xpzjwk.jpg'
+                '/img/IMG_6404_hrncws-1200w.webp',
+                '/img/IMG_6592_ln0gz8-1200w.webp',
+                '/img/20250313_124032-EDIT_uu36i8-1200w.webp',
+                '/img/IMG_6812_xpzjwk-1200w.webp'
             ]
         },
         s8: {
@@ -110,10 +110,10 @@
             exteriorCedar: 3000,
             electricOnly: false,
             images: [
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324977/DSC03225-EDIT_crqtkp.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324976/20250117_192120_yeltdd.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324985/IMG_7463_fevmyz.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324982/IMG_7354_qbg7dz.jpg'
+                '/img/DSC03225-EDIT_crqtkp-1200w.webp',
+                '/img/20250117_192120_yeltdd-1200w.webp',
+                '/img/IMG_7463_fevmyz-1200w.webp',
+                '/img/IMG_7354_qbg7dz-1200w.webp'
             ]
         },
         sc: {
@@ -131,11 +131,11 @@
             exteriorCedar: 3000,
             electricOnly: false,
             images: [
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409622/IMG_5228_1_z2bz8q.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409618/IMG_7123_bmcx9s.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324972/PXL_20250605_233615654_or7ngn.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768324973/PXL_20250605_232338418_yo0pnm.jpg',
-                'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250659/PXL_20250605_233559063.MP-EDIT_zvmio8.jpg'
+                '/img/IMG_5228_1_z2bz8q-1200w.webp',
+                '/img/IMG_7123_bmcx9s-1200w.webp',
+                '/img/PXL_20250605_233615654_or7ngn-1200w.webp',
+                '/img/PXL_20250605_232338418_yo0pnm-1200w.webp',
+                '/img/PXL_20250605_233559063.MP-EDIT_zvmio8-1200w.webp'
             ]
         }
     };
@@ -153,7 +153,7 @@
             year: '2025',
             features: ['Cold Plunge', 'Country Views', 'Two Saunas'],
             link: null,
-            image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768616084/PXL_20250910_044921755_wobuh2.jpg'
+            image: '/img/PXL_20250910_044921755_wobuh2-1200w.webp'
         },
         {
             name: 'The Good Sauna',
@@ -164,7 +164,7 @@
             year: '2024',
             features: ['Urban Location', 'Brewery Partnership'],
             link: 'https://www.thegoodsauna.com/',
-            image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409622/IMG_5228_1_z2bz8q.jpg'
+            image: '/img/IMG_5228_1_z2bz8q-1200w.webp'
         },
         {
             name: 'Gatherwell - Ambleside',
@@ -175,7 +175,7 @@
             year: '2025',
             features: ['Waterfront', 'Ocean Views', 'Public Access'],
             link: 'https://www.gatherwell.ca/book-a-session-ambleside',
-            image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409619/PXL_20251217_173040936_cnznku.jpg'
+            image: '/img/PXL_20251217_173040936_cnznku-1200w.webp'
         },
         {
             name: 'The Finnish Sauna Co. - Sea Edge',
@@ -186,7 +186,7 @@
             year: '2024',
             features: ['Oceanfront', 'Hotel Partnership', 'Beach Access'],
             link: 'https://www.thefinnishsauna.ca/sea-edge-sauna',
-            image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768409618/IMG_7123_bmcx9s.jpg'
+            image: '/img/IMG_7123_bmcx9s-1200w.webp'
         },
         {
             name: 'Brackendale Art Gallery',
@@ -197,7 +197,7 @@
             year: '2023-Present',
             features: ['Mobile Sauna', 'Cultural Events', 'Community Hub'],
             link: 'https://brackendaleartgallery.com/',
-            image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768620246/PXL_20251017_175607860_enorvg.jpg'
+            image: '/img/PXL_20251017_175607860_enorvg-1200w.webp'
         }
     ];
 
@@ -211,20 +211,20 @@
         year: '2024',
         features: ['Commercial', 'Custom Design', 'Wellness Center'],
         link: null,
-        image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250657/PXL_20250605_231738816.MP_javbdv.jpg'
+        image: '/img/PXL_20250605_231738816.MP_javbdv-1200w.webp'
     };
 
     // ============================================
     // Residential Location Data
     // ============================================
     const residentialLocations = [
-        { name: 'Brackendale Area', coords: [49.7695, -123.1558], model: 'S4', year: '2023', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768410756/PXL_20240911_021105407_snxau7.jpg' },
-        { name: 'Brackendale Area', coords: [49.7750, -123.1650], model: 'S6', year: '2024', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250653/20250313_124025-EDIT_h1v6bm.jpg' },
-        { name: 'Pemberton Area', coords: [50.3186, -122.8022], model: 'S4', year: '2024', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768620435/20250206_123417_nnpsrg.jpg' },
-        { name: 'Squamish Area', coords: [49.7016, -123.1558], model: 'S4', year: '2025', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768487213/20250918_121317_twpyv8.jpg' },
-        { name: 'California', coords: [36.7783, -119.4179], model: 'S8', year: '2024', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768620572/20250425_132951-EDIT_z5qkii.jpg' },
-        { name: 'Abbotsford Area', coords: [49.0504, -122.3200], model: 'S2', year: '2025', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768486096/20250610_124511_dtirpu.jpg' },
-        { name: 'Williams Lake Area', coords: [52.1417, -122.1417], model: 'S6', year: '2025', image: 'https://res.cloudinary.com/dlhqdgmih/image/upload/q_auto,f_auto/v1768250654/IMG_6812_xpzjwk.jpg' }
+        { name: 'Brackendale Area', coords: [49.7695, -123.1558], model: 'S4', year: '2023', image: '/img/PXL_20240911_021105407_snxau7-1200w.webp' },
+        { name: 'Brackendale Area', coords: [49.7750, -123.1650], model: 'S6', year: '2024', image: '/img/20250313_124025-EDIT_h1v6bm-1200w.webp' },
+        { name: 'Pemberton Area', coords: [50.3186, -122.8022], model: 'S4', year: '2024', image: '/img/20250206_123417_nnpsrg-1200w.webp' },
+        { name: 'Squamish Area', coords: [49.7016, -123.1558], model: 'S4', year: '2025', image: '/img/20250918_121317_twpyv8-1200w.webp' },
+        { name: 'California', coords: [36.7783, -119.4179], model: 'S8', year: '2024', image: '/img/20250425_132951-EDIT_z5qkii-1200w.webp' },
+        { name: 'Abbotsford Area', coords: [49.0504, -122.3200], model: 'S2', year: '2025', image: '/img/20250610_124511_dtirpu-1200w.webp' },
+        { name: 'Williams Lake Area', coords: [52.1417, -122.1417], model: 'S6', year: '2025', image: '/img/IMG_6812_xpzjwk-1200w.webp' }
     ];
 
     // ============================================
