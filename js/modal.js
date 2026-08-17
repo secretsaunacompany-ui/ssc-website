@@ -71,7 +71,7 @@
      * audio is the one occupied group that stays SELECTABLE under the package.
      */
     const PACKAGE_SLOTS = {
-        exterior: { baseline: 'exteriorCedar' },
+        exterior: { baseline: 'exteriorStandingSeam' },
         interior: { baseline: 'interiorClearCedar' },
         speakers: { baseline: '1000', pricing: 'additive' }
     };
@@ -898,8 +898,8 @@
          *     standard set; premium is priced outside it) and so does the
          *     comment directly above that markup. The page contradicted both.
          *   - It forced "Standard metal cladding" and "Knotty Western Red Cedar"
-         *     checked while selling a package that includes CEDAR exterior and
-         *     CLEAR cedar interior. The visitor was shown a build the package
+         *     checked while selling a package that includes STANDING SEAM exterior
+         *     and CLEAR cedar interior. The visitor was shown a build the package
          *     does not describe.
          *
          * Now: `select: "any"` includes stay locked off (nothing to upgrade
