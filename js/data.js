@@ -32,7 +32,7 @@
      * recomputed from live prices, with a visible note. Without the stamp, a
      * week-old saved total would silently contradict its own line items.
      */
-    const pricesVersion = 4;
+    const pricesVersion = 5;
 
     // ============================================
     // Sauna Model Data

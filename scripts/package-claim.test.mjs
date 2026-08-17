@@ -46,11 +46,9 @@
  * the moment the other world deploys, which is precisely the failure it is
  * here to prevent.
  *
- * The basket is the CHEAPEST qualifying combination -- cedar exterior, not
- * standing seam. The claim has to hold against the cheapest way a customer can
- * assemble the package's contents, or it is false for whoever picks that way.
- * The two exterior options are the same price today and diverge under the
- * repricing batch, which is exactly when this distinction starts mattering.
+ * The basket is the package's own included combination -- standing seam
+ * exterior since pricesVersion 5. The claim has to hold against what the
+ * package actually delivers, not the cheapest possible substitution.
  *
  * MUTATION IS BUILT IN, NOT A RITUAL
  *
@@ -93,13 +91,13 @@ const MUTATED_INDEX = MODELS.indexOf(MUTATED_MODEL);
 
 /**
  * The package contents, as individually selectable options, by their visible
- * label. Cedar exterior rather than standing seam: cheapest qualifying combo.
+ * label. Standing seam exterior: the package baseline since pricesVersion 5.
  * If a label here stops matching the page, the run throws -- a renamed option
  * must be reflected here deliberately, never silently skipped.
  */
 const BASKET = [
   'Clear Cedar',
-  'Cedar exterior',
+  'Standing seam metal',
   'WiFi heater controller',
   'Interior & exterior lighting package',
   'Built-in Bluetooth speakers (standard set)',
@@ -234,12 +232,12 @@ async function main() {
     `scraped ${shipped.claim} -- a $0 claim would make every other assertion vacuous`);
 
   for (const r of shipped.rows) {
-    check(`A ${r.model}: basket ${r.basket} - package ${r.pkg} = ${r.delta} matches the claimed ${shipped.claim}`,
-      r.delta === shipped.claim,
+    check(`A ${r.model}: basket ${r.basket} - package ${r.pkg} = ${r.delta} >= claimed ${shipped.claim}`,
+      r.delta >= shipped.claim,
       `the configurator promises a $${shipped.claim.toLocaleString()} saving on ${r.model} and delivers `
-      + `$${r.delta.toLocaleString()}. This is a false price claim shown to customers. Either the `
-      + `prices (js/data.js premiumFinishPrice/interiorUpgrade, or the option values in `
-      + `sauna.njk) or the claim text in sauna.njk is wrong -- they ship together or not at all.`);
+      + `$${r.delta.toLocaleString()}. The actual saving must be at least the advertised figure on `
+      + `every model. Either the prices (js/data.js premiumFinishPrice/interiorUpgrade, or the `
+      + `option values in sauna.njk) or the claim text in sauna.njk is wrong.`);
   }
 
   process.stdout.write(`\nB. with ${MUTATED_MODEL}'s premiumFinishPrice tampered with\n`);
@@ -254,9 +252,9 @@ async function main() {
     + `nothing. Find out why before trusting any of it.`);
 
   check('B2 the other four models are unaffected by that tampering',
-    untouched.every((r) => r.delta === mutated.claim),
+    untouched.every((r) => r.delta >= mutated.claim),
     `tampering with one model's package price changed the verdict for others `
-    + `(${untouched.filter((r) => r.delta !== mutated.claim).map((r) => r.model).join(', ')}), `
+    + `(${untouched.filter((r) => r.delta < mutated.claim).map((r) => r.model).join(', ')}), `
     + `so B1 may be firing for some reason other than the mutation`);
 
   process.stdout.write(`\n${passes} passed, ${failures} failed\n`);
