@@ -78,6 +78,35 @@ Lee agrees curated packages directly with Clarke, Emmanuel and Mountain Life.
 
 Order is not a priority ranking.
 
+## Parking Lot — every deferral, one index
+
+This is the single entry point for named-but-unscheduled work.
+
+Rule: a deferral is recorded here or it does not exist. The detailed sections below are kept verbatim and are not to be edited into summaries — this index points at them.
+
+| Deferral | Detail lives in |
+|---|---|
+| npm-audit remediation (70 pre-existing vulnerabilities) | frontmatter `deferred:` |
+| Site CLS — lazy images without width/height/aspect-ratio | frontmatter `deferred:` + below |
+| Media cache keys on URL alone, ignores `Range` header | frontmatter `deferred:` + below |
+| Badge SVG mask — Safari check owed before the footer seal ships | frontmatter `deferred:` + below |
+| ssc-ops shared tracker `form_submit` fix (cross-repo) | frontmatter `deferred:` + below |
+| Analytics reading note — `hero_hold_complete` always reports ms:5000 | frontmatter `deferred:` |
+| Wave B — WP-2 composition / WP-3 copy / WP-4 pages | frontmatter `next`, and the rulings in `.claude/DECISIONS.md` |
+| Case studies (parked pending client agreements) | `## Redesign 2026-07 — where everything lives` |
+| Ideas with no schedule | `## Ideas parked for later` |
+| AI Advisor Widget | `## AI Advisor Widget (parked, needs more thought)` |
+
+### Deferred from the 2026-08-21 hand-off restructure
+
+Carried verbatim out of the pre-restructure `.claude/handoff.md` so no wording is lost:
+
+- **Site CLS issue named, not yet fixed:** lazy images without width/height/aspect-ratio on `/about/` and elsewhere -- candidate for a WP-1b line.
+- **Cross-repo: ssc-ops shared tracker bug.** Its `form_submit` handler reads a field named `sauna` that no form actually sends -- every site on that tracker records interest as "not specified." This site suppresses the generic listener and sends its own event, but the tracker itself needs an authorized fix in the ssc-ops repo.
+- **Media cache bug documented, not fixed:** cache keys on URL alone, ignoring the `Range` header -- ranged media (hero video) can replay wrong. Documented in `scripts/lib/capture.mjs`.
+- **Badge SVG mask** only visually verified in Chrome -- a Safari check is owed before the footer seal ships.
+- **npm-audit remediation deferred, not urgent:** 70 pre-existing vulnerabilities (7 critical, 35 high; 1 high in the production tree via `ws`/`@supabase/supabase-js`). Needs its own plan -- `npm audit fix --force` on a live site is not a relay side-quest.
+
 ## AI Advisor Widget (parked, needs more thought)
 
 **What it is.** A chat widget that lives on contact, about, faq, saunas, and warranty pages. Context-aware starters per page (product, care, commercial, etc.), multi-turn on some pages, single-shot on others.
