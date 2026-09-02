@@ -84,3 +84,8 @@ Process lesson attached to item 1, worth carrying forward permanently: the origi
 *2026-08-01*
 
 Closes the receipt-gate final inch -- Formspree silently 200s on discarded owner-address/draft-origin submissions.
+
+### The S2's AI-named image files are real photographs of the built sauna
+*2026-09-02, per Lee*
+
+The four S2 gallery files named Gemini_Generated_Image_* and nano-banana-* are photographs of the S2 that was actually built. Only the background was replaced, so the sauna did not read as sitting in the shop. That is ordinary commercial retouching, not generated product imagery, and no labelling or disclosure is owed. The filenames assert the opposite of the truth and will mislead anyone who greps them; src/img/MANIFEST.md publishes them in a public, sitemap-listed table, which is how the 2026-09-02 code-refresh audit misread them as fabricated product shots before Lee corrected it. Renaming the four files is optional and churns js/data.js, src/_data/models.json, the saunas template and the harness; the correction is recorded here instead.
