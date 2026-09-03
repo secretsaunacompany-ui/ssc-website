@@ -27,7 +27,6 @@ COMMERCIAL CAPABILITIES:
 - Site assessment and installation planning
 - Multi-unit projects (rental fleets, multiple venue locations)
 - Mobile builds on trailers for touring/events
-- Cold plunge integration (in development)
 
 REGULATORY CONTEXT (BC):
 - Vancouver Coastal Health (VCH) or Fraser Health PSE (Personal Service Establishment) licensing required for public-facing saunas
