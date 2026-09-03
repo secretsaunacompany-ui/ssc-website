@@ -66,7 +66,13 @@ check('no inline event-handler attribute exists in any built page', (() => {
   const offenders = [];
   for (const f of fs.readdirSync(DIST, { recursive: true })) {
     if (!String(f).endsWith('.html')) continue;
-    const page = fs.readFileSync(path.join(DIST, String(f)), 'utf8');
+    // Comments stripped here too, for the same reason and in the other
+    // direction: `booking-ops.html`'s comment explains the handler it replaced
+    // and names `onsubmit=` in prose. A comment cannot carry a live handler, so
+    // reading one can only produce a false RED. Both scans in this file now
+    // read what the browser reads.
+    const page = fs.readFileSync(path.join(DIST, String(f)), 'utf8')
+      .replace(/<!--[\s\S]*?-->/g, '');
     for (const tag of page.matchAll(/<[a-zA-Z][^>]*>/g)) {
       const attr = tag[0].match(/\s(on\w+)\s*=\s*["']/);
       if (attr) offenders.push(`${f}: ${attr[1]} in ${tag[0].slice(0, 60)}`);
@@ -79,7 +85,18 @@ check('no inline event-handler attribute exists in any built page', (() => {
 check('no OTHER undeclared inline script exists in any built page', (() => {
   for (const f of fs.readdirSync(DIST, { recursive: true })) {
     if (!String(f).endsWith('.html')) continue;
-    const page = fs.readFileSync(path.join(DIST, String(f)), 'utf8');
+    // HTML COMMENTS ARE STRIPPED FIRST, and that is load-bearing (2026-09-02).
+    // This scan used to run against the raw page, and `booking-ops.html` carries
+    // a comment whose PROSE contains a literal `<script>` — written by the very
+    // commit that added the hash. The regex therefore opened its match inside
+    // the comment and ran to the real element's `</script>`, hashing 6478 bytes
+    // where the browser hashes the element's own 3054. So the hash this suite
+    // certified was a hash of a span no browser ever computes: the /ops login
+    // stayed CSP-blocked through the whole 2026-08-07 -> 08-09 window in which
+    // the "fix" was live, and this check stayed green over it. A comment is not
+    // script, the browser never sees one, and neither does this scan now.
+    const page = fs.readFileSync(path.join(DIST, String(f)), 'utf8')
+      .replace(/<!--[\s\S]*?-->/g, '');
     for (const s of page.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/g)) {
       if (s[1].includes('application/ld+json') || s[1].includes('application/json')) continue;
       const h = crypto.createHash('sha256').update(s[2]).digest('base64');
