@@ -60,12 +60,27 @@ for (const key of site.order) {
     `models.json thumb:\n        ${model.thumb}\n      data.js first non-video image:\n        ${opensOn}\n`
     + '      The row would show one sauna and the modal another. Update both, or neither.');
 
-  // A width baked into the stored URL would be rejected by .eleventy.js's
-  // Cloudinary filters at build time — catch it here, where the message can
-  // say why, rather than as a build crash.
-  check(`${key}: the stored thumbnail carries no width transform`,
-    typeof model.thumb === 'string' && /\/upload\/q_auto,f_auto(,a_-?\d+)?\//.test(model.thumb),
-    `thumb must be a bare Cloudinary URL (delivery width is the transform's job): ${model.thumb}`);
+  // REWRITTEN 2026-09-03. This asserted a Cloudinary URL shape
+  // (/upload/q_auto,f_auto/), on the reasoning that a width baked into the
+  // stored URL would be rejected by .eleventy.js's Cloudinary filters at build
+  // time. Those filters were deleted with the 2026-08-09 migration and the
+  // thumbs are now first-party paths, so the check has been failing on all five
+  // models ever since — asserting a shape the repo deliberately abandoned.
+  //
+  // The drift it should catch now is the local analogue: the file the row will
+  // request must be first-party and must EXIST, so a rename or a deletion fails
+  // here with a message, rather than silently as a 404 on /saunas/.
+  check(`${key}: the thumbnail is a first-party path`,
+    typeof model.thumb === 'string' && model.thumb.startsWith('/img/'),
+    `thumb must be a root-relative first-party path (the CHARTER forbids external `
+    + `asset origins): ${model.thumb}`);
+  check(`${key}: the thumbnail file exists in the source tree`,
+    typeof model.thumb === 'string'
+      && fs.existsSync(path.join(REPO_ROOT, 'src', model.thumb)),
+    `no such file: src${model.thumb} — the /saunas/ row would 404`);
+  check(`${key}: the thumbnail is a sized derivative, not a bare original`,
+    typeof model.thumb === 'string' && /-\d+w\.webp$/.test(model.thumb),
+    `thumb should name a width-suffixed WebP derivative: ${model.thumb}`);
 }
 
 console.log(`\n${passes} passed, ${failures} failed`);

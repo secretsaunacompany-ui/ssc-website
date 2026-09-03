@@ -38,6 +38,9 @@ try {
   await page.goto(`${base}/saunas/`, { waitUntil: 'networkidle' });
 
   const gridAlt = await page.$eval('.gallery-item img', (img) => img.alt);
+  // The grid's own src, read before the lightbox opens, so the full-screen view
+  // can be compared against the exact photograph that was clicked.
+  const gridSrc = await page.$eval('.gallery-item img', (img) => img.getAttribute('src'));
   check('the source grid images carry real alt text (precondition)',
     gridAlt && gridAlt !== 'Gallery image', `first grid alt was ${JSON.stringify(gridAlt)}`);
 
@@ -57,9 +60,22 @@ try {
     await page.$eval('#lightboxImage', (img) => img.alt) === gridAlt,
     `lightbox alt was ${JSON.stringify(await page.$eval('#lightboxImage', (i) => i.alt))}`);
 
-  check('the full-screen image upgrades to the w_1600 variant',
-    await page.$eval('#lightboxImage', (img) => /\bw_1600\b/.test(img.src)),
-    `src was ${await page.$eval('#lightboxImage', (i) => i.src)}`);
+  // Was: "upgrades to the w_1600 variant". That upgrade was a Cloudinary
+  // transform rewrite which has been a no-op since the 2026-08-09 migration
+  // made these first-party paths, and the rewrite is now deleted from
+  // gallery.js. What must still hold is that the full-screen view opens the
+  // SAME photograph the visitor clicked — the failure that would actually hurt
+  // is a lightbox showing a different sauna, not one showing a soft one.
+  // (The softness is real and parked: the gallery has no derivative above
+  // 1200w. ROADMAP Parking Lot, with the responsive-image work.)
+  // Compared as PATHNAMES, not raw strings: gallery.js collects `img.src`,
+  // which is the resolved absolute URL, so the lightbox attribute reads
+  // `http://host/img/NAME.webp` where the grid attribute reads `/img/NAME.webp`.
+  // Same file, different spelling; comparing the raw strings would fail on a
+  // difference that means nothing.
+  check('the full-screen image is the photograph that was clicked',
+    await page.$eval('#lightboxImage', (img) => new URL(img.src, location.href).pathname) === gridSrc,
+    `lightbox path was ${await page.$eval('#lightboxImage', (i) => new URL(i.src, location.href).pathname)}, grid src was ${gridSrc}`);
 
   const altBefore = await page.$eval('#lightboxImage', (i) => i.alt);
   await page.keyboard.press('ArrowRight');

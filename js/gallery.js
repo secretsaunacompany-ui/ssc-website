@@ -47,11 +47,23 @@
             // {src, alt} pairs, not bare srcs (2026-08-06): every source image
             // carries a descriptive alt, but the lightbox kept its static
             // 'Gallery image' across navigation -- AT heard nothing change.
-            // The full-screen src also upgrades the grid's w_600/w_800
-            // Cloudinary variant to w_1600; the grid sizes were soft on large
-            // displays when shown full-screen.
+            // The `w_\d+` -> `w_1600` rewrite that used to sit on `src` was
+            // removed 2026-09-03. It upgraded the grid's Cloudinary w_600/w_800
+            // variant to w_1600 for the full-screen view; since the 2026-08-09
+            // migration these are first-party paths like
+            // `/img/NAME-1200w.webp`, which contain no `w_600` token, so the
+            // replace matched nothing and returned the string unchanged. It was
+            // a no-op wearing the costume of an optimisation, and the suite
+            // assertion that "proved" it was the only thing still reading it.
+            //
+            // The underlying want is real and is NOT solved here: the grid
+            // ships 1200w and the lightbox shows the same 1200w full-screen, so
+            // a large display gets a soft image. Fixing it needs 1600w or 1920w
+            // derivatives generated for the gallery set, which is part of the
+            // responsive-image work in the ROADMAP Parking Lot. Recorded there
+            // rather than faked here.
             this.galleryImages = Array.from(galleryItems).map((img) => ({
-                src: img.src.replace(/\bw_\d+\b/, 'w_1600'),
+                src: img.src,
                 alt: img.alt || 'Gallery image'
             }));
         }
