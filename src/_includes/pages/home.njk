@@ -5,9 +5,12 @@
             <img src="/img/IMG_7991-EDIT_gz1kqt-1200w.webp" alt="Authentic Finnish sauna by Secret Sauna Company - handcrafted outdoor sauna in British Columbia wilderness" class="hero-image" fetchpriority="high" sizes="100vw" width="1920" height="1280">
             <div class="hero-content reveal reveal--held">
                 <h1>Authentic Finnish Saunas, Handcrafted in British Columbia</h1>
-                <p class="hero-subtitle">Escape to the restorative heat of a real cedar sauna, built with traditional methods to last a lifetime.</p>
+                <p class="hero-subtitle">Escape to the restorative heat of a real cedar sauna, built with traditional methods to last a lifetime. Ours runs at the Brackendale Art Gallery in Squamish, open to book by the hour.</p>
                 <a href="/contact/" class="btn">Plan My Sauna Design</a>
-                <a href="https://book.secretsaunacompany.ca?utm_source=website&utm_medium=hero&utm_campaign=booking" class="btn-outline btn btn--hero-secondary">Or Book a Session</a>
+                {# Secondary CTA points at the Brackendale slot, not the app root: the
+                   subtitle above now names that venue, so the button under it should
+                   land where the sentence pointed. 2026-09-02, per Lee. #}
+                <a href="https://book.secretsaunacompany.ca/book/brackendale-art-gallery?utm_source=website&utm_medium=hero&utm_campaign=booking" class="btn-outline btn btn--hero-secondary">Or Book a Session</a>
             </div>
         </section>
 
@@ -44,13 +47,25 @@
                     <img loading="lazy" src="/img/PXL_20250117_223907851_qqkntx-1200w.webp" alt="Mobile Finnish sauna at scenic BC waterfront location" class="card-image" width="1920" height="1445">
                     <div class="card-content">
                         <h3>Try a Session</h3>
-                        {# Doc 13's approved Try-a-Session copy VERBATIM (13:80-82) —
-                           venue-neutral by design. The old line advertised booking at
-                           "our Aldergrove location", a venue doc 13's brief row orders
-                           removed sitewide; the flagship session venue is BAG, but the
-                           approved card copy deliberately names no venue at all. #}
-                        <p>Sit in one before you decide. Our saunas run at partner locations around BC; book an hour and judge the heat yourself.</p>
-                        <a href="https://book.secretsaunacompany.ca?utm_source=website&utm_medium=card&utm_campaign=booking" class="link--accent">Book a session &rarr;</a>
+                        {# Doc 13's approved copy was venue-neutral ("our saunas run at
+                           partner locations around BC"), and that neutrality was a
+                           CORRECTION, not a preference: the line it replaced advertised
+                           booking at "our Aldergrove location", a venue SSC does not
+                           have, removed sitewide 2026-08-06.
+
+                           Named again 2026-09-02, per Lee, who asked for real weight on
+                           the Brackendale unit. This is not a return to the Aldergrove
+                           claim, and the difference is the whole point: the SC runs at
+                           the Brackendale Art Gallery today, the public can walk in, and
+                           book.secretsaunacompany.ca sells that exact slot at a page of
+                           its own (verified 200, titled "Book a Session at Brackendale
+                           Art Gallery"). A venue is safe to name when a stranger can
+                           show up and get in -- the same test the /locations/ map now
+                           carries in a comment. The link goes to the venue's own booking
+                           page rather than the app root, because a card that names one
+                           sauna should not land you on a chooser. #}
+                        <p>Sit in one before you decide. Our SC commercial sauna runs at the Brackendale Art Gallery in Squamish: wood-fired heat, a cold plunge, forest on every side. Book an hour and judge it yourself.</p>
+                        <a href="https://book.secretsaunacompany.ca/book/brackendale-art-gallery?utm_source=website&utm_medium=card&utm_campaign=booking" class="link--accent">Book a session in Squamish &rarr;</a>
                     </div>
                 </div>
             </div>

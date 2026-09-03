@@ -53,6 +53,11 @@ The nav badge / headline prices were deliberately unchanged (logo veto, repricin
 the pricing arithmetic makes it hold, and the package-claim detector guards it — not because
 the marketing line says so.
 
+### The Brackendale Art Gallery is named on the landing page; venue-neutral copy is retired
+*2026-09-02, per Lee*
+
+The homepage hero subtitle and the Try-a-Session card name the Brackendale Art Gallery in Squamish, and both booking CTAs point at that venue's own page in the booking app rather than the app root. This deliberately retires doc 13's venue-neutral copy ("our saunas run at partner locations around BC"). That neutrality was itself a correction: the line it replaced advertised booking at "our Aldergrove location", a venue SSC does not have, removed sitewide on 2026-08-06. Naming Brackendale is not a return to that mistake, and the test that separates them is whether a stranger can show up and get in. The SC runs at the gallery, the public can walk in, and the booking app sells that slot at a page of its own. Apply the same test before naming any venue anywhere on the site, including the /locations/ map.
+
 ---
 
 ## Engineering pins
