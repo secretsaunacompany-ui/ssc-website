@@ -199,41 +199,24 @@
     // ============================================
     // Page-level events (doc 14 §8, "Arrival & ladder")
     // ============================================
-    /**
-     * `/book/` renders one of two states. The template stamps which one it
-     * rendered on the page container, so the event reports the state the
-     * visitor actually saw rather than a guess made in JavaScript about what
-     * the server decided.
-     */
-    function trackPageState() {
-        const book = document.querySelector('[data-book-state]');
-        if (book) {
-            track('book_page_view', { paused: book.dataset.bookState === 'paused' });
-        }
-    }
-
-    /**
-     * Always wait for DOMContentLoaded. This script is deferred, so
-     * readyState is already 'interactive' when it evaluates -- the old
-     * readyState-branch called trackPageState() immediately, RACING the
-     * cross-origin tracker (also deferred, later in source, therefore not
-     * yet evaluated): window.analyticsTracker was undefined, track()
-     * returned false, and book_page_view was dropped on every production
-     * view of /book/ until 2026-08-06. Deferred scripts all evaluate before
-     * DOMContentLoaded fires, in source order, so at DCL the tracker global
-     * exists and the event has a carrier.
-     *
-     * The 'complete' guard covers injection after the load event (readyState
-     * never returns to 'loading'). Residual window, named for honesty: a copy
-     * injected between DCL and load would bind a listener that never fires --
-     * impossible for this file, which ships only as a static deferred
-     * include (src/_includes/scripts.njk).
-     */
-    if (document.readyState === 'complete') {
-        trackPageState();
-    } else {
-        document.addEventListener('DOMContentLoaded', trackPageState);
-    }
+    // `book_page_view` and its `trackPageState()` carrier were REMOVED on
+    // 2026-09-02, with the page they measured. /book/ was a placeholder that
+    // rendered a fire-ban closure notice; real booking lives at
+    // book.secretsaunacompany.ca, which the nav, the hero, the Try-a-Session
+    // card and the Brackendale card have all linked to directly for some time.
+    // The page nothing pointed at is now a 301 to that app (netlify.toml).
+    //
+    // The event stamped a `paused` flag read off `[data-book-state]`, and no
+    // template stamps that attribute any more, so the listener could only ever
+    // fire on a page that no longer exists. Kept as a note rather than dead
+    // code because the DOMContentLoaded reasoning it carried is worth not
+    // relearning: this file is deferred, so at evaluation time readyState is
+    // already 'interactive' and the cross-origin tracker (also deferred, later
+    // in source) has NOT evaluated yet. Anything that calls track() at
+    // evaluation time finds no tracker global and is silently dropped -- which
+    // is exactly what happened to book_page_view on every production view
+    // until 2026-08-06. Any future page-level event must bind on
+    // DOMContentLoaded for the same reason.
 
     // ============================================
     // Export to global scope

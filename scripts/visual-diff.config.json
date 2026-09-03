@@ -60,9 +60,10 @@
       "expires": "2026-10-05",
       "waive": [
         "changedPct",
-        "heightDelta"
+        "heightDelta",
+        "structural"
       ],
-      "reason": "code-refresh 2026-08-06, D6. The footer colophon gains a Privacy link beside the copyright (/privacy/ had been reachable ONLY from inside the quote modal, which ships on /saunas/ alone since the modal-scoping batch -- undiscoverable from 18 of 19 routes on a PIPA-conscious site). At 1440 the link fits the copyright line and this route is byte-clean: MEASURED 0.02-0.09% changed, shift 0, height 0. At 390 it wraps to a second colophon line: height +23px, changed 0.28-1.17%, shift 0 -- one line of --text-sm, the honest cost of the link. The SHIFT gates stay live and report 0 here, which is the evidence that nothing above the footer moved. Retire at the deploy baseline advance."
+      "reason": "REPURPOSED 2026-09-02: this route is DELETED, not restyled. /book/ was a placeholder rendering a fire-ban closure notice; real booking is the separate app at book.secretsaunacompany.ca, which the nav, hero and two cards already link to directly, so the page's only remaining function was telling anyone who arrived from Google that bookings were shut months after they reopened. src/book.njk and pages/coming-soon.njk are gone and netlify.toml 301s /book and /book/ to the app. `structural` is added because the route disappears from the candidate capture and that is the declaration the harness needs; the ORIGINAL reason for this entry (the 2026-08-06 footer Privacy link, measured byte-clean at 1440 and +23px at 390) is retired by the deletion rather than by a baseline advance. The shift gates stay live and unwaived, as always. Note the redirect is a SERVER 301, so it does not belong in expectedRedirects, which declares client-side redirects the capture observes."
     },
     {
       "route": "/contact/thank-you/",

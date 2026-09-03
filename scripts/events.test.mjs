@@ -716,48 +716,27 @@ async function runInventory(base, browser) {
     await page.close();
   }
 
-  // --- /book/ paused state ---------------------------------------------
-  {
-    const page = await newPage(browser);
-    await page.goto(`${base}/book/`, { waitUntil: 'networkidle' });
-    const events = await readEvents(page);
-    const view = one(events, 'book_page_view');
-    check('book_page_view: reports the state the template actually rendered',
-      !!view && view.data.paused === true, `events were ${JSON.stringify(events)}`);
-    collected.push(...events);
-    await page.close();
-  }
-
-  // --- /book/ under REAL tracker timing ---------------------------------
+  // --- /book/ scenarios REMOVED 2026-09-02 -------------------------------
   //
-  // Every other fixture installs the analyticsTracker stub via addInitScript,
-  // which runs before ALL page scripts -- an ordering production never has:
-  // the real tracker is the LAST deferred script and evaluates after
-  // analytics.js. Until 2026-08-06 that gap hid a live defect: trackPageState
-  // ran at analytics.js evaluation time (readyState is already 'interactive'
-  // inside a deferred script), found no tracker global, and book_page_view
-  // was dropped on every production view of /book/ while this suite stayed
-  // green -- an instrument reporting success while measuring nothing, the
-  // exact class Wave A existed to kill. This fixture installs ONLY the
-  // recorder up front and delivers the tracker stub as the BODY of the real
-  // deferred cross-origin script tag, so it evaluates exactly where
-  // tracker.js does in production. The event must still arrive.
-  {
-    const page = await browser.newPage();
-    await page.route('**ssc-ops.netlify.app/**', (route) => route.abort());
-    await page.route('**ssc-ops.netlify.app/tracker.js**', (route) => route.fulfill({
-      contentType: 'application/javascript',
-      body: 'window.analyticsTracker = { trackEvent: (t, d) => window.__record(t, d), trackPageView: () => {} };',
-    }));
-    await page.addInitScript(RECORDER);
-    await page.goto(`${base}/book/`, { waitUntil: 'networkidle' });
-    const events = await readEvents(page);
-    const view = one(events, 'book_page_view');
-    check('book_page_view: arrives under REAL tracker timing (deferred, last in source)',
-      !!view && view.data.paused === true, `events were ${JSON.stringify(events)}`);
-    collected.push(...events);
-    await page.close();
-  }
+  // Two fixtures lived here and both navigated to /book/, asserting
+  // book_page_view. That page was a fire-ban placeholder; it and its event were
+  // deleted when real booking moved to book.secretsaunacompany.ca, so both
+  // fixtures were testing a route that 301s away.
+  //
+  // COVERAGE LOST, recorded rather than quietly dropped: the second fixture was
+  // the only one in this suite that delivered the tracker stub as the body of
+  // the real deferred cross-origin script tag, instead of via addInitScript.
+  // That ordering -- tracker evaluating AFTER analytics.js -- is the one
+  // production actually has, and it is what exposed book_page_view being
+  // dropped at evaluation time until 2026-08-06 while this suite stayed green.
+  // Every remaining fixture installs the stub before all page scripts, an
+  // ordering production never has.
+  //
+  // It is not replaced here because the hazard only bites events fired at LOAD
+  // time, and book_page_view was the last of those; every surviving event is
+  // user-initiated and therefore fires long after DOMContentLoaded, so pointing
+  // the fixture at one would prove nothing while looking like it did. Restoring
+  // this canary needs a load-time event to hang it on. ROADMAP Parking Lot.
 
   // --- contact form: a 2xx that carries no `next` is a FAILURE ----------
   //

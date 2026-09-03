@@ -72,6 +72,29 @@
   to = "/locations/"
   status = 301
 
+# /book/ was a placeholder page that rendered a fire-ban closure notice. Real
+# booking is the separate app at book.secretsaunacompany.ca, which the nav, the
+# hero, the Try-a-Session card and the Brackendale card have linked to directly
+# for some time -- so the only thing /book/ still did was tell a visitor who
+# found it through Google or a bookmark that bookings were closed, months after
+# they reopened. The page is deleted (2026-09-02, per Lee) and these send its
+# traffic to the app instead of to a 404. 301 rather than 302: the move is
+# permanent and the old URL has been indexed and in the sitemap since 2025.
+# Not a wildcard -- the app's own paths (/book/brackendale-art-gallery) do not
+# correspond to anything that ever existed under this domain's /book/, so a
+# :splat would forward stale sub-paths to URLs the app cannot serve.
+[[redirects]]
+  from = "/book/"
+  to = "https://book.secretsaunacompany.ca/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/book"
+  to = "https://book.secretsaunacompany.ca/"
+  status = 301
+  force = true
+
 # Headers for security
 [[headers]]
   for = "/*"
