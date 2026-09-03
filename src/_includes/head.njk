@@ -209,8 +209,21 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/img/CircleWhite2025_gqtclg.png">
 
-    <!-- Preload -->
-    {% if preload_image %}
+    <!-- Preload.
+         `hero_image` WINS over `preload_image` where both exist, and that
+         ordering is the fix for a real regression (2026-09-02). The five
+         service-area pages state their hero twice: `hero_image` renders the
+         background, `preload_image` was a hand-written absolute path meant to
+         name the same file. The 2026-08-10 photo reassignment changed the first
+         and not the second, so north-shore, sea-to-sky and whistler preloaded a
+         1920w hero belonging to another page -- fetching ~267KB at highest
+         priority that no element ever draws, while the hero that DOES draw got
+         no preload at all. Deriving it from the same field that renders it means
+         the two cannot disagree again. Pages with no `hero_image` (home, about,
+         faq, contact, locations, saunas, warranty) are unaffected. -->
+    {% if hero_image %}
+    <link rel="preload" as="image" href="/img/{{ hero_image }}-1920w.webp">
+    {% elif preload_image %}
     <link rel="preload" as="image" href="{{ preload_image }}">
     {% endif %}
 
