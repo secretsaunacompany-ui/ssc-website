@@ -1,6 +1,6 @@
 {
-  "_comment": "SSC product data for advisor system prompts. Keep in sync with js/data.js and _includes/modals/sauna.njk when pricing or models change. Price sheet version 4 (catalogue restructure, 2026-08-03) -- these are the prices the configurator quotes. The base price buys a COMPLETE sauna: a standard heater, electric or wood-fired where offered, is included at $0 and no add-on is ever required to make the build work. Delivery is not quoted; it is arranged at order.",
-  "_pricesVersion": 4,
+  "_comment": "SSC product data for advisor system prompts. Keep in sync with js/data.js and _includes/modals/sauna.njk when pricing or models change. Price sheet version 5 (standing seam becomes the Premium Finish Package baseline, 2026-08-17) -- these are the prices the configurator quotes. The base price buys a COMPLETE sauna: a standard heater, electric or wood-fired where offered, is included at $0 and no add-on is ever required to make the build work. Delivery is not quoted; it is arranged at order.",
+  "_pricesVersion": 5,
   "models": {
     "s2": {
       "name": "S2",
@@ -119,7 +119,7 @@
       ]
     },
     "premiumFinishPackage": {
-      "note": "Bundles clear cedar interior + cedar exterior + WiFi + interior/exterior lighting + the STANDARD Bluetooth speaker set. Saves $500 vs selecting those five individually. Premium audio is not in the package.",
+      "note": "Bundles clear cedar interior + standing seam or cedar exterior + WiFi + interior/exterior lighting + the STANDARD Bluetooth speaker set. Saves $1,000 vs selecting those five individually (S8 and SC save $1,500; the advertised figure is the minimum across models). Premium audio is not in the package.",
       "price": "varies by model ($9,200-$12,500)"
     },
     "additionalOptions": [

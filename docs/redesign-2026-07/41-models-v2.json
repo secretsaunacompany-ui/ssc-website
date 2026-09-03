@@ -4,7 +4,7 @@
   "_source": "CATALOGUE RESTRUCTURE (batch 4), ratified by Lee 2026-08-03 — pricesVersion 4. Four changes. (1) HEATER becomes a complete-sauna choice rather than an upgrade ladder: the base price now buys a finished sauna with a standard heater, electric OR wood-fired, at $0; the premium electric and premium wood (IKI) tiers price above it. (2) DELIVERY is no longer quoted anywhere — it is arranged at order, never a configurator line. (3) MOUNTING becomes an explicit select-one group: skid-mounted included, trailer integration +$3,500 with the trailer client-supplied. (4) costBasis: S6 and S8 come OFF hold on sauna-only stress costs; SC stays held on the photography gate alone. Prior basis: base-price reprice step 1 (2026-08-03, S2 -> 23500 and S4 -> 29500) at pricesVersion 3; js/data.js and src/_includes/modals/sauna.njk in ssc-website; derivations and margins in docs/redesign-2026-07/35-configurator-price-sheet.md and 30-pricing-heaters-equipment.md. Schema addition 2026-08-03 at pricesVersion 3: packages.premium_finish.upgradableGroups, encoding Lee's ruling that a package occupies the select-one groups its includes touch and a different choice in an occupied group bills at the delta, never at both prices and never below zero.",
   "_schema": "v2. The v1 file could not hold what the configurator now offers: one heater_apex entry cannot carry a per-model electric split, and there were no bench, deck-tier, window-tier, speaker-tier or per-model wood-fired structures at all. Options are now grouped exactly as the configurator groups them, and any price that varies by model is an explicit pricePerModel map rather than v1's 'model.interiorUpgrade' magic string, which every consumer had to know how to interpret.",
 
-  "pricesVersion": 4,
+  "pricesVersion": 5,
   "_pricesVersionNote": "Matches SSC.pricesVersion in js/data.js. Saved customer configurations are stamped with it; a mismatch means a stored total belongs to a superseded sheet. Bump both together, always.",
 
   "_costBasisNote": "Per-model build cost at the stress case, and the gross-margin floor the list price is expected to clear against it. `stressCost` values are the step-1 figures from the pricing-overhaul stress table. The website's scripts/models-json-roundtrip.mjs asserts (basePrice - stressCost) / basePrice >= gmFloor for every model. `held: true` marks a model whose list price is KNOWINGLY below its floor pending a later step: the assertion does not go red for it, but the gate prints a loud WARNING naming the model, its actual margin and `heldRef`. A permanently red tree teaches people to ignore red; silent passage would defeat the gate. Clearing a held model's price above its floor, or resolving its heldRef, is what retires the flag.",
@@ -221,19 +221,19 @@
   "packages": {
     "premium_finish": {
       "name": "Premium Finish Package",
-      "description": "Clear cedar interior, cedar or standing seam exterior, WiFi controller, lighting package, Bluetooth speakers (standard set).",
+      "description": "Clear cedar interior, standing seam or cedar exterior, WiFi controller, lighting package, Bluetooth speakers (standard set).",
       "includes": [
         "interior_clear_cedar",
-        "exterior_cedar",
+        "exterior_standing_seam",
         "wifi_controller",
         "lighting_package",
         "speakers_standard"
       ],
       "pricePerModel": { "S2": 9200, "S4": 9600, "S6": 10500, "S8": 11000, "SC": 12500 },
-      "savings": 500,
+      "savings": 1000,
       "upgradableGroups": {
         "interior": { "baseline": "interior_clear_cedar" },
-        "exterior": { "baseline": "exterior_cedar" },
+        "exterior": { "baseline": "exterior_standing_seam" },
         "audio": {
           "baseline": "speakers_standard",
           "pricing": "additive",
@@ -241,7 +241,7 @@
         }
       },
       "_upgradableGroupsNote": "GROUP-SLOT occupancy, machine-readable. A package does not merely bundle option IDS -- it OCCUPIES each `select: \"one\"` group its `includes` touch, with the listed option as that group's baseline. Choosing a different option in an occupied group is an UPGRADE, billed at max(0, optionPrice - baselinePrice) and rendered as an upgrade line; never both prices, and never a negative line (a cheaper substitution clamps to $0 and reads as a substitution at no charge -- there is no downgrade credit). `pricing: \"additive\"` marks a group that is billed at full price on top instead, the documented audio exception. Per Lee, 2026-08-03. The generator asserts that the key set here EQUALS the set of select-one groups reachable from `includes`, so a package that grows a component cannot silently un-occupy a slot. `select: \"any\"` includes (wifi_controller, lighting_package) are NOT slots: selecting them alongside the package is a double-bill and is refused.",
-      "_note": "savings = (sum of `includes` at the CHEAPEST qualifying combination, i.e. cedar rather than standing seam) minus the package price, and it must hold on every model. Verified in CI by scripts/package-claim.test.mjs in the website repo, which scrapes the advertised figure off the rendered page rather than trusting this number."
+      "_note": "savings = (sum of `includes` at their à la carte prices) minus the package price. Must hold on every model — the MINIMUM savings across models is the advertised figure ($1,000 at pricesVersion 5; S8/SC actually save $1,500). Verified in CI by scripts/package-claim.test.mjs in the website repo, which scrapes the advertised figure off the rendered page rather than trusting this number. pricesVersion 5: standing seam absorbed into the package at the old cedar-baseline prices (SSC absorbs the $500/$1,000 delta), doubling the savings claim."
     }
   },
 

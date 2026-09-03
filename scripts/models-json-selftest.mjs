@@ -105,8 +105,13 @@ const MUTATIONS = [
     name: 'M3  a model is dropped from the roster',
     proves: 'a model vanishing from the rows, the ItemList and the OfferCatalog at '
       + 'once is caught — every surviving per-model assertion would still pass',
-    file: DATA, from: '"order": ["S2", "S4", "S6", "S8", "SC"]',
-    to: '"order": ["S2", "S4", "S8", "SC"]',
+    // Anchored on the array's PRETTY-PRINTED form (re-anchored 2026-09-02).
+    // The old anchor was the single-line `"order": ["S2", ...]`, which the file
+    // has not been written in for some time, so this mutation silently never
+    // applied and M3 proved nothing. The suite says so out loud rather than
+    // passing, which is the only reason it was noticed at all.
+    file: DATA, from: '"S4",\n    "S6",\n    "S8"',
+    to: '"S4",\n    "S8"',
     expect: 'roster: site order',
   },
   {
@@ -272,7 +277,10 @@ const MUTATIONS = [
     proves: 'the last two ungated advisor assertions. The package is the single line most '
       + 'likely to be edited by hand for tone, and both the range ends and the "$500" in '
       + 'the note are money a customer is quoted',
-    canonical: true, from: '"savings": 500,', to: '"savings": 750,',
+    // Re-anchored 2026-09-02 for pricesVersion 5: the canonical saving is 1000,
+    // so the old `"savings": 500,` anchor stopped matching at the v5 reprice and
+    // this mutation quietly stopped applying.
+    canonical: true, from: '"savings": 1000,', to: '"savings": 750,',
     expect: 'advisor premium finish note states the canonical saving $750',
   },
   {

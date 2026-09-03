@@ -718,7 +718,11 @@ function checkAdvisorProductsProjection(canonical) {
   ok(JSON.stringify(dollarsIn(pkgPrice)) === JSON.stringify(bounds),
     `advisor premium finish package range ${JSON.stringify(dollarsIn(pkgPrice))} === canonical `
     + `min/max of pricePerModel ${JSON.stringify(bounds)}`);
-  ok(String(products.addons.premiumFinishPackage?.note || '').includes(
+  // Commas stripped before the comparison. The note is prose an LLM reads aloud
+  // to a customer, so it must say "$1,000" the way a person writes it; the
+  // canonical figure is a bare integer. Comparing the two literally would force
+  // the prose to read "$1000" to keep a gate happy — the tail wagging the dog.
+  ok(String(products.addons.premiumFinishPackage?.note || '').replace(/,/g, '').includes(
     `$${canonical.packages.premium_finish.savings}`),
   `advisor premium finish note states the canonical saving `
     + `$${canonical.packages.premium_finish.savings}`);
@@ -900,6 +904,9 @@ const server = await startServer(dir);
 const browser = await chromium.launch();
 const page = await browser.newPage();
 
+/** model key -> (sum of the package's includes) - (that model's package price). */
+const perModelSavings = {};
+
 for (const [key, id] of Object.entries(IDS)) {
   await page.goto(`${server.url}/saunas/`, { waitUntil: 'networkidle' });
 
@@ -991,11 +998,34 @@ for (const [key, id] of Object.entries(IDS)) {
       .flatMap((g) => g.options).find((o) => o.id === incId);
     return acc + (opt.pricePerModel ? opt.pricePerModel[key] : opt.price);
   }, 0);
-  ok(sum - pkg.pricePerModel[key] === pkg.savings,
-    `${key} json is internally true: components ${sum} - package ${pkg.pricePerModel[key]} = ${sum - pkg.pricePerModel[key]} === savings ${pkg.savings}`);
+  // pricesVersion 5 retired exact equality. Standing seam became the package
+  // baseline at the old cedar-baseline package prices, so SSC absorbs a delta
+  // that differs by model: S2/S4/S6 save exactly the advertised $1,000, S8 and
+  // SC save $1,500. The advertised figure is therefore the MINIMUM across
+  // models, not a per-model identity (canonical `_note`, per Lee 2026-08-17).
+  // Asserting equality here would demand the site under-claim on two models.
+  // The floor is checked per model; that the floor is TIGHT — that some model
+  // actually achieves it, so the claim is not quietly conservative — is
+  // asserted once, after the loop.
+  perModelSavings[key] = sum - pkg.pricePerModel[key];
+  ok(perModelSavings[key] >= pkg.savings,
+    `${key} json is internally true: components ${sum} - package ${pkg.pricePerModel[key]} = ${perModelSavings[key]} >= advertised savings ${pkg.savings}`);
 
   // Half seven, per model, with the modal open and at its defaults.
   await checkPerModelTokenTotals(page, key, canonicalDoc);
+}
+
+// The advertised saving is the MINIMUM across models, so `>=` per model is only
+// half the claim: it permits a sheet where every model beats the figure and the
+// advertised number is simply too low, which is a different lie in a kinder
+// direction. Assert the floor is achieved by at least one model, so the number
+// the customer reads is the real one and not a safe under-claim.
+{
+  const pkg = spec.packages.premium_finish;
+  const achieved = Math.min(...Object.values(perModelSavings));
+  ok(achieved === pkg.savings,
+    `advertised saving is the tight floor: cheapest model saves ${achieved} === advertised ${pkg.savings} `
+    + `(per model: ${JSON.stringify(perModelSavings)})`);
 }
 
 // Half four. Runs once, on a clean load of the page rather than on whatever
