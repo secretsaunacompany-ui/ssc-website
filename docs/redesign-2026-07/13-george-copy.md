@@ -349,7 +349,7 @@ H1: **Where to sit in one**
 Sub: **Our saunas run at partner locations around BC. Book a session and judge the heat yourself.** [src: locations.njk:34–70]
 
 Reframe each venue card as *client + venue* (the unplayed card from my audit — these are businesses that chose SSC builds):
-- **Brackendale Art Gallery** — Brackendale, BC. Our flagship session location. A wood-fired SSC sauna in the forest behind the gallery, with cold plunge. [src: locations.njk:34–38] *(Also the address of record: 41950 Government Rd, Squamish. [src: brief — address decision row])*
+- **Brackendale Art Gallery** — Brackendale, BC. Our flagship session location. A wood-fired SSC sauna in the forest behind the gallery. *(SUPERSEDED 2026-09-02, per Lee: the phrase "with cold plunge" is struck. Cold plunge is removed from site copy sitewide; do not reinstate it from this document.)* [src: locations.njk:34–38] *(Also the address of record: 41950 Government Rd, Squamish. [src: brief — address decision row])*
 - **The Good Sauna** — 1216 Franklin St, Vancouver. An SC model at Container Brewing in Strathcona. [src: locations.njk:46–50]
 - **Gatherwell** — Ambleside Beach, West Vancouver. A custom SSC build on the waterfront at Ambleside Park. [src: locations.njk:57–61]
 - **The Finnish Sauna Co., Sea Edge** — 209 Island Hwy W, Parksville. An SC model metres from the ocean at the Sea Edge Seaside Hotel. [src: locations.njk:68–72]
