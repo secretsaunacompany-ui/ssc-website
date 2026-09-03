@@ -171,18 +171,18 @@
     // ============================================
     // Commercial Location Data
     // ============================================
+    // These are places the PUBLIC CAN WALK INTO. The /locations/ page renders
+    // this list under "Visit Our Saunas", so an entry here is an invitation.
+    // An Abbotsford pin calling itself "Secret Sauna Company -- our flagship
+    // location featuring premium sauna experiences" was deleted here on
+    // 2026-09-02 (Lee): SSC operates no such venue. It was a private
+    // installation, and it is already recorded honestly in
+    // `residentialLocations` as "Abbotsford Area", S2, 2025, 1.5km away. Same
+    // class as the Aldergrove claim removed in be0ff3c on 2026-08-06 -- the
+    // site does not claim places it does not have -- and worse than the others,
+    // because a map that says "visit" sends a real person to a real address.
+    // Before adding an entry: can a stranger show up and get in?
     const commercialLocations = [
-        {
-            name: 'Secret Sauna Company',
-            location: 'Abbotsford, BC',
-            coords: [49.0504, -122.3045],
-            description: 'Our flagship location featuring premium sauna experiences with breathtaking country views.',
-            model: 'S2, S8',
-            year: '2025',
-            features: ['Cold Plunge', 'Country Views', 'Two Saunas'],
-            link: null,
-            image: '/img/PXL_20250910_044921755_wobuh2-1200w.webp'
-        },
         {
             name: 'The Good Sauna',
             location: '1216 Franklin St, Vancouver, BC',
