@@ -3525,6 +3525,26 @@ section.surface--elevated:has(> .wide-container) {
     margin-top: 1rem;
 }
 
+/* --- The one location that is ours --- */
+/* SSC at the BAG is the only venue on this page that Secret Sauna Company runs
+   and takes bookings for; the others are partner installations. It gets twice
+   the footprint so the hierarchy on the page matches the hierarchy in the
+   business (Lee, 2026-09-04).
+
+   `grid-column: 1 / -1` spans whatever column count the auto-fit grid resolved
+   to, so this stays correct at every width instead of assuming two: on a phone
+   the grid is already one column and the rule is a no-op, which is why no
+   media query is needed to undo it. The taller image is what makes the doubled
+   width read as a bigger CARD rather than a stretched one -- a 300px image on a
+   double-width card would look like a letterbox. */
+.location-card--feature {
+    grid-column: 1 / -1;
+}
+
+.location-card--feature .card-image {
+    height: 420px;
+}
+
 /* --- Map Container --- */
 /* Square and ruled. The heavy drop shadow was doing separation work that a 1px
    rule does without lifting a static surface off the page (Jen 10 §4.2/§4.3). */

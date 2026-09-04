@@ -219,7 +219,10 @@
         {
             name: 'Brackendale Art Gallery',
             location: 'Squamish, BC',
-            coords: [49.7695, -123.1558],
+            // 41950 Government Road, the address of record (doc 13). Taken from
+            // the OpenStreetMap node for the gallery itself rather than typed by
+            // hand; the previous pair sat 403m west of the building.
+            coords: [49.7679963, -123.1506914],
             description: 'Regular mobile sauna appearances at this cultural hub in the heart of Brackendale.',
             model: 'Mobile',
             year: '2023-Present',

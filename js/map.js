@@ -90,7 +90,15 @@
                 </div>
             `;
 
-            const marker = L.marker(loc.coords, { icon: commercialIcon })
+            // zIndexOffset lifts every commercial pin above every residential
+            // one. Leaflet's default stacking is by latitude, so a residence
+            // slightly north of a venue covers it completely -- which is
+            // exactly what happened to the Brackendale gallery, hidden under
+            // the Brackendale residential pin. At the map's default zoom 7
+            // those two sit 1.6px apart, so no amount of coordinate accuracy
+            // separates them; the venue simply has to win the stack. It is
+            // also the right priority: these are the pins a visitor can act on.
+            const marker = L.marker(loc.coords, { icon: commercialIcon, zIndexOffset: 1000 })
                 .addTo(map)
                 .bindPopup(popupContent, { maxWidth: 320 });
             markers.commercial.push(marker);
@@ -115,7 +123,7 @@
             </div>
         `;
 
-        const edmontonMarker = L.marker(edmontonLocation.coords, { icon: commercialIcon })
+        const edmontonMarker = L.marker(edmontonLocation.coords, { icon: commercialIcon, zIndexOffset: 1000 })
             .addTo(map)
             .bindPopup(edmontonPopup, { maxWidth: 320 });
         markers.commercial.push(edmontonMarker);
