@@ -44,12 +44,16 @@ in this project has already been ruled on, usually for a reason that is not obvi
 | First manual funnel check (`quote_submit_success` count via Supabase MCP) | Was due 2026-08-07 -- confirm it happened | 2026-08-01 |
 | Mobile configurator CTA: 152 configurator opens since the 2026-08-09 deploy and ZERO step-2 views (prior rate ~5%). Funnel and instrument both verified working from production. On a 390px phone the CTA sits 4,454px into a 4,945px scrolling modal and the sticky total bar has no CTA. Put a CTA in the sticky bar, or restructure step 1? (resolved 2026-09-04) | Every mobile quote since 2026-08-09 has died on step 1; the cause of the exact zero at the deploy boundary is not established | 2026-09-03 |
 | Replacement address for the LocalBusiness schema (38918 Progress Way is still live in head.njk), or no street address at all? (resolved 2026-09-04) | Google reads it as the business location; it is wrong today | 2026-09-02 |
-| Four proposed DECISIONS entries from the 2026-09-02..04 refresh await approval: CARTO keyed basemap as an operating constraint; never `git add -A` after a suite that mutates the tree and never let that suite be what a timeout kills; cold plunge removed sitewide; fixed photo backgrounds removed everywhere but Contact (doc 10 §2.3). Plus, from the copy-followups relay: no em dashes in rendered prose; separator dashes pending a house-style ruling. | Rulings a future session could violate without knowing; unwritten until Lee says yes | 2026-09-04 |
+| Four proposed DECISIONS entries from the 2026-09-02..04 refresh await approval: CARTO keyed basemap as an operating constraint; never `git add -A` after a suite that mutates the tree and never let that suite be what a timeout kills; cold plunge removed sitewide; fixed photo backgrounds removed everywhere but Contact (doc 10 §2.3). Plus, from the copy-followups relay: no em dashes in rendered prose; separator dashes pending a house-style ruling. (resolved 2026-09-04) | Rulings a future session could violate without knowing; unwritten until Lee says yes | 2026-09-04 |
 | Residential map pins are #4A90E2, a blue from no token in the design system. Recolour to a system token, or leave? | Only off-system colour left on /locations/ after the refresh | 2026-09-04 |
 
 ---
 
 ## Log (newest first)
+
+### 2026-09-04 (rulings)
+
+Lee approved the five recommended rulings from the 2026-09-02..04 refresh and the copy relay in one batch; all five written below through the writer. The sixth item, separator dashes in process-step titles, testimonial bylines, add-on labels and price placeholders, carried no recommendation and stays parked for a house-style ruling (the copy relay's 3.5 indexes it in the Parking Lot with the four pinned locations).
 
 ### 2026-09-04 (later)
 
