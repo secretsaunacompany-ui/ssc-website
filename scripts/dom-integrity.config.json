@@ -1806,8 +1806,8 @@
       "tag": "SCRIPT",
       "contains": "\"description\": \"Handcrafted Finnish saunas built in Squamish, British Columbia. Traditional wood-fired and electric saunas using Western Red Cedar.\"",
       "count": 1,
-      "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind. The LocalBusiness JSON-LD description ships from one include, so this is the single sitewide change class in this relay: 1 per page at both widths. Identified by the whole description VALUE rather than by the word \"description\", which appears in several other schema keys.",
-      "range": "29ad824..26ed4fb",
+      "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind. The LocalBusiness JSON-LD description ships from one include, so this is the single sitewide change class in this relay: 1 per page at both widths. Identified by the whole description VALUE rather than by the word \"description\", which appears in several other schema keys. This same script token also carries the LocalBusiness address change merged from refresh/2026-09-02 (e342685): 38918 Progress Way, V8B 0K7 and Mo-Fr hours out; 41950 Government Road, Brackendale, V0N 1H0 and the gallery coordinates in, per Lee 2026-09-04. One token, one declaration.",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1816,8 +1816,8 @@
       "tag": "SCRIPT",
       "contains": "\"description\": \"Finnish saunas built in Squamish, British Columbia. Wood-fired and electric, in Western Red Cedar.\"",
       "count": 1,
-      "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind. The LocalBusiness JSON-LD description ships from one include, so this is the single sitewide change class in this relay: 1 per page at both widths. Identified by the whole description VALUE rather than by the word \"description\", which appears in several other schema keys.",
-      "range": "29ad824..26ed4fb",
+      "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind. The LocalBusiness JSON-LD description ships from one include, so this is the single sitewide change class in this relay: 1 per page at both widths. Identified by the whole description VALUE rather than by the word \"description\", which appears in several other schema keys. This same script token also carries the LocalBusiness address change merged from refresh/2026-09-02 (e342685): 38918 Progress Way, V8B 0K7 and Mo-Fr hours out; 41950 Government Road, Brackendale, V0N 1H0 and the gallery coordinates in, per Lee 2026-09-04. One token, one declaration.",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1827,7 +1827,7 @@
       "contains": "Secret Sauna Company | Handcrafted Finnish Saunas in British Columbia",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind, and names the town the search result is for. Home page only.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1837,7 +1837,7 @@
       "contains": "Secret Sauna Company | Finnish Saunas Built in Squamish, BC",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind, and names the town the search result is for. Home page only.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1846,7 +1846,7 @@
       "contains": "Custom builds, standard models S2-SC, and mobile saunas. Get a quote today.\" name=\"description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the home page description, and swaps the dead \"Get a quote today\" tail for the Brackendale Art Gallery visit point. Keyed on the content tail plus name=\"description\" so it cannot consume the og/twitter twins, whose text differs.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1855,7 +1855,7 @@
       "contains": "content=\"Finnish saunas built in Squamish, BC. Wood-fired and electric, Western Red Cedar, models from $23,500. Try one at Brackendale Art Gallery.\" name=\"description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the home page description, and swaps the dead \"Get a quote today\" tail for the Brackendale Art Gallery visit point. Keyed on the content tail plus name=\"description\" so it cannot consume the og/twitter twins, whose text differs. Pin widened to the whole value at Razor re-review (2026-09-04): a tail pin let an undeclared price edit in the same node ride through.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1864,7 +1864,7 @@
       "contains": "Secret Sauna Company | Handcrafted Finnish Saunas in BC\" property=\"og:title\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind, in the home page og:title. Split from its social twin and keyed on the exact content+attribute pair, because the two share a content string and a bare content match would name a family of two rather than one node.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1873,7 +1873,7 @@
       "contains": "Secret Sauna Company | Finnish Saunas Built in Squamish, BC\" property=\"og:title\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind, in the home page og:title. Split from its social twin and keyed on the exact content+attribute pair, because the two share a content string and a bare content match would name a family of two rather than one node.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1882,7 +1882,7 @@
       "contains": "Secret Sauna Company | Handcrafted Finnish Saunas in BC\" name=\"twitter:title\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind, in the home page twitter:title. Split from its social twin and keyed on the exact content+attribute pair, because the two share a content string and a bare content match would name a family of two rather than one node.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1891,7 +1891,7 @@
       "contains": "Secret Sauna Company | Finnish Saunas Built in Squamish, BC\" name=\"twitter:title\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind, in the home page twitter:title. Split from its social twin and keyed on the exact content+attribute pair, because the two share a content string and a bare content match would name a family of two rather than one node.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1900,7 +1900,7 @@
       "contains": "Traditional construction with Western Red Cedar. Models from $23,500.\" property=\"og:description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind, in the home page og:description. Keyed on the \"Models from\" tail, which the twitter twin does not carry, plus the attribute.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1909,7 +1909,7 @@
       "contains": "Wood-fired and electric, Western Red Cedar. Models from $23,500.\" property=\"og:description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind, in the home page og:description. Keyed on the \"Models from\" tail, which the twitter twin does not carry, plus the attribute.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1918,7 +1918,7 @@
       "contains": "Traditional construction with Western Red Cedar.\" name=\"twitter:description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind, in the home page twitter:description, the shorter of the two social descriptions.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1927,7 +1927,7 @@
       "contains": "Wood-fired and electric, Western Red Cedar.\" name=\"twitter:description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind, in the home page twitter:description, the shorter of the two social descriptions.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1936,7 +1936,7 @@
       "contains": "alt=\"Authentic Finnish sauna by Secret Sauna Company - handcrafted outdoor sauna in British Columbia wilderness\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the hero alt text, and drops the \" - \" hyphen joint with it. The src, dimensions and fetchpriority are untouched, so the LCP element is the same image.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1945,7 +1945,7 @@
       "contains": "alt=\"Outdoor Finnish sauna built by Secret Sauna Company in Squamish, BC\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the hero alt text, and drops the \" - \" hyphen joint with it. The src, dimensions and fetchpriority are untouched, so the LCP element is the same image.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1955,7 +1955,7 @@
       "contains": "Available for lease or purchase—bringing authentic sauna experiences anywhere.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, and \"authentic sauna experiences\" goes with it. Home page mobile-sauna card.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1965,7 +1965,7 @@
       "contains": "Fully equipped, road-ready units for hospitality partners, events and those seeking a true escape. Available to lease or buy. They go wherever the road does.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, and \"authentic sauna experiences\" goes with it. Home page mobile-sauna card. Re-declared at 2.5b: the fold changed this node again, so the entry now identifies the FINAL string rather than the 2.5 intermediate, and carries the 2.5b markup commit. Pin widened to the whole value at Razor re-review (2026-09-04): a tail pin let an undeclared price edit in the same node ride through.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "fda1e1d copy: Jen's snippet cuts and six select options"
     },
     {
@@ -1975,7 +1975,7 @@
       "contains": "performance and beauty—Western Red Cedar",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation: here the dash introduced a list, so it becomes a colon. Home page materials paragraph.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1985,7 +1985,7 @@
       "contains": "performance and beauty: Western Red Cedar",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation: here the dash introduced a list, so it becomes a colon. Home page materials paragraph.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -1994,7 +1994,7 @@
       "contains": "vision -- handcrafted in Squamish, BC.\" name=\"description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the /about/ and /process/ description, and removes the \" -- \" ASCII dash joint. The three twins carry an identical content string, so each is keyed on its own attribute rather than on the shared text.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2003,7 +2003,7 @@
       "contains": "what we're working toward.\" name=\"description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the /about/ and /process/ description, and removes the \" -- \" ASCII dash joint. The three twins carry an identical content string, so each is keyed on its own attribute rather than on the shared text.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2012,7 +2012,7 @@
       "contains": "vision -- handcrafted in Squamish, BC.\" property=\"og:description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the /about/ and /process/ og:description, and removes the \" -- \" ASCII dash joint. The three twins carry an identical content string, so each is keyed on its own attribute rather than on the shared text.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2021,7 +2021,7 @@
       "contains": "what we're working toward.\" property=\"og:description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the /about/ and /process/ og:description, and removes the \" -- \" ASCII dash joint. The three twins carry an identical content string, so each is keyed on its own attribute rather than on the shared text.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2030,7 +2030,7 @@
       "contains": "vision -- handcrafted in Squamish, BC.\" name=\"twitter:description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the /about/ and /process/ twitter:description, and removes the \" -- \" ASCII dash joint. The three twins carry an identical content string, so each is keyed on its own attribute rather than on the shared text.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2039,7 +2039,7 @@
       "contains": "what we're working toward.\" name=\"twitter:description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the /about/ and /process/ twitter:description, and removes the \" -- \" ASCII dash joint. The three twins carry an identical content string, so each is keyed on its own attribute rather than on the shared text.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2049,7 +2049,7 @@
       "contains": "We listen first, then design—creating saunas that fit naturally into their surroundings and serve their intended purpose.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation. The /about/ and /process/ discovery paragraph.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2059,7 +2059,7 @@
       "contains": "We listen first, then design saunas that fit their surroundings and do the job they're meant for.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation. The /about/ and /process/ discovery paragraph.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2069,7 +2069,7 @@
       "contains": "This allows us to refine every detail together—from bench placement to window positioning—ensuring the final build matches your vision.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation: a dash-bracketed aside becomes a comma-bracketed one. The /about/ and /process/ 3D-rendering paragraph.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2079,7 +2079,7 @@
       "contains": "This lets us refine every detail together, from bench placement to window positioning, so the final build matches your vision.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation: a dash-bracketed aside becomes a comma-bracketed one. The /about/ and /process/ 3D-rendering paragraph.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2089,7 +2089,7 @@
       "contains": "we offer Thermowood—heat-treated timber",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the /about/ and /process/ cedar paragraph.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2099,7 +2099,7 @@
       "contains": "we offer Thermowood, a heat-treated timber",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the /about/ and /process/ cedar paragraph.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2109,7 +2109,7 @@
       "contains": "proper löyly—that soft steam that makes Finnish sauna what it is.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the /about/ and /process/ loyly paragraph.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2119,7 +2119,7 @@
       "contains": "proper löyly, the soft steam that makes a Finnish sauna what it is.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the /about/ and /process/ loyly paragraph.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2129,7 +2129,7 @@
       "contains": "custom design plan—no obligation, no pressure",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation: the dash becomes a full stop and the sentence gains the terminal period it was missing. /contact/ intro.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2139,7 +2139,7 @@
       "contains": "custom design plan. No obligation, no pressure.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation: the dash becomes a full stop and the sentence gains the terminal period it was missing. /contact/ intro.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2149,7 +2149,7 @@
       "contains": "or pavers—allowing airflow beneath while ensuring water from inside has a place to drain.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the /faq/ foundation answer. Missed by the Stage 1 sweep and caught in the 2.5 amendment; the schemaAnswer twin carries no dash and is untouched.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "63b1f69 copy: four missed strings (relay ssc-website-copy-followups 2.5)"
     },
     {
@@ -2159,7 +2159,7 @@
       "contains": "or pavers, which lets air move beneath and gives water from inside a place to drain.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the /faq/ foundation answer. Missed by the Stage 1 sweep and caught in the 2.5 amendment; the schemaAnswer twin carries no dash and is untouched.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "63b1f69 copy: four missed strings (relay ssc-website-copy-followups 2.5)"
     },
     {
@@ -2169,7 +2169,7 @@
       "contains": "consistent temperature control—better for indoor or residential installations.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the /faq/ wood-versus-electric answer.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2179,7 +2179,7 @@
       "contains": "Wood-fired saunas offer real heat and atmosphere, ideal for outdoor settings. Electric saunas provide convenient, consistent temperature control, which suits indoor or residential installations. We can help determine what's right for your situation.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the /faq/ wood-versus-electric answer. Pin widened to the whole value at Razor re-review (2026-09-04): a tail pin let an undeclared price edit in the same node ride through.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2189,7 +2189,7 @@
       "contains": "Each piece of the sauna—from benches to rocks—wears at different rates.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation: a dash-bracketed aside becomes a comma-bracketed one in the /faq/ maintenance answer. Missed by the Stage 1 sweep and caught in the 2.5 amendment; the schemaAnswer twin carries no dash and is untouched.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "63b1f69 copy: four missed strings (relay ssc-website-copy-followups 2.5)"
     },
     {
@@ -2199,7 +2199,7 @@
       "contains": "Each piece of the sauna, from benches to rocks, wears at a different rate.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation: a dash-bracketed aside becomes a comma-bracketed one in the /faq/ maintenance answer. Missed by the Stage 1 sweep and caught in the 2.5 amendment; the schemaAnswer twin carries no dash and is untouched.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "63b1f69 copy: four missed strings (relay ssc-website-copy-followups 2.5)"
     },
     {
@@ -2209,7 +2209,7 @@
       "contains": "a complete sauna experience—you just provide the location and the guests.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation: the dash becomes a full stop in the /faq/ rental answer. Missed by the Stage 1 sweep and caught in the 2.5 amendment; the schemaAnswer twin carries no dash and is untouched.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "63b1f69 copy: four missed strings (relay ssc-website-copy-followups 2.5)"
     },
     {
@@ -2219,7 +2219,7 @@
       "contains": "a complete sauna experience. You provide the location and the guests.",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation: the dash becomes a full stop in the /faq/ rental answer. Missed by the Stage 1 sweep and caught in the 2.5 amendment; the schemaAnswer twin carries no dash and is untouched.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "63b1f69 copy: four missed strings (relay ssc-website-copy-followups 2.5)"
     },
     {
@@ -2228,7 +2228,7 @@
       "contains": "and mobile saunas handcrafted in Squamish, BC.\" name=\"description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the /saunas/ and /gallery/ description. The three twins carry an identical content string, so each is keyed on its own attribute rather than on the shared text. Every price in the string is unchanged.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2237,7 +2237,7 @@
       "contains": "content=\"Compare our Finnish sauna models from the compact S2 ($23,500) to the commercial SC ($57,000+). Custom, standard and mobile builds, made in Squamish, BC.\" name=\"description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the /saunas/ and /gallery/ description. The three twins carry an identical content string, so each is keyed on its own attribute rather than on the shared text. Every price in the string is unchanged. Re-declared at 2.5b: the fold changed this node again, so the entry now identifies the FINAL string rather than the 2.5 intermediate, and carries the 2.5b markup commit. Pin widened to the whole value at Razor re-review (2026-09-04): a tail pin let an undeclared price edit in the same node ride through.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "fda1e1d copy: Jen's snippet cuts and six select options"
     },
     {
@@ -2246,7 +2246,7 @@
       "contains": "and mobile saunas handcrafted in Squamish, BC.\" property=\"og:description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the /saunas/ and /gallery/ og:description. The three twins carry an identical content string, so each is keyed on its own attribute rather than on the shared text. Every price in the string is unchanged.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2255,7 +2255,7 @@
       "contains": "content=\"Compare our Finnish sauna models from the compact S2 ($23,500) to the commercial SC ($57,000+). Custom, standard and mobile builds, made in Squamish, BC.\" property=\"og:description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the /saunas/ and /gallery/ og:description. The three twins carry an identical content string, so each is keyed on its own attribute rather than on the shared text. Every price in the string is unchanged. Re-declared at 2.5b: the fold changed this node again, so the entry now identifies the FINAL string rather than the 2.5 intermediate, and carries the 2.5b markup commit. Pin widened to the whole value at Razor re-review (2026-09-04): a tail pin let an undeclared price edit in the same node ride through.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "fda1e1d copy: Jen's snippet cuts and six select options"
     },
     {
@@ -2264,7 +2264,7 @@
       "contains": "and mobile saunas handcrafted in Squamish, BC.\" name=\"twitter:description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the /saunas/ and /gallery/ twitter:description. The three twins carry an identical content string, so each is keyed on its own attribute rather than on the shared text. Every price in the string is unchanged.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2273,7 +2273,7 @@
       "contains": "content=\"Compare our Finnish sauna models from the compact S2 ($23,500) to the commercial SC ($57,000+). Custom, standard and mobile builds, made in Squamish, BC.\" name=\"twitter:description\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the /saunas/ and /gallery/ twitter:description. The three twins carry an identical content string, so each is keyed on its own attribute rather than on the shared text. Every price in the string is unchanged. Re-declared at 2.5b: the fold changed this node again, so the entry now identifies the FINAL string rather than the 2.5 intermediate, and carries the 2.5b markup commit. Pin widened to the whole value at Razor re-review (2026-09-04): a tail pin let an undeclared price edit in the same node ride through.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "fda1e1d copy: Jen's snippet cuts and six select options"
     },
     {
@@ -2282,7 +2282,7 @@
       "contains": "alt=\"Traditional wood-fired sauna heater with hot stones for authentic loyly\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the heater photograph's alt text on /saunas/ and /gallery/. Missed by the Stage 1 sweep and caught in the 2.5 amendment. The src and dimensions are untouched.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "63b1f69 copy: four missed strings (relay ssc-website-copy-followups 2.5)"
     },
     {
@@ -2291,7 +2291,7 @@
       "contains": "alt=\"Wood-fired sauna heater with hot stones\"",
       "count": 1,
       "reason": "Retires the \"authentic/handcrafted/traditional\" category voice the 2026-09-04 hero rewrite left behind in the heater photograph's alt text on /saunas/ and /gallery/. Missed by the Stage 1 sweep and caught in the 2.5 amendment. The src and dimensions are untouched.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "63b1f69 copy: four missed strings (relay ssc-website-copy-followups 2.5)"
     },
     {
@@ -2301,7 +2301,7 @@
       "contains": "Easy access — a truck can get close",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the site-access select of the configurator modal on /saunas/ and /gallery/: the easy-access option. Declared one option at a time with its exact text rather than as a count of five anonymous strings, because \"five options changed somewhere\" is not a declaration of which.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2311,7 +2311,7 @@
       "contains": "Easy: a truck can get close",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the site-access select of the configurator modal on /saunas/ and /gallery/: the easy-access option. Declared one option at a time with its exact text rather than as a count of five anonymous strings, because \"five options changed somewhere\" is not a declaration of which. Re-declared at 2.5b: the fold changed this node again, so the entry now identifies the FINAL string rather than the 2.5 intermediate, and carries the 2.5b markup commit.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "fda1e1d copy: Jen's snippet cuts and six select options"
     },
     {
@@ -2321,7 +2321,7 @@
       "contains": "Tight — stairs, slope, gate, or narrow path",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the site-access select of the configurator modal on /saunas/ and /gallery/: the tight-access option, where the dash introduced a list and becomes a colon. Declared one option at a time with its exact text rather than as a count of five anonymous strings, because \"five options changed somewhere\" is not a declaration of which.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2331,7 +2331,7 @@
       "contains": "Tight: stairs, slope, gate or narrow path",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the site-access select of the configurator modal on /saunas/ and /gallery/: the tight-access option, where the dash introduced a list and becomes a colon. Declared one option at a time with its exact text rather than as a count of five anonymous strings, because \"five options changed somewhere\" is not a declaration of which. Re-declared at 2.5b: the fold changed this node again, so the entry now identifies the FINAL string rather than the 2.5 intermediate, and carries the 2.5b markup commit.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "fda1e1d copy: Jen's snippet cuts and six select options"
     },
     {
@@ -2341,7 +2341,7 @@
       "contains": "It's going on a trailer — mobile",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the site-access select of the configurator modal on /saunas/ and /gallery/: the trailer option, where the trailing \"mobile\" was redundant with the label itself. Declared one option at a time with its exact text rather than as a count of five anonymous strings, because \"five options changed somewhere\" is not a declaration of which.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2351,7 +2351,7 @@
       "contains": "Trailer: it's a mobile build",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the site-access select of the configurator modal on /saunas/ and /gallery/: the trailer option, where the trailing \"mobile\" was redundant with the label itself. Declared one option at a time with its exact text rather than as a count of five anonymous strings, because \"five options changed somewhere\" is not a declaration of which. Re-declared at 2.5b: the fold changed this node again, so the entry now identifies the FINAL string rather than the 2.5 intermediate, and carries the 2.5b markup commit.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "fda1e1d copy: Jen's snippet cuts and six select options"
     },
     {
@@ -2361,7 +2361,7 @@
       "contains": "No access for a finished unit — might need building on site",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the site-access select of the configurator modal on /saunas/ and /gallery/: the no-access option. Declared one option at a time with its exact text rather than as a count of five anonymous strings, because \"five options changed somewhere\" is not a declaration of which.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2371,7 +2371,7 @@
       "contains": "No access: may need building on site",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the site-access select of the configurator modal on /saunas/ and /gallery/: the no-access option. Declared one option at a time with its exact text rather than as a count of five anonymous strings, because \"five options changed somewhere\" is not a declaration of which. Re-declared at 2.5b: the fold changed this node again, so the entry now identifies the FINAL string rather than the 2.5 intermediate, and carries the 2.5b markup commit.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "fda1e1d copy: Jen's snippet cuts and six select options"
     },
     {
@@ -2381,7 +2381,7 @@
       "contains": "Not sure — help me figure it out",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the site-access select of the configurator modal on /saunas/ and /gallery/: the not-sure option. Declared one option at a time with its exact text rather than as a count of five anonymous strings, because \"five options changed somewhere\" is not a declaration of which.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2391,7 +2391,7 @@
       "contains": "Not sure: help me figure it out",
       "count": 1,
       "reason": "The em-dash sweep: an em dash used as a sentence joint is replaced by real punctuation, in the site-access select of the configurator modal on /saunas/ and /gallery/: the not-sure option. Declared one option at a time with its exact text rather than as a count of five anonymous strings, because \"five options changed somewhere\" is not a declaration of which. Re-declared at 2.5b: the fold changed this node again, so the entry now identifies the FINAL string rather than the 2.5 intermediate, and carries the 2.5b markup commit.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "fda1e1d copy: Jen's snippet cuts and six select options"
     },
     {
@@ -2401,7 +2401,7 @@
       "contains": "Joinery, finishing, hardware -- all done before it arrives.",
       "count": 1,
       "reason": "The dash sweep's ASCII half: a \" -- \" used as a sentence joint is replaced by real grammar. /vancouver/ workshop paragraph.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2411,7 +2411,7 @@
       "contains": "Joinery, finishing and hardware are all done before it arrives.",
       "count": 1,
       "reason": "The dash sweep's ASCII half: a \" -- \" used as a sentence joint is replaced by real grammar. /vancouver/ workshop paragraph.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "6fffdb1 copy: meta, alt text, and em-dash sweep"
     },
     {
@@ -2421,7 +2421,7 @@
       "contains": "Would likely need a crane or lift",
       "count": 1,
       "reason": "New at 2.5b: the crane site-access option carried no em dash, so the 2.5 sweep left it alone and no entry was written for it. Jen's pass gives all six options one \"Label: detail\" shape, so this one moves for the first time in this relay. Configurator modal on /saunas/ and /gallery/, one per page. The value attribute \"crane\" is unchanged.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "fda1e1d copy: Jen's snippet cuts and six select options"
     },
     {
@@ -2431,7 +2431,7 @@
       "contains": "Hard: likely needs a crane or lift",
       "count": 1,
       "reason": "New at 2.5b: the crane site-access option carried no em dash, so the 2.5 sweep left it alone and no entry was written for it. Jen's pass gives all six options one \"Label: detail\" shape, so this one moves for the first time in this relay. Configurator modal on /saunas/ and /gallery/, one per page. The value attribute \"crane\" is unchanged.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "fda1e1d copy: Jen's snippet cuts and six select options"
     },
     {
@@ -2441,7 +2441,7 @@
       "contains": "Wood-fired saunas offer authentic heat and atmosphere, ideal for outdoor settings.",
       "count": 1,
       "reason": "New at 2.5b: the FAQPage JSON-LD on /faq/. The 2.5 note recorded that the three schemaAnswer twins were checked and left alone because none carried a dash, so no declaration was written for this script. Dropping \"authentic\" from the wood-fired vs electric answer changes the answer paragraph AND its schemaAnswer twin, so the JSON-LD block moves for the first time in this relay and now needs its own pair. Identified by the sentence opening rather than by \"Wood-fired\", which recurs across the FAQPage entries.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "fda1e1d copy: Jen's snippet cuts and six select options"
     },
     {
@@ -2451,7 +2451,7 @@
       "contains": "Wood-fired saunas offer real heat and atmosphere, ideal for outdoor settings.",
       "count": 1,
       "reason": "New at 2.5b: the FAQPage JSON-LD on /faq/. The 2.5 note recorded that the three schemaAnswer twins were checked and left alone because none carried a dash, so no declaration was written for this script. Dropping \"authentic\" from the wood-fired vs electric answer changes the answer paragraph AND its schemaAnswer twin, so the JSON-LD block moves for the first time in this relay and now needs its own pair. Identified by the sentence opening rather than by \"Wood-fired\", which recurs across the FAQPage entries.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "fda1e1d copy: Jen's snippet cuts and six select options"
     },
     {
@@ -2461,7 +2461,7 @@
       "contains": "Experience authentic heat in a stunning natural setting.",
       "count": 1,
       "reason": "New at 2.5c: the SSC at the BAG card on /locations/. The 2.5b report flagged \"authentic heat\" as still live in one more place than the FAQ answer Lee ruled on; he approved the same one-word substitution here, so this is the last occurrence of the retired \"authentic\" category voice in shipped markup. Identified by the second sentence rather than by \"Wood-fired\", which recurs across the location cards.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "26ed4fb copy: real heat on the Brackendale card"
     },
     {
@@ -2471,7 +2471,7 @@
       "contains": "Wood-fired Finnish sauna in the forest at Brackendale Art Gallery. Experience real heat in a stunning natural setting.",
       "count": 1,
       "reason": "New at 2.5c: the SSC at the BAG card on /locations/. The 2.5b report flagged \"authentic heat\" as still live in one more place than the FAQ answer Lee ruled on; he approved the same one-word substitution here, so this is the last occurrence of the retired \"authentic\" category voice in shipped markup. Identified by the second sentence rather than by \"Wood-fired\", which recurs across the location cards. Pin widened to the whole value at Razor re-review (2026-09-04): a tail pin let an undeclared price edit in the same node ride through.",
-      "range": "29ad824..26ed4fb",
+      "range": "29ad824..07b2325",
       "commit": "26ed4fb copy: real heat on the Brackendale card"
     }
   ],
@@ -2500,6 +2500,6 @@
     "codeRefresh20260806": "CODE REFRESH 2026-08-06, range 7b506b5..0dd1540 (Stage 6 equivalence gate). 26 declarations covering every change class across 38 page/width comparisons, every one declared above and every one traceable to a bucket-D live-defect fix or a bucket-B refactor authorized in .claude/plans/code-refresh-2026-08-06-remediation.md (three critic rounds, converged). SHAPE OF THE SET: three classes are SITEWIDE by design -- the footer Privacy link (D6), the WebSite JSON-LD losing its SearchAction (D7c), and the lightbox container gaining dialog semantics (B4, unguarded via footer.njk:58) -- and the rest are route-scoped to exactly the page whose defect they fix (/ reviews+copy, /booking-ops.html login, /contact/ failure surface + disclosure, /faq/ schema escaping, /locations/ meta). NOT DECLARED BECAUSE NOT PRESENT: no price, no option value, no pricesVersion moved anywhere in this range -- the pricing files were out of scope by standing constraint and git diff over js/data.js, src/_data/models.json and modals/sauna.njk's option values is empty. THE PIXEL HALF is certified separately: visual-diff 7b506b5..c015e00 (the behaviour-preserving bucket-A tail, incl. ~370 lines of dead CSS) reported ZERO visual change on all 38 pairs, and the full-range run's reds decompose exactly into these declared causes (+31px page height everywhere = the footer link; /contact/ +91px = the error surface and disclosure; / @390 reflow = the D7a copy), with /booking-ops.html at 0.000% as the untouched control.",
     "codeRefresh20260806JsRunFailure": "The 2026-08-06 code-refresh range reports a JS RUN FAILURE, EXPECTED and waived nowhere -- the same shape as _notes.b1JsRunFailure, _notes.reprice1JsRunFailure and _notes.batch4JsRunFailure. The batch necessarily edits js/analytics.js (D3, the book_page_view ordering race), js/forms.js (D5, the Formspree success predicate and failure rendering), js/navigation.js (D8 Leaflet SRI + the dead booking hook) and js/gallery.js (B4 lightbox alt/focus), so the boundary crossing is structural to the work and cannot be designed away. This instrument certifies DELIVERED MARKUP with scripts disabled; what those scripts DO is certified elsewhere and was: quote-funnel 89, events 76 (incl. the new late-tracker scenario that reproduces production's real script ordering, and the contact-failure scenarios), lightbox 7, functions-gate 10, fonts 31, rhythm 77, plus csp-hash's new inline-event-attribute sweep. Read the two together; do not read this file's verdict as covering the JS.",
     "leeReview20260807": "LEE REVIEW 2026-08-07, folded into the same deploy train as the code refresh (range 7b506b5..9a19319). Four findings, all his: the /saunas/ index showed prices but not saunas (now a photograph per row, mirroring the configurator's opening frame); a single 40% stat floated under the comparison ledger (Jen's archetype B overridden — three stats, the two restored ones verbatim with their original sources); the /contact/ form sat 270px below its own heading (the tight tier applied via :has() so no markup changes, plus a first-child margin collapse); and the hero title arrived on the first scroll and left on the same gesture (the hero stage is now position:sticky over a 70vh runway — CSS ONLY, no markup change, so it appears in the pixel harness and not here). A fifth, the dead info@ contact address, lived in the ssc-booking repo and shipped there separately.",
-    "copyFollowups20260904": "COPY FOLLOW-UPS 2026-09-04, FINAL RANGE 29ad824..26ed4fb, 70 declarations after three folds (2.5, 2.5b, 2.5c); the paragraphs below are the running record and their earlier counts and range ends are superseded by this sentence. Seven added entries (home + /saunas/ description metas, the Mobile Builds, FAQ wood-fired and Brackendale-card paragraphs) pin the WHOLE value rather than a tail, after Razor showed a tail pin absorbs an undeclared edit earlier in the same node, including the $23,500 in the meta strings that no other gate reads. ORIGINAL NOTE FOLLOWS. COPY FOLLOW-UPS 2026-09-04, range 29ad824..63b1f69. 64 declarations (32 removed/added pairs) covering every change class in the relay, all of them TEXT: meta content, one <title>, the LocalBusiness JSON-LD description, body paragraphs, five configurator option labels and two img alt attributes. NOTHING STRUCTURAL MOVED and the instrument says so rather than this note: every page reports an identical token count on both sides, and jsChanged is false because the relay touches no file under js/. TWO CAUSES, both named per entry: the retirement of the \"authentic / handcrafted / traditional\" category voice that the 2026-09-04 hero rewrite left stranded elsewhere on the site, and the em-dash sweep (plus its ASCII \" -- \" half on /vancouver/). ONE SITEWIDE CLASS: the JSON-LD description, which ships from a single include and therefore changes on all 18 pages at both widths. Everything else is route-scoped. FOUR ENTRIES CARRY THE 2.5 COMMIT rather than 6fffdb1 -- three /faq/ answers and the /saunas/ heater alt -- because those four strings were missed by the Stage 1 sweep and folded in by the orchestrator's amendment. NO PRICE, no option VALUE and no pricesVersion moved: the $23,500 and $57,000+ figures appear inside two of the declared meta strings and are byte-identical on both sides, and prices-version.test.mjs passes without a bump. THE THREE FAQ schemaAnswer TWINS were checked and left alone: none of them carried the dash, so the JSON-LD FAQPage block does not change and no declaration was written for it -- a declaration for a change that does not happen is the stale entry _notes.authority refuses. FOLD AT 2.5B, range moved to 29ad824..fda1e1d: Jen's design review and Lee's rulings changed nine more strings on top of the 2.5 markup, so nine \"added\" entries were retargeted onto the final text rather than the 2.5 intermediate, two new pairs were written for the nodes 2.5 did not cover (the crane site-access option, which had no dash to sweep, and the /faq/ FAQPage JSON-LD, whose schemaAnswer twin moves now that \"authentic\" is gone from the wood-fired answer), and every entry in the block was re-ranged to end at the 2.5b markup commit so the whole block still activates by descent from the config commit that carries it. FOLD AT 2.5C, range moved to 29ad824..26ed4fb: Lee extended the FAQ's \"authentic heat\" -> \"real heat\" ruling to the one remaining occurrence, the Brackendale card on /locations/, so one more pair was written and the whole block re-ranged onto the 2.5c markup commit -- a range that ends before the markup it describes is an inert block, not a strict one."
+    "copyFollowups20260904": "RANGE END MOVED TO 07b2325, the merge of refresh/2026-09-02 (hand-off, rulings, BAG schema address) into this branch: the block is only active when the range-end build matches the candidate, and the merge changed head.njk. COPY FOLLOW-UPS 2026-09-04, FINAL RANGE 29ad824..26ed4fb, 70 declarations after three folds (2.5, 2.5b, 2.5c); the paragraphs below are the running record and their earlier counts and range ends are superseded by this sentence. Seven added entries (home + /saunas/ description metas, the Mobile Builds, FAQ wood-fired and Brackendale-card paragraphs) pin the WHOLE value rather than a tail, after Razor showed a tail pin absorbs an undeclared edit earlier in the same node, including the $23,500 in the meta strings that no other gate reads. ORIGINAL NOTE FOLLOWS. COPY FOLLOW-UPS 2026-09-04, range 29ad824..63b1f69. 64 declarations (32 removed/added pairs) covering every change class in the relay, all of them TEXT: meta content, one <title>, the LocalBusiness JSON-LD description, body paragraphs, five configurator option labels and two img alt attributes. NOTHING STRUCTURAL MOVED and the instrument says so rather than this note: every page reports an identical token count on both sides, and jsChanged is false because the relay touches no file under js/. TWO CAUSES, both named per entry: the retirement of the \"authentic / handcrafted / traditional\" category voice that the 2026-09-04 hero rewrite left stranded elsewhere on the site, and the em-dash sweep (plus its ASCII \" -- \" half on /vancouver/). ONE SITEWIDE CLASS: the JSON-LD description, which ships from a single include and therefore changes on all 18 pages at both widths. Everything else is route-scoped. FOUR ENTRIES CARRY THE 2.5 COMMIT rather than 6fffdb1 -- three /faq/ answers and the /saunas/ heater alt -- because those four strings were missed by the Stage 1 sweep and folded in by the orchestrator's amendment. NO PRICE, no option VALUE and no pricesVersion moved: the $23,500 and $57,000+ figures appear inside two of the declared meta strings and are byte-identical on both sides, and prices-version.test.mjs passes without a bump. THE THREE FAQ schemaAnswer TWINS were checked and left alone: none of them carried the dash, so the JSON-LD FAQPage block does not change and no declaration was written for it -- a declaration for a change that does not happen is the stale entry _notes.authority refuses. FOLD AT 2.5B, range moved to 29ad824..fda1e1d: Jen's design review and Lee's rulings changed nine more strings on top of the 2.5 markup, so nine \"added\" entries were retargeted onto the final text rather than the 2.5 intermediate, two new pairs were written for the nodes 2.5 did not cover (the crane site-access option, which had no dash to sweep, and the /faq/ FAQPage JSON-LD, whose schemaAnswer twin moves now that \"authentic\" is gone from the wood-fired answer), and every entry in the block was re-ranged to end at the 2.5b markup commit so the whole block still activates by descent from the config commit that carries it. FOLD AT 2.5C, range moved to 29ad824..26ed4fb: Lee extended the FAQ's \"authentic heat\" -> \"real heat\" ruling to the one remaining occurrence, the Brackendale card on /locations/, so one more pair was written and the whole block re-ranged onto the 2.5c markup commit -- a range that ends before the markup it describes is an inert block, not a strict one."
   }
 }
