@@ -27,8 +27,26 @@
         // Initialize map centered on BC
         map = L.map('map').setView([49.2827, -123.1207], 7);
 
-        // Dark theme tile layer (CartoDB Dark Matter - no API key needed!)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        // Dark theme tile layer (CARTO Dark Matter).
+        //
+        // THE KEY IS REQUIRED AS OF LATE AUGUST 2026 and its absence does not
+        // look like a failure. CARTO began enforcing keys on
+        // basemaps.cartocdn.com; an unkeyed request still returns HTTP 200 with
+        // a perfectly valid PNG, so nothing errors, nothing logs, and no
+        // monitor fires -- but every tile has "API KEY REQUIRED" stamped
+        // diagonally across it. The map read as broken on the page that invites
+        // people to visit the sauna, and it did so silently. Verified against
+        // dark_all at 1x and 2x before this went in.
+        //
+        // The key is not a secret: tile keys ship in client JavaScript by
+        // design, are scoped to a domain, and CARTO's own instructions put it
+        // in the URL. Free tier, no account, 5M tile requests a month.
+        // Requested 2026-09-04; replace by requesting another at
+        // carto.com/basemaps/apikey if it is ever rotated.
+        //
+        // The `{r}` token is Leaflet's retina suffix, so this fetches the @2x
+        // tiles on high-DPI screens -- both variants are keyed the same way.
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=cb1_2ws2_1_6be85e1e9a200b6a49f6b890', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
             subdomains: 'abcd',
             maxZoom: 19
