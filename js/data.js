@@ -57,6 +57,7 @@
             woodPremiumLabel: 'Original-IKI (Wood-fired)',
             exteriorStandingSeam: 3000,
             exteriorCedar: 2500,
+            exteriorYakisugi: 5000,
             electricOnly: true,
             images: [
                 '/img/Gemini_Generated_Image_ot1l9lot1l9lot1l_1_ukzekw-1200w.webp',
