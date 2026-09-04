@@ -121,13 +121,14 @@ Recorded 2026-09-04 from the five-specialist creative review (Beatrice type, Sau
 - **Residential map pins are `#4A90E2`,** a blue from no token in the system. Offered to Lee 2026-09-04, not yet chosen.
 - **Visual-diff `expectedToChange` waivers:** 18 of them expire 2026-10-05, after which the harness refuses to start. Advance the baselines or renew before then.
 - **rhythm.test.mjs crashes** because `/process/` in its page list is a meta-refresh stub, not a page. Drop the route or point the stub at real content.
+- **Mobile configurator CTA (Wave B, per Lee 2026-09-04: "make sure we are tracking it and we'll come back to it during that wave").** 152 configurator opens since the 2026-08-09 deploy and zero step-2 views, against a prior rate of about 5%. Funnel and instrument both verified working from production on 2026-09-03 (own events landed in Supabase). On a 390px phone the CTA sits 4,454px into a 4,945px scrolling modal and the sticky total bar carries no CTA. The cause of the exact zero at the deploy boundary is not established. Candidate fixes: a CTA in the sticky bar, or a shorter step 1.
 - **Pixel run owed** for the deliberate visible changes on 11 routes (backgrounds removed, BAG card, footer link, logos); the visual-diff baselines still describe the pre-refresh site.
 
 ## AI Advisor Widget (parked, needs more thought)` |
 | Creative review 2026-09-04 — six deferred findings (button font inherit, `--measure` 65ch, `.page` fadeIn tint, srcset restoration, modal/lightbox/menu transitions, hero title stagger) | `### Deferred from the 2026-09-02 code-refresh and creative review` |
 | Advisor prompt contradiction on wood-fired heater pricing (feature is off) | `### Deferred from the 2026-09-02 code-refresh and creative review` |
 | Residential map pins are off-system blue `#4A90E2` | `### Deferred from the 2026-09-02 code-refresh and creative review` |
-| Mobile configurator CTA — zero step-2 views since 2026-08-09 | frontmatter `next` + `.claude/handoff.md` open question |
+| Mobile configurator CTA — zero step-2 views since 2026-08-09 (Wave B, per Lee 2026-09-04) | frontmatter `next` + `### Deferred from the 2026-09-02 code-refresh and creative review` |
 | Visual-diff `expectedToChange` waivers expire 2026-10-05 | `.claude/handoff.md` owed + below |
 | rhythm.test.mjs crashes on the `/process/` meta-refresh stub | `.claude/handoff.md` owed + below |
 | Pixel run owed for the deliberate visible changes on 11 routes | `### Deferred from the 2026-09-02 code-refresh and creative review` |

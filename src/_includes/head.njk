@@ -77,18 +77,26 @@
         "email": "secretsaunacompany@gmail.com",
         "paymentAccepted": ["Cash", "Check", "E-Transfer", "Bank Transfer"],
         "currenciesAccepted": "CAD",
+        {# The business location is the Brackendale Art Gallery, where the SC runs
+           and the public can book -- Lee, 2026-09-04, replacing 38918 Progress Way,
+           an address SSC left. Street, locality and postal code are from the two
+           signed BAG agreements (V0N 1H0; OSM carries V0N 1T0 for the same node
+           and the contract wins). Coordinates are the OSM node for the gallery,
+           the same pair js/data.js uses for the map pin. openingHours was dropped
+           with the old address: the Mo-Fr 09:00-17:00 it carried was shop hours,
+           and session times live in the booking app, not here. #}
         "address": {
             "@type": "PostalAddress",
-            "streetAddress": "38918 Progress Way",
-            "addressLocality": "Squamish",
+            "streetAddress": "41950 Government Road",
+            "addressLocality": "Brackendale",
             "addressRegion": "BC",
-            "postalCode": "V8B 0K7",
+            "postalCode": "V0N 1H0",
             "addressCountry": "CA"
         },
         "geo": {
             "@type": "GeoCoordinates",
-            "latitude": 49.7016,
-            "longitude": -123.1558
+            "latitude": 49.7679963,
+            "longitude": -123.1506914
         },
         "areaServed": [
             {"@type": "Place", "name": "Squamish"},
@@ -97,8 +105,7 @@
             {"@type": "Place", "name": "Western Canada"}
         ],
         "priceRange": "$23,500 - $57,000+",
-        "openingHours": "Mo-Fr 09:00-17:00",
-        "hasMap": "https://maps.google.com/?q=Secret+Sauna+Company,+38918+Progress+Way,+Squamish,+BC",
+        "hasMap": "https://maps.google.com/?q=41950+Government+Road,+Brackendale,+BC+V0N+1H0",
         "sameAs": [
             "https://www.instagram.com/secretsaunaco",
             "https://www.facebook.com/secretsaunaco"

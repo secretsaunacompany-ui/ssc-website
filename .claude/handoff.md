@@ -21,8 +21,6 @@ in this project has already been ruled on, usually for a reason that is not obvi
 - **Wave B's three Lee-feedback priorities (from the 2026-08-01 review) do not yet show as shipped** in ROADMAP's shipped log or ARCHITECTURE docs -- verify status before assuming any are done: the hero-first reveal regression, the `/saunas/` page order, and the spacing/container rhythm. The rulings behind all three, and the process lesson attached to the first, are in `.claude/DECISIONS.md`.
 - **Four product decisions still open** (see Open Questions below) -- these block WP-3/WP-4 copy and page work along with the doc-20 fact answers.
 
-- **Progress Way is still published.** `src/_includes/head.njk` LocalBusiness schema carries 38918 Progress Way and Mo-Fr hours, an address SSC left. Every other Progress Way reference was removed 2026-09-02; this one needs Lee's replacement address (or removal of the address block) before it can go.
-
 - **Post-deploy verification owed** for the 2026-09-02..04 refresh: one /ops auth round-trip, watch the hero arrive on the homepage, one look at the /locations/ map with the CARTO key. None done at close.
 
 - **Visual-diff waivers expire 2026-10-05.** 18 `expectedToChange` entries; the harness refuses to start after that date. Advance the baselines (a pixel run is owed anyway for 11 routes) or renew before then.
@@ -44,14 +42,18 @@ in this project has already been ruled on, usually for a reason that is not obvi
 | Doc 20 fact answers (process page, warranty terms + certifying body, design-deposit decision, per-model price display, 5 smaller copy calls) | Unblocks WP-3/WP-4 | 2026-08-01 |
 | Does Lee own secretsaunacompany.com? | Determines 301 vs. squatter risk. **secretsaunacompany.com** (the .com, not .ca) is a parked registrar lander redirecting to AWS parking IPs -- not owned-and-pointed. If Lee owns it, 301 to the .ca; if not, someone is squatting the obvious typo. Still needs Lee's answer. | 2026-08-01 |
 | First manual funnel check (`quote_submit_success` count via Supabase MCP) | Was due 2026-08-07 -- confirm it happened | 2026-08-01 |
-| Mobile configurator CTA: 152 configurator opens since the 2026-08-09 deploy and ZERO step-2 views (prior rate ~5%). Funnel and instrument both verified working from production. On a 390px phone the CTA sits 4,454px into a 4,945px scrolling modal and the sticky total bar has no CTA. Put a CTA in the sticky bar, or restructure step 1? | Every mobile quote since 2026-08-09 has died on step 1; the cause of the exact zero at the deploy boundary is not established | 2026-09-03 |
-| Replacement address for the LocalBusiness schema (38918 Progress Way is still live in head.njk), or no street address at all? | Google reads it as the business location; it is wrong today | 2026-09-02 |
+| Mobile configurator CTA: 152 configurator opens since the 2026-08-09 deploy and ZERO step-2 views (prior rate ~5%). Funnel and instrument both verified working from production. On a 390px phone the CTA sits 4,454px into a 4,945px scrolling modal and the sticky total bar has no CTA. Put a CTA in the sticky bar, or restructure step 1? (resolved 2026-09-04) | Every mobile quote since 2026-08-09 has died on step 1; the cause of the exact zero at the deploy boundary is not established | 2026-09-03 |
+| Replacement address for the LocalBusiness schema (38918 Progress Way is still live in head.njk), or no street address at all? (resolved 2026-09-04) | Google reads it as the business location; it is wrong today | 2026-09-02 |
 | Four proposed DECISIONS entries from the 2026-09-02..04 refresh await approval: CARTO keyed basemap as an operating constraint; never `git add -A` after a suite that mutates the tree and never let that suite be what a timeout kills; cold plunge removed sitewide; fixed photo backgrounds removed everywhere but Contact (doc 10 §2.3). Plus, from the copy-followups relay: no em dashes in rendered prose; separator dashes pending a house-style ruling. | Rulings a future session could violate without knowing; unwritten until Lee says yes | 2026-09-04 |
 | Residential map pins are #4A90E2, a blue from no token in the design system. Recolour to a system token, or leave? | Only off-system colour left on /locations/ after the refresh | 2026-09-04 |
 
 ---
 
 ## Log (newest first)
+
+### 2026-09-04 (later)
+
+Lee: the business location becomes the BAG. LocalBusiness schema in head.njk now carries 41950 Government Road, Brackendale, BC V0N 1H0 (postal code from the two signed BAG agreements; OSM says V0N 1T0 for the same node, contract wins), the gallery's OSM coordinates, and a hasMap link to that address. openingHours dropped: the Mo-Fr 09:00-17:00 was shop hours and session times live in the booking app. The mobile configurator CTA question is closed as a question and tracked in the Parking Lot as a Wave B item, per Lee.
 
 ### 2026-09-04
 
