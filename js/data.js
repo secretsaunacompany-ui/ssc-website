@@ -227,7 +227,18 @@
             model: 'Mobile',
             year: '2023-Present',
             features: ['Mobile Sauna', 'Cultural Events', 'Community Hub'],
-            link: 'https://brackendaleartgallery.com/',
+            // The one pin on this map that sells something of ours, so it goes
+            // to the booking app rather than the gallery's own site (Lee,
+            // 2026-09-04). Every other commercial pin is a partner venue whose
+            // website is the right destination; this one is SSC's own slot, and
+            // sending a ready-to-book visitor to a third party's homepage to
+            // hunt for us was the wrong end of the funnel. `linkLabel` and
+            // `linkExternal` exist for exactly this asymmetry -- the popup
+            // still renders one button, it just stops assuming every
+            // destination is somebody else's site opening in a new tab.
+            link: 'https://book.secretsaunacompany.ca/book/brackendale-art-gallery?utm_source=website&utm_medium=map&utm_campaign=booking',
+            linkLabel: 'Book a Session',
+            linkExternal: false,
             image: '/img/PXL_20251017_175607860_enorvg-1200w.webp'
         }
     ];

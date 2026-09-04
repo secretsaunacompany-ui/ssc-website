@@ -86,7 +86,7 @@
                         <p style="margin: 0 0 0.75rem 0; font-size: 0.85rem;"><strong style="color: #666;">Year Installed:</strong> <span style="color: #666;">${loc.year}</span></p>
                         ${featuresHTML ? `<div style="margin-top: 0.5rem;">${featuresHTML}</div>` : ''}
                     </div>
-                    ${loc.link ? `<a href="${loc.link}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 0.75rem; padding: 0.5rem 1rem; background: #c4a57b; color: white; text-decoration: none; border-radius: 4px; font-size: 0.85rem; font-weight: 500;">Visit Website \u2192</a>` : ''}
+                    ${loc.link ? `<a href="${loc.link}"${loc.linkExternal === false ? '' : ' target="_blank" rel="noopener noreferrer"'} style="display: inline-block; margin-top: 0.75rem; padding: 0.5rem 1rem; background: #c4a57b; color: white; text-decoration: none; border-radius: 4px; font-size: 0.85rem; font-weight: 500;">${loc.linkLabel || 'Visit Website'} \u2192</a>` : ''}
                 </div>
             `;
 
