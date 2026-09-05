@@ -445,6 +445,29 @@ const GUTTER_DEVIATIONS = [
     reason: '.section--bleed sets `padding-inline: 0` by intent -- the rule\'s own '
       + 'comment in styles.css says full-bleed figures sit BETWEEN sections and carry '
       + 'no rhythm of their own. A modifier that says what it does; not a gutter deviation.' },
+  // `.hero` is FULL BLEED by ruling (Jen, Stage 3 review, 2026-09-04: "a
+  // bottom-anchored hero block has nothing to clear; the hero is full-bleed").
+  // `.hero` is a bare <section>, so until that ruling it inherited the rhythm
+  // tier's `padding: var(--section-pad) var(--gutter)` and took the gutter by
+  // accident -- nobody chose it. At 1440 that letterboxed the photograph 86px in
+  // from each edge on a stage whose whole point is to reach the viewport edge.
+  // The ruling zeroed the shorthand (`.hero { padding: 0 }`), so zero is the
+  // CORRECT value here, not a deviation from --gutter.
+  //
+  // This is the same shape as the `.section--bleed` pin below it and is pinned
+  // the same way: to the RULE, by class, so it excuses exactly the one element
+  // the ruling names and nothing else. It deliberately does NOT loosen R2 for
+  // any other section -- a second full-bleed section appearing without its own
+  // ruling still fails here, which is the behaviour 21 R1 asks for (a token most
+  // elements use and some do not is that finding's bug wearing the fix's name).
+  //
+  // No `hasText` scoping, unlike `.section--bleed`: the hero's own copy is
+  // inside `.hero-content`, which carries its own inline padding, so the h1 and
+  // the button are never on the viewport edge even though the section is.
+  { forClasses: ['hero'], match: (r) => r.tag === 'SECTION', px: () => 0,
+    reason: '.hero sets `padding: 0` by ruling (Jen, Stage 3, 2026-09-04) -- the stage is '
+      + 'full-bleed, and a gutter on it would letterbox the photograph. The hero copy takes '
+      + 'its inline padding from .hero-content, not from the section.' },
   { match: (r) => r.tag === 'NAV', px: (w) => 0.025 * w,
     reason: 'nav keeps `padding: var(--spacing-sm) 2.5%` (styles.css:579). '
       + 'Unmigrated: 21 R1 replaced the percentage gutters and this one survived.' },
@@ -678,12 +701,42 @@ function assertHeroClearance(hero, heroNoFont, token) {
       `logo ${m.logoSize} + padding ${m.navPadTop}/${m.navPadBottom} + rule `
       + `${m.navBorderBottom} = ${derived}, nav measured ${m.navHeight}`);
 
-    // The reserve equals the thing it reserves. This is the assertion that
-    // catches --nav-band drifting away from the nav it is named for.
-    check(`N2 @${w} the hero reserves exactly the nav's band`,
-      near(m.heroPadTop, m.navHeight, 0.6),
-      `the hero's padding-top is the reserved band and must match the nav's height: `
-      + `padding-top ${m.heroPadTop} vs nav ${m.navHeight}`);
+    // N2 RE-AIMED, 2026-09-04. It used to assert `heroPadTop === navHeight` --
+    // "the hero reserves exactly the nav's band". That reservation no longer
+    // exists, by ruling:
+    //
+    //   Jen, Stage 3 review, 2026-09-04: "a bottom-anchored hero block has
+    //   nothing to clear; the hero is full-bleed."
+    //
+    // The old assertion was a CLEARANCE rule written for a CENTRED block --
+    // reserve the strip the fixed nav paints over, centre in what is left. Once
+    // composition C anchored the block to the item's bottom edge there is
+    // nothing above it to push down, and `.hero` took `padding: 0` in the same
+    // ruling (see the FULL BLEED comment on `.hero` in styles.css). Asserting
+    // the reserve after that is asserting the old design.
+    //
+    // Kept as an assertion rather than deleted, and INVERTED, because the
+    // direction of the risk flipped with the ruling. What the suite has to
+    // watch now is the reservation COMING BACK: a future edit that restores
+    // `padding-block: var(--nav-band) 0` would letterbox the photograph, eat
+    // the sticky runway, and hang the bottom-anchored block past the
+    // small-viewport floor -- all silently, since none of it is a token change
+    // and the pixel harness would only report "content moved". Deleting N2
+    // would leave that with no coverage at all. So `padding-top === 0` is the
+    // new invariant, and the mutation aimed at it is R-m6.
+    //
+    // The CLEARANCE claim itself is not lost: N3 and N4 below assert what a
+    // reader actually experiences -- the h1's first line sitting below the nav
+    // by MIN_CLEARANCE_PX, with the webfont loaded and with it blocked. Those
+    // two were always the real test of clearance; N2 only ever tested the
+    // mechanism the old design used to get there.
+    check(`N2 @${w} the hero reserves NOTHING -- it is full-bleed`,
+      near(m.heroPadTop, 0, 0.5),
+      `Jen, Stage 3 review, 2026-09-04: a bottom-anchored hero block has nothing to `
+      + `clear; the hero is full-bleed. A non-zero padding-top here is the pre-ruling `
+      + `reserve coming back, which letterboxes the photograph and shortens the sticky `
+      + `runway. Measured padding-top ${m.heroPadTop}, expected 0. The clearance the old `
+      + `reserve existed to buy is asserted by N3/N4 below, from the reader's side.`);
 
     // The requirement itself, in the terms a reader experiences it: the first
     // line's glyphs sit below the nav, not behind it, by a margin that survives
@@ -1118,16 +1171,36 @@ const MUTATIONS = [
       .map((a) => `${a.dw}x${a.dh}|${a.nw}x${a.nh}`).join(','),
   },
   {
-    name: 'R-m6 the hero stops reserving the nav band',
-    proves: 'the clearance is measured, not merely declared in a comment',
-    // The reserve removed, which is the pre-fix state: the hero centres its
-    // content in a box whose top the fixed nav paints over, and the h1 goes
-    // back behind it at phone widths. Probing the clearances (not the padding)
-    // means this fails for the reason a reader would notice.
-    anchor: 'padding-block:var(--nav-band) 0',
-    patched: 'padding-block:0 0',
+    name: 'R-m6 the nav-band reserve comes BACK onto the full-bleed hero',
+    proves: 'N2\'s new invariant is measured -- the hero really does reserve nothing',
+    // RE-AIMED 2026-09-04, with N2 itself. The old mutation deleted the reserve
+    // (`padding-block:var(--nav-band) 0` -> `0 0`) to prove the old N2 could
+    // fail. That anchor no longer exists in the built stylesheet, because the
+    // reserve is gone by ruling:
+    //
+    //   Jen, Stage 3 review, 2026-09-04: "a bottom-anchored hero block has
+    //   nothing to clear; the hero is full-bleed."
+    //
+    // A mutation has to break the thing the gate NOW protects, so this one runs
+    // the ruling backwards: it puts the reserve back. That is the realistic
+    // regression -- the reserve was load-bearing for eighteen months and its
+    // derivation comment still sits in styles.css next to --nav-band, so
+    // reinstating it is the edit a future batch would plausibly make. Its cost
+    // is invisible to every other gate: no token changes, the DOM is identical,
+    // and the pixel harness reports only "content moved".
+    //
+    // Probed on heroPadTop and NOT on glyphClearance, deliberately. Restoring
+    // the reserve pushes the h1 DOWN, so the clearance improves and N3/N4 stay
+    // green -- probing clearance here would report "measured identically" for a
+    // mutation that landed, which is the false-coverage reading this battery
+    // exists to prevent. padding-top is the property N2 now asserts, so it is
+    // the property the mutation must move: 0 -> 91 at all four phone widths.
+    anchor: '.hero{grid-template-rows:1fr;grid-template-columns:1fr;height:100vh;'
+      + 'padding:0;display:grid;position:relative;overflow:clip}',
+    patched: '.hero{grid-template-rows:1fr;grid-template-columns:1fr;height:100vh;'
+      + 'padding-block:var(--nav-band) 0;display:grid;position:relative;overflow:clip}',
     probe: (r) => Object.keys(r.__hero).sort()
-      .map((w) => `${w}:${r.__hero[w] && r.__hero[w].glyphClearance}`).join(','),
+      .map((w) => `${w}:${r.__hero[w] && r.__hero[w].heroPadTop}`).join(','),
   },
   {
     name: 'R-m7 --nav-band decoupled from the logo that sizes the nav',
