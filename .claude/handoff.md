@@ -20,8 +20,6 @@ in this project has already been ruled on, usually for a reason that is not obvi
 
 - **Four product decisions still open** (see Open Questions below) -- these block WP-3/WP-4 copy and page work along with the doc-20 fact answers.
 
-- **Visual-diff waivers expire 2026-10-05.** 18 `expectedToChange` entries; the harness refuses to start after that date. Advance the baselines (a pixel run is owed anyway for 11 routes) or renew before then.
-
 - **rhythm.test.mjs crashes** on `/process/`, a meta-refresh stub in its page list. The suite is red until the route is dropped or the stub becomes a page.
 
 - **Re-run `npm run visual-diff` after the hero deploy** so the three refused residuals on `/` (1440 shiftCoverage 0.799; 390 layoutShiftMaxPx 454, coverage 0.909) retire against the new main; if any survives, it is a finding, not the expected residual.
@@ -31,6 +29,8 @@ in this project has already been ruled on, usually for a reason that is not obvi
 - **Ask Homecraft and Harvia for their written warranty terms (doc 20 B32)** so the warranty page can name what the manufacturer covers; Homecraft is 2 years per the relationship summary, Harvia has nothing on file.
 
 - **Pierre reads the full warranty set once** before the warranty rewrite goes live (Lee 2026-09-05).
+
+- **Retire the 18 visual-diff `expectedToChange` waivers.** After the hero deploy the harness reports every one of them firing on ZERO compared pages (their changes are all in the baseline now), and the loader refuses to start after 2026-10-05. Deleting them is a config-only commit; do it before the next visual relay.
 
 ## Open questions awaiting Lee
 
@@ -54,6 +54,10 @@ in this project has already been ruled on, usually for a reason that is not obvi
 ---
 
 ## Log (newest first)
+
+### 2026-09-05 (close)
+
+Session closed with /save and /update: session branch refresh/2026-09-02 equals origin/main at 87a964b, both relays merged and shipped (copy follow-ups 69328a1, hero composition C ac4fb9a), relay/website-copy-followups deleted, relay/hero-composition-c still checked out in the relay-copy-followups worktree (clears with /housekeeping). Wave B picks up next session from ROADMAP `next`: the warranty copy fix first.
 
 ### 2026-09-05 (later)
 
