@@ -18,16 +18,19 @@ in this project has already been ruled on, usually for a reason that is not obvi
 
 ## Owed right now
 
-- **Wave B's three Lee-feedback priorities (from the 2026-08-01 review) do not yet show as shipped** in ROADMAP's shipped log or ARCHITECTURE docs -- verify status before assuming any are done: the hero-first reveal regression, the `/saunas/` page order, and the spacing/container rhythm. The rulings behind all three, and the process lesson attached to the first, are in `.claude/DECISIONS.md`.
 - **Four product decisions still open** (see Open Questions below) -- these block WP-3/WP-4 copy and page work along with the doc-20 fact answers.
 
 - **Visual-diff waivers expire 2026-10-05.** 18 `expectedToChange` entries; the harness refuses to start after that date. Advance the baselines (a pixel run is owed anyway for 11 routes) or renew before then.
 
 - **rhythm.test.mjs crashes** on `/process/`, a meta-refresh stub in its page list. The suite is red until the route is dropped or the stub becomes a page.
 
-- **One look on Lee's phone at the new hero** (iOS Safari, toolbar up): the bottom-anchored block's button must sit above the toolbar. The `height: auto; min-height: 100svh` guard cannot be proven headless. Owed after the hero relay deploys.
-
 - **Re-run `npm run visual-diff` after the hero deploy** so the three refused residuals on `/` (1440 shiftCoverage 0.799; 390 layoutShiftMaxPx 454, coverage 0.909) retire against the new main; if any survives, it is a finding, not the expected residual.
+
+- **Resend of the case-study drafts is done as a pointer:** both approved drafts (to Emmanuel, to Jon, dated 2026-08-03) are still in Lee's Gmail Drafts, unsent. Lee sends; Clarke by message. WP-6 stays parked until replies land.
+
+- **Ask Homecraft and Harvia for their written warranty terms (doc 20 B32)** so the warranty page can name what the manufacturer covers; Homecraft is 2 years per the relationship summary, Harvia has nothing on file.
+
+- **Pierre reads the full warranty set once** before the warranty rewrite goes live (Lee 2026-09-05).
 
 ## Open questions awaiting Lee
 
@@ -37,19 +40,24 @@ in this project has already been ruled on, usually for a reason that is not obvi
 | One real quote test from Lee's phone, personal email | Closes the receipt-gate final inch -- Formspree silently 200s on discarded owner-address/draft-origin submissions | 2026-08-01 |
 | Nav mark E1 -- Saul's version of Lee's logo (unmerged branch `relay/redesign-wave-a-mark`) | Product decision, intentionally unmerged pending Lee | 2026-08-01 |
 | Favicon | Product decision | 2026-08-01 |
-| Speaker mounting copy | Product decision | 2026-08-01 |
-| Package-audio +$500 upsell | Product decision | 2026-08-01 |
-| Doc 20 fact answers (process page, warranty terms + certifying body, design-deposit decision, per-model price display, 5 smaller copy calls) | Unblocks WP-3/WP-4 | 2026-08-01 |
+| Speaker mounting copy (resolved 2026-09-05) | Product decision | 2026-08-01 |
+| Package-audio +$500 upsell (resolved 2026-09-05) | Product decision | 2026-08-01 |
+| Doc 20 fact answers (process page, warranty terms + certifying body, design-deposit decision, per-model price display, 5 smaller copy calls) (resolved 2026-09-05) | Unblocks WP-3/WP-4 | 2026-08-01 |
 | Does Lee own secretsaunacompany.com? | Determines 301 vs. squatter risk. **secretsaunacompany.com** (the .com, not .ca) is a parked registrar lander redirecting to AWS parking IPs -- not owned-and-pointed. If Lee owns it, 301 to the .ca; if not, someone is squatting the obvious typo. Still needs Lee's answer. | 2026-08-01 |
 | First manual funnel check (`quote_submit_success` count via Supabase MCP) | Was due 2026-08-07 -- confirm it happened | 2026-08-01 |
 | Mobile configurator CTA: 152 configurator opens since the 2026-08-09 deploy and ZERO step-2 views (prior rate ~5%). Funnel and instrument both verified working from production. On a 390px phone the CTA sits 4,454px into a 4,945px scrolling modal and the sticky total bar has no CTA. Put a CTA in the sticky bar, or restructure step 1? (resolved 2026-09-04) | Every mobile quote since 2026-08-09 has died on step 1; the cause of the exact zero at the deploy boundary is not established | 2026-09-03 |
 | Replacement address for the LocalBusiness schema (38918 Progress Way is still live in head.njk), or no street address at all? (resolved 2026-09-04) | Google reads it as the business location; it is wrong today | 2026-09-02 |
 | Four proposed DECISIONS entries from the 2026-09-02..04 refresh await approval: CARTO keyed basemap as an operating constraint; never `git add -A` after a suite that mutates the tree and never let that suite be what a timeout kills; cold plunge removed sitewide; fixed photo backgrounds removed everywhere but Contact (doc 10 §2.3). Plus, from the copy-followups relay: no em dashes in rendered prose; separator dashes pending a house-style ruling. (resolved 2026-09-04) | Rulings a future session could violate without knowing; unwritten until Lee says yes | 2026-09-04 |
 | Residential map pins are #4A90E2, a blue from no token in the design system. Recolour to a system token, or leave? | Only off-system colour left on /locations/ after the refresh | 2026-09-04 |
+| One look at the new hero on your phone with Safari's toolbar up: does the Book a Session button sit above the toolbar? (Deployed 2026-09-05, ac4fb9a.) | The svh guard cannot be proven headless; Jen and Razor both left this to a real device | 2026-09-05 |
 
 ---
 
 ## Log (newest first)
+
+### 2026-09-05 (later)
+
+Hero relay pushed to main at ac4fb9a on Lee's yes. Grill on the doc 20 leftovers run and confirmed (`.claude/grills/2026-09-05-doc-20-wave-b-facts.md`): the finding was that Lee had answered doc 20 on 2026-08-02 (`~/marvin/state/ssc-website-doc20-lee-answers-2026-08-02.md`) and the ROADMAP had carried 'blocked on doc 20' for a month regardless. Lee settled the leftovers (site-visit line, revision rounds, no horizon, trailer excluded, warranty text + Pierre, 'a small crew in Squamish', two testimonials as 'Client', commercial page reuses the locations venues) and approved five rulings, written below. Wave B is unblocked: next relays are the warranty-page copy fix, the warranty rewrite through Pierre, and the /process/ page with /commercial/ and /care/ behind it. Speaker mounting copy and the package-audio upsell questions are closed as overtaken (audio is a configurator line already; speaker copy rides the care page).
 
 ### 2026-09-05
 

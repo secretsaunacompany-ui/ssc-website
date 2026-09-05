@@ -75,6 +75,21 @@ The `page-bg--fixed` wood-plank layer and the `hero-overlay__bg` photo-behind-te
 
 SSC's voice rule for email (no em dashes, contractions, no adjective stacks) applies to the website's rendered text as well. The 2026-09-04 copy relay restructured every prose em dash on the site into a sentence, a comma or a colon, never a hyphen swap and never a fragment chain, and replaced the "authentic Finnish saunas handcrafted" meta and alt strings that disagreed with the approved hero. "handcrafted" survives where it reads naturally (the approved hero subtitle uses it); "authentic" and "traditional" as labels for what SSC sells are gone. Typographic separator dashes (process-step titles, testimonial bylines, add-on labels, price placeholders) are not prose and are parked for a house-style ruling; Nunjucks and HTML comments never render and are exempt.
 
+### The warranty excludes the trailer entirely on trailer builds, does not transfer on sale, and covers residential use only
+*2026-09-05, Lee*
+
+Lee, 2026-08-02 dictation and 2026-09-05 grill round 2: on trailer builds nothing about the trailer is covered, including SSC's own frame work (the live warranty page's five-year 'skid or trailer frame (SSC-fabricated components)' line is wrong and comes out); the warranty does not extend to a subsequent owner; it covers residential use, and commercial or rental use needs written terms, which also protects the heater coverage that Harvia voids when residential use turns commercial. Claims are by email and answered within two weeks; that is the published response time. Glass is not covered but SSC covers the seal. Two-year cosmetic (siding, bench tops, accent walls, electrical), five-year structural (benches, framing), starting at delivery or final payment, whichever the same day. Four incompatible written versions existed before this ruling (live page, faq.json, the August dictation, the Thunderbird contract); this is the one.
+
+### A site visit is free within the Sea-to-Sky and Lower Mainland and charged as part of the design deposit farther out; consultation ends in a number, never a 3D model
+*2026-09-05, Lee*
+
+First contact is a call. Lee's 2026-08-02 dictation said distance was no problem and everything was free through consultation; on 2026-09-05 he drew the line instead: free nearby, farther visits fold into the design deposit. The consultation ends in a number and an estimate, maybe a hand sketch; screenshots of the SketchUp model come after the deposit, with two to three rounds of revision and no fee line published. The booking horizon is not published; the usual delay (heater and window lead times) is named. Payment is 30/30/30/10 on every build and the first 30% holds the slot. Process-page copy quotes this, not the August line.
+
+### Testimonials without a named client are attributed "Client" and capped at two until named reviews exist
+*2026-09-05, Lee*
+
+No attributable client testimonial and no Google review is on file (local-seo-action-plan.md). The homepage's three quotes carry 'Private Client, Squamish BC', a place claim nobody can back. Until the review campaign and the case-study replies produce a name, the section shows the two strongest quotes attributed plainly as 'Client'. A named testimonial replaces one of them; nothing unnamed is added.
+
 ---
 
 ## Engineering pins
@@ -108,6 +123,11 @@ CARTO began enforcing API keys on basemaps.cartocdn.com in late August 2026. An 
 
 scripts/models-json-selftest.mjs proves the roundtrip suite can detect price drift by mutating real files (js/data.js, src/_data/models.json, the saunas template) and restoring them only when it finishes. On 2026-09-03 a 10-minute command timeout killed a full-suite run while that self-test was between its M16 mutation and its restore, leaving `exteriorYakisugi: 5000,` deleted from the S2 block in js/data.js. A later `git add -A` swept the deletion into unrelated commit 54d98ec and it was pushed: the S2 under-quoted yakisugi cladding by $5,000 in production for about a day, until models-json:roundtrip went red and 35e8f18 restored it. Two rules follow. Stage by explicit pathspec after any run of a mutating suite, and diff the tree against HEAD before committing. Run the self-test on its own, never inside a batch that a timeout or a Ctrl-C can cut short; if a run is killed, `git diff --stat` first and restore before anything else.
 
+### The warranty page does not change without Pierre reading the full set once
+*2026-09-05, Lee*
+
+Published warranty durations are a floor under the BC Sale of Goods Act (s.18(c), s.20(2)), the page has carried four incompatible versions, and it still makes two false claims (third-party electrical certification with documentation in the client's name; an owner's manual that ships with every sauna). Removing the false claims is a copy fix and does not wait. Rewriting the terms themselves (the 2026-09-05 trailer, transfer, residential-use and response-time ruling) goes to Pierre for one full read before it is published, and no copy relay rewrites warranty terms on its own.
+
 ---
 
 ## Evidence corrections
@@ -121,3 +141,8 @@ Closes the receipt-gate final inch -- Formspree silently 200s on discarded owner
 *2026-09-02, per Lee*
 
 The four S2 gallery files named Gemini_Generated_Image_* and nano-banana-* are photographs of the S2 that was actually built. Only the background was replaced, so the sauna did not read as sitting in the shop. That is ordinary commercial retouching, not generated product imagery, and no labelling or disclosure is owed. The filenames assert the opposite of the truth and will mislead anyone who greps them; src/img/MANIFEST.md publishes them in a public, sitemap-listed table, which is how the 2026-09-02 code-refresh audit misread them as fabricated product shots before Lee corrected it. Renaming the four files is optional and churns js/data.js, src/_data/models.json, the saunas template and the harness; the correction is recorded here instead.
+
+### Doc 20 was answered by Lee on 2026-08-02; the transcript is the source and Wave B is not blocked on facts
+*2026-09-05, Lee*
+
+The fact-gathering questions in docs/redesign-2026-07/20-fact-gathering-questions.md were answered by Lee in three dictated rounds on the evening of 2026-08-02, transcribed verbatim at ~/marvin/state/ssc-website-doc20-lee-answers-2026-08-02.md with a structured extraction (all of Part A and Part B, D47-D50; open only B32, the manufacturer heater terms SSC asks for itself, and C39-45, the case studies pending client replies). The website ROADMAP was never updated and described WP-2, WP-3 and WP-4 as blocked on those answers for a month; a grill on 2026-09-05 re-asked four of them before the transcript surfaced. George works from that transcript plus the 2026-09-05 grill capture, not from doc 20's questions. A session that reads the ROADMAP alone and re-asks Lee is repeating a mistake already made twice.
