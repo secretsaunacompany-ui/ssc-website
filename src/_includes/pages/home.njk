@@ -4,12 +4,19 @@
             <img src="/img/IMG_7991-EDIT_gz1kqt-1200w.webp" alt="Outdoor Finnish sauna built by Secret Sauna Company in Squamish, BC" class="hero-image" fetchpriority="high" sizes="100vw" width="1920" height="1280">
             <div class="hero-content reveal reveal--held">
                 <h1>Real heat. Built here.</h1>
-                <p class="hero-subtitle">Handcrafted Finnish saunas from Squamish, BC. Try one at Brackendale Art Gallery, then plan your own.</p>
-                <a href="/contact/" class="btn">Plan My Sauna Design</a>
-                {# Secondary CTA points at the Brackendale slot, not the app root: the
-                   subtitle above now names that venue, so the button under it should
-                   land where the sentence pointed. 2026-09-02, per Lee. #}
-                <a href="https://book.secretsaunacompany.ca/book/brackendale-art-gallery?utm_source=website&utm_medium=hero&utm_campaign=booking" class="btn-outline btn btn--hero-secondary">Or Book a Session</a>
+                <p class="hero-subtitle">Handcrafted Finnish saunas from Squamish, BC.</p>
+                {# ONE ask. Lee, seeing the previous hero live on 2026-09-04, found the
+                   two-sentence subtitle long and too location-specific, so the venue
+                   name comes out of the sentence and stays on the page through the
+                   Try-a-Session card below and through this button's destination,
+                   which is still the gallery's own page in the booking app rather
+                   than the app root. "Plan My Sauna Design" went with it: a hero that
+                   offers two decisions at once is a hero that has not decided, and the
+                   contact route is reachable from the nav on every page. The
+                   btn--hero-secondary class is dropped because its only job was to
+                   space a second button below a first, and there is no longer a
+                   first; btn-outline is what carries the outline treatment. #}
+                <a href="https://book.secretsaunacompany.ca/book/brackendale-art-gallery?utm_source=website&utm_medium=hero&utm_campaign=booking" class="btn-outline btn">Book a Session</a>
             </div>
         </section>
 

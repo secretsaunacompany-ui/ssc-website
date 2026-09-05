@@ -174,15 +174,25 @@
        on the photograph alone, which is why the h1 and subtitle read thin over
        the bright cedar band. The rule that paints it is on .hero::after below.
 
-       Shape: light at the very top so the photograph is not crushed under the
-       nav, a long even 0.55 plateau from 28% to 72% where the type actually
-       sits, and a slightly heavier foot at 100%. */
+       COMPOSITION C, 2026-09-04. Lee, shown the four rendered compositions and
+       asked directly about dropping the permanent full-bleed scrim and the
+       photograph's brightness filter: "lets go with all of your
+       recommendations." That is the confirmation the 2026-08-01 operating
+       constraint requires before any effect deletion, and it is quoted here
+       rather than summarised so the next reader does not have to trust a
+       paraphrase.
+
+       The old shape was a full-height plateau: it existed because the type was
+       optically centred and could land anywhere on the frame. The type is now
+       anchored bottom-left, so the only band that needs darkening is the foot.
+       Above 45% the photograph is untreated, which is the whole point of the
+       hold. Jen's variant-c value, verbatim. The sole consumer is
+       .hero::after; no sub-page hero or .page-hero references this token, so
+       it is redefined in place rather than forked into --hero-scrim-line. */
     --hero-scrim: linear-gradient(
         180deg,
-        rgba(12, 12, 12, 0.2) 0%,
-        rgba(12, 12, 12, 0.55) 28%,
-        rgba(12, 12, 12, 0.55) 72%,
-        rgba(12, 12, 12, 0.7) 100%
+        rgba(12, 12, 12, 0) 45%,
+        rgba(12, 12, 12, 0.55) 100%
     );
 
     /* ===== The fixed nav's own height =====
@@ -846,6 +856,37 @@ nav .container {
     height: 100vh;
 }
 
+/* THE PHONE FLOOR (composition C, 2026-09-04). Once the hero block is anchored
+   to the BOTTOM of these items rather than centred inside them, the item's
+   bottom edge stops being a detail and becomes the thing the button sits on.
+
+   `100vh` on iOS Safari is the LARGE viewport -- the height the page would have
+   if the toolbar were retracted -- so it is taller than what you can actually
+   see at first paint. A block anchored to the bottom of a 100vh item therefore
+   starts life underneath the browser toolbar, roughly the bottom 80-100px,
+   which is exactly where this composition puts the one call to action. `100svh`
+   is the SMALL viewport, the floor that is visible with the toolbar shown.
+
+   The nav band is subtracted because below 768 the container also carries
+   `padding-block: var(--nav-band) 0` (91px at 390), so an item that were a full
+   100svh tall would hang past the small-viewport floor by that band and put the
+   button back under the toolbar by another route. Subtracting it makes the
+   item's bottom edge and the visible floor the same line, which is what the
+   5.5rem inset below is then measured from.
+
+   767.98 rather than 767 or 768: the sticky-stage rule above is min-width 768,
+   and this file already uses 767.98 as the mirror breakpoint, so the two bands
+   cannot both apply at a fractional width. A Playwright shot at 390x844 renders
+   no toolbar and is NOT evidence for any of this; the evidence is the unit, and
+   one look on Lee's phone after deploy. */
+@media (max-width: 767.98px) {
+    .hero > .hero-image,
+    .hero > .hero-content,
+    .hero::after {
+        height: calc(100svh - var(--nav-band));
+    }
+}
+
 /* The runway is scoped to the band where the hero IS a clean 100vh stage.
    Below 768 the hero is `height: auto; min-height: 80vh` on purpose (see the
    mobile rule) so a phone never clips its own hero content, and a fixed-height
@@ -864,12 +905,35 @@ nav .container {
     }
 }
 
-/* The stage's own vertical centring, which the parent flex used to provide. */
+/* COMPOSITION C, 2026-09-04. Was centred both ways; now bottom-left.
+   A centred block sits in the middle of the photograph and competes with it for
+   the same real estate. Anchored to the bottom-left corner it reads as a caption
+   on a held image instead: the frame stays the subject, the words arrive
+   underneath it. Lee, of the four rendered compositions: "I like C personally,
+   actually, for the composition."
+
+   The bottom insets are Jen's variant-c values (3.5rem desktop, 5.5rem phone),
+   composed from the spacing scale rather than written as literals -- there is no
+   single token at either value, and --spacing-xl + --spacing-xs and
+   --spacing-2xl + --spacing-md land on them exactly. The left inset is
+   --gutter, the same token .container and the nav's own container use, which is
+   also what Jen's render used. Note the nav additionally carries its 2.5% outer
+   padding, so the logo starts inboard of this line; the type aligns to the page
+   gutter, not to the logo. */
 .hero > .hero-content {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    align-items: flex-start;
+    justify-content: flex-end;
+    text-align: left;
+    padding-inline: var(--gutter);
+    padding-bottom: calc(var(--spacing-xl) + var(--spacing-xs));
+}
+
+@media (max-width: 767.98px) {
+    .hero > .hero-content {
+        padding-bottom: calc(var(--spacing-2xl) + var(--spacing-md));
+    }
 }
 
 /* Reduced motion composes the page instantly and gets no reveal to protect, so
@@ -906,19 +970,32 @@ nav .container {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: brightness(0.7);
+    /* `filter: brightness(0.7)` was here and is DELETED (composition C,
+       2026-09-04). The hold's whole claim is that the photograph arrives
+       unobstructed, and a permanent 30% darkening is an obstruction that
+       happens to be applied at the pixel level rather than as a layer. It
+       existed to buy contrast for centred type; the type is no longer centred
+       and the gradient below buys the contrast where it is actually needed.
+       Per the 2026-08-01 constraint, this deletion was put to Lee with the
+       render before it was made: "lets go with all of your recommendations." */
 }
 
-/* The scrim, finally painted (Jen Stage 3). It sits between the photograph and
-   the type by DOCUMENT ORDER rather than by a z-index of its own: .hero-image
-   and this pseudo-element are both positioned at z-index auto, so the later one
-   wins, and .hero-content is already z-index 1 so it stays above both. Adding a
-   third z-index here would be a number to keep in sync for no benefit.
+/* The scrim, now a BOTTOM GRADIENT that arrives with the text (composition C,
+   2026-09-04). It sits between the photograph and the type by DOCUMENT ORDER
+   rather than by a z-index of its own: .hero-image and this pseudo-element are
+   both positioned at z-index auto, so the later one wins, and .hero-content is
+   already z-index 1 so it stays above both. Adding a third z-index here would be
+   a number to keep in sync for no benefit.
 
-   `pointer-events: none` because it covers the whole hero including the two
-   call-to-action buttons, and a full-bleed overlay that eats clicks on the
-   primary CTA is the classic way to ship this. brightness(0.7) on the image is
-   UNCHANGED -- the scrim is added to it, not traded against it. */
+   `pointer-events: none` because it covers the whole hero including the call to
+   action, and a full-bleed overlay that eats clicks on the CTA is the classic
+   way to ship this.
+
+   WHAT CHANGED: it used to be permanent, and it used to be added to the
+   photograph's own brightness filter. Both are gone. During the hold there is
+   nothing over the photograph at all; the gradient fades in on the same beat as
+   the words it exists to support, because a scrim with no type under it is just
+   a darker picture. */
 .hero::after {
     content: '';
     /* position/grid-area/height come from the sticky-stage rule above, so the
@@ -927,10 +1004,66 @@ nav .container {
     pointer-events: none;
 }
 
+/* THE GRADIENT'S OWN REVEAL. Four rules, and each one is load-bearing.
+
+   Gated on `.js`, exactly as every other hidden state in the reveal system is
+   (see the .js .reveal block). A visitor without JavaScript never gets `seen`
+   granted by anything, so a hidden state that is not gated is a hidden state
+   with no way to unhide: the gradient would simply never paint and the type
+   would sit on bare photograph. With the gate, no-JS gets the composed page.
+
+   The TRANSITION is armed on `.js.reveal-ready`, not inside the rule that flips
+   the opacity. Declaring both in the same rule is the shape animations.js:247
+   documents as a snap -- the element is handed a transition and a new value in
+   one style recalculation, and there is nothing for it to travel from.
+
+   The DELAY is the held pair's own stagger slot. .hero-content carries --i: 1;
+   this pseudo-element inherits from .hero, where --i is unset, so a bare
+   `calc(var(--i, 0) * var(--stagger-step))` would resolve to 0ms and the
+   gradient would lead the words it is supposed to accompany by one full step.
+   The 1 is written out for that reason. --stagger-step is the same token the
+   generic stagger rule resolves. */
+.js .hero::after {
+    opacity: 0;
+}
+
+.js.reveal-ready .hero::after {
+    transition: opacity 700ms ease calc(1 * var(--stagger-step));
+}
+
+.js .hero:has(> .hero-content.seen)::after {
+    opacity: 1;
+}
+
+/* The escape hatch, mirrored. Early input during the hold adds .reveal--quick in
+   the same task as .seen, and the words then land at the short duration with no
+   stagger delay. Without this the gradient would still be sitting through its
+   120ms slot and running a 700ms fade over text that had already arrived. */
+.js.reveal-ready .hero:has(> .hero-content.reveal--quick)::after {
+    transition-duration: var(--transition-quick-reveal);
+    transition-delay: 0s;
+}
+
+/* Reduced motion gets the composed page, and it must get it WITHOUT needing
+   `seen`. Stated at `.js .hero::after` specificity so it beats the hidden rule
+   on its own terms rather than relying on source order. This is also what the
+   visual-diff harness sees: capture.mjs runs under reducedMotion 'reduce' and
+   pins .hero-content without granting it `seen`, so a mirror that waited for
+   the class would photograph a hero with no gradient on it. */
+@media (prefers-reduced-motion: reduce) {
+    .js .hero::after {
+        opacity: 1;
+        transition: none;
+    }
+}
+
 .hero-content {
     position: relative;
     z-index: 1;
-    text-align: center;
+    /* Was `center`. The block is anchored bottom-left now, and centred lines
+       inside a left-anchored block give you a ragged left edge against the
+       gutter, which is the one edge the composition is built on. */
+    text-align: left;
     /* F10, Jen's ruling. --color-white is #fff; --ink is #e8e6e3. Pure white on
        photography is the one value that cannot hold a warm system together --
        it reads as a different palette arriving, and it is the brightest thing on
@@ -943,6 +1076,14 @@ nav .container {
 .hero h1 {
     color: var(--ink);
     margin-bottom: var(--spacing-sm);
+    /* A headline that runs the full width of a 1440 frame stops being a
+       headline and becomes a banner. 26ch holds it to about two lines at the
+       display size, and `balance` keeps the second line from being one orphaned
+       word -- which matters far more against a hard left edge than it did when
+       the block was centred and the rag was symmetric by construction.
+       Jen's variant-c values. */
+    max-width: 26ch;
+    text-wrap: balance;
 }
 
 .hero-subtitle {
@@ -957,8 +1098,11 @@ nav .container {
        not silent drift. */
     letter-spacing: 0.05em;
     margin-bottom: var(--spacing-xl);
-    margin-left: auto;
-    margin-right: auto;
+    /* `margin-left/right: auto` were here to centre a constrained line inside a
+       centred block. The block is bottom-left now and the subtitle is one short
+       sentence, so there is nothing to centre and the autos would only fight the
+       gutter the h1 above is aligned to. Size, weight and the sanctioned 0.05em
+       tracking are untouched. */
 }
 
 .page-hero {
@@ -1720,19 +1864,23 @@ nav .container {
     color: var(--color-black);
 }
 
-/* Ratification rider (c): the hero pair reads as ONE decision offered two ways,
-   so the two buttons match in size and weight and differ only in fill. The
-   font-size override here was --text-sm: 14px next to 16px, at the largest
-   moment on the site. Removed, not re-tokenized -- .btn already carries
-   --text-base and the secondary has no reason to disagree with it.
-   Equal width comes from a shared min-width rather than from the label lengths,
-   which are "Plan My Sauna Design" and "Or Book a Session" and will never
-   measure the same. */
+/* Was the ratification rider (c) that made a PAIR of hero buttons match in size
+   and weight and differ only in fill. Composition C (2026-09-04) leaves one
+   button, "Book a Session", so the equal-width argument no longer has a second
+   button to be equal to. The min-width survives as a size floor: a lone outline
+   button set against a photograph at the largest moment on the site should read
+   as a deliberate object, not as a link that happens to have a border.
+   Both selectors are kept because either class may be the one that ships. */
 .hero-content .btn,
 .hero-content .btn-outline {
     min-width: 16rem;
 }
 
+/* No consumer as of composition C (2026-09-04): its only job was to space a
+   second hero button below the first, and there is no longer a first. Kept
+   rather than deleted because deleting it is a stylesheet change with no
+   rendered effect, which is exactly the kind of edit that should ride its own
+   decision rather than a hero relay. Parked. */
 .btn--hero-secondary {
     margin-top: var(--spacing-sm);
 }
