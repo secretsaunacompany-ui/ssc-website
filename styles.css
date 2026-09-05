@@ -939,10 +939,9 @@ nav .container {
 }
 
 /* The runway is scoped to the band where the hero IS a clean 100vh stage.
-   Below 768 the hero is `height: auto; min-height: 80vh` on purpose (see the
-   mobile rule) so a phone never clips its own hero content, and a fixed-height
-   sticky stage there would fight that. Mobile keeps today's behaviour until the
-   desktop one has been looked at on a real device. */
+   Below 768 the hero is `height: auto; min-height: 100svh` with the stage items
+   at `100svh` and no sticky (see the mobile rule and THE PHONE FLOOR); a
+   fixed-height sticky stage there would fight the small-viewport floor. */
 @media (min-width: 768px) {
     .hero {
         height: calc(100vh + var(--hero-runway));
@@ -1127,6 +1126,18 @@ nav .container {
     opacity: 1;
 }
 
+/* No `:has()`, no hiding. A browser that cannot parse the selector above drops
+   that rule and would otherwise be left with the hidden state forever, and with
+   the brightness filter gone the type would sit on the bare photograph at about
+   1.3:1. Under 1% of 2026 traffic (Firefox <121, Safari <15.4, Chrome <105), but
+   the failure is the one this whole layer exists to prevent, so it degrades to
+   the composed page instead (Razor, 2026-09-05). */
+@supports not selector(:has(*)) {
+    .js .hero::after {
+        opacity: 1;
+    }
+}
+
 /* The escape hatch, mirrored. Early input during the hold adds .reveal--quick in
    the same task as .seen, and the words then land at the short duration with no
    stagger delay. Without this the gradient would still be sitting through its
@@ -1137,8 +1148,10 @@ nav .container {
 }
 
 /* Reduced motion gets the composed page, and it must get it WITHOUT needing
-   `seen`. Stated at `.js .hero::after` specificity so it beats the hidden rule
-   on its own terms rather than relying on source order. This is also what the
+   `seen`. Stated at `.js .hero::after` specificity, (0,2,1), the same as the
+   hidden rule, so it wins by source order (it comes later); `transition: none`
+   here loses to `.js.reveal-ready .hero::after` at (0,3,1), which is harmless
+   because opacity is 1 from first paint and never changes. This is also what the
    visual-diff harness sees: capture.mjs runs under reducedMotion 'reduce' and
    pins .hero-content without granting it `seen`, so a mirror that waited for
    the class would photograph a hero with no gradient on it. */
@@ -4048,12 +4061,13 @@ section.surface--elevated:has(> .wide-container) {
        rule), and the box is a plain small-viewport frame.
 
        `min-height: 100svh` with `height: auto`, not `height: 100svh`: svh is the
-       floor you can actually see with the toolbar shown, and auto lets the row
-       grow if a 360px width with an unresolved webfont ever overruns it, rather
-       than clipping the overrun against `overflow: clip` -- the same silent-bug
-       argument the paragraph above makes, which the wrap table still evidences.
-       The stage items are 100svh (see THE PHONE FLOOR), so in the ordinary case
-       the box is exactly one small viewport and the button's floor is the
+       floor you can actually see with the toolbar shown. Note what `auto` does
+       NOT do: the stage items carry an explicit `height: 100svh` (see THE PHONE
+       FLOOR), so the row never grows past one small viewport; an overrun of the
+       bottom-anchored block would spill upward and be clipped by
+       `overflow: clip`. No probed width (320x568 up) overruns, so this is a
+       recorded limit, not a live defect (Razor, 2026-09-05). In the ordinary
+       case the box is exactly one small viewport and the button's floor is the
        visible floor. */
     .hero {
         height: auto;
