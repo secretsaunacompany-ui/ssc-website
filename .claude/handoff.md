@@ -21,13 +21,13 @@ in this project has already been ruled on, usually for a reason that is not obvi
 - **Wave B's three Lee-feedback priorities (from the 2026-08-01 review) do not yet show as shipped** in ROADMAP's shipped log or ARCHITECTURE docs -- verify status before assuming any are done: the hero-first reveal regression, the `/saunas/` page order, and the spacing/container rhythm. The rulings behind all three, and the process lesson attached to the first, are in `.claude/DECISIONS.md`.
 - **Four product decisions still open** (see Open Questions below) -- these block WP-3/WP-4 copy and page work along with the doc-20 fact answers.
 
-- **Post-deploy verification owed** for the 2026-09-02..04 refresh: one /ops auth round-trip, watch the hero arrive on the homepage, one look at the /locations/ map with the CARTO key. None done at close.
-
 - **Visual-diff waivers expire 2026-10-05.** 18 `expectedToChange` entries; the harness refuses to start after that date. Advance the baselines (a pixel run is owed anyway for 11 routes) or renew before then.
 
 - **rhythm.test.mjs crashes** on `/process/`, a meta-refresh stub in its page list. The suite is red until the route is dropped or the stub becomes a page.
 
-- **Relay ssc-website-copy-followups in flight** (branch `relay/website-copy-followups` from 29ad824, plan and pack in worktree marvin/session-691205). Ted implementing; Razor, Jen, 3.5 and close belong to this session. The push to main is a live deploy and waits for Lee's yes.
+- **One look on Lee's phone at the new hero** (iOS Safari, toolbar up): the bottom-anchored block's button must sit above the toolbar. The `height: auto; min-height: 100svh` guard cannot be proven headless. Owed after the hero relay deploys.
+
+- **Re-run `npm run visual-diff` after the hero deploy** so the three refused residuals on `/` (1440 shiftCoverage 0.799; 390 layoutShiftMaxPx 454, coverage 0.909) retire against the new main; if any survives, it is a finding, not the expected residual.
 
 ## Open questions awaiting Lee
 
@@ -50,6 +50,14 @@ in this project has already been ruled on, usually for a reason that is not obvi
 ---
 
 ## Log (newest first)
+
+### 2026-09-05
+
+Copy relay pushed to main at 69328a1 on Lee's yes (2026-09-04, "lets go with all of your recommendations") and verified live: new search description, BAG schema address, real heat on /locations/, keyed map tiles with the gallery pin on top, /ops answering, /book redirecting. Ledger: merged, shipped.
+
+Landing hero relay ssc-website-hero-composition-c run end to end in this session: Lee saw the 29ad824 hero live and disliked it; five-specialist ideation (Jen four rendered compositions, George eight thesis lines) went out as the artifact The Held Photograph; Lee chose composition C, kept the headline, cut the subtitle, kept one button, approved the filter and scrim removal. Plan gated by two Fable critic rounds (FAIL then CONCERN, nine must-fixes folded, including the iOS toolbar guard and the twinned-anchor declaration). Ted built it; Jen's Stage 3 found the gradient too weak for a three-element block (h1 1.55:1), the hero letterboxed by section padding since forever (also eating 252px of the sticky runway), and the mobile gradient painting under the image on main; she ruled exact values, Ted folded them (h1 4.25:1 / 4.94:1, full-bleed, runway 630px), then brought the rhythm suite to the new rulings. Razor on the final diff; push waits for Lee.
+
+Next: Lee's yes on the push; his phone look; visual-diff re-run; then the Wave B items and the CTA question in the Parking Lot.
 
 ### 2026-09-04 (rulings)
 
