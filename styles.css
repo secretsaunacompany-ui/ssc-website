@@ -915,19 +915,44 @@ nav .container {
    The bottom insets are Jen's variant-c values (3.5rem desktop, 5.5rem phone),
    composed from the spacing scale rather than written as literals -- there is no
    single token at either value, and --spacing-xl + --spacing-xs and
-   --spacing-2xl + --spacing-md land on them exactly. The left inset is
-   --gutter, the same token .container and the nav's own container use, which is
-   also what Jen's render used. Note the nav additionally carries its 2.5% outer
-   padding, so the logo starts inboard of this line; the type aligns to the page
-   gutter, not to the logo. */
+   --spacing-2xl + --spacing-md land on them exactly.
+
+   THE DESKTOP INSET CARRIES --section-pad AS WELL, and that term is not
+   decoration. `.hero` is a bare <section>, so it takes the rhythm tier's
+   `padding: var(--section-pad) var(--gutter)`, and above 768 the three stage
+   items are sticky GRID items living in its content box -- which begins 126px
+   down at 1440 and ends 126px past the viewport floor. The comment on the
+   mobile .hero rule explains why nobody had to care until now: the padding is
+   symmetric and the box height fixed, so for CENTRED content it cancelled and
+   moved the h1 by exactly nothing. That cancellation is a property of centring.
+   Anchor the block to the item's bottom instead and the same padding puts the
+   one call to action 70px BELOW the fold, invisible at first paint. Measured,
+   not reasoned: the item runs y=126..1026 in a 900px viewport. Adding
+   --section-pad back lands the block --spacing-xl + --spacing-xs above the
+   VISIBLE floor, which is what Jen's 3.5rem means. Below 768 the mobile rule
+   already zeroes the bottom padding, so the phone inset is the bare 5.5rem.
+
+   The proper fix is a full-bleed hero -- the stage should not be taking section
+   rhythm at all, and the same padding is why the photograph is letterboxed 86px
+   in from each side at 1440 rather than filling the frame. That is PRE-EXISTING
+   (measured identical on 69328a1) and it is a composition ruling, not a hero
+   relay's to make, so it is reported rather than taken.
+
+   padding-inline is ZEROED for the same reason, in the other axis. The section's
+   own --gutter already insets this item, and .hero-content's base rule adds
+   --spacing-lg on top; left alone the type would sit two gutters in from the
+   frame while the nav sits one. Jen's variant-c puts the line at exactly one
+   --gutter, and that is what this produces. Note the nav additionally carries
+   its own 2.5% outer padding, so the logo starts inboard of this line; the type
+   aligns to the page gutter, not to the logo. */
 .hero > .hero-content {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-end;
     text-align: left;
-    padding-inline: var(--gutter);
-    padding-bottom: calc(var(--spacing-xl) + var(--spacing-xs));
+    padding-inline: 0;
+    padding-bottom: calc(var(--section-pad) + var(--spacing-xl) + var(--spacing-xs));
 }
 
 @media (max-width: 767.98px) {
