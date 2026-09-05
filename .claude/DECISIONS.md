@@ -54,9 +54,11 @@ the pricing arithmetic makes it hold, and the package-claim detector guards it â
 the marketing line says so.
 
 ### The Brackendale Art Gallery is named on the landing page; venue-neutral copy is retired
-*2026-09-02, per Lee*
+*2026-09-02, per Lee, amended 2026-09-04*
 
 The homepage hero subtitle and the Try-a-Session card name the Brackendale Art Gallery in Squamish, and both booking CTAs point at that venue's own page in the booking app rather than the app root. This deliberately retires doc 13's venue-neutral copy ("our saunas run at partner locations around BC"). That neutrality was itself a correction: the line it replaced advertised booking at "our Aldergrove location", a venue SSC does not have, removed sitewide on 2026-08-06. Naming Brackendale is not a return to that mistake, and the test that separates them is whether a stranger can show up and get in. The SC runs at the gallery, the public can walk in, and the booking app sells that slot at a page of its own. Apply the same test before naming any venue anywhere on the site, including the /locations/ map.
+
+**Amended, Lee, 2026-09-04:** The hero subtitle no longer names the gallery: Lee, seeing the 29ad824 hero live, found the two-sentence subtitle long and too location-specific and cut it to 'Handcrafted Finnish saunas from Squamish, BC.' The venue stays on the landing page through the Try-a-Session card and the hero's single button, both of which still link to the gallery's own booking page. The walk-in test in the entry above is unchanged.
 
 ### Cold plunge is not offered and is not mentioned anywhere on the site
 *2026-09-04, Lee*
