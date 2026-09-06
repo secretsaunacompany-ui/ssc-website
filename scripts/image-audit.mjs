@@ -95,12 +95,19 @@ for (const file of htmlFiles) {
   // background-image seam and the hero <img> both satisfy it without the audit
   // needing to know the difference.
   if (preloaded.length) {
+    // THE PRELOAD LINKS ARE STRIPPED FIRST, and that line is the whole check.
+    // A preload carries `imagesrcset`, which the srcset pattern above matches,
+    // so scanning the raw document would let every preload satisfy itself and
+    // the check would pass on any input whatsoever. It did: a synthetic page
+    // with a preload and no image element passed before this line existed.
+    // Verified after, on the same page, by it failing.
+    const body = content.replace(/<link\b[^>]*\brel="preload"[^>]*>/gi, '');
     const drawn = new Set();
-    for (const m of content.matchAll(/src="([^"]+)"/gi)) drawn.add(m[1].split('?')[0]);
-    for (const m of content.matchAll(/srcset="([^"]+)"/gi)) {
+    for (const m of body.matchAll(/src="([^"]+)"/gi)) drawn.add(m[1].split('?')[0]);
+    for (const m of body.matchAll(/srcset="([^"]+)"/gi)) {
       for (const c of m[1].split(',')) drawn.add(c.trim().split(/\s+/)[0].split('?')[0]);
     }
-    for (const m of content.matchAll(/url\(['"]?([^'")]+)['"]?\)/gi)) drawn.add(m[1].split('?')[0]);
+    for (const m of body.matchAll(/url\(['"]?([^'")]+)['"]?\)/gi)) drawn.add(m[1].split('?')[0]);
     for (const href of preloaded) {
       if (!drawn.has(href.split('?')[0])) {
         errors.push({ ref: `${href}  (preloaded at high priority, but no element on the page draws it)`,
