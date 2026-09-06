@@ -468,6 +468,26 @@ const GUTTER_DEVIATIONS = [
     reason: '.hero sets `padding: 0` by ruling (Jen, Stage 3, 2026-09-04) -- the stage is '
       + 'full-bleed, and a gutter on it would letterbox the photograph. The hero copy takes '
       + 'its inline padding from .hero-content, not from the section.' },
+  // `.hero-sub` is FULL BLEED for the same reason and by the same ruling shape
+  // as `.hero` above (Jen, Stage 0.7, 2026-09-06). It is the sub-page hero doc
+  // 10 s2.3/s5.3 specifies: a 60svh photograph with the <h1> on a bottom scrim.
+  // It is a bare <section>, so without `padding: 0` it would inherit the rhythm
+  // tier's `padding: var(--section-pad) var(--gutter)` and letterbox the
+  // photograph 86px in from each edge at 1440 -- the identical defect the .hero
+  // ruling fixed on 2026-09-04.
+  //
+  // Pinned to the RULE by class, so it excuses exactly this component and
+  // nothing else; a third full-bleed section appearing without its own ruling
+  // still fails here. No `hasText` scoping, for the same reason as `.hero`: the
+  // copy is inside `.hero-sub__content`, which carries its own
+  // `padding: 0 var(--gutter) var(--spacing-xl)`, so the h1 and the subtitle
+  // are AT the gutter even though the section reaches the viewport edge -- which
+  // is what s2.3's "left-aligned at the gutter" actually asks for.
+  { forClasses: ['hero-sub'], match: (r) => r.tag === 'SECTION', px: () => 0,
+    reason: '.hero-sub sets `padding: 0` by ruling (Jen, Stage 0.7, 2026-09-06) -- the '
+      + 'sub-page hero is full-bleed, and a gutter on it would letterbox the photograph. '
+      + 'The hero copy takes its inline padding from .hero-sub__content, not from the '
+      + 'section.' },
   { match: (r) => r.tag === 'NAV', px: (w) => 0.025 * w,
     reason: 'nav keeps `padding: var(--spacing-sm) 2.5%` (styles.css:579). '
       + 'Unmigrated: 21 R1 replaced the percentage gutters and this one survived.' },
