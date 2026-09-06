@@ -211,56 +211,65 @@
     );
 
     /* ===== The sub-page hero's scrim =====
-       JEN, STAGE 0.7, 2026-09-06, VERBATIM. Mobile-first; the >=768 value is
-       redefined beside the .hero-sub component, with the mask that only exists
-       at that breakpoint.
+       JEN, STAGE 0.7 AMENDED AT STAGE 2.5, 2026-09-06. Read the direction
+       first: `0deg` runs BOTTOM-TO-TOP, so every stop below is a distance
+       ABOVE THE BOX'S BOTTOM EDGE, not a fraction of the box.
 
-       0.66 is not a taste number. 4.5:1 against --ink needs a composited
-       backdrop at luminance <= 0.13732, and against a blown-white pixel that
-       needs alpha >= 0.62302. A plateau at 0.66 measures 5.16:1 against pure
-       white, so WITHIN THE PLATEAU the gate cannot be broken by swapping a
-       frame -- it does not depend on what the photograph contains.
+       WHY LENGTHS AND NOT PERCENTAGES -- this is the whole rule. The content
+       block is bottom-anchored, so the distance from the box's bottom edge to
+       the block's top edge (call it d) depends only on how tall the block is.
+       The BOX height does not follow d at all: it is max(60svh, 24rem) capped
+       at 46rem, so it is 384px on any viewport 640px tall or shorter and up to
+       736px on a tall desktop. A percentage plateau therefore slides against
+       the type it exists to protect. It did: the first version of this token
+       put the plateau at 48% of the box, which is 243px on a 506px box but only
+       184px on a 384px one, and /vancouver/'s h1 measured 3.51:1 at 390x640 --
+       reproduced here before the fix, together with /sea-to-sky/ at 3.53:1 at
+       280x653. Anchored in px the plateau cannot slide, and 60svh, min-height
+       and max-height can all be changed later without touching contrast.
 
-       READ THAT SCOPE EXACTLY: the frame-independence is a property of the
-       PLATEAU, not of the whole gradient. It holds for type whose top edge
-       lands at or below the plateau's start. Above it the ramp has not reached
-       0.66 yet and the guarantee simply does not apply there -- at 40% of the
-       box the alpha is about 0.46, which on a blown-white frame reads near
-       2.2:1. So the plateau start is not cosmetic; it is the boundary of the
-       proof.
+       THE PLATEAU IS 272px, NOT JEN'S 240px, AND THE 16px-STEP LEVER IN HER
+       REVISED FIX ORDER IS WHAT MOVED IT. Her 240 was 215.5 + 24, where 215.5
+       came from a two-point derivation. d is not constant: measured across
+       eleven viewports x seven pages it ranges 155.7 to 237.6, because it
+       tracks how many lines the h1 and subtitle wrap to, which is a function of
+       WIDTH and copy, not of box height. d_max is 237.6 (280x653 on
+       /sea-to-sky/ and /whistler/, and 320x568 on /north-shore/), so her own
+       gate -- d_max + 24 <= plateau -- needs 261.6 and 240 fails it. Two 16px
+       steps: 240 -> 256 -> 272. 272 >= 261.6 holds with 34px to spare.
 
-       The plateau STARTS at 48% because the content block's top edge at 390 is
-       at 51.8% by construction (2-line h1 + 3-line subtitle + 48px inset in a
-       506px box); 48% is that number with margin. THAT MARGIN IS MEASURED, AND
-       ONLY DOWN TO THE WIDTHS BELOW. Block top, worst of the seven pages, real
-       browser: 66.9% at 390, 67.2% at 360, 53.1% at 320 (/north-shore/, where
-       the h1 takes a second line), and 62.4% at 280. With webfonts blocked the
-       block gets SHORTER, not taller, so it sits deeper: 71.7% at 320, 56.9% at
-       280. Every one of those is below 48%, i.e. inside the plateau, and the
-       measured contrast at 320/360/390 across all seven frames has a floor of
-       5.43:1.
+       AND THE >=768 OVERRIDE IS GONE, because measurement inverted its premise.
+       It existed because "the block is TALLER just above the breakpoint than at
+       390". It is not: at 768x600 d is 155.7-155.9, the SMALLEST reading in the
+       whole set, since at 768 both the h1 and the subtitle fit on one line. The
+       tall block is on NARROW phones, where everything wraps. Desktop d_max is
+       165.0 (1024x768), needing 189. One 272px token covers both, and a media
+       query redefining a token to the value it already has is dead code that
+       invites drift.
 
-       THE TRIGGER, because the margin above is not infinite: a narrower
-       viewport than 280, a longer h1 or subtitle string, or a frame swap on a
-       page whose copy also changes can lift the block into the ramp, and there
-       the swap-proof property is gone. Any of those needs a contrast
-       re-measure at the narrow widths, not just at 390 and 1440.
-       The foot lands on 0.72, which is doc 10 s2.3's own value and
-       --nav-scrim's, so the band the words sit on matches the nav band they sit
-       under.
+       0.66 IS UNTOUCHED and is still the content-independent guarantee: 4.5:1
+       against --ink needs a composited backdrop at luminance <= 0.13732, which
+       against a blown-white pixel needs alpha >= 0.62305, so a 0.66 plateau
+       clears 4.5:1 on ANY photograph (5.16:1 against pure white). The foot
+       stays 0.72, doc 10 s2.3's own value and --nav-scrim's.
 
-       Doc 10 s2.3's verbatim `linear-gradient(transparent 40%, rgba(12,12,12,
-       .72))` is the FLOOR, not the ship value: at 390 it resolves to alpha
-       ~0.17 where the h1's top edge lands, and an h1 on a bright frame reads
-       about 1.7:1.
+       THE TRIGGER, and note that the binding variable is VIEWPORT HEIGHT, which
+       is the one the previous version of this comment never named: any change
+       to the h1 or subtitle copy, to the type scale, to --spacing-xl, or to a
+       breakpoint can move d. Re-measure d at the eleven viewports in Jen's
+       s2.5 -- reporting the number and the box height beside it, never a bare
+       pass -- and hold d_max + 24 <= 272. A reading with no box height next to
+       it is the shape of the report that hid this bug.
 
-       Separate from --hero-scrim on purpose. That token is the landing hero's
-       and travels with a sticky stage; this one sits in a plain 60svh box. */
+       The ::after that paints this is at grid-area 1/1 and is therefore exactly
+       the box's height, which is what makes a bottom-anchored length mean
+       anything. If anyone gives that pseudo-element its own height, these
+       numbers stop meaning what they say. */
     --hero-sub-scrim: linear-gradient(
-        180deg,
-        rgba(12, 12, 12, 0)    22%,
-        rgba(12, 12, 12, 0.66) 48%,
-        rgba(12, 12, 12, 0.72) 100%
+        0deg,
+        rgba(12, 12, 12, 0.72) 0,
+        rgba(12, 12, 12, 0.66) 272px,
+        rgba(12, 12, 12, 0)    432px
     );
 
     /* ===== The fixed nav's own height =====
@@ -1398,38 +1407,22 @@ nav .container {
     object-position: 50% 75%;
 }
 
-@media (min-width: 768px) {
-    :root {
-        /* JEN, STAGE 0.7, 2026-09-06, VERBATIM. The block's top edge is at 64%
-           of a 1440x540 box, and at 58.6% in the worst short-landscape case
-           (844x390 viewport, where min-height binds and the box is 384px). 56%
-           clears both. Starting the ramp at 30% instead of 22% gives the desktop
-           frame back its clean upper third, which is the whole point of the
-           hold.
+/* THE >=768 SCRIM OVERRIDE THAT USED TO SIT HERE IS DELETED, 2026-09-06, and
+   the deletion is the finding rather than the tidy-up.
 
-           58.6% is the tightest geometry in the spec, and the ARITHMETIC THAT
-           USED TO JUSTIFY IT HERE WAS WRONG -- corrected rather than deleted,
-           so the value is never re-defended on it. The claim was that a 60%
-           plateau would put the landscape case on alpha 0.625, "one thousandth
-           under the 0.626 white threshold". The white threshold is 0.62302, not
-           0.626, so 0.625 CLEARS it: composited over a blown-white pixel it
-           measures 4.53:1, which passes 4.5:1. The old sentence was wrong twice
-           -- wrong threshold, and the opposite conclusion.
+   It existed to make the desktop plateau deeper than the mobile one, on the
+   stated premise that "the block is TALLER just above the breakpoint than it is
+   at 390". Measured across eleven viewports x seven pages, that is false and
+   inverted: at 768x600 the block's top edge sits 155.7-155.9px above the box's
+   bottom, the SMALLEST reading anywhere in the set, because at 768 the h1 and
+   the subtitle each fit on one line. The largest is 237.6px, on 280px-wide
+   phones, where both wrap hardest. Desktop d_max is 165.0 at 1024x768.
 
-           56% STAYS, on the honest reason rather than the false one: 4.53:1 is
-           a margin of three hundredths on the one geometry in the spec that is
-           already tightest, with no room for a longer string or a device that
-           is a few pixels shorter. 56% puts the same case on the full 0.66 and
-           5.16:1. The value was right; only its defence was broken. */
-        --hero-sub-scrim: linear-gradient(
-            180deg,
-            rgba(12, 12, 12, 0)    30%,
-            rgba(12, 12, 12, 0.66) 56%,
-            rgba(12, 12, 12, 0.72) 100%
-        );
-    }
+   So the single 272px plateau in :root covers the desktop case with 107px to
+   spare, and a media query that redefines a token to a value it already has is
+   dead code the next reader has to disprove. The horizontal mask below is a
+   real breakpoint and stays. */
 
-}
 
 /* THE HORIZONTAL HALF (Jen, Stage 0.7 s2.2). Same device and same reasoning as
    the landing hero's mask above: the h1 is capped at 26ch, which at 1440 ends
