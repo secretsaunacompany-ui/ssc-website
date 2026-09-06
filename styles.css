@@ -248,9 +248,15 @@
        invites drift.
 
        0.66 IS UNTOUCHED and is still the content-independent guarantee: 4.5:1
-       against --ink needs a composited backdrop at luminance <= 0.13732, which
-       against a blown-white pixel needs alpha >= 0.62305, so a 0.66 plateau
-       clears 4.5:1 on ANY photograph (5.16:1 against pure white). The foot
+       against --ink needs a composited backdrop at luminance <= 0.137323, which
+       against a blown-white pixel needs alpha >= 0.6231, so a 0.66 plateau
+       clears 4.5:1 on ANY photograph (5.156:1 against pure white). The bound is
+       quoted at four decimals ON PURPOSE: computed here it is 0.62302, and
+       Jen's and Razor's amendments both say 0.62305. The difference is entirely
+       whether --ink's relative luminance is taken exactly or rounded to 0.7930
+       first, it is in the fifth decimal, and it changes no conclusion anywhere
+       -- including the one that matters, that alpha 0.625 clears at 4.5325:1.
+       Rounded UP so the stated bound is sufficient under either derivation. The foot
        stays 0.72, doc 10 s2.3's own value and --nav-scrim's.
 
        THE TRIGGER, and note that the binding variable is VIEWPORT HEIGHT, which
