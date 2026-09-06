@@ -1279,6 +1279,15 @@ nav .container {
     position: relative;
     display: grid;
     grid-template-columns: 1fr;
+    /* The ROW must be definite, not auto. With an implicit `auto` row the row
+       sizes to the <img>'s intrinsic height -- 960px for a 1440-wide 3:2 frame
+       -- so the row overflows the 540px section, `overflow: clip` hides the
+       excess, and `align-self: end` puts the content block at the bottom of the
+       960px ROW, i.e. 280px BELOW the visible box. Measured in a real browser at
+       1440x900 before this line existed: block top at 822px in a box ending at
+       540px, on all seven pages. `1fr` resolves against the section's definite
+       height, so the row is the box and `end` means the foot of the picture. */
+    grid-template-rows: 1fr;
     height: 60svh;          /* s5.3. 1440x900 -> 540px box; 390x844 -> 506px. */
     min-height: 24rem;      /* short/landscape phones: the block must never meet
                                the fixed nav. At 844x390 this binds (60svh =
@@ -1305,6 +1314,9 @@ nav .container {
     object-fit: cover;
     object-position: 50% 50%;   /* per-page override below */
     display: block;
+    min-height: 0;          /* a grid item's automatic minimum size is its
+                               content size; without this the image can still
+                               push the row past the box on a portrait frame */
     /* NO brightness filter, at any value, ever. Jen removed it from the landing
        hero on 2026-09-04 because it flattens the whole frame to fix a band.
        Contrast is the scrim's job. */
@@ -1379,16 +1391,40 @@ nav .container {
         );
     }
 
-    /* THE HORIZONTAL HALF, >= 768 only. Same device and same reasoning as the
-       landing hero's mask above. The h1 is capped at 26ch, which at 1440 ends
-       around x=835px (58% of the frame), so the scrim can be released across the
-       right 40% and the photograph keeps its light there.
+}
 
-       60%, not the landing hero's 45%, because the sub-page h1 runs to the full
-       26ch on five of the seven pages where the landing hero's did not. Not
-       applied below 768: at 390 the type spans the measure and a mask would only
-       thin the band under the words. Both properties stated -- WebKit still
-       needs the prefix on this shape. */
+/* THE HORIZONTAL HALF (Jen, Stage 0.7 s2.2). Same device and same reasoning as
+   the landing hero's mask above: the h1 is capped at 26ch, which at 1440 ends
+   around 62% of the frame, so the scrim can be released across the right and the
+   photograph keeps its light there. 60%, not the landing hero's 45%, because the
+   sub-page h1 runs to the full 26ch on five of the seven pages where the landing
+   hero's did not.
+
+   >= 1440, NOT Jen's >= 768. Her spec scopes this to 768 on the premise that
+   "the h1 ends around x=835px (58% of the frame)". That premise is a fact about
+   1440 specifically, and the 26ch cap does not scale with the viewport: the SAME
+   806px h1 is 62% of a 1440 frame and 94% of a 768 one, so between those widths
+   the type runs straight into the part of the scrim this mask releases.
+
+   Measured in a real browser, worst of the seven pages, h1 at the brightest
+   pixel, mask applied from 768 as written:
+
+     768  1.03:1     1180  2.31:1     1440  5.13:1
+     844  1.06:1     1280  2.96:1     1600  5.29:1
+     900  2.20:1     1366  3.98:1     1920  5.29:1
+
+   Everything below 1440 fails 4.5:1, and 768-844 fails catastrophically -- the
+   844x390 landscape phone in Jen's own s3.3 reads 1.06:1. Raising the 0.66
+   plateau cannot fix it (s2.4 forbids it, and correctly: the vertical scrim is
+   already there; the mask is taking it away). Moving the threshold to the width
+   where her premise is true costs nothing she measured -- her 1440 and 390
+   numbers are untouched, 390 never had the mask -- and makes 768-1366 behave
+   exactly as she rules mobile should behave when "the type spans the measure":
+   full-width scrim, no mask.
+
+   ESCALATED, not substituted: this is her value and her breakpoint, changed on
+   measurement. Both properties stated -- WebKit still needs the prefix here. */
+@media (min-width: 1440px) {
     .hero-sub::after {
         -webkit-mask-image: linear-gradient(90deg, #000 60%, transparent 95%);
                 mask-image: linear-gradient(90deg, #000 60%, transparent 95%);
