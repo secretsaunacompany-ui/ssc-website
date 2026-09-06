@@ -396,6 +396,49 @@ reviewed by eye; this harness will pass it silently.
 
 ---
 
+## image-variants — the responsive rungs the sub-page heroes need
+
+```bash
+npm run image-variants          # generate the missing rungs + rewrite the data file
+npm run image-variants:check    # verify only; writes nothing, exits 1 if stale
+```
+
+**The problem it solves.** `src/img` holds 71 stems and only nine carry the full
+400/800/1200/1920 ladder; the other 62 carry a lone 1200w. A template that emits a
+four-candidate `srcset` for an arbitrary stem therefore emits candidates that 404 on most
+of the library, silently — the page still builds and still renders. This script generates
+the missing small rungs by **downscaling** the 1200w for the seven stems the sub-page
+heroes name, and writes `src/_data/heroVariants.json`: stem → the widths that actually
+exist on disk, plus the pixel dimensions of the widest declared rung. The template loops
+that file, so the `srcset` can only ever name files that are there.
+
+**It never upscales, and that is mechanical rather than prose.** Targets are
+`LADDER.filter(w => w < sourceWidth)`, every resize also passes `withoutEnlargement: true`
+as an independent second belt, and each generated rung is asserted strictly smaller in
+bytes than the rung above it — a rung that costs more bytes for fewer pixels means
+something upscaled, and the run fails rather than committing it.
+
+**Budget, and what happens when a rung cannot meet it.** The largest rung is held to
+250 KiB (the candidate a 1440/DPR1 browser selects). A rung over budget is re-encoded at
+descending quality, and the file is replaced only once a candidate actually fits, so a
+failed pass cannot leave a degraded image behind. If nothing fits, the rung is **dropped
+from the declared widths** and left untouched on disk: the `srcset` stops naming it, so
+the browser cannot select it, and the budget is never edited to match the file. That case
+prints a loud warning and is a design escalation, not a silent optimisation.
+`2-_in_the_air_1_mvf8ik`'s 1920w is the live example — already lossy, 471 KiB, and still
+304 KiB at quality 35.
+
+**Why it is not in any suite.** It writes to `src/img` and `src/_data`. Run it when a hero
+frame changes; run `image-variants:check`, which writes nothing, to confirm the data file
+and the files on disk still agree. Output is also covered by `image-audit`, which resolves
+every `srcset` candidate in the built pages.
+
+**The stem list lives in the script**, in `HERO_STEMS`, next to the code that spends the
+bytes — a hero frame is a design ruling (Jen, Stage 0.7, 2026-09-06), not an argv the next
+caller can forget.
+
+---
+
 ## rhythm — did the spacing system survive the deletions?
 
 ```bash

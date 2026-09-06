@@ -10,8 +10,10 @@
   rendered the background drifted apart. Written once and imported twice, they
   cannot disagree.
 
-  `heroWidths` and `heroDims` are filters, not dictionary lookups, and they
-  throw on a stem that is not in src/_data/heroVariants.json. See .eleventy.js.
+  `heroWidths`, `heroDims` and `heroAlt` are filters, not bare interpolations,
+  and all three THROW rather than rendering something empty: an unknown stem
+  emits srcset="", and a missing alt emits alt="", which is not "no alt" but a
+  positive claim that a 60svh photograph is decorative. See .eleventy.js.
 #}
 
 {%- macro heroSrcset(stem) -%}
@@ -40,7 +42,7 @@
 {%- macro heroSub(stem, alt, heading, subtitle) -%}
 <section class="hero-sub">
     <img src="{{ heroLargest(stem) }}" srcset="{{ heroSrcset(stem) }}" sizes="100vw"
-         alt="{{ alt }}" class="hero-sub__image"
+         alt="{{ alt | heroAlt }}" class="hero-sub__image"
          fetchpriority="high" decoding="async"
          width="{{ (stem | heroDims).w }}" height="{{ (stem | heroDims).h }}">
     <div class="hero-sub__content reveal">

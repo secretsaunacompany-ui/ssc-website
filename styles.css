@@ -216,12 +216,35 @@
        at that breakpoint.
 
        0.66 is not a taste number. 4.5:1 against --ink needs a composited
-       backdrop at luminance <= 0.1373, and against a blown-white pixel that
-       needs alpha >= 0.626. A plateau at 0.66 therefore clears 4.5:1 on ANY
-       photograph -- it measures 5.16:1 against pure white -- so the gate cannot
-       be broken later by swapping a frame. The plateau STARTS at 48% because
-       the content block's top edge at 390 is at 51.8% (2-line h1 + 3-line
-       subtitle + 48px inset in a 506px box); 48% is that number with margin.
+       backdrop at luminance <= 0.13732, and against a blown-white pixel that
+       needs alpha >= 0.62302. A plateau at 0.66 measures 5.16:1 against pure
+       white, so WITHIN THE PLATEAU the gate cannot be broken by swapping a
+       frame -- it does not depend on what the photograph contains.
+
+       READ THAT SCOPE EXACTLY: the frame-independence is a property of the
+       PLATEAU, not of the whole gradient. It holds for type whose top edge
+       lands at or below the plateau's start. Above it the ramp has not reached
+       0.66 yet and the guarantee simply does not apply there -- at 40% of the
+       box the alpha is about 0.46, which on a blown-white frame reads near
+       2.2:1. So the plateau start is not cosmetic; it is the boundary of the
+       proof.
+
+       The plateau STARTS at 48% because the content block's top edge at 390 is
+       at 51.8% by construction (2-line h1 + 3-line subtitle + 48px inset in a
+       506px box); 48% is that number with margin. THAT MARGIN IS MEASURED, AND
+       ONLY DOWN TO THE WIDTHS BELOW. Block top, worst of the seven pages, real
+       browser: 66.9% at 390, 67.2% at 360, 53.1% at 320 (/north-shore/, where
+       the h1 takes a second line), and 62.4% at 280. With webfonts blocked the
+       block gets SHORTER, not taller, so it sits deeper: 71.7% at 320, 56.9% at
+       280. Every one of those is below 48%, i.e. inside the plateau, and the
+       measured contrast at 320/360/390 across all seven frames has a floor of
+       5.43:1.
+
+       THE TRIGGER, because the margin above is not infinite: a narrower
+       viewport than 280, a longer h1 or subtitle string, or a frame swap on a
+       page whose copy also changes can lift the block into the ramp, and there
+       the swap-proof property is gone. Any of those needs a contrast
+       re-measure at the narrow widths, not just at 390 and 1440.
        The foot lands on 0.72, which is doc 10 s2.3's own value and
        --nav-scrim's, so the band the words sit on matches the nav band they sit
        under.
@@ -1240,8 +1263,12 @@ nav .container {
        tracking are untouched. */
 }
 
-/* .page-hero now serves the "A none (starts at nav)" pages ONLY -- faq,
-   warranty, locations, contact, privacy, gallery, 404 (doc 10 s3.6-s3.14).
+/* .page-hero now serves the "A none (starts at nav)" pages ONLY (doc 10
+   s3.6-s3.14). ENUMERATED FROM THE BUILT PAGES, not from memory: /faq/,
+   /warranty/, /locations/, /contact/, /contact/thank-you/, /privacy/ and
+   /404.html. An earlier version of this comment named /gallery/, which carries
+   no .page-hero at all -- it is a meta-refresh stub that redirects to /saunas/
+   -- and omitted /contact/thank-you/, which does carry one.
    The seven pages doc 10 gives a photograph to take .hero-sub below. */
 .page-hero {
     padding: 12rem 5% 6rem;
@@ -1380,9 +1407,20 @@ nav .container {
            frame back its clean upper third, which is the whole point of the
            hold.
 
-           58.6% is the single tightest number in the spec: at a 60% plateau the
-           landscape case would land on alpha 0.625, one thousandth under the
-           0.626 white threshold. 56% puts it on the full 0.66. */
+           58.6% is the tightest geometry in the spec, and the ARITHMETIC THAT
+           USED TO JUSTIFY IT HERE WAS WRONG -- corrected rather than deleted,
+           so the value is never re-defended on it. The claim was that a 60%
+           plateau would put the landscape case on alpha 0.625, "one thousandth
+           under the 0.626 white threshold". The white threshold is 0.62302, not
+           0.626, so 0.625 CLEARS it: composited over a blown-white pixel it
+           measures 4.53:1, which passes 4.5:1. The old sentence was wrong twice
+           -- wrong threshold, and the opposite conclusion.
+
+           56% STAYS, on the honest reason rather than the false one: 4.53:1 is
+           a margin of three hundredths on the one geometry in the spec that is
+           already tightest, with no room for a longer string or a device that
+           is a few pixels shorter. 56% puts the same case on the full 0.66 and
+           5.16:1. The value was right; only its defence was broken. */
         --hero-sub-scrim: linear-gradient(
             180deg,
             rgba(12, 12, 12, 0)    30%,

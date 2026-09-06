@@ -206,6 +206,32 @@ module.exports = function(eleventyConfig) {
   // by `| last` for the largest candidate.
   eleventyConfig.addFilter("heroWidths", (stem) => heroVariantEntry(stem, "heroWidths").widths);
 
+  // The hero's alt text, validated the way the stem is.
+  //
+  // WHY THIS IS A FILTER AND NOT `{{ hero_image_alt }}`. Nunjucks renders a
+  // missing variable as the empty string, so a page that sets `hero_image` and
+  // forgets `hero_image_alt` emits alt="" -- which is not "no alt", it is a
+  // POSITIVE DECLARATION that the photograph is decorative and should be
+  // skipped by a screen reader. On a 60svh hero that is the loudest element on
+  // the page, that claim is false, and nothing anywhere fails: the page builds,
+  // renders, and passes every gate, because alt="" is valid HTML.
+  //
+  // Replacing the old style="background-image" divs with an <img> was partly
+  // about carrying alt text those divs never had. An unvalidated alt gives that
+  // back silently, which is worse than not having made the change. So this
+  // throws, exactly as heroWidths and heroDims do, and for the same reason the
+  // jsonld filter throws: a template naming a field that does not exist is a
+  // broken template, and the build stops.
+  eleventyConfig.addFilter("heroAlt", (alt) => {
+    if (typeof alt !== "string" || alt.trim() === "") {
+      throw new Error(`heroAlt: a hero photograph needs real alt text, got `
+        + `${typeof alt} (${JSON.stringify(alt)}). Set hero_image_alt in the page's front `
+        + `matter. An empty alt is not "no alt" -- it declares the image decorative, and a `
+        + `60svh hero is not decorative.`);
+    }
+    return alt;
+  });
+
   // The pixel dimensions of the widest DECLARED rung -- the file `src` names.
   // Read from the bytes by the generator, never hand-typed: fourteen hand-typed
   // numbers are fourteen chances to declare an aspect the derivative does not

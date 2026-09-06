@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Audit: verify every img src, srcset candidate, preload href/imagesrcset, CSS
-// url(), and video src in dist/ resolves to a file.
+// url(), and video src in dist/ resolves to a file -- and that every image
+// preloaded at high priority is actually drawn by something on that page.
 //
 // The `<link rel="preload" as="image">` href was UNCHECKED until 2026-09-06.
 // That gap did not matter while the seam hardcoded `-1920w.webp` and fired on
@@ -65,6 +66,7 @@ for (const file of htmlFiles) {
 
   // Preload hrefs. Matched on the whole <link> element rather than on a bare
   // href="" so a stylesheet or canonical link cannot be mistaken for an image.
+  const preloaded = [];
   for (const m of content.matchAll(/<link\b[^>]*\brel="preload"[^>]*>/gi)) {
     const tag = m[0];
     if (!/\bas="image"/i.test(tag)) continue;
@@ -74,7 +76,37 @@ for (const file of htmlFiles) {
       continue;
     }
     checkRef(href[1], file);
+    preloaded.push(href[1]);
     preloadHrefs++;
+  }
+
+  // AND THE IMAGE MUST ACTUALLY BE ON THE PAGE. A preload that resolves is only
+  // half the guarantee: the other half is that something DRAWS what it fetched.
+  // head.njk fires the hero preload on the presence of the `hero_image` field
+  // alone, so a page that sets the field without rendering the hero macro would
+  // fetch a photograph at the highest priority that no element ever paints --
+  // which is exactly the 2026-09-02 regression this seam was rebuilt to close,
+  // in its other direction. All seven hero pages are correct today and the
+  // coupling between the field and the element was CONVENTION; this makes it
+  // enforcement.
+  //
+  // The check is deliberately loose about WHICH element draws it: any src,
+  // srcset candidate or url() on the same page counts, so /contact/'s
+  // background-image seam and the hero <img> both satisfy it without the audit
+  // needing to know the difference.
+  if (preloaded.length) {
+    const drawn = new Set();
+    for (const m of content.matchAll(/src="([^"]+)"/gi)) drawn.add(m[1].split('?')[0]);
+    for (const m of content.matchAll(/srcset="([^"]+)"/gi)) {
+      for (const c of m[1].split(',')) drawn.add(c.trim().split(/\s+/)[0].split('?')[0]);
+    }
+    for (const m of content.matchAll(/url\(['"]?([^'")]+)['"]?\)/gi)) drawn.add(m[1].split('?')[0]);
+    for (const href of preloaded) {
+      if (!drawn.has(href.split('?')[0])) {
+        errors.push({ ref: `${href}  (preloaded at high priority, but no element on the page draws it)`,
+                      source: file.replace(DIST + '/', '') });
+      }
+    }
   }
 
   // CSS url() in style attributes

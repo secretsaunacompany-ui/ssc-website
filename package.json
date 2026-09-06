@@ -25,7 +25,10 @@
     "//lint:css": "The guard that keeps the type scale and the radius collapse from drifting back: raw font-size and border-radius literals are rejected outside :root. Six exceptions exist and every one carries a stylelint-disable-next-line with its reason.",
     "lint:css": "npx stylelint styles.css",
     "lint:css:test": "node scripts/stylelint-gate.test.mjs",
-    "image-audit": "node scripts/image-audit.mjs"
+    "image-audit": "node scripts/image-audit.mjs",
+    "//image-variants": "Generates the missing 400w/800w rungs for the sub-page hero stems and writes src/_data/heroVariants.json. It WRITES to src/img and src/_data, so it is not part of any suite; run it when a hero frame changes. `image-variants:check` writes nothing and fails if the data file has drifted from the files on disk.",
+    "image-variants": "node scripts/image-variants.mjs",
+    "image-variants:check": "node scripts/image-variants.mjs --check"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
