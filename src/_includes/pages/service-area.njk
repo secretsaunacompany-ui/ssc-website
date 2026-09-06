@@ -1,9 +1,7 @@
+{% import "macros/hero.njk" as hero %}
     <div id="{{ area_id }}" class="page page--has-bg">
 
-        <section class="page-hero">
-            <h1>{{ page_h1 }}</h1>
-            <p>{{ page_subtitle }}</p>
-        </section>
+        {{ hero.heroSub(hero_image, hero_image_alt, page_h1, page_subtitle) }}
 
         <section class="container section--pt-6">
             <div class="grid-2 grid-2--responsive-gap">

@@ -1,0 +1,51 @@
+{#
+  ONE definition of a sub-page hero's responsive URLs, called by BOTH the <img>
+  element and by head.njk's preload.
+
+  This exists because the element's `srcset` and the preload's `imagesrcset`
+  have to be byte-identical or the preload fetches a candidate the element never
+  uses -- highest-priority bytes nothing draws, and the hero that DOES draw gets
+  no preload at all. head.njk's own comment records that regression happening
+  here on 2026-09-02, when a hand-written preload path and the field that
+  rendered the background drifted apart. Written once and imported twice, they
+  cannot disagree.
+
+  `heroWidths` and `heroDims` are filters, not dictionary lookups, and they
+  throw on a stem that is not in src/_data/heroVariants.json. See .eleventy.js.
+#}
+
+{%- macro heroSrcset(stem) -%}
+{%- for w in stem | heroWidths -%}/img/{{ stem }}-{{ w }}w.webp {{ w }}w{% if not loop.last %}, {% endif %}{%- endfor -%}
+{%- endmacro -%}
+
+{%- macro heroLargest(stem) -%}
+/img/{{ stem }}-{{ (stem | heroWidths) | last }}w.webp
+{%- endmacro -%}
+
+{#
+  The hero itself. Doc 10 s2.3: text never sits on photography EXCEPT the
+  sub-page hero <h1>, which sits on a bottom-third scrim, left-aligned at the
+  gutter. s5.3 names the component and its 60svh height.
+
+  `object-position` is NOT a parameter here. It is a per-page CSS override keyed
+  off the page wrapper's existing id (see styles.css), because an inline
+  `style=` attribute would need a CSP hash and the whole point of replacing the
+  old `style="background-image: url(...)"` divs with an <img> was to leave CSP
+  untouched -- and to carry alt text those divs never had.
+
+  `.reveal` is on the CONTENT block only. The photograph is static and
+  first-paint -- "it's a photograph, not a rig" (s5.3). No hold: heldTargets()
+  in js/animations.js is page-home only and stays so.
+#}
+{%- macro heroSub(stem, alt, heading, subtitle) -%}
+<section class="hero-sub">
+    <img src="{{ heroLargest(stem) }}" srcset="{{ heroSrcset(stem) }}" sizes="100vw"
+         alt="{{ alt }}" class="hero-sub__image"
+         fetchpriority="high" decoding="async"
+         width="{{ (stem | heroDims).w }}" height="{{ (stem | heroDims).h }}">
+    <div class="hero-sub__content reveal">
+        <h1>{{ heading }}</h1>
+        <p>{{ subtitle }}</p>
+    </div>
+</section>
+{%- endmacro -%}

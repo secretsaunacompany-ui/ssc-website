@@ -1,3 +1,4 @@
+{% import "macros/hero.njk" as hero %}
     <!-- Schema.org - Product listings.
          Generated from src/_data/models.json, which is gated against the
          canonical price sheet by scripts/models-json-roundtrip.mjs. Every fact
@@ -39,12 +40,8 @@
 
     <!-- SAUNAS PAGE -->
     <div id="saunas" class="page page--has-bg">
-        <section class="page-hero hero-overlay">
-            <div class="hero-overlay__content">
-                <h1>Our Saunas</h1>
-                <p>Standard models, custom builds, and mobile saunas</p>
-            </div>
-        </section>
+        {{ hero.heroSub(hero_image, hero_image_alt, "Our Saunas",
+                        "Standard models, custom builds, and mobile saunas") }}
 
         <!-- 2. THE MODEL INDEX (Jen Stage 0.7 §1) -- archetype E, tight tier.
              Five rule-separated rows replace the card grid: the page's new

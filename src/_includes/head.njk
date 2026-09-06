@@ -1,3 +1,4 @@
+{% import "macros/hero.njk" as hero %}
 <head>
     <meta charset="UTF-8">
     {#- F5 reveal-boot. F5. The reveal system's HIDDEN state must exist before the first
@@ -220,16 +221,40 @@
          `hero_image` WINS over `preload_image` where both exist, and that
          ordering is the fix for a real regression (2026-09-02). The five
          service-area pages state their hero twice: `hero_image` renders the
-         background, `preload_image` was a hand-written absolute path meant to
+         photograph, `preload_image` was a hand-written absolute path meant to
          name the same file. The 2026-08-10 photo reassignment changed the first
          and not the second, so north-shore, sea-to-sky and whistler preloaded a
          1920w hero belonging to another page -- fetching ~267KB at highest
          priority that no element ever draws, while the hero that DOES draw got
          no preload at all. Deriving it from the same field that renders it means
-         the two cannot disagree again. Pages with no `hero_image` (home, about,
-         faq, contact, locations, saunas, warranty) are unaffected. -->
+         the two cannot disagree again.
+
+         REWRITTEN 2026-09-06 with the sub-page hero relay, which falsified two
+         things this comment used to say.
+
+         (1) It listed about and saunas among "pages with no `hero_image`". They
+             have one now, as do all seven pages doc 10 gives a photograph to.
+             The `hero_image` branch, which fired on ZERO pages before this
+             relay, now fires on seven. The pages still on the `preload_image`
+             seam are home and contact; faq, warranty, locations, privacy,
+             gallery and 404 take neither, which is correct -- doc 10 gives them
+             a text-first opening (s3.6-s3.14).
+
+         (2) The `href` was hardcoded to `-1920w.webp`. Nine of the 71 stems in
+             src/img carry a 1920w rung; 62 do not, and three of the seven heroes
+             are among those 62. Left alone that preloads a 404 on three pages,
+             at highest priority, silently. It is now derived from the same macro
+             the <img> uses.
+
+         `imagesrcset` and `imagesizes` are stated so the preload selects the
+         SAME candidate the element does. Without them the preload takes the
+         href unconditionally -- the largest rung on every device, including a
+         phone that will then fetch the 800w as well. The srcset comes from the
+         shared macro, so the two strings are identical by construction rather
+         than by anyone remembering to change both. -->
     {% if hero_image %}
-    <link rel="preload" as="image" href="/img/{{ hero_image }}-1920w.webp">
+    <link rel="preload" as="image" href="{{ hero.heroLargest(hero_image) }}"
+          imagesrcset="{{ hero.heroSrcset(hero_image) }}" imagesizes="100vw">
     {% elif preload_image %}
     <link rel="preload" as="image" href="{{ preload_image }}">
     {% endif %}

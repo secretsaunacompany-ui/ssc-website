@@ -210,6 +210,36 @@
         rgba(12, 12, 12, 0.68) 100%
     );
 
+    /* ===== The sub-page hero's scrim =====
+       JEN, STAGE 0.7, 2026-09-06, VERBATIM. Mobile-first; the >=768 value is
+       redefined beside the .hero-sub component, with the mask that only exists
+       at that breakpoint.
+
+       0.66 is not a taste number. 4.5:1 against --ink needs a composited
+       backdrop at luminance <= 0.1373, and against a blown-white pixel that
+       needs alpha >= 0.626. A plateau at 0.66 therefore clears 4.5:1 on ANY
+       photograph -- it measures 5.16:1 against pure white -- so the gate cannot
+       be broken later by swapping a frame. The plateau STARTS at 48% because
+       the content block's top edge at 390 is at 51.8% (2-line h1 + 3-line
+       subtitle + 48px inset in a 506px box); 48% is that number with margin.
+       The foot lands on 0.72, which is doc 10 s2.3's own value and
+       --nav-scrim's, so the band the words sit on matches the nav band they sit
+       under.
+
+       Doc 10 s2.3's verbatim `linear-gradient(transparent 40%, rgba(12,12,12,
+       .72))` is the FLOOR, not the ship value: at 390 it resolves to alpha
+       ~0.17 where the h1's top edge lands, and an h1 on a bright frame reads
+       about 1.7:1.
+
+       Separate from --hero-scrim on purpose. That token is the landing hero's
+       and travels with a sticky stage; this one sits in a plain 60svh box. */
+    --hero-sub-scrim: linear-gradient(
+        180deg,
+        rgba(12, 12, 12, 0)    22%,
+        rgba(12, 12, 12, 0.66) 48%,
+        rgba(12, 12, 12, 0.72) 100%
+    );
+
     /* ===== The fixed nav's own height =====
        DERIVED from the three things that actually build it, so it cannot drift
        away from the nav the way a pasted literal would: the logo image, the
@@ -1210,6 +1240,9 @@ nav .container {
        tracking are untouched. */
 }
 
+/* .page-hero now serves the "A none (starts at nav)" pages ONLY -- faq,
+   warranty, locations, contact, privacy, gallery, 404 (doc 10 s3.6-s3.14).
+   The seven pages doc 10 gives a photograph to take .hero-sub below. */
 .page-hero {
     padding: 12rem 5% 6rem;
     text-align: center;
@@ -1224,6 +1257,142 @@ nav .container {
     margin: 0 auto;
     max-width: var(--measure);
     font-size: var(--text-md);
+}
+
+/* ============================================
+   SUB-PAGE HERO -- doc 10 s2.3 / s2.5 / s5.3
+   ============================================
+   The half of s2.3 that never shipped. That section says text never sits on
+   photography EXCEPT "the sub-page hero <h1>, which sits on a bottom-third
+   scrim, left-aligned at the gutter"; s2.5 opens every page with "Hold: Hero
+   Plate"; s5.3 names the component and its 60svh height. On 2026-09-03 the
+   code-refresh executed s2.3's two DELETION corollaries (the page-bg--fixed
+   wallpaper and the hero-overlay__bg bands) and nothing was added in their
+   place, so ten pages opened on a black text-only band.
+
+   THE CLASS IS `hero-sub`, NOT doc 10's `.hero--sub`, for one mechanical
+   reason: `.hero` carries the landing page's sticky-stage grid, its runway, its
+   ::after reveal choreography and probeHeroClearance()'s querySelector('.hero')
+   (scripts/rhythm.test.mjs). A modifier would inherit all of it. A separate
+   block inherits none of it, which is the entire requirement. */
+.hero-sub {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    height: 60svh;          /* s5.3. 1440x900 -> 540px box; 390x844 -> 506px. */
+    min-height: 24rem;      /* short/landscape phones: the block must never meet
+                               the fixed nav. At 844x390 this binds (60svh =
+                               234px) and the box is 384px; the block's top then
+                               lands at 225px against a 148px nav -- 77px clear. */
+    max-height: 46rem;      /* archetype C's plate ceiling; binds above a 1227px
+                               viewport height. */
+    padding: 0;             /* full-bleed. The bare `section` rule above gives
+                               every section tier padding, which would letterbox
+                               the photograph -- the same ruling Jen made for
+                               .hero on 2026-09-04. */
+    overflow: clip;
+}
+
+/* Grid-stacking, not absolute positioning. A STATIC ::after paints UNDER an
+   absolutely positioned sibling -- the exact bug Jen found on the landing
+   hero's mobile scrim. Every layer at grid-area 1/1 with the content
+   position: relative gives image -> scrim -> type at all widths, no media
+   query. */
+.hero-sub__image {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;   /* per-page override below */
+    display: block;
+    /* NO brightness filter, at any value, ever. Jen removed it from the landing
+       hero on 2026-09-04 because it flattens the whole frame to fix a band.
+       Contrast is the scrim's job. */
+}
+
+.hero-sub::after {
+    content: '';
+    grid-area: 1 / 1;
+    background: var(--hero-sub-scrim);
+    pointer-events: none;
+}
+
+.hero-sub__content {
+    grid-area: 1 / 1;
+    position: relative;     /* paints above ::after at every width */
+    align-self: end;
+    padding: 0 var(--gutter) var(--spacing-xl);
+    text-align: left;
+    color: var(--ink);      /* stated on the block so the <p> cannot fall back to
+                               a secondary token on a dark scrim */
+}
+
+.hero-sub h1 {
+    color: var(--ink);
+    margin-block-start: 0;  /* it is the block's first child, and a
+                               bottom-anchored block's HEIGHT is the thing every
+                               scrim stop is derived from, so state it */
+    margin-bottom: var(--spacing-sm);
+    max-width: 26ch;
+    text-wrap: balance;
+}
+
+.hero-sub p {
+    max-width: var(--measure);      /* 65ch is law for prose and this is prose */
+    font-size: var(--text-md);
+    font-weight: 300;
+    /* Explicitly 0. `.hero-subtitle`'s 0.05em is a NAMED, landing-page-scoped
+       exception still awaiting a WP-2 ruling, and duplicating an unresolved
+       exception into a new block is how exceptions become the system. */
+    letter-spacing: var(--tracking-body);
+    margin: 0;
+}
+
+/* THE /squamish/ CROP. Not optional and not a taste call: at 50% 50% a 1200x800
+   source in a 1440x540 box shows the middle 56% of its height, which puts the
+   sauna in the bottom sliver the scrim takes, and the picture collapses to pink
+   blossoms over a black band. 75% lifts the roofline and the valley into the
+   clean upper band and leaves the blossoms framing the top corner (Jen, Stage
+   0.7 s1.2, rendered at 50/75/100 before ruling). Keyed off the page wrapper's
+   existing id rather than an inline style, so CSP is untouched. */
+#squamish .hero-sub__image {
+    object-position: 50% 75%;
+}
+
+@media (min-width: 768px) {
+    :root {
+        /* JEN, STAGE 0.7, 2026-09-06, VERBATIM. The block's top edge is at 64%
+           of a 1440x540 box, and at 58.6% in the worst short-landscape case
+           (844x390 viewport, where min-height binds and the box is 384px). 56%
+           clears both. Starting the ramp at 30% instead of 22% gives the desktop
+           frame back its clean upper third, which is the whole point of the
+           hold.
+
+           58.6% is the single tightest number in the spec: at a 60% plateau the
+           landscape case would land on alpha 0.625, one thousandth under the
+           0.626 white threshold. 56% puts it on the full 0.66. */
+        --hero-sub-scrim: linear-gradient(
+            180deg,
+            rgba(12, 12, 12, 0)    30%,
+            rgba(12, 12, 12, 0.66) 56%,
+            rgba(12, 12, 12, 0.72) 100%
+        );
+    }
+
+    /* THE HORIZONTAL HALF, >= 768 only. Same device and same reasoning as the
+       landing hero's mask above. The h1 is capped at 26ch, which at 1440 ends
+       around x=835px (58% of the frame), so the scrim can be released across the
+       right 40% and the photograph keeps its light there.
+
+       60%, not the landing hero's 45%, because the sub-page h1 runs to the full
+       26ch on five of the seven pages where the landing hero's did not. Not
+       applied below 768: at 390 the type spans the measure and a mask would only
+       thin the band under the words. Both properties stated -- WebKit still
+       needs the prefix on this shape. */
+    .hero-sub::after {
+        -webkit-mask-image: linear-gradient(90deg, #000 60%, transparent 95%);
+                mask-image: linear-gradient(90deg, #000 60%, transparent 95%);
+    }
 }
 
 /* ============================================

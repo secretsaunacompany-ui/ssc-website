@@ -1,11 +1,10 @@
+{% import "macros/hero.njk" as hero %}
     <!-- ABOUT PAGE -->
     <div id="about" class="page page--has-bg">
         <!-- Fixed Background Image -->
 
-        <section class="page-hero">
-            <h1>About Us</h1>
-            <p>Designed by Finnish Standards, Inspired by Tradition and Rooted in Science</p>
-        </section>
+        {{ hero.heroSub(hero_image, hero_image_alt, "About Us",
+                        "Designed by Finnish Standards, Inspired by Tradition and Rooted in Science") }}
 
         <section class="container section--open">
             <h2 class="reveal">How We Build</h2>
