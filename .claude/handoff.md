@@ -20,8 +20,6 @@ in this project has already been ruled on, usually for a reason that is not obvi
 
 - **Four product decisions still open** (see Open Questions below) -- these block WP-3/WP-4 copy and page work along with the doc-20 fact answers.
 
-- **rhythm.test.mjs crashes** on `/process/`, a meta-refresh stub in its page list. The suite is red until the route is dropped or the stub becomes a page.
-
 - **Re-run `npm run visual-diff` after the hero deploy** so the three refused residuals on `/` (1440 shiftCoverage 0.799; 390 layoutShiftMaxPx 454, coverage 0.909) retire against the new main; if any survives, it is a finding, not the expected residual.
 
 - **Resend of the case-study drafts is done as a pointer:** both approved drafts (to Emmanuel, to Jon, dated 2026-08-03) are still in Lee's Gmail Drafts, unsent. Lee sends; Clarke by message. WP-6 stays parked until replies land.
@@ -30,15 +28,17 @@ in this project has already been ruled on, usually for a reason that is not obvi
 
 - **Pierre reads the full warranty set once** before the warranty rewrite goes live (Lee 2026-09-05).
 
-- **Retire the 18 visual-diff `expectedToChange` waivers.** After the hero deploy the harness reports every one of them firing on ZERO compared pages (their changes are all in the baseline now), and the loader refuses to start after 2026-10-05. Deleting them is a config-only commit; do it before the next visual relay.
+- **Re-run `npm run visual-diff` against the new main (dd8a0d7)** so the nine sub-page-hero waivers stop being unconsumed. They were measured against `ce7732a` and every one of them describes a change the baseline now contains; `lib/gate.mjs` reports unconsumed waivers rather than staying silent, and they expire 2026-10-29. Same shape as the 18 just retired, and the same trap: an unconsumed waiver silently covers the NEXT change to that page and metric.
+
+- **One look at the seven new sub-page heroes on Lee's phone.** Verified live at dd8a0d7 on all seven routes and measured at 40 viewports headless, but the short-viewport case that produced the relay's one CRITICAL (390 CSS px at 640 tall or under, where `min-height` binds and the box collapses 122px) cannot be proven on a real device from here.
 
 ## Open questions awaiting Lee
 
 | Question | Why it matters | Raised |
 |----------|---------------|--------|
-| Formspree dashboard: confirm 4 test submissions visible, set 90-day auto-delete | PIPA retention requirement (Petra item 3) | 2026-08-01 |
+| Formspree dashboard: confirm 4 test submissions visible, set 90-day auto-delete (resolved 2026-09-07) | PIPA retention requirement (Petra item 3) | 2026-08-01 |
 | One real quote test from Lee's phone, personal email | Closes the receipt-gate final inch -- Formspree silently 200s on discarded owner-address/draft-origin submissions | 2026-08-01 |
-| Nav mark E1 -- Saul's version of Lee's logo (unmerged branch `relay/redesign-wave-a-mark`) | Product decision, intentionally unmerged pending Lee | 2026-08-01 |
+| Nav mark E1 -- Saul's version of Lee's logo (unmerged branch `relay/redesign-wave-a-mark`) (resolved 2026-09-07) | Product decision, intentionally unmerged pending Lee | 2026-08-01 |
 | Favicon | Product decision | 2026-08-01 |
 | Speaker mounting copy (resolved 2026-09-05) | Product decision | 2026-08-01 |
 | Package-audio +$500 upsell (resolved 2026-09-05) | Product decision | 2026-08-01 |
@@ -56,6 +56,34 @@ in this project has already been ruled on, usually for a reason that is not obvi
 ---
 
 ## Log (newest first)
+
+### 2026-09-07
+
+**Sub-page heroes shipped and deployed** (relay `ssc-website-sub-page-heroes`, branch `relay/sub-page-heroes`, 22 commits, fast-forwarded to main at `dd8a0d7` and pushed on Lee's yes). Verified live: all seven routes return 200 with `.hero-sub`, `/locations/` correctly carries none.
+
+What it was. The 2026-09-03 refresh (b4974da) executed only the DELETION half of doc 10 §2.3 -- 17 files, 30 deletions, nothing added -- removing the `page-bg--fixed` wallpaper and the `hero-overlay__bg` text-on-photo bands while never building the `.hero--sub` the same section names as the one sanctioned exception. Ten pages had been opening on a black text-only band since. Lee, seeing it live: "having none at all feels a bit blank." This relay built the replacement on the seven pages doc 10 assigns one to.
+
+Three defects were found AFTER first implementation, and the last two are the interesting ones.
+
+- **C1** (Razor round 2): `/vancouver/`'s h1 failed 4.5:1 at 390 CSS px on viewports 640px tall or shorter -- `min-height: 24rem` binds, the box collapses 506px to 384px, the type block lands at 43.8% and above the 48% plateau start. Measured 3.51:1. Survived Jen's spec, Ted's implementation AND Razor's round-1 sweep because every contrast number in the relay had been taken at 390x844. Fixed by Jen re-anchoring the scrim bottom-up in px rather than percentages of the box, one rule covering 280-1440; her own 240px value failed her own gate on measurement and Ted shipped 272 through her revised step-1 lever, which she then ratified.
+- **B1** (behavioral gate): `mask-image` made `.hero-sub::after` a stacking context, so the scrim painted ON TOP OF the h1 at every width >= 1440 on all seven pages -- glyph peak 83-95 against a correct 232. **Invisible to all ~700 contrast readings by construction**: every one sampled the backdrop with the content block hidden, which cannot see a scrim over the type, and the computed colour is correct at every width so no computed-style check catches it either. Fixed by declaring the stack (image 0 / scrim 1 / type 2) instead of relying on document order.
+- **B2** (behavioral gate): the h1 and subtitle sat at opacity 0 whenever the reveal never fired. Ted narrowed the trigger to something worse than first reported -- not JS-off, which was never affected, but the inline boot running while the bundle fails to load, or JS without `IntersectionObserver`. `.reveal` came off the hero content block, which also closed a 300-750ms delay before a visitor could read the page title.
+
+**New gate shipped:** `scripts/stacking-probe.mjs` + `npm run stacking:check`. Samples rendered glyph pixels sitewide and injects eleven stacking-context-forcing properties; carries negative controls that MUST fail and exits 1 if a control passes. Razor ran it both ways: exit 0 on HEAD with 56 samples, exit 1 on the pre-fix tree with 39 failures.
+
+**Four false alts corrected**, two of them found only by looking at pixels: `/squamish/`'s intro claimed the Brackendale gallery sauna (it is an old Aldergrove build, since sold -- Lee) and `/whistler/`'s claimed a cedar interior on a photograph of the laser-cut sign on siding. Jen's Stage 3 F1 (`/saunas/` h1 reads badly, diagnosed as busyness) was WITHDRAWN once B1 was fixed -- it was the bug, not the photograph, and the Wave B frame re-pick it implied does not exist.
+
+**Also shipped:** `scripts/image-variants.mjs` with `sharp` 0.34.5 exact-pinned, `src/_data/heroVariants.json`, fail-closed Nunjucks filters that throw on an unknown stem or an empty alt, `image-audit` extended to reach the preload seam, and the head preload deriving `imagesrcset` from the same macro the element uses.
+
+**The recurring defect class, worth carrying past this relay:** five checks that could not fail, by four different agents, every one self-disclosed. Ted's undrawn-preload check passed on any input (caught by the mutation battery). Razor's `TREE CLEAN` echo fired unconditionally, and his exit-code read through a pipe briefly showed "39 failures, exit 0". Jen's harness sampled one box's coordinates against another box's pixels. And the relay-wide contrast method sampled a surface that could not show the defect.
+
+**Baseline correction:** `rhythm.test.mjs` does NOT crash on `/process/`. It runs all five routes and exits 1 on two inherited assertions (B2, B-m1). `/process/` is a meta-refresh stub that silently measures `/about/`, and `/gallery/` likewise measures `/saunas/` -- five routes, three distinct pages. The old owed item said otherwise and has been removed.
+
+**Rulings:** the cold-plunge entry was AMENDED (not reversed) on Lee's call -- it governs the site's words, not objects incidentally present in a photograph; scoped rather than hardened because Lee noted SSC may introduce plunges again.
+
+**Research:** a Scan-tier study of SaunaScout (`~/marvin/research/saunascout-booking-site-featured-20260905/report.md`, 14 primary sources). A six-month-old BC marketplace, 19 bookable listings against 40 claimed, no Sea-to-Sky inventory that can confirm a booking, and no organic search presence. Recommendation: list the $500 private Brackendale session in Request-to-Book mode as cheap option value, keep social sessions and memberships direct.
+
+Next: Wave B in the recorded order -- the warranty copy fix, the warranty rewrite through Pierre, then `/process/` with `/commercial/` and `/care/` behind it. `.hero-sub` now exists for those three pages: two front-matter lines each, not a component build.
 
 ### 2026-09-07 -- Lee ruled on the /squamish/ photograph; no code change
 
