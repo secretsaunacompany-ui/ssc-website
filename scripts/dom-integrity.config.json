@@ -2532,19 +2532,19 @@
       "span": 5,
       "count": 1,
       "reason": "The text-only opening this relay replaces on /squamish/: the bare <section class=\"page-hero\"> carrying the h1 and the subtitle and nothing else. Declared as a SUBTREE, not as node and text pairs, for the reason _notes.deleteSubtree names: the entries carry no route field, so a bare 'removed SECTION page-hero' would silently consume an accidental .page-hero removal on /faq/ or /warranty/, which still take that component by ruling (doc 10 s3.6-s3.14). A hash of the whole node cannot. Hash measured with scripts/dom-subtree-hash.mjs against the ce7732a build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "add-subtree",
       "tag": "SECTION",
       "path": "html/body/main/div/section",
-      "textHash": "deed5cd45284a3d8",
+      "textHash": "3467ef0a29f7d9ed",
       "span": 7,
       "count": 1,
-      "reason": "The .hero-sub that replaces it on /squamish/: the <img> with its alt, srcset and intrinsic dimensions, the .hero-sub__content reveal block, and the same h1 and subtitle text moved inside it. The COPY IS UNCHANGED -- every h1 and <p> string is byte-identical to the one the delete-subtree above removes; what changed is the box they sit in. A subtree pair is the honest declaration here for the reason _notes.heroCompositionC20260904 records: one node changed, in several ways, at once, and a subtree hash then fails on any FURTHER edit to it rather than riding through, which is stricter than a text pair, not looser. Hash measured against the a850d11 build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "reason": "The .hero-sub that replaces it on /squamish/: the <img> with its alt, srcset and intrinsic dimensions, the .hero-sub__content reveal block, and the same h1 and subtitle text moved inside it. The COPY IS UNCHANGED -- every h1 and <p> string is byte-identical to the one the delete-subtree above removes; what changed is the box they sit in. A subtree pair is the honest declaration here for the reason _notes.heroCompositionC20260904 records: one node changed, in several ways, at once, and a subtree hash then fails on any FURTHER edit to it rather than riding through, which is stricter than a text pair, not looser. Hash measured against the a850d11 build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906. HASH RE-MEASURED at Stage 2.8 against ca49c75: `.reveal` was removed from .hero-sub__content (behavioural eval B2/B3 -- the page's <h1> must not be gated behind a script), and the class list is inside this subtree, so the hash moved. Re-measured, not re-pointed alone.",
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "delete-subtree",
@@ -2554,19 +2554,19 @@
       "span": 5,
       "count": 1,
       "reason": "The text-only opening this relay replaces on /sea-to-sky/: the bare <section class=\"page-hero\"> carrying the h1 and the subtitle and nothing else. Declared as a SUBTREE, not as node and text pairs, for the reason _notes.deleteSubtree names: the entries carry no route field, so a bare 'removed SECTION page-hero' would silently consume an accidental .page-hero removal on /faq/ or /warranty/, which still take that component by ruling (doc 10 s3.6-s3.14). A hash of the whole node cannot. Hash measured with scripts/dom-subtree-hash.mjs against the ce7732a build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "add-subtree",
       "tag": "SECTION",
       "path": "html/body/main/div/section",
-      "textHash": "041618918ba10f95",
+      "textHash": "812754cb856876d9",
       "span": 7,
       "count": 1,
-      "reason": "The .hero-sub that replaces it on /sea-to-sky/: the <img> with its alt, srcset and intrinsic dimensions, the .hero-sub__content reveal block, and the same h1 and subtitle text moved inside it. The COPY IS UNCHANGED -- every h1 and <p> string is byte-identical to the one the delete-subtree above removes; what changed is the box they sit in. A subtree pair is the honest declaration here for the reason _notes.heroCompositionC20260904 records: one node changed, in several ways, at once, and a subtree hash then fails on any FURTHER edit to it rather than riding through, which is stricter than a text pair, not looser. Hash measured against the a850d11 build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906. HASH RE-MEASURED at Stage 2.5 against dffcb60: Razor W2 dropped the unsourced Stawamus Chief landmark from this hero's alt (Lee sourced the PLACE as Squamish; the landmark was nobody's claim), which is inside this subtree, so the hash moved. Re-measured, not re-pointed alone -- a re-pointed entry carrying a stale hash matches nothing.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "reason": "The .hero-sub that replaces it on /sea-to-sky/: the <img> with its alt, srcset and intrinsic dimensions, the .hero-sub__content reveal block, and the same h1 and subtitle text moved inside it. The COPY IS UNCHANGED -- every h1 and <p> string is byte-identical to the one the delete-subtree above removes; what changed is the box they sit in. A subtree pair is the honest declaration here for the reason _notes.heroCompositionC20260904 records: one node changed, in several ways, at once, and a subtree hash then fails on any FURTHER edit to it rather than riding through, which is stricter than a text pair, not looser. Hash measured against the a850d11 build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906. HASH RE-MEASURED at Stage 2.5 against dffcb60: Razor W2 dropped the unsourced Stawamus Chief landmark from this hero's alt (Lee sourced the PLACE as Squamish; the landmark was nobody's claim), which is inside this subtree, so the hash moved. Re-measured, not re-pointed alone -- a re-pointed entry carrying a stale hash matches nothing. HASH RE-MEASURED at Stage 2.8 against ca49c75: `.reveal` was removed from .hero-sub__content (behavioural eval B2/B3 -- the page's <h1> must not be gated behind a script), and the class list is inside this subtree, so the hash moved. Re-measured, not re-pointed alone.",
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "delete-subtree",
@@ -2576,19 +2576,19 @@
       "span": 5,
       "count": 1,
       "reason": "The text-only opening this relay replaces on /about/ and its meta-refresh alias /process/, which the harness follows to this same page: the bare <section class=\"page-hero\"> carrying the h1 and the subtitle and nothing else. Declared as a SUBTREE, not as node and text pairs, for the reason _notes.deleteSubtree names: the entries carry no route field, so a bare 'removed SECTION page-hero' would silently consume an accidental .page-hero removal on /faq/ or /warranty/, which still take that component by ruling (doc 10 s3.6-s3.14). A hash of the whole node cannot. Hash measured with scripts/dom-subtree-hash.mjs against the ce7732a build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "add-subtree",
       "tag": "SECTION",
       "path": "html/body/main/div/section",
-      "textHash": "bade759c4640258d",
+      "textHash": "dd4b374eea8995be",
       "span": 7,
       "count": 1,
-      "reason": "The .hero-sub that replaces it on /about/ and its meta-refresh alias /process/, which the harness follows to this same page: the <img> with its alt, srcset and intrinsic dimensions, the .hero-sub__content reveal block, and the same h1 and subtitle text moved inside it. The COPY IS UNCHANGED -- every h1 and <p> string is byte-identical to the one the delete-subtree above removes; what changed is the box they sit in. A subtree pair is the honest declaration here for the reason _notes.heroCompositionC20260904 records: one node changed, in several ways, at once, and a subtree hash then fails on any FURTHER edit to it rather than riding through, which is stricter than a text pair, not looser. Hash measured against the a850d11 build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "reason": "The .hero-sub that replaces it on /about/ and its meta-refresh alias /process/, which the harness follows to this same page: the <img> with its alt, srcset and intrinsic dimensions, the .hero-sub__content reveal block, and the same h1 and subtitle text moved inside it. The COPY IS UNCHANGED -- every h1 and <p> string is byte-identical to the one the delete-subtree above removes; what changed is the box they sit in. A subtree pair is the honest declaration here for the reason _notes.heroCompositionC20260904 records: one node changed, in several ways, at once, and a subtree hash then fails on any FURTHER edit to it rather than riding through, which is stricter than a text pair, not looser. Hash measured against the a850d11 build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906. HASH RE-MEASURED at Stage 2.8 against ca49c75: `.reveal` was removed from .hero-sub__content (behavioural eval B2/B3 -- the page's <h1> must not be gated behind a script), and the class list is inside this subtree, so the hash moved. Re-measured, not re-pointed alone.",
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "delete-subtree",
@@ -2598,19 +2598,19 @@
       "span": 5,
       "count": 1,
       "reason": "The text-only opening this relay replaces on /whistler/: the bare <section class=\"page-hero\"> carrying the h1 and the subtitle and nothing else. Declared as a SUBTREE, not as node and text pairs, for the reason _notes.deleteSubtree names: the entries carry no route field, so a bare 'removed SECTION page-hero' would silently consume an accidental .page-hero removal on /faq/ or /warranty/, which still take that component by ruling (doc 10 s3.6-s3.14). A hash of the whole node cannot. Hash measured with scripts/dom-subtree-hash.mjs against the ce7732a build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "add-subtree",
       "tag": "SECTION",
       "path": "html/body/main/div/section",
-      "textHash": "b954844598e117cf",
+      "textHash": "2818f7d4cc9e9f4c",
       "span": 7,
       "count": 1,
-      "reason": "The .hero-sub that replaces it on /whistler/: the <img> with its alt, srcset and intrinsic dimensions, the .hero-sub__content reveal block, and the same h1 and subtitle text moved inside it. The COPY IS UNCHANGED -- every h1 and <p> string is byte-identical to the one the delete-subtree above removes; what changed is the box they sit in. A subtree pair is the honest declaration here for the reason _notes.heroCompositionC20260904 records: one node changed, in several ways, at once, and a subtree hash then fails on any FURTHER edit to it rather than riding through, which is stricter than a text pair, not looser. Hash measured against the a850d11 build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "reason": "The .hero-sub that replaces it on /whistler/: the <img> with its alt, srcset and intrinsic dimensions, the .hero-sub__content reveal block, and the same h1 and subtitle text moved inside it. The COPY IS UNCHANGED -- every h1 and <p> string is byte-identical to the one the delete-subtree above removes; what changed is the box they sit in. A subtree pair is the honest declaration here for the reason _notes.heroCompositionC20260904 records: one node changed, in several ways, at once, and a subtree hash then fails on any FURTHER edit to it rather than riding through, which is stricter than a text pair, not looser. Hash measured against the a850d11 build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906. HASH RE-MEASURED at Stage 2.8 against ca49c75: `.reveal` was removed from .hero-sub__content (behavioural eval B2/B3 -- the page's <h1> must not be gated behind a script), and the class list is inside this subtree, so the hash moved. Re-measured, not re-pointed alone.",
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "delete-subtree",
@@ -2620,19 +2620,19 @@
       "span": 5,
       "count": 1,
       "reason": "The text-only opening this relay replaces on /vancouver/: the bare <section class=\"page-hero\"> carrying the h1 and the subtitle and nothing else. Declared as a SUBTREE, not as node and text pairs, for the reason _notes.deleteSubtree names: the entries carry no route field, so a bare 'removed SECTION page-hero' would silently consume an accidental .page-hero removal on /faq/ or /warranty/, which still take that component by ruling (doc 10 s3.6-s3.14). A hash of the whole node cannot. Hash measured with scripts/dom-subtree-hash.mjs against the ce7732a build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "add-subtree",
       "tag": "SECTION",
       "path": "html/body/main/div/section",
-      "textHash": "727f830f1a2b843d",
+      "textHash": "660fb53eb944a9cc",
       "span": 7,
       "count": 1,
-      "reason": "The .hero-sub that replaces it on /vancouver/: the <img> with its alt, srcset and intrinsic dimensions, the .hero-sub__content reveal block, and the same h1 and subtitle text moved inside it. The COPY IS UNCHANGED -- every h1 and <p> string is byte-identical to the one the delete-subtree above removes; what changed is the box they sit in. A subtree pair is the honest declaration here for the reason _notes.heroCompositionC20260904 records: one node changed, in several ways, at once, and a subtree hash then fails on any FURTHER edit to it rather than riding through, which is stricter than a text pair, not looser. Hash measured against the a850d11 build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "reason": "The .hero-sub that replaces it on /vancouver/: the <img> with its alt, srcset and intrinsic dimensions, the .hero-sub__content reveal block, and the same h1 and subtitle text moved inside it. The COPY IS UNCHANGED -- every h1 and <p> string is byte-identical to the one the delete-subtree above removes; what changed is the box they sit in. A subtree pair is the honest declaration here for the reason _notes.heroCompositionC20260904 records: one node changed, in several ways, at once, and a subtree hash then fails on any FURTHER edit to it rather than riding through, which is stricter than a text pair, not looser. Hash measured against the a850d11 build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906. HASH RE-MEASURED at Stage 2.8 against ca49c75: `.reveal` was removed from .hero-sub__content (behavioural eval B2/B3 -- the page's <h1> must not be gated behind a script), and the class list is inside this subtree, so the hash moved. Re-measured, not re-pointed alone.",
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "delete-subtree",
@@ -2642,19 +2642,19 @@
       "span": 5,
       "count": 1,
       "reason": "The text-only opening this relay replaces on /north-shore/: the bare <section class=\"page-hero\"> carrying the h1 and the subtitle and nothing else. Declared as a SUBTREE, not as node and text pairs, for the reason _notes.deleteSubtree names: the entries carry no route field, so a bare 'removed SECTION page-hero' would silently consume an accidental .page-hero removal on /faq/ or /warranty/, which still take that component by ruling (doc 10 s3.6-s3.14). A hash of the whole node cannot. Hash measured with scripts/dom-subtree-hash.mjs against the ce7732a build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "add-subtree",
       "tag": "SECTION",
       "path": "html/body/main/div/section",
-      "textHash": "c136444cfd2a790a",
+      "textHash": "0373dcbee7e83223",
       "span": 7,
       "count": 1,
-      "reason": "The .hero-sub that replaces it on /north-shore/: the <img> with its alt, srcset and intrinsic dimensions, the .hero-sub__content reveal block, and the same h1 and subtitle text moved inside it. The COPY IS UNCHANGED -- every h1 and <p> string is byte-identical to the one the delete-subtree above removes; what changed is the box they sit in. A subtree pair is the honest declaration here for the reason _notes.heroCompositionC20260904 records: one node changed, in several ways, at once, and a subtree hash then fails on any FURTHER edit to it rather than riding through, which is stricter than a text pair, not looser. Hash measured against the a850d11 build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "reason": "The .hero-sub that replaces it on /north-shore/: the <img> with its alt, srcset and intrinsic dimensions, the .hero-sub__content reveal block, and the same h1 and subtitle text moved inside it. The COPY IS UNCHANGED -- every h1 and <p> string is byte-identical to the one the delete-subtree above removes; what changed is the box they sit in. A subtree pair is the honest declaration here for the reason _notes.heroCompositionC20260904 records: one node changed, in several ways, at once, and a subtree hash then fails on any FURTHER edit to it rather than riding through, which is stricter than a text pair, not looser. Hash measured against the a850d11 build, identical at 1440 and 390. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906. HASH RE-MEASURED at Stage 2.8 against ca49c75: `.reveal` was removed from .hero-sub__content (behavioural eval B2/B3 -- the page's <h1> must not be gated behind a script), and the class list is inside this subtree, so the hash moved. Re-measured, not re-pointed alone.",
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "added",
@@ -2662,8 +2662,8 @@
       "contains": "imagesizes=\"100vw\"",
       "count": 1,
       "reason": "The hero preload gains imagesrcset and imagesizes so it selects the same candidate the <img> does; without them a preload takes its href unconditionally and a phone fetches the largest rung and then the one it wanted. Both strings come from the shared macro the element uses, so they are identical by construction -- head.njk's own comment records the 2026-09-02 regression where a hand-written preload path and the field that rendered the image drifted apart. `contains` is imagesizes rather than a URL because one clause then covers all seven pages, and no other link in the site carries the attribute: the preload_image seam on / and /contact/ emits a bare href. Worst per-route count is 1. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "removed",
@@ -2671,8 +2671,8 @@
       "contains": "alt=\"Sauna built for the Brackendale Art Gallery in Squamish\"",
       "count": 1,
       "reason": "/squamish/'s intro-image alt, removed. The old string is FALSE on a live page and the photograph is unchanged. /squamish/: Lee, 2026-09-05, that sauna is an old Aldergrove build since sold, so it neither is nor reflects the gallery unit; the replacement claims no town, no venue and no client. /whistler/: the file is a close photograph of the laser-cut sign on cedar siding and there is no interior in the frame. The 2026-09-02 ruling naming the Brackendale Art Gallery is on the LANDING page and is untouched by this. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "added",
@@ -2680,8 +2680,8 @@
       "contains": "alt=\"A cedar clad sauna on its trailer at night, its siding lit from off to one side.\"",
       "count": 1,
       "reason": "/squamish/'s intro-image alt, replaced. The old string is FALSE on a live page and the photograph is unchanged. /squamish/: Lee, 2026-09-05, that sauna is an old Aldergrove build since sold, so it neither is nor reflects the gallery unit; the replacement claims no town, no venue and no client. /whistler/: the file is a close photograph of the laser-cut sign on cedar siding and there is no interior in the frame. The 2026-09-02 ruling naming the Brackendale Art Gallery is on the LANDING page and is untouched by this. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906. STRING UPDATED at Stage 2.5: Razor W1 found the replacement alt was itself false -- the window glazing is opaque black and the siding is lit from off-frame, so nothing is lit from inside. Corrected to what the frame shows.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "removed",
@@ -2689,8 +2689,8 @@
       "contains": "alt=\"Finnish sauna interior with Western Red Cedar\"",
       "count": 1,
       "reason": "/whistler/'s intro-image alt, removed. The old string is FALSE on a live page and the photograph is unchanged. /squamish/: Lee, 2026-09-05, that sauna is an old Aldergrove build since sold, so it neither is nor reflects the gallery unit; the replacement claims no town, no venue and no client. /whistler/: the file is a close photograph of the laser-cut sign on cedar siding and there is no interior in the frame. The 2026-09-02 ruling naming the Brackendale Art Gallery is on the LANDING page and is untouched by this. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "added",
@@ -2698,8 +2698,8 @@
       "contains": "alt=\"A laser cut Secret Sauna Co. sign mounted on cedar siding.\"",
       "count": 1,
       "reason": "/whistler/'s intro-image alt, replaced. The old string is FALSE on a live page and the photograph is unchanged. /squamish/: Lee, 2026-09-05, that sauna is an old Aldergrove build since sold, so it neither is nor reflects the gallery unit; the replacement claims no town, no venue and no client. /whistler/: the file is a close photograph of the laser-cut sign on cedar siding and there is no interior in the frame. The 2026-09-02 ruling naming the Brackendale Art Gallery is on the LANDING page and is untouched by this. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "removed",
@@ -2707,8 +2707,8 @@
       "contains": "class=\"page-hero hero-overlay\"",
       "count": 1,
       "reason": "/saunas/ (and /gallery/, its meta-refresh alias) is the ONE hero of the seven that cannot be declared as a subtree pair, and the reason is worth stating because it is not a choice. Its old hero was `<section class=\"page-hero hero-overlay\"><div class=\"hero-overlay__content\">`, so the h1 and the subtitle already sat one level down -- at html/body/main/div/section/div/h1, which is exactly where .hero-sub__content puts them. Those two text tokens and their elements are therefore BYTE-IDENTICAL across the change and do not appear in the diff at all. A subtree entry consumes the node's whole span, and only 5 of this section's tokens moved, so the pair measured against the two builds consumed zero and was deleted rather than left (a declaration that consumes nothing is the 'load-bearing forever' failure _notes.scope names). The five node entries below say the true and smaller thing: the section's class list changed, its wrapper div was replaced by .hero-sub__content, and an <img> arrived. The copy did not move because on this page it never had to. This class pair exists on no other route. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "removed",
@@ -2716,8 +2716,8 @@
       "contains": "class=\"hero-overlay__content\"",
       "count": 1,
       "reason": "/saunas/ (and /gallery/, its meta-refresh alias) is the ONE hero of the seven that cannot be declared as a subtree pair, and the reason is worth stating because it is not a choice. Its old hero was `<section class=\"page-hero hero-overlay\"><div class=\"hero-overlay__content\">`, so the h1 and the subtitle already sat one level down -- at html/body/main/div/section/div/h1, which is exactly where .hero-sub__content puts them. Those two text tokens and their elements are therefore BYTE-IDENTICAL across the change and do not appear in the diff at all. A subtree entry consumes the node's whole span, and only 5 of this section's tokens moved, so the pair measured against the two builds consumed zero and was deleted rather than left (a declaration that consumes nothing is the 'load-bearing forever' failure _notes.scope names). The five node entries below say the true and smaller thing: the section's class list changed, its wrapper div was replaced by .hero-sub__content, and an <img> arrived. The copy did not move because on this page it never had to. The wrapper .hero-sub__content replaces. The five service-area pages and /about/ carry the string inside longer class lists on sections this relay does not touch, so the count is pinned at 1 per route and those occurrences are never removals. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "added",
@@ -2725,8 +2725,8 @@
       "contains": "class=\"hero-sub\"",
       "count": 1,
       "reason": "/saunas/ (and /gallery/, its meta-refresh alias) is the ONE hero of the seven that cannot be declared as a subtree pair, and the reason is worth stating because it is not a choice. Its old hero was `<section class=\"page-hero hero-overlay\"><div class=\"hero-overlay__content\">`, so the h1 and the subtitle already sat one level down -- at html/body/main/div/section/div/h1, which is exactly where .hero-sub__content puts them. Those two text tokens and their elements are therefore BYTE-IDENTICAL across the change and do not appear in the diff at all. A subtree entry consumes the node's whole span, and only 5 of this section's tokens moved, so the pair measured against the two builds consumed zero and was deleted rather than left (a declaration that consumes nothing is the 'load-bearing forever' failure _notes.scope names). The five node entries below say the true and smaller thing: the section's class list changed, its wrapper div was replaced by .hero-sub__content, and an <img> arrived. The copy did not move because on this page it never had to. On the other six pages this same token is consumed by their add-subtree entry, which covers the whole node; here it is declared on its own. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "added",
@@ -2734,17 +2734,17 @@
       "contains": "alt=\"Three people sitting on the cedar benches of a sauna interior, with a felt hat and rolled towels beside them.\"",
       "count": 1,
       "reason": "/saunas/ (and /gallery/, its meta-refresh alias) is the ONE hero of the seven that cannot be declared as a subtree pair, and the reason is worth stating because it is not a choice. Its old hero was `<section class=\"page-hero hero-overlay\"><div class=\"hero-overlay__content\">`, so the h1 and the subtitle already sat one level down -- at html/body/main/div/section/div/h1, which is exactly where .hero-sub__content puts them. Those two text tokens and their elements are therefore BYTE-IDENTICAL across the change and do not appear in the diff at all. A subtree entry consumes the node's whole span, and only 5 of this section's tokens moved, so the pair measured against the two builds consumed zero and was deleted rather than left (a declaration that consumes nothing is the 'load-bearing forever' failure _notes.scope names). The five node entries below say the true and smaller thing: the section's class list changed, its wrapper div was replaced by .hero-sub__content, and an <img> arrived. The copy did not move because on this page it never had to. Jen's Stage 0.7 s5 alt, byte-for-byte. The frame claims no place, which is the point on a page that sells saunas rather than an area: people in a sauna, no landmark. Confirmed against the 2026-09-04 cold-plunge ruling -- a bucket and a felt hat are in frame, no tub. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     },
     {
       "op": "added",
       "tag": "DIV",
-      "contains": "class=\"hero-sub__content reveal\"",
+      "contains": "class=\"hero-sub__content\"",
       "count": 1,
-      "reason": "/saunas/ (and /gallery/, its meta-refresh alias) is the ONE hero of the seven that cannot be declared as a subtree pair, and the reason is worth stating because it is not a choice. Its old hero was `<section class=\"page-hero hero-overlay\"><div class=\"hero-overlay__content\">`, so the h1 and the subtitle already sat one level down -- at html/body/main/div/section/div/h1, which is exactly where .hero-sub__content puts them. Those two text tokens and their elements are therefore BYTE-IDENTICAL across the change and do not appear in the diff at all. A subtree entry consumes the node's whole span, and only 5 of this section's tokens moved, so the pair measured against the two builds consumed zero and was deleted rather than left (a declaration that consumes nothing is the 'load-bearing forever' failure _notes.scope names). The five node entries below say the true and smaller thing: the section's class list changed, its wrapper div was replaced by .hero-sub__content, and an <img> arrived. The copy did not move because on this page it never had to. The block that carries the h1 and the subtitle over the scrim. `.reveal` is on this block only -- the photograph is static and first-paint, per doc 10 s5.3, 'it's a photograph, not a rig'. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906.",
-      "range": "ce7732a..dffcb60",
-      "commit": "dffcb60 relay batch 1 (stage 2.5): eight Razor fixes, four of them false statements"
+      "reason": "/saunas/ (and /gallery/, its meta-refresh alias) is the ONE hero of the seven that cannot be declared as a subtree pair, and the reason is worth stating because it is not a choice. Its old hero was `<section class=\"page-hero hero-overlay\"><div class=\"hero-overlay__content\">`, so the h1 and the subtitle already sat one level down -- at html/body/main/div/section/div/h1, which is exactly where .hero-sub__content puts them. Those two text tokens and their elements are therefore BYTE-IDENTICAL across the change and do not appear in the diff at all. A subtree entry consumes the node's whole span, and only 5 of this section's tokens moved, so the pair measured against the two builds consumed zero and was deleted rather than left (a declaration that consumes nothing is the 'load-bearing forever' failure _notes.scope names). The five node entries below say the true and smaller thing: the section's class list changed, its wrapper div was replaced by .hero-sub__content, and an <img> arrived. The copy did not move because on this page it never had to. The block that carries the h1 and the subtitle over the scrim. `.reveal` is on this block only -- the photograph is static and first-paint, per doc 10 s5.3, 'it's a photograph, not a rig'. Sub-page heroes, doc 10 s2.3/s5.3. See _notes.subPageHeroes20260906. CLASS LIST UPDATED at Stage 2.8: `.reveal` removed per behavioural eval B2/B3. The block that carries the h1 and subtitle over the scrim is now first-paint like the photograph it sits on, which is what doc 10 s5.3's 'it's a photograph, not a rig' was always describing.",
+      "range": "ce7732a..ca49c75",
+      "commit": "ca49c75 relay batch 1 (stage 2.8): B1 paint order, and B2/B3 the title leaves the gate"
     }
   ],
   "_notes": {
@@ -2774,6 +2774,6 @@
     "leeReview20260807": "LEE REVIEW 2026-08-07, folded into the same deploy train as the code refresh (range 7b506b5..9a19319). Four findings, all his: the /saunas/ index showed prices but not saunas (now a photograph per row, mirroring the configurator's opening frame); a single 40% stat floated under the comparison ledger (Jen's archetype B overridden — three stats, the two restored ones verbatim with their original sources); the /contact/ form sat 270px below its own heading (the tight tier applied via :has() so no markup changes, plus a first-child margin collapse); and the hero title arrived on the first scroll and left on the same gesture (the hero stage is now position:sticky over a 70vh runway — CSS ONLY, no markup change, so it appears in the pixel harness and not here). A fifth, the dead info@ contact address, lived in the ssc-booking repo and shipped there separately.",
     "copyFollowups20260904": "RANGE END MOVED TO 07b2325, the merge of refresh/2026-09-02 (hand-off, rulings, BAG schema address) into this branch: the block is only active when the range-end build matches the candidate, and the merge changed head.njk. COPY FOLLOW-UPS 2026-09-04, FINAL RANGE 29ad824..26ed4fb, 70 declarations after three folds (2.5, 2.5b, 2.5c); the paragraphs below are the running record and their earlier counts and range ends are superseded by this sentence. Seven added entries (home + /saunas/ description metas, the Mobile Builds, FAQ wood-fired and Brackendale-card paragraphs) pin the WHOLE value rather than a tail, after Razor showed a tail pin absorbs an undeclared edit earlier in the same node, including the $23,500 in the meta strings that no other gate reads. ORIGINAL NOTE FOLLOWS. COPY FOLLOW-UPS 2026-09-04, range 29ad824..63b1f69. 64 declarations (32 removed/added pairs) covering every change class in the relay, all of them TEXT: meta content, one <title>, the LocalBusiness JSON-LD description, body paragraphs, five configurator option labels and two img alt attributes. NOTHING STRUCTURAL MOVED and the instrument says so rather than this note: every page reports an identical token count on both sides, and jsChanged is false because the relay touches no file under js/. TWO CAUSES, both named per entry: the retirement of the \"authentic / handcrafted / traditional\" category voice that the 2026-09-04 hero rewrite left stranded elsewhere on the site, and the em-dash sweep (plus its ASCII \" -- \" half on /vancouver/). ONE SITEWIDE CLASS: the JSON-LD description, which ships from a single include and therefore changes on all 18 pages at both widths. Everything else is route-scoped. FOUR ENTRIES CARRY THE 2.5 COMMIT rather than 6fffdb1 -- three /faq/ answers and the /saunas/ heater alt -- because those four strings were missed by the Stage 1 sweep and folded in by the orchestrator's amendment. NO PRICE, no option VALUE and no pricesVersion moved: the $23,500 and $57,000+ figures appear inside two of the declared meta strings and are byte-identical on both sides, and prices-version.test.mjs passes without a bump. THE THREE FAQ schemaAnswer TWINS were checked and left alone: none of them carried the dash, so the JSON-LD FAQPage block does not change and no declaration was written for it -- a declaration for a change that does not happen is the stale entry _notes.authority refuses. FOLD AT 2.5B, range moved to 29ad824..fda1e1d: Jen's design review and Lee's rulings changed nine more strings on top of the 2.5 markup, so nine \"added\" entries were retargeted onto the final text rather than the 2.5 intermediate, two new pairs were written for the nodes 2.5 did not cover (the crane site-access option, which had no dash to sweep, and the /faq/ FAQPage JSON-LD, whose schemaAnswer twin moves now that \"authentic\" is gone from the wood-fired answer), and every entry in the block was re-ranged to end at the 2.5b markup commit so the whole block still activates by descent from the config commit that carries it. FOLD AT 2.5C, range moved to 29ad824..26ed4fb: Lee extended the FAQ's \"authentic heat\" -> \"real heat\" ruling to the one remaining occurrence, the Brackendale card on /locations/, so one more pair was written and the whole block re-ranged onto the 2.5c markup commit -- a range that ends before the markup it describes is an inert block, not a strict one.",
     "heroCompositionC20260904": "HERO COMPOSITION C, 2026-09-04, range 69328a1..10f9fcf. Five declarations covering the only markup this relay writes: the hero subtitle cut from two sentences to one, the \"Plan My Sauna Design\" anchor deleted outright, and the surviving \"Book a Session\" anchor changing its class list and its label. Home route only, both widths; every other route reports an identical token stream, and the relay touches no file under js/. THREE OF THE FIVE ARE SUBTREE ENTRIES and that is the subject of this note. The deleted anchor is twinned: home.njk:173 carries another href=\"/contact/\" class=\"btn\", so no substring a `contains` could use names one rather than the family, which is exactly the case delete-subtree exists for. The surviving anchor is a subtree pair for a second, different reason found during implementation and worth recording: the plan drafted it as a removed/added text pair plus an attribute pair, and the added text half cannot be written. Its whole text is \"Book a Session\", which also appears twice inside <a> on /locations/, and checkWhitelistSpecificity scans EVERY route, keeps the worst count and refuses to start when the worst exceeds the entry count -- so that entry would have blocked the run rather than declared anything. A shorter substring does not exist and raising the count to 2 would be the budget-as-identity move _notes.specificity refuses by name. Declaring the node as a subtree pair says the true thing instead: one node changed, in two ways, at once. CONSEQUENCE, deliberate: a subtree entry is keyed on a hash of the whole node, so any further edit to that anchor -- another class, another label, a changed utm -- moves the hash and fails the run rather than riding through, which is stricter than the text pair would have been, not looser. All four hashes were measured with scripts/dom-subtree-hash.mjs against the builds they name (099b6e1bd7e2f783 and 5b58b59f8737e5e7 from 69328a1, 5e21a3cbbb030c76 from 10f9fcf) and are identical at 1440 and 390, so neither anchor is width-dependent. TWO-COMMIT PATTERN as usual: the range ends at the markup commit 10f9fcf and this block ships in a later config-only commit, so it activates by descent rather than describing a range that ends after itself.",
-    "subPageHeroes20260906": "SUB-PAGE HEROES, 2026-09-06, range ce7732a..dffcb60 (re-pointed at Stage 2.5; originally a850d11). Twenty-two declarations covering the only markup this relay writes: on each of the seven pages doc 10 gives a photograph to, the text-only .page-hero section is replaced by a .hero-sub carrying an <img>, a scrim and the SAME h1 and subtitle strings, and the head gains an imagesrcset/imagesizes on the hero preload; plus two intro-image alt corrections on /squamish/ and /whistler/, both of which were false claims on live pages. TWELVE OF THE FOURTEEN SECTION ENTRIES ARE SUBTREE PAIRS; /saunas/ is the exception and its five node entries carry the reason inline and that is the subject of this note. Entries carry no route field and .page-hero survives by ruling on six other pages (faq, warranty, locations, contact, privacy, 404), so a `contains` on \"page-hero\" would be a family match that could swallow an accidental removal on any of them -- the case _notes.deleteSubtree exists for. Every hash was measured with scripts/dom-subtree-hash.mjs against the build it names (baseline ce7732a, candidate dffcb60) and every one is identical at 1440 and 390, so no hero is width-dependent. CONSEQUENCE, deliberate and the same one heroCompositionC20260904 records: a subtree entry is keyed on the whole node, so any further edit to a hero -- a changed alt, another rung in the srcset, a new class -- moves the hash and fails the run rather than riding through. NINE ROUTES, SEVEN PAGES: /gallery/ and /process/ are meta-refresh stubs (src/gallery.njk, src/process.njk) pointing at /saunas/ and /about/, and the harness follows the redirect, so those two routes report the destination page's hero and consume the same declarations. TWO-COMMIT PATTERN as usual: the range ends at the markup commit dffcb60 and this block ships in a later config-only commit, so it activates by descent rather than describing a range that ends after itself. RANGE-END GUARD: 96454d1 and 84d9b3c come after a850d11 and touch only scripts/ and styles.css, whose ?v= stamp the instrument normalizes (_notes.volatile), so delivered markup is unchanged past the range end. If a markup fix lands in a later fix round the range end is re-pointed AND EVERY textHash IS RE-MEASURED -- a re-pointed entry with a stale hash matches nothing, which _notes.batch4Range records happening once already. STAGE 2.5 RE-POINT, 2026-09-06. The fix round changed delivered markup on two pages -- the /sea-to-sky/ hero alt (Razor W2) and the /squamish/ intro alt (Razor W1) -- so the range end moved from a850d11 to dffcb60 AND the affected hashes were re-measured rather than only re-pointed, which is what this note's own range-end guard requires and what _notes.batch4Range records going wrong once. Exactly one subtree hash moved (/sea-to-sky/: e5211890d9644315 -> 041618918ba10f95, identical at 1440 and 390) and one `contains` string was updated (/squamish/'s added intro alt). Every other hash was verified unchanged by the certifying run below: the alt filter added in the same commit is a validator, not a rewriter, so it moves no byte. STAGE 2.5 ROUND 2, 2026-09-06: THE RANGE END DELIBERATELY DID NOT MOVE, and that is a measured result rather than an omission. The C1 fix re-anchored the scrim in styles.css and the round also touched scripts/ and two configs; `git diff --name-only dffcb60..HEAD` shows nothing under src/ and no .eleventy.js, so no template, no front matter and no filter changed, and delivered markup is byte-identical past dffcb60. Entries activate by DESCENT, so the certifying run at the new tip -- `node scripts/dom-integrity.mjs --baseline ce7732a --candidate HEAD` -- PASSES 36/36 with all 22 declarations still consuming and none consuming zero. That pass IS the proof that markup did not move: had any hash gone stale the subtree entries would have consumed nothing and the run would have reported both undeclared changes and declarations that did not happen, which is exactly what it did at round 1 when /sea-to-sky/'s alt moved. Re-pointing a range end at a commit that changed no markup would claim a measurement nobody made."
+    "subPageHeroes20260906": "SUB-PAGE HEROES, 2026-09-06, range ce7732a..dffcb60 (re-pointed at Stage 2.5; originally a850d11). Twenty-two declarations covering the only markup this relay writes: on each of the seven pages doc 10 gives a photograph to, the text-only .page-hero section is replaced by a .hero-sub carrying an <img>, a scrim and the SAME h1 and subtitle strings, and the head gains an imagesrcset/imagesizes on the hero preload; plus two intro-image alt corrections on /squamish/ and /whistler/, both of which were false claims on live pages. TWELVE OF THE FOURTEEN SECTION ENTRIES ARE SUBTREE PAIRS; /saunas/ is the exception and its five node entries carry the reason inline and that is the subject of this note. Entries carry no route field and .page-hero survives by ruling on six other pages (faq, warranty, locations, contact, privacy, 404), so a `contains` on \"page-hero\" would be a family match that could swallow an accidental removal on any of them -- the case _notes.deleteSubtree exists for. Every hash was measured with scripts/dom-subtree-hash.mjs against the build it names (baseline ce7732a, candidate dffcb60) and every one is identical at 1440 and 390, so no hero is width-dependent. CONSEQUENCE, deliberate and the same one heroCompositionC20260904 records: a subtree entry is keyed on the whole node, so any further edit to a hero -- a changed alt, another rung in the srcset, a new class -- moves the hash and fails the run rather than riding through. NINE ROUTES, SEVEN PAGES: /gallery/ and /process/ are meta-refresh stubs (src/gallery.njk, src/process.njk) pointing at /saunas/ and /about/, and the harness follows the redirect, so those two routes report the destination page's hero and consume the same declarations. TWO-COMMIT PATTERN as usual: the range ends at the markup commit dffcb60 and this block ships in a later config-only commit, so it activates by descent rather than describing a range that ends after itself. RANGE-END GUARD: 96454d1 and 84d9b3c come after a850d11 and touch only scripts/ and styles.css, whose ?v= stamp the instrument normalizes (_notes.volatile), so delivered markup is unchanged past the range end. If a markup fix lands in a later fix round the range end is re-pointed AND EVERY textHash IS RE-MEASURED -- a re-pointed entry with a stale hash matches nothing, which _notes.batch4Range records happening once already. STAGE 2.5 RE-POINT, 2026-09-06. The fix round changed delivered markup on two pages -- the /sea-to-sky/ hero alt (Razor W2) and the /squamish/ intro alt (Razor W1) -- so the range end moved from a850d11 to dffcb60 AND the affected hashes were re-measured rather than only re-pointed, which is what this note's own range-end guard requires and what _notes.batch4Range records going wrong once. Exactly one subtree hash moved (/sea-to-sky/: e5211890d9644315 -> 041618918ba10f95, identical at 1440 and 390) and one `contains` string was updated (/squamish/'s added intro alt). Every other hash was verified unchanged by the certifying run below: the alt filter added in the same commit is a validator, not a rewriter, so it moves no byte. STAGE 2.5 ROUND 2, 2026-09-06: THE RANGE END DELIBERATELY DID NOT MOVE, and that is a measured result rather than an omission. The C1 fix re-anchored the scrim in styles.css and the round also touched scripts/ and two configs; `git diff --name-only dffcb60..HEAD` shows nothing under src/ and no .eleventy.js, so no template, no front matter and no filter changed, and delivered markup is byte-identical past dffcb60. Entries activate by DESCENT, so the certifying run at the new tip -- `node scripts/dom-integrity.mjs --baseline ce7732a --candidate HEAD` -- PASSES 36/36 with all 22 declarations still consuming and none consuming zero. That pass IS the proof that markup did not move: had any hash gone stale the subtree entries would have consumed nothing and the run would have reported both undeclared changes and declarations that did not happen, which is exactly what it did at round 1 when /sea-to-sky/'s alt moved. Re-pointing a range end at a commit that changed no markup would claim a measurement nobody made. STAGE 2.8 RE-POINT, 2026-09-06. The behavioural evaluation returned two blocking defects and one of them, B2/B3, changes markup: `.reveal` comes off .hero-sub__content on all seven pages, because a page's <h1> is its identity and must not be hidden until a script says otherwise. So the range end moves dffcb60 -> ca49c75 AND every affected hash is re-measured, per this note's own guard. SIX of the seven add-subtree hashes moved (the class list is inside the subtree) and the seventh page, /saunas/, took the change on its `added <div>` node entry's `contains` string instead, for the span reason recorded above. The seven DELETE-subtree hashes did NOT move and were not touched: they describe the ce7732a baseline, which this change cannot reach. B1 was CSS only (an explicit z-index stack on the three grid items) and moved no markup at all."
   }
 }
