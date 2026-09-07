@@ -121,6 +121,7 @@ Rule: a deferral is recorded here or it does not exist. The detailed sections be
 | The nine sub-page-hero visual-diff waivers go unconsumed once main advances (expire 2026-10-29) | `### Deferred from the 2026-09-06 sub-page hero relay` |
 | Hero scrim headroom pair (320 / 408) if a third h1 line is ever needed | `### Deferred from the 2026-09-06 sub-page hero relay` |
 | `visual-diff:test` O4 flake — "the run says which route redirected undeclared", ~1 run in 4 | `### Deferred from the 2026-09-06 sub-page hero relay` |
+| AI agent traffic — crawler policy, `llms.txt`, bookable-session schema, and the measurement seam | `### AI agent traffic — positioning the site for machine readers (parked 2026-09-07)` |
 | Case studies (parked pending client agreements) | `## Redesign 2026-07 — where everything lives` |
 | Ideas with no schedule | `## Ideas parked for later` |
 | AI Advisor Widget | `### Deferred from the 2026-09-02 code-refresh and creative review
@@ -139,6 +140,26 @@ Recorded 2026-09-04 from the five-specialist creative review (Beatrice type, Sau
 - **rhythm.test.mjs crashes** because `/process/` in its page list is a meta-refresh stub, not a page. Drop the route or point the stub at real content.
 - **Mobile configurator CTA (Wave B, per Lee 2026-09-04: "make sure we are tracking it and we'll come back to it during that wave").** 152 configurator opens since the 2026-08-09 deploy and zero step-2 views, against a prior rate of about 5%. Funnel and instrument both verified working from production on 2026-09-03 (own events landed in Supabase). On a 390px phone the CTA sits 4,454px into a 4,945px scrolling modal and the sticky total bar carries no CTA. The cause of the exact zero at the deploy boundary is not established. Candidate fixes: a CTA in the sticky bar, or a shorter step 1.
 - **Pixel run owed** for the deliberate visible changes on 11 routes (backgrounds removed, BAG card, footer link, logos); the visual-diff baselines still describe the pre-refresh site.
+
+### AI agent traffic — positioning the site for machine readers (parked 2026-09-07)
+
+Lee, 2026-09-07: as agents become prevalent and people use AI to decide where to book a sauna session, SSC should be positioned to capture that traffic, with well-formed machine-readable files. **Parked deliberately as a future relay, not built now.**
+
+Measured on `relay/sub-page-heroes` at the time of parking, so the next session starts from facts rather than from the idea.
+
+- **`src/robots.txt` is four lines and has no crawler policy at all.** In full: `User-agent: *`, `Allow: /`, then the sitemap line. Every AI crawler is therefore treated exactly as Googlebot is — **by default rather than by decision**. The named agents worth a policy today are GPTBot, ClaudeBot, Claude-User, PerplexityBot, Google-Extended, CCBot, Bytespider, Applebot-Extended and meta-externalagent. **The distinction that matters is training-use versus retrieval-and-citation**: they are different bots with different consequences, and a site can rationally allow one and refuse the other. The roster changes, so this entry deliberately records *the shape of the decision* rather than a list to paste — the policy is Lee's, per purpose.
+
+- **There is no `/llms.txt`, and none is generated.** The convention is a markdown file at `/llms.txt` giving an agent the site's shape and key facts in one fetch, with an optional `/llms-full.txt` carrying the content. What makes it cheap *here specifically* is that the sources already exist and are already gated: `src/_data/models.json` is the canonical price source, the FAQ is already structured data, and the locations are already in the LocalBusiness schema. **So this is generation from existing gated sources, not new content** — which also means it can and should be gated the way `models-json:roundtrip` gates the price sheet. A generated file that has drifted from its source is worse than no file, because it is confidently wrong to a machine that cannot tell.
+
+- **Structured data is strong on what SSC sells and silent on what an agent would be asked to book.** Census of the built site, instances across the 18 built HTML files (15 of which carry JSON-LD): Product 80, Offer 80, Place 60, ListItem 31, LocalBusiness / PostalAddress / GeoCoordinates / OfferCatalog / WebSite / Organization / ContactPoint / Person 15 each, BreadcrumbList 13, Question 11, Answer 11, Brand 5, FAQPage 1, ItemList 1. **What does not exist anywhere: `Event`, `Reservation`, `Service`, `BookingService` — verified absent, not merely unnoticed.** Nothing on this site describes the bookable public sessions: the $35 social seat, the $500 private booking, duration, capacity, or the plain fact that a stranger can walk in. That inventory lives on `book.secretsaunacompany.ca`, a **separate origin** referenced from the nav, footer, home, locations and privacy pages, and **nobody in this relay has looked at its structured data. Check that first** — the gap may be a cross-origin discovery problem rather than a missing-markup one.
+
+- **The measurement problem, which is the reason this entry is falsifiable at all.** We currently cannot tell whether any agent traffic arrives: there is no user-agent logging of AI crawlers and no referrer breakdown for chat products. Any work here is unmeasurable until that seam exists, so **the measurement is arguably the first batch rather than the last** — otherwise the relay ships a policy and a generated file with no way to say whether either did anything.
+
+- **One connection worth recording.** The SaunaScout scan run 2026-09-05 found that marketplace has effectively zero organic search presence at six months old, while SSC's own site does surface on BC sauna queries. So **the direct channel is the one worth instrumenting**, and a listing there is option value rather than a distribution strategy. Scan: `~/marvin/research/saunascout-booking-site-featured-20260905/report.md`.
+
+*Why deferred: it is a strategy decision about crawler policy that is Lee's to make per purpose, it touches a second repo (the booking origin), and it needs the measurement seam before any of it can be judged. Not blocked on anything in this relay.*
+
+*One number to re-check rather than trust: the schema census above is mine, taken over all 18 built HTML files. The figures circulated when this item was raised were slightly lower (70 Product, 70 Offer, 52 Place, 13 of the singletons), which is consistent with a narrower file set. The counts differ; the finding does not — strong on Product and Offer, nothing at all on bookable sessions.*
 
 ### Deferred from the 2026-09-06 sub-page hero relay
 
