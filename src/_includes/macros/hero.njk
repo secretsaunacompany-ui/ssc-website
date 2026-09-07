@@ -35,9 +35,24 @@
   old `style="background-image: url(...)"` divs with an <img> was to leave CSP
   untouched -- and to carry alt text those divs never had.
 
-  `.reveal` is on the CONTENT block only. The photograph is static and
-  first-paint -- "it's a photograph, not a rig" (s5.3). No hold: heldTargets()
-  in js/animations.js is page-home only and stays so.
+  THERE IS NO `.reveal` ON THIS BLOCK, and its removal is a fix rather than an
+  omission (behavioural eval B2/B3, 2026-09-06). It carried one, which meant the
+  h1 and the subtitle were hidden until the script added `.seen`: with
+  JavaScript blocked, or with JS running but no IntersectionObserver, all seven
+  pages rendered the photograph, the gradient and the nav with NO TITLE AT ALL.
+
+  Reveal-gating body content below the fold is this site's established pattern
+  and is fine. The page's IDENTITY is not body content: before this relay the
+  <h1> was plain text in a black band and was immune, and putting it inside a
+  gated block was a regression the pattern does not excuse. It also cost 300ms
+  on a fast connection and up to 750ms throttled before the title reached full
+  opacity, re-ran the fade on Back, and slid the line 28px while it faded.
+
+  The photograph was already static and first-paint -- "it's a photograph, not a
+  rig" (doc 10 s5.3) -- so the whole hero is now first-paint, which is what that
+  sentence was always describing. No hold: heldTargets() in js/animations.js is
+  page-home only and stays so. `prefers-reduced-motion` is unaffected because
+  there is no longer any motion here to reduce.
 #}
 {%- macro heroSub(stem, alt, heading, subtitle) -%}
 <section class="hero-sub">
@@ -45,7 +60,7 @@
          alt="{{ alt | heroAlt }}" class="hero-sub__image"
          fetchpriority="high" decoding="async"
          width="{{ (stem | heroDims).w }}" height="{{ (stem | heroDims).h }}">
-    <div class="hero-sub__content reveal">
+    <div class="hero-sub__content">
         <h1>{{ heading }}</h1>
         <p>{{ subtitle }}</p>
     </div>

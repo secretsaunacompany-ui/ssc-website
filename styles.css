@@ -1378,6 +1378,7 @@ nav .container {
    query. */
 .hero-sub__image {
     grid-area: 1 / 1;
+    z-index: 0;             /* see the PAINT ORDER note above .hero-sub::after */
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -1391,16 +1392,42 @@ nav .container {
        Contrast is the scrim's job. */
 }
 
+/* PAINT ORDER, STATED RATHER THAN INHERITED (behavioural eval B1, 2026-09-06).
+   All three layers are grid items at 1/1, so all three can carry z-index
+   WITHOUT being positioned, and the stack is declared here in full:
+   photograph 0, scrim 1, type 2.
+
+   IT USED TO BE IMPLICIT AND IT BROKE. The rule was that a static ::after
+   paints below a positioned sibling, so `position: relative` on the content was
+   enough. That holds only while ::after is NOT a stacking context. Adding
+   `mask-image` at >= 1440 made it one, and an unpositioned element that
+   establishes a stacking context paints as if it were positioned at z-index 0 --
+   so it joined the same layer as the content and, being the LAST child of
+   .hero-sub, won on document order and painted the scrim OVER the heading.
+   Measured: the h1's brightest rendered pixel fell from 232 to 83-92 on all
+   seven pages at exactly 1440 and above, while the photograph behind it barely
+   changed, because the type was being painted through rather than the frame
+   being darkened.
+
+   Every contrast number in this relay sampled the BACKDROP with the content
+   hidden, which is the correct way to measure a scrim and is structurally blind
+   to a scrim painting over the type. Explicit z-index is the fix precisely
+   because it does not care: any future mask, filter, opacity or transform on
+   ::after leaves this order intact. */
 .hero-sub::after {
     content: '';
     grid-area: 1 / 1;
+    z-index: 1;
     background: var(--hero-sub-scrim);
     pointer-events: none;
 }
 
 .hero-sub__content {
     grid-area: 1 / 1;
-    position: relative;     /* paints above ::after at every width */
+    position: relative;
+    z-index: 2;             /* above the scrim, unconditionally -- NOT by relying
+                               on ::after staying a non-stacking-context. See the
+                               PAINT ORDER note above .hero-sub::after. */
     align-self: end;
     padding: 0 var(--gutter) var(--spacing-xl);
     text-align: left;
