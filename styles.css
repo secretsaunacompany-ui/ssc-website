@@ -288,11 +288,14 @@
        the top of the 384px box must stay <= 0.22. It is 0.198 today
        (0.66 x (432-384)/(432-272)). Covering a 3-line h1 needs the gate at
        306.6, so of the 16px steps only 320 clears it (13.4px spare; 288 and 304
-       both still fail). At 320 the ceiling forces the ramp end DOWN to 416,
-       where alpha at 384 is exactly 0.22 -- a 96px ramp instead of 160px. That
-       is a visible change to the gradient's shape, so it is Jen's ruling, not
-       an implementation detail. Recorded here so the next person has the pair
-       (320 / 416) and the constraint rather than re-deriving them.
+       both still fail). At 320 the ceiling forces the ramp end DOWN, to 408 --
+       an 88px ramp instead of 160px. NOT 416: 416 computes to exactly 0.2200 at
+       the top of the 384px box, which satisfies the ceiling with ZERO margin,
+       and Jen corrected it to 408 (0.1800) for that reason. Recorded because
+       416 is the number the arithmetic hands you if you solve for equality and
+       stop, which is what I did first. That is a visible change to the
+       gradient's shape, so it is Jen's ruling, not an implementation detail.
+       The pair is (320 / 408).
 
        The ::after that paints this is at grid-area 1/1 and is therefore exactly
        the box's height, which is what makes a bottom-anchored length mean

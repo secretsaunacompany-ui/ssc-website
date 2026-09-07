@@ -50,10 +50,22 @@ in this project has already been ruled on, usually for a reason that is not obvi
 | Four proposed DECISIONS entries from the 2026-09-02..04 refresh await approval: CARTO keyed basemap as an operating constraint; never `git add -A` after a suite that mutates the tree and never let that suite be what a timeout kills; cold plunge removed sitewide; fixed photo backgrounds removed everywhere but Contact (doc 10 §2.3). Plus, from the copy-followups relay: no em dashes in rendered prose; separator dashes pending a house-style ruling. (resolved 2026-09-04) | Rulings a future session could violate without knowing; unwritten until Lee says yes | 2026-09-04 |
 | Residential map pins are #4A90E2, a blue from no token in the design system. Recolour to a system token, or leave? | Only off-system colour left on /locations/ after the refresh | 2026-09-04 |
 | One look at the new hero on your phone with Safari's toolbar up: does the Book a Session button sit above the toolbar? (Deployed 2026-09-05, ac4fb9a.) | The svh guard cannot be proven headless; Jen and Razor both left this to a real device | 2026-09-05 |
+| **Cold plunge vs the /squamish/ intro photograph.** Two of your own rulings collide. 2026-09-04: cold plunge is not offered and is not mentioned anywhere on the site -- Jen excluded four hero frames on exactly this ground, all showing galvanised stock tanks. 2026-09-05: this photograph stays, you like it. Brightening it to fix its false alt turned up **two galvanised stock tanks clearly visible behind the trailer**. A photograph is arguably a depiction rather than a mention, and it predates this relay, so nothing was changed but the alt, which names no tank. Options: leave it (the tanks are dim and off to one side); swap the photograph; or narrow the ruling to say it governs words, not incidental background. **Recommendation: leave it and narrow the ruling** -- the frame is dark and the alternative is losing a photograph you like over an object no visitor reads as an offer. Reversible; nothing breaks if you do nothing. | A live page carries an object a standing ruling says is not offered | 2026-09-06 |
+| **Three intro alts name third-party venues** -- `src/vancouver.njk:14`, `src/north-shore.njk:14`, `src/sea-to-sky.njk:14`. This is doc 20 Q47 and only you can answer it: do we have permission to name those businesses in alt text on our own marketing pages? The hero alts written in this relay all claim no venue; these three are pre-existing intro-block alts that do. | Naming a third party's business on our page is a permission question, not a copy one | 2026-09-06 |
 
 ---
 
 ## Log (newest first)
+
+### 2026-09-06 -- relay `ssc-website-sub-page-heroes` closed on its branch
+
+16 commits, not merged, not pushed. Seven pages open on a photograph again, in the composition doc 10 s2.3 specified and never got.
+
+Two defects were found after first implementation and both were mine. C1: the scrim's stops were percentages of a box that ranges 384-736px while the type is bottom-anchored, so on any viewport 640px tall or shorter /vancouver/'s h1 read 3.51:1; fixed by anchoring the gradient in px above the bottom edge. B1: `mask-image` made the scrim's pseudo-element a stacking context, so it painted OVER the heading at every width >= 1440 on all seven pages -- and roughly seven hundred contrast measurements could not see it, because every one sampled the backdrop with the type hidden, which is structurally blind to it.
+
+A new gate came out of that: `npm run stacking:check` samples RENDERED GLYPH pixels and carries two negative controls that must fail, so it cannot pass vacuously. Four false alt texts were corrected along the way, two of them found only because a reviewer looked at the actual photographs.
+
+**Three separate 'clean tree' claims in this relay were unsound** -- two of Razor's (an unconditional `&& echo`, and `$?` read after a pipe) and one of mine (untracked files another agent had written into my worktree). Nobody was careless; the check is just easy to get wrong. `git status --porcelain | wc -l` is the version that cannot lie, and it is worth adopting everywhere.
 
 ### 2026-09-05 (close)
 
