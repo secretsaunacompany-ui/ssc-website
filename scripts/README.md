@@ -396,6 +396,49 @@ reviewed by eye; this harness will pass it silently.
 
 ---
 
+## stacking-probe — does the type actually render on top of the scrim?
+
+```bash
+npm run build && npm run stacking:check
+```
+
+**The incident it exists for.** The sub-page hero shipped through a plan critic, a Stage 0.7
+visual spec, four review rounds and roughly seven hundred contrast measurements with the
+scrim painting **over** the `<h1>` at every width >= 1440, on all seven pages. `mask-image`
+makes `.hero-sub::after` a stacking context; an unpositioned element that establishes one
+paints as if positioned at `z-index: 0`, so it left the background layer, joined the
+content's layer, and won on document order because `::after` is the last child.
+
+**Why nothing caught it.** A contrast measurement samples the **backdrop with the content
+block hidden**. That is the correct way to measure a scrim and it is structurally incapable
+of seeing a scrim painted over the words. The computed colour is `rgb(232,230,227)` whether
+the type is legible or unreadable. Only sampled pixels of the **rendered glyphs** show it, and
+nothing in the pipeline sampled those.
+
+**What it checks.** Peak red channel inside the `h1` and subtitle boxes on all seven hero
+pages at 390, 1439, 1440 and 1600 — the last two bracketing the mask breakpoint. `--ink`
+peaks at 232; the floor is 225, which allows antialiasing and not a scrim (~90). It then
+injects eleven different compositing properties onto `::after` at runtime — `filter`,
+`opacity`, `transform`, `will-change`, `mix-blend-mode`, `backdrop-filter`, `isolation`,
+`contain: paint`, `perspective`, and the original `mask-image` — because the fix has to be
+structural rather than a patch against the one property that exposed it.
+
+**It proves itself on every run, and that is the point.** A check that can only ever pass is
+worse than no check because it reads like coverage — this repo shipped one of those in the
+same relay, an undrawn-preload check whose own `imagesrcset` satisfied it. So before any pass
+is trusted, this script reintroduces the defect two ways and **requires both to fail**:
+`display: block` on the section (measured peak 13) and removing the content's `z-index`
+(measured peak 92, the same value the defect produced in the field). If a control does not
+fail, the run exits non-zero no matter what the real measurements said.
+
+**Not in the default suite** because it drives a browser and takes about a minute. Run it when
+touching the hero, and whenever a stacking context is introduced near type on photography.
+
+Origin: adapted from the Stage 2.8 behavioural evaluator's `probe-stack.mjs`, including its
+property list, and turned from a prober that prints into a gate that fails.
+
+---
+
 ## image-variants — the responsive rungs the sub-page heroes need
 
 ```bash

@@ -1397,6 +1397,15 @@ nav .container {
    WITHOUT being positioned, and the stack is declared here in full:
    photograph 0, scrim 1, type 2.
 
+   `display: grid` ON .hero-sub IS LOAD-BEARING FOR THIS. z-index applies to
+   these three because they are GRID ITEMS, not because they are positioned --
+   only .hero-sub__content carries `position`, and the image and ::after carry
+   none. Change the section to `display: block` and all three z-indexes stop
+   applying on the spot, the scrim returns to painting over the heading, and
+   nothing else about the rule looks wrong. Measured: forcing display:block
+   drops the h1's peak rendered pixel to 13. `npm run stacking:check` asserts
+   this, and carries that exact case as one of its two negative controls.
+
    IT USED TO BE IMPLICIT AND IT BROKE. The rule was that a static ::after
    paints below a positioned sibling, so `position: relative` on the content was
    enough. That holds only while ::after is NOT a stacking context. Adding

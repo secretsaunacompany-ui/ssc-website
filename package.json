@@ -26,6 +26,8 @@
     "lint:css": "npx stylelint styles.css",
     "lint:css:test": "node scripts/stylelint-gate.test.mjs",
     "image-audit": "node scripts/image-audit.mjs",
+    "//stacking:check": "Samples RENDERED GLYPH pixels to prove the type paints on top of the hero scrim. Drives a real Chromium against dist/, so run `npm run build` first. Required by Jen's standing rule whenever a stacking context is introduced anywhere near type on photography.",
+    "stacking:check": "node scripts/stacking-probe.mjs",
     "//image-variants": "Generates the missing 400w/800w rungs for the sub-page hero stems and writes src/_data/heroVariants.json. It WRITES to src/img and src/_data, so it is not part of any suite; run it when a hero frame changes. `image-variants:check` writes nothing and fails if the data file has drifted from the files on disk.",
     "image-variants": "node scripts/image-variants.mjs",
     "image-variants:check": "node scripts/image-variants.mjs --check"
