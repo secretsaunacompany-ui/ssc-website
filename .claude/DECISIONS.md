@@ -61,9 +61,11 @@ The homepage hero subtitle and the Try-a-Session card name the Brackendale Art G
 **Amended, Lee, 2026-09-04:** The hero subtitle no longer names the gallery: Lee, seeing the 29ad824 hero live, found the two-sentence subtitle long and too location-specific and cut it to 'Handcrafted Finnish saunas from Squamish, BC.' The venue stays on the landing page through the Try-a-Session card and the hero's single button, both of which still link to the gallery's own booking page. The walk-in test in the entry above is unchanged.
 
 ### Cold plunge is not offered and is not mentioned anywhere on the site
-*2026-09-04, Lee*
+*2026-09-04, Lee, amended 2026-09-07*
 
 Lee directed its removal sitewide on 2026-09-02: the Brackendale set-up runs the sauna, and no location has a plunge SSC operates. Every mention (the /locations/ BAG card description and Features line, the advisor prompt) was removed in the 2026-09-02..04 refresh. Old templates, briefs and the July redesign docs still carry the phrase, so a future copy pass will find it and be tempted to restore it; do not, unless Lee says a plunge exists at a venue the public can book.
+
+**Amended, Lee, 2026-09-07:** The ruling governs the site's WORDS, not objects incidentally present in a photograph. Fixing the /squamish/ intro alt, a session found two galvanised stock tanks standing behind the trailer in that night photograph, and asked whether the ruling reached them. Lee: "I don't mind there being a little bit of contradiction between the photo and the words. We don't need to explicitly state that there are cold plunges in the photo, and that's not obvious what they are. So we can leave it ambiguous." So: copy, features lists, prompts and captions never name a plunge; photographs are not audited for background objects, and nothing is cropped or replaced on this ground. Lee also noted the same day that SSC may introduce cold plunges again at some point, which is why this is scoped rather than hardened: the reversal condition in the paragraph above stands unchanged and is the door. If a plunge ever exists at a venue the public can book, this entry is amended again rather than worked around.
 
 ### Fixed photo backgrounds are removed from every page except the Contact fog
 *2026-09-04, Lee*
