@@ -236,7 +236,14 @@
        WIDTH and copy, not of box height. d_max is 237.6 (280x653 on
        /sea-to-sky/ and /whistler/, and 320x568 on /north-shore/), so her own
        gate -- d_max + 24 <= plateau -- needs 261.6 and 240 fails it. Two 16px
-       steps: 240 -> 256 -> 272. 272 >= 261.6 holds with 34px to spare.
+       steps: 240 -> 256 -> 272.
+
+       AND THE SPARE IS 10.4px, NOT 34px. 272 - 261.6 = 10.4. The 34.4px figure
+       that stood here briefly was 272 - 237.6, the margin over d_max with the
+       gate's own 24px safety term silently dropped -- two different quantities
+       conflated, which is the same class of error this whole scrim rewrite
+       exists to correct, so it is corrected here rather than quietly replaced.
+       The VALUE 272 is right; only its stated headroom was wrong.
 
        AND THE >=768 OVERRIDE IS GONE, because measurement inverted its premise.
        It existed because "the block is TALLER just above the breakpoint than at
@@ -259,13 +266,33 @@
        Rounded UP so the stated bound is sufficient under either derivation. The foot
        stays 0.72, doc 10 s2.3's own value and --nav-scrim's.
 
-       THE TRIGGER, and note that the binding variable is VIEWPORT HEIGHT, which
-       is the one the previous version of this comment never named: any change
-       to the h1 or subtitle copy, to the type scale, to --spacing-xl, or to a
-       breakpoint can move d. Re-measure d at the eleven viewports in Jen's
-       s2.5 -- reporting the number and the box height beside it, never a bare
-       pass -- and hold d_max + 24 <= 272. A reading with no box height next to
-       it is the shape of the report that hid this bug.
+       THE TRIGGER, and read it against 10.4px rather than against a comfortable
+       margin, because 10.4px IS LESS THAN ONE WRAPPED LINE. A third line on any
+       h1 adds about 45px at 280-320 CSS px (--text-4xl clamps to 40px there,
+       line box ~44.8px), which would put d near 283 and the gate near 307 --
+       past this plateau, not near it. There is no room to absorb a line.
+
+       So: any edit to ANY of the seven h1 or subtitle strings, to the type
+       scale, to --leading-display or --leading-body, to --spacing-xl, or to a
+       breakpoint requires the FULL d re-measure below, never a spot check at
+       one size. The binding variable is VIEWPORT HEIGHT -- the one the previous
+       version of this comment never named -- but the thing that moves d is
+       WIDTH and copy, so both grids matter. Re-measure d at the eleven
+       viewports in Jen's s2.5, report the number AND the box height beside it,
+       never a bare pass, and hold d_max + 24 <= 272. A reading with no box
+       height next to it is the shape of the report that hid this bug.
+
+       IF HEADROOM IS EVER WANTED, THE NUMBER IS 320px AND IT IS NOT A
+       UNILATERAL BUMP. Raising the plateau alone darkens the top of a short
+       box, and Jen's ratification sets the ceiling there: the ramp's alpha at
+       the top of the 384px box must stay <= 0.22. It is 0.198 today
+       (0.66 x (432-384)/(432-272)). Covering a 3-line h1 needs the gate at
+       306.6, so of the 16px steps only 320 clears it (13.4px spare; 288 and 304
+       both still fail). At 320 the ceiling forces the ramp end DOWN to 416,
+       where alpha at 384 is exactly 0.22 -- a 96px ramp instead of 160px. That
+       is a visible change to the gradient's shape, so it is Jen's ruling, not
+       an implementation detail. Recorded here so the next person has the pair
+       (320 / 416) and the constraint rather than re-deriving them.
 
        The ::after that paints this is at grid-area 1/1 and is therefore exactly
        the box's height, which is what makes a bottom-anchored length mean
