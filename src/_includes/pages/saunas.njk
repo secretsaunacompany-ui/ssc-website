@@ -1,4 +1,4 @@
-{% import "macros/hero.njk" as hero %}
+{% import "macros/hero.njk" as hero %}{% import "macros/case-study.njk" as cs %}
     <!-- Schema.org - Product listings.
          Generated from src/_data/models.json, which is gated against the
          canonical price sheet by scripts/models-json-roundtrip.mjs. Every fact
@@ -124,7 +124,27 @@
 
         <!-- 3. Plate #1. Jen §2.1: without this seam the page runs E->E (index
              straight into the compare table), a rule-2 violation. -->
-        <img loading="lazy" src="/img/IMG_3663_pp2juf-1200w.webp" alt="Secret Sauna Company mobile sauna among the trees in British Columbia" class="full-width-image reveal" style="object-position: center 30%;" width="1920" height="1280">
+        <img loading="lazy" src="/img/IMG_3663_pp2juf-1200w.webp" alt="Secret Sauna Company mobile sauna among the trees in British Columbia" class="full-width-image reveal" style="object-position: center 30%;" width="1920" height="1280">{#
+  3b. The case-study units, one per renderable build, in data order (doc 10
+  §7.7). Jen §3.2 puts them in the C/F slot: after Plate #1, before the compare
+  table.
+
+  THE LOOP EMITS ZERO BYTES WHEN NOTHING IS RENDERABLE, which is the state of
+  production today, and that is why the whitespace-control tags are load-bearing
+  rather than tidy: no wrapper, no blank line, so the production page is the page
+  it was before this feature existed until a client actually gives permission.
+
+  A NUNJUCKS COMMENT, NOT AN HTML ONE, for the same reason: an HTML comment
+  survives the minifier into dist/saunas/index.html, so the prose explaining the
+  gate would itself be the leak. The first draft of this block used `<!-- -->`
+  and grep found it in dist.
+
+  `b.view` is computed in src/_data/builds.js; nothing is decided here.
+#}
+{%- for b in builds %}{%- if b.view.renderable %}
+
+        <section class="case-study-slot">{{ cs.caseStudy(b, b.view, "full") }}</section>
+{%- endif %}{%- endfor %}
 
         <!-- 4. Compare table. #compareTable and js/compare.js untouched.
              ITS TIER CLASS IS DEFERRED TO B5, and the reason is the same boundary

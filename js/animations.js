@@ -152,7 +152,12 @@
         '.grid-offerings',
         '.comparison-grid',
         '.gallery-mosaic',
-        '.gallery'
+        '.gallery',
+        // The case-study credits ledger. Its rows are the same shape as a grid's
+        // items -- six sibling facts that mean one thing -- and row-by-row
+        // arrival on six separate intersections reads as a table still loading.
+        // One group, --i capped at 4, 480ms of stagger in total (Jen §9).
+        '.case-study__credits'
     ].join(', ');
 
     class RevealManager {
