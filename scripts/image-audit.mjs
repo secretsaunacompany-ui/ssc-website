@@ -13,7 +13,13 @@
 import { readFileSync, readdirSync, existsSync, statSync } from 'fs';
 import { join, resolve } from 'path';
 
-const DIST = resolve('dist');
+// The directory under audit. `dist` by default -- the production build, which
+// is what CI and every existing caller mean. `DIST_DIR` points it at another
+// built tree without copying the script: the case-study relay needs it aimed at
+// `.case-study-preview/`, the gated preview build that never reaches dist/.
+// The vacuity guards below still apply to whatever tree is named, so pointing
+// this at an empty or wrong directory fails loudly rather than passing.
+const DIST = resolve(process.env.DIST_DIR || 'dist');
 const errors = [];
 
 function walkDir(dir) {

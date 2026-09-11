@@ -47,7 +47,11 @@ const { chromium } = require('playwright');
 const { PNG } = require('pngjs');
 
 const REPO = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-const DIST = path.join(REPO, 'dist');
+// `dist` by default; `DIST_DIR` aims the probe at another built tree (the
+// case-study relay points it at `.case-study-preview/`). Resolved against the
+// repo root when relative, so a relative DIST_DIR means the same thing wherever
+// the script is invoked from. The absent-directory check below still fires.
+const DIST = path.resolve(REPO, process.env.DIST_DIR || 'dist');
 
 /** `--ink` #e8e6e3 peaks at 232 in its red channel. Anything materially below
  *  means something is painted over the glyphs. 225 is the evaluator's bar and
