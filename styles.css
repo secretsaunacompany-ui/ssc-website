@@ -4512,12 +4512,20 @@ section.surface--elevated:has(> .wide-container) {
     letter-spacing: var(--tracking-caps);
     line-height: var(--leading-caption);
     color: var(--ink-quiet);
-    /* THE MEASURE HAS TO CARRY THE PADDING. `max-width` is border-box here, and
-       this box also pays --gutter on each side, so a bare --measure-caption left
-       45ch MINUS 173px of content at 1440 -- 151px, and a caption of six words
-       broke onto two lines (Jen, Stage 3, C2a). The intent was a 45ch LINE, so
-       the padding is added back. */
-    max-width: calc(var(--measure-caption) + 2 * var(--gutter));
+    /* A MEASURE IS A CONTENT MEASURE, SO THE PADDING BELONGS OUTSIDE IT
+       (Jen, Stage 3, C2a as re-ruled). The first attempt added `2 * --gutter`
+       back into a border-box `max-width`, which held for the right caption and
+       broke for the left one the moment C2b raised its start padding to 206px:
+       the box was fixed, so the bigger padding came straight out of the line.
+       `content-box` makes that arithmetic unnecessary rather than harder.
+
+       And --measure-caption was the wrong token from the start: 45ch is 45 zero
+       advances, which at --tracking-caps is about 32 characters of tracked caps,
+       not 45. --measure-narrow is the caption line. Where the figure is narrower
+       than the measure -- 768 and 390 -- the figure binds and captions wrap,
+       which is correct. */
+    box-sizing: content-box;
+    max-width: var(--measure-narrow);
     padding: var(--spacing-sm) var(--gutter) 0;
     margin: 0;
 }
