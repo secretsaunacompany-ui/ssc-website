@@ -38,8 +38,6 @@ in this project has already been ruled on, usually for a reason that is not obvi
 
 - **Clarke case-study email:** add the three consent sentences to Lee's unsent Gmail draft of 2026-09-10 in his voice (the page is permanently public and search-indexed on secretsaunacompany.ca; "leave the whole build off the site" is a fine answer; he can withdraw any time, takedown within 48 hours, caches lag), then Pierre reviews the wording and the proposed DECISIONS entry ("no client build is published without express consent covering the description, the name and the photographs as three separate answers, recorded with its date and the wording asked; withdrawal honoured within 48 hours") under BC PIPA. Lee sends. Nothing client-facing leaves a session.
 
-- **Suite provenance for the case-study relay, four states, keep the granularity in the Stage 4 report:** rhythm:test verdict from batch 2 (two inherited reds B2 and B-m1, exactly the main 680d137 baseline); image-audit and stacking:check dist/ verdicts OWED from a post-Razor run in the worker worktree (`npm run image-audit` and `npm run stacking:check` with no DIST_DIR, never concurrently with another dist reader); their preview-tree verdicts are from batch 2 (exit 0 both, red evidence shown); batch 1's original run of all three was KILLED by the OOM killer, not failed, and has no verdict. dom-integrity: RUN FAILURE on jsChanged is a documented exit with no verdict, 0 whitelist additions; not green.
-
 - **Three carried items for Razor b2 and the Stage 4 report:** (1) Razor batch-1 N3 was TAKEN by Ted in batch 2 without assignment (`view()` now ANDs `showPhotos`/`showStory`/`showQuote` with `renderable`); report it as unassigned scope reviewed on merit. (2) `.gitignore` `node_modules/` widened to `node_modules` for the worktree symlink form; needs one line confirming nothing real is now ignored. (3) The charter's built-for-the-builder tripwire reads 50/50 after this relay (coordinator audit 2026-09-11); weight the next relay toward the visitor.
 
 - **Case-study relay COMPLETE and awaiting Lee (2026-09-11 ~14:30):** `relay/case-study-clarke-B2` at fcfb8ca in the worker worktree, review-complete in the ledger, Stage 4 report at `~/marvin/state/relay/ssc-website-case-study-clarke-report.md`, review sheet artifact 'Case-Study Unit Preview' (private). NOT merged, pushed, deployed or sent. Lee's three calls, batched to the coordinator: approve the three proposed DECISIONS entries (consent as three separate answers; the one fail-closed gate; a log without its summary line has no verdict); merge now under Tier 3 or after his look; the consent email (three sentences in his words, Pierre's PIPA read, he sends). The relay branch's own hand-off carries the four-state suite provenance and the seventeen Parking Lot lines; this session-branch hand-off will conflict with it at /save on purpose (no union on handoff.md) and the relay branch's version is the fuller one.
@@ -75,6 +73,10 @@ in this project has already been ruled on, usually for a reason that is not obvi
 ---
 
 ## Log (newest first)
+
+### 2026-09-11 14:50 -- relay branch merged into the session branch (4279a8f)
+
+The two DECISIONS entries (50d0e70), the Stage 3.5 ROADMAP and hand-off (fcfb8ca) and the whole case-study unit had been committed on `relay/case-study-clarke-B2` only, unreachable from this session branch and therefore from `/save`; the coordinator caught it. Merged with `--no-ff`; the only conflict was this file, resolved additively (both sides, log in date order); DECISIONS now 23 at the session branch HEAD, 0 shrinks. The relay-side records in `~/marvin/state/` (pack, ledger entry, report, Jen spec) are branch-independent and sit modified at the marvin primary for its own `/save`. Still nothing merged to main, pushed, deployed or sent.
 
 ### 2026-09-11 14:30 -- Case-study relay closed at Stage 4.5, awaiting Lee
 
