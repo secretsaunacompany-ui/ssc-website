@@ -1,4 +1,10 @@
-node_modules/
+# No trailing slash, deliberately. `node_modules/` matches a DIRECTORY only, and
+# in a session worktree node_modules is a SYMLINK to the primary checkout's copy
+# -- so git listed it as untracked, one `git add -A` away from being committed
+# (the same accident .marvin-worktree.json is here for), and
+# scripts/mutation-battery.mjs refused to build its copy because it duplicated
+# the link the harness makes itself.
+node_modules
 # package-lock.json is deliberately TRACKED (P-C): the deploy story rests on
 # reproducible builds, so the lockfile is committed, not ignored.
 .netlify/
