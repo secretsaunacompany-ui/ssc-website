@@ -1,4 +1,4 @@
-    <!-- HOME PAGE -->
+{% import "macros/case-study.njk" as cs %}    <!-- HOME PAGE -->
     <div id="home" class="page active page--has-bg">
         <section class="hero">
             <img src="/img/IMG_7991-EDIT_gz1kqt-1200w.webp" alt="Outdoor Finnish sauna built by Secret Sauna Company in Squamish, BC" class="hero-image" fetchpriority="high" sizes="100vw" width="1920" height="1280">
@@ -90,7 +90,33 @@
                     <img loading="lazy" src="/img/IMG_2403-EDIT_j3axml-1200w.webp" alt="Cedar and Thermowood craftsmanship in Finnish sauna construction" class="feature-image--overflow" width="1280" height="1920">
                 </div>
             </div>
-        </section>
+        </section>{#
+  The one brief case-study unit, §3.1 slot F: after "Built with care" and before
+  the overlay. ONE unit, and it is the first renderable build that actually has
+  photographs to show (doc 10 §7.7, "the newest build with full photo
+  permission") -- a text-only unit has no plate, and the home slot is a plate
+  slot. Production renders nothing here until a build has photo permission.
+
+  THESE ARE NUNJUCKS COMMENTS, NOT HTML ONES, and that is the whole reason they
+  are written this way. An HTML comment survives the minifier and lands in
+  dist/index.html, which makes the production page differ from a build without
+  this feature -- the exact thing the gate exists to prevent, given away by the
+  prose explaining the gate. Measured, not assumed: the first draft of this block
+  used `<!-- -->` and grep found it in dist.
+
+  WHY THE PUSH RATHER THAN `set picked = b`. Nunjucks scopes a `set` inside a
+  `for` to the loop frame, so the assignment is gone by the time the loop ends --
+  silently, rendering nothing, which is the same output as "no build qualifies"
+  and would therefore never be noticed. Mutating an array declared outside the
+  loop is the one form that survives it. `selectattr("view.showPhotos")` was the
+  obvious alternative and does not work: nunjucks 3.2.4 does not walk a dotted
+  path and returns an empty list (checked, not assumed).
+#}
+{%- set picked = [] %}{%- for b in builds %}{%- if b.view.renderable and b.view.showPhotos and picked.length == 0 %}{%- set _ = picked.push(b) %}{%- endif %}{%- endfor %}
+{%- if picked.length %}
+
+        <section class="case-study-slot">{{ cs.caseStudy(picked[0], picked[0].view, "brief") }}</section>
+{%- endif %}
 
         <section class="hero-overlay">
             <div class="container hero-overlay__content">

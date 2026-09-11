@@ -1,0 +1,45 @@
+[
+  {
+    "id": "clarke",
+    "model": "S2",
+    "client_name": "Clarke",
+    "display_name": "Clarke Residence",
+    "location": "Kitsilano, Vancouver",
+    "year": 2026,
+    "footprint": "[Lee: footprint as built]",
+    "capacity": "[Lee: capacity as built]",
+    "wood_interior": "Clear cedar, horizontal",
+    "wood_exterior": "Lunawood Arctic Triple, vertical",
+    "heater": "Homecraft Revive",
+    "story": "[Story: drafted 2026-09-10 and held with the client record until consent is given; this placeholder renders in preview]",
+    "quote": {
+      "text": "[Clarke: the answer to one of the five questions, verbatim]",
+      "attribution": "Clarke, Kitsilano",
+      "placeholder": true
+    },
+    "hero": null,
+    "details": [],
+    "drawing": null,
+    "photos": false,
+    "permission": "pending",
+    "consent": null
+  },
+  {
+    "id": "fixture-layout",
+    "model": "S2",
+    "client_name": "",
+    "display_name": "Layout fixture",
+    "location": "site photographs standing in",
+    "year": 2026,
+    "footprint": "5' × 7'",
+    "capacity": "2–3 people",
+    "story": "The S2 is the compact one, five feet by seven, sized for two or three people. Three tiers of Western Red Cedar benches sit over full insulation, and the exterior is metal cladding chosen for a wet coast rather than for the photograph. It is the model most backyards can actually take, which is why it is the one we build most often. Nothing about it is mass produced: the joinery is cut for the panel it lands on, the heat design is deliberate, and the stove is sized to the room it has to fill. Handcrafted in Squamish, delivered on its own trailer, and running the same evening.",
+    "hero": "IMG_7875-EDIT-EDIT_dbj20g",
+    "hero_alt": "A cedar sauna under cherry blossoms, a forested mountain behind it",
+    "details": ["IMG_2403-EDIT_j3axml", "IMG_2819_bl3kb1"],
+    "details_alt": ["Cedar bench grain, close and low", "Fog moving through a stand of conifers"],
+    "drawing": null,
+    "photos": true,
+    "permission": "fixture"
+  }
+]

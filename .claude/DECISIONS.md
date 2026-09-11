@@ -106,6 +106,11 @@ Needs its own plan -- `npm audit fix --force` on a live site is not a relay side
 
 This site suppresses the generic listener and sends its own event, but the tracker itself needs an authorized fix in the ssc-ops repo.
 
+### Case-study rendering is decided by ONE fail-closed gate, and a second gate anywhere is prohibited.
+*2026-09-11, per the coordinator on Lee's behalf, case-study relay*
+
+Whether a client build renders is decided in exactly one place, `src/_data/builds.js`: an exact allowlist of permission values (`named`, `anonymous`, `name_only`; `pending`, `declined`, `fixture` and anything else render nothing), a build-time preview flag (`CASE_STUDY_PREVIEW=1`) that throws rather than builds when `NETLIFY=true`, and a computed `view` whose `renderable` gates every other field, with the macro refusing a non-renderable build itself so a caller that forgets the test still emits nothing. No template, filter, page or script may read `build.permission` or `build.consent` directly, default `renderable` truthy, or add a second condition of its own: a second gate is how a pending build leaks, because the two disagree and the weaker one wins. The gate is pinned by thirteen battery mutants in `scripts/case-study.test.mjs`; a change to the gate re-runs the battery and re-derives the provenance table, never adds cases.
+
 ---
 
 ## Operating constraints
@@ -129,6 +134,11 @@ scripts/models-json-selftest.mjs proves the roundtrip suite can detect price dri
 *2026-09-05, Lee*
 
 Published warranty durations are a floor under the BC Sale of Goods Act (s.18(c), s.20(2)), the page has carried four incompatible versions, and it still makes two false claims (third-party electrical certification with documentation in the client's name; an owner's manual that ships with every sauna). Removing the false claims is a copy fix and does not wait. Rewriting the terms themselves (the 2026-09-05 trailer, transfer, residential-use and response-time ruling) goes to Pierre for one full read before it is published, and no copy relay rewrites warranty terms on its own.
+
+### A test run whose log lacks its final summary line has no verdict; killed, crashed, timed out and hung are not failed.
+*2026-09-11, per the coordinator on Lee's behalf, after three same-day instances*
+
+Before any red result is recorded for a suite, the log is read to its end. If the `N passed, M failed` summary line (or the suite's equivalent) is absent, the run has NO verdict: it was killed by the OS (exit 137, SIGKILL), crashed (a stack trace below assertions that did run), timed out, or hung (a process alive for hours at 0% CPU on a headless browser child). None of these four is a failure and none is a pass; each is recorded as `killed, no verdict` with its cause, and a later run that completes never erases that record. On 2026-09-11 a crashed rhythm run was nearly recorded as the main baseline from the two FAIL lines above its crash, an orphan rhythm process sat 4h27m and would never have produced a summary at all, and marvin's own harness could not tell BASELINE_RED from an OOM kill: three faces of one defect. The rhythm harness's inability to distinguish these states is a parked defect; this rule is the reading discipline until it is fixed. A verdict from a solo re-run says nothing about the concurrent case and is recorded as solo.
 
 ---
 

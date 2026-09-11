@@ -1,0 +1,192 @@
+{#
+  THE CASE-STUDY UNIT. Doc 10 §7.3, as ruled by Jen's Stage 0.7 visual spec
+  (2026-09-10), which supersedes §7.3 where the two differ.
+
+  THIS MACRO DECIDES NOTHING. Every permission question was answered in
+  `src/_data/builds.js` and arrives here as `v` (the computed view): `v.ribbon`,
+  `v.showStory`, `v.showQuote`, `v.showPhotos`, `v.displayName`. A template that
+  re-tests `build.permission` would be a second gate drifting away from the
+  first, and the second gate is always the one nobody tests. The only conditions
+  below are on `v.*` fields and on whether an image field is present at all.
+
+  NO FACT IS TYPED HERE. Everything reads from the record.
+
+  NO HEADING ELEMENT LIVES INSIDE A UNIT (doc 10 §7.3): the index line is the
+  heading, and `aria-labelledby` on the <article> points at it so the article
+  still has an accessible name.
+
+  `object-position` is not a parameter and never an inline style -- it is a CSS
+  override keyed off `#build-{id}`, for the CSP reason `hero.njk` records.
+#}
+
+{% import "macros/hero.njk" as hero %}
+
+{#
+  Parts 0 and 1. The ribbon (preview builds only) and the index line, in ONE
+  `.container`, because they are one block: Jen §2, "the ribbon belongs to the
+  index line", 24px between them where every other part gap is 64px. Written as
+  real siblings so `.case-study__ribbon + *` is a sibling selector rather than a
+  rule reaching through a wrapper.
+
+  The index line doubles as the article's accessible name (`aria-labelledby`).
+  `·` (U+00B7) is the only separator: no em dashes in rendered prose
+  (DECISIONS, 2026-09-04).
+#}
+{%- macro indexBlock(build, v) -%}
+<div class="container">
+{%- if v.ribbon %}
+    <p class="case-study__ribbon">{{ v.ribbon }}</p>
+{%- endif %}
+    <p class="case-study__index reveal" id="build-{{ build.id }}-index">{{ v.displayName }} · {{ build.year }} · {{ build.location }} · {{ build.footprint }}</p>
+</div>
+{%- endmacro -%}
+
+{#
+  Part 2. The hero plate. Full-bleed, directly in the article, NOT in
+  `.container`. No `.reveal`: the photograph is first-paint content, the same
+  finding `hero.njk` records for the sub-page hero (2026-09-06).
+#}
+{%- macro heroPlate(build) -%}
+{#- `sizes` is NOT 100vw, and the odd-looking 260vw is the whole reason. The
+    plate is --plate-h tall and cover-cropped, so at 390 a 390x658 frame is
+    taller than it is wide: 100vw asked for a 389px variant and the browser
+    stretched it 2.5x vertically. 658 / 390 * 1.5 = 2.53 for a 3:2 source, so
+    260vw asks for 1014px and gets the 1200w rung; a portrait source
+    over-requests harmlessly (Jen, Stage 3, C4). The pair's `sizes` is a
+    different calculation and is deliberately unchanged. -#}
+<img src="{{ hero.heroLargest(build.hero) }}" srcset="{{ hero.heroSrcset(build.hero) }}" sizes="(max-width: 767px) 260vw, 100vw"
+     alt="{{ build.hero_alt | heroAlt }}" class="case-study__hero"
+     loading="lazy" decoding="async"
+     width="{{ (build.hero | heroDims).w }}" height="{{ (build.hero | heroDims).h }}">
+{%- endmacro -%}
+
+{#
+  Part 3b. The quote. Cormorant at --text-xl, roman, in --measure-narrow
+  (Jen §7). No quotation-mark glyphs: none in the CSS, none in the data.
+  The `--placeholder` modifier changes colour and nothing else, so the geometry
+  graded in preview is the geometry that ships; it can only ever reach a preview
+  build, because a placeholder quote renders under preview alone.
+#}
+{%- macro quoteBlock(build) -%}
+<div class="container">
+    <blockquote class="case-study__quote reveal{% if build.quote.placeholder %} case-study__quote--placeholder{% endif %}">
+        <p>{{ build.quote.text }}</p>
+        <footer>{{ build.quote.attribution }}</footer>
+    </blockquote>
+</div>
+{%- endmacro -%}
+
+{#
+  Part 4. The detail pair. Full-bleed. The 1px grid gap IS the rule (Saul §4),
+  so the grid's background is `--rule` and each figure repaints `--ground`.
+  One entry collapses to a single full-bleed plate (§7.5(b)); zero is omitted by
+  the caller. `sizes` breaks at 767 to match the CSS branch, not 768.
+#}
+{%- macro detailPair(build) -%}
+<div class="case-study__details reveal{% if build.details | length == 1 %} case-study__details--single{% endif %}">
+{%- for stem in build.details %}
+    <figure>
+        <img src="{{ hero.heroLargest(stem) }}" srcset="{{ hero.heroSrcset(stem) }}"
+             sizes="{% if build.details | length == 1 %}100vw{% else %}(max-width: 767px) 100vw, 50vw{% endif %}"
+             alt="{{ build.details_alt[loop.index0] | heroAlt }}"
+             loading="lazy" decoding="async"
+             width="{{ (stem | heroDims).w }}" height="{{ (stem | heroDims).h }}">
+        <figcaption>{{ build.details_alt[loop.index0] }}</figcaption>
+    </figure>
+{%- endfor %}
+</div>
+{%- endmacro -%}
+
+{#
+  Part 5. Credits. A ledger, in doc 10 §7.3's order, with absent fields omitted
+  (§7.5(g)) -- which is why the fixture shows three rows and Clarke six. No
+  price row. The rows carry `.reveal` and `.case-study__credits` is in
+  `GROUP_SELECTOR` in js/animations.js, so they arrive as one staggered ledger
+  rather than one row at a time.
+#}
+{%- macro credits(build) -%}
+<div class="container">
+    <dl class="case-study__credits">
+{%- if build.model %}
+        <div class="case-study__credit-row reveal"><dt>Model</dt><dd>{{ build.model }}</dd></div>
+{%- endif %}
+{%- if build.footprint %}
+        <div class="case-study__credit-row reveal"><dt>Footprint</dt><dd>{{ build.footprint }}</dd></div>
+{%- endif %}
+{%- if build.capacity %}
+        <div class="case-study__credit-row reveal"><dt>Capacity</dt><dd>{{ build.capacity }}</dd></div>
+{%- endif %}
+{%- if build.wood_interior %}
+        <div class="case-study__credit-row reveal"><dt>Interior</dt><dd>{{ build.wood_interior }}</dd></div>
+{%- endif %}
+{%- if build.wood_exterior %}
+        <div class="case-study__credit-row reveal"><dt>Exterior</dt><dd>{{ build.wood_exterior }}</dd></div>
+{%- endif %}
+{%- if build.heater %}
+        <div class="case-study__credit-row reveal"><dt>Heater</dt><dd>{{ build.heater }}</dd></div>
+{%- endif %}
+    </dl>
+</div>
+{%- endmacro -%}
+
+{#
+  The unit. `variant` is "full" (the /saunas/ unit) or "brief" (the one home-page
+  unit: ribbon, index, plate, story and the link through to the full unit).
+
+  Spacing is sibling-based (`.case-study > * + *`), never per-part margins,
+  because every part is optional: an `anonymous` unit is index -> plate -> pair
+  -> credits with no story and no quote, and per-part margins would leave the
+  gap of whatever was omitted.
+#}
+{%- macro caseStudy(build, v, variant) -%}
+{#- THE ONE GATE THE MACRO HONOURS, and it is still not a decision: `renderable`
+    is computed in src/_data/builds.js. Both callers test it before calling this
+    macro, and this repeats it so that a caller which forgets emits NOTHING --
+    not an index line, not a credits ledger, not an empty <article> with an id.
+    Razor's batch-2 review measured the earlier version: with only the `show*`
+    fields gated, a forgotten outer test still published the display name, the
+    neighbourhood and six build facts of a build whose owner had not answered. -#}
+{%- if v.renderable -%}
+<article class="case-study{% if variant == "brief" %} case-study--brief{% endif %}" id="build-{{ build.id }}" aria-labelledby="build-{{ build.id }}-index">
+{{ indexBlock(build, v) }}
+{%- if v.showPhotos and build.hero %}
+{{ heroPlate(build) }}
+{%- endif %}
+{%- if v.showStory and build.story %}
+<div class="container">
+    <p class="case-study__story reveal">{{ build.story }}</p>
+{%- if variant == "brief" %}
+    <a class="case-study__more link--accent" href="/saunas/#build-{{ build.id }}">View the work</a>
+{%- endif %}
+</div>
+{%- endif %}
+{#- THE LINK WHEN THERE IS NO STORY. An `anonymous` build with photographs
+    renders index -> plate and nothing else, because the link is a child of the
+    story's container -- so the brief unit had no action at all. Jen's Stage 3
+    ruling: story present, the link stays with the story, 24px under the
+    paragraph, because it belongs to it; story absent, the link becomes the LAST
+    part of the article in its own container, so the sibling rule puts it 64px
+    under the plate (48px narrow) at the left gutter.
+
+    Nothing else is added -- no index-voice label, no second line, no ember rule.
+    The link is the unit's one action and a lone ember line under a full-bleed
+    photograph is this site's existing plate grammar. The brief unit is never
+    rendered without the link; an anonymous build with NO photographs gets no
+    brief unit at all, because an index line alone is a label, not a teaser. -#}
+{%- if variant == "brief" and not (v.showStory and build.story) %}
+<div class="container">
+    <a class="case-study__more link--accent" href="/saunas/#build-{{ build.id }}">View the work</a>
+</div>
+{%- endif %}
+{%- if variant != "brief" %}
+{%- if v.showQuote %}
+{{ quoteBlock(build) }}
+{%- endif %}
+{%- if v.showPhotos and build.details | length %}
+{{ detailPair(build) }}
+{%- endif %}
+{{ credits(build) }}
+{%- endif %}
+</article>
+{%- endif -%}
+{%- endmacro -%}
