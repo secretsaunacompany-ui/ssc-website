@@ -52,6 +52,7 @@ const REPO = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
 // repo root when relative, so a relative DIST_DIR means the same thing wherever
 // the script is invoked from. The absent-directory check below still fires.
 const DIST = path.resolve(REPO, process.env.DIST_DIR || 'dist');
+const DIST_LABEL = process.env.DIST_DIR || 'dist';
 
 /** `--ink` #e8e6e3 peaks at 232 in its red channel. Anything materially below
  *  means something is painted over the glyphs. 225 is the evaluator's bar and
@@ -119,7 +120,7 @@ const failures = [];
 const lines = [];
 
 async function main() {
-  if (!existsSync(DIST)) { console.error('dist/ is absent. Run `npm run build` first.'); process.exit(1); }
+  if (!existsSync(DIST)) { console.error(`${DIST_LABEL}/ is absent. Run \`npm run build\` first, or point DIST_DIR at a built tree.`); process.exit(1); }
   const { s, base } = await serve();
   const browser = await chromium.launch();
 

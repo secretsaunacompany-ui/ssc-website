@@ -20,6 +20,16 @@ import { join, resolve } from 'path';
 // The vacuity guards below still apply to whatever tree is named, so pointing
 // this at an empty or wrong directory fails loudly rather than passing.
 const DIST = resolve(process.env.DIST_DIR || 'dist');
+const DIST_LABEL = process.env.DIST_DIR || 'dist';
+
+// A named refusal, not a readdir stack trace. An audit pointed at a directory
+// that is not there has measured nothing, and the operator needs to be told
+// which directory and what to do, not where node gave up.
+if (!existsSync(DIST)) {
+  console.error(`${DIST_LABEL}/ is absent. Run \`npm run build\` first, or point DIST_DIR at a built tree.`);
+  process.exit(1);
+}
+
 const errors = [];
 
 function walkDir(dir) {
@@ -149,12 +159,12 @@ if (preloadHrefs === 0) {
 }
 
 if (errors.length > 0) {
-  console.error(`FAIL: ${errors.length} broken reference(s):`);
+  console.error(`FAIL: ${errors.length} broken reference(s) in ${DIST_LABEL}/:`);
   for (const e of errors) {
     console.error(`  ${e.ref}  (from ${e.source})`);
   }
   process.exit(1);
 } else {
-  console.log(`PASS: all image/video references in dist/ resolve to existing files `
+  console.log(`PASS: all image/video references in ${DIST_LABEL}/ resolve to existing files `
     + `(${srcsetCandidates} srcset candidates, ${preloadHrefs} image preloads).`);
 }
