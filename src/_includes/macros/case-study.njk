@@ -47,7 +47,14 @@
   finding `hero.njk` records for the sub-page hero (2026-09-06).
 #}
 {%- macro heroPlate(build) -%}
-<img src="{{ hero.heroLargest(build.hero) }}" srcset="{{ hero.heroSrcset(build.hero) }}" sizes="100vw"
+{#- `sizes` is NOT 100vw, and the odd-looking 260vw is the whole reason. The
+    plate is --plate-h tall and cover-cropped, so at 390 a 390x658 frame is
+    taller than it is wide: 100vw asked for a 389px variant and the browser
+    stretched it 2.5x vertically. 658 / 390 * 1.5 = 2.53 for a 3:2 source, so
+    260vw asks for 1014px and gets the 1200w rung; a portrait source
+    over-requests harmlessly (Jen, Stage 3, C4). The pair's `sizes` is a
+    different calculation and is deliberately unchanged. -#}
+<img src="{{ hero.heroLargest(build.hero) }}" srcset="{{ hero.heroSrcset(build.hero) }}" sizes="(max-width: 767px) 260vw, 100vw"
      alt="{{ build.hero_alt | heroAlt }}" class="case-study__hero"
      loading="lazy" decoding="async"
      width="{{ (build.hero | heroDims).w }}" height="{{ (build.hero | heroDims).h }}">
@@ -151,6 +158,24 @@
 {%- if variant == "brief" %}
     <a class="case-study__more link--accent" href="/saunas/#build-{{ build.id }}">View the work</a>
 {%- endif %}
+</div>
+{%- endif %}
+{#- THE LINK WHEN THERE IS NO STORY. An `anonymous` build with photographs
+    renders index -> plate and nothing else, because the link is a child of the
+    story's container -- so the brief unit had no action at all. Jen's Stage 3
+    ruling: story present, the link stays with the story, 24px under the
+    paragraph, because it belongs to it; story absent, the link becomes the LAST
+    part of the article in its own container, so the sibling rule puts it 64px
+    under the plate (48px narrow) at the left gutter.
+
+    Nothing else is added -- no index-voice label, no second line, no ember rule.
+    The link is the unit's one action and a lone ember line under a full-bleed
+    photograph is this site's existing plate grammar. The brief unit is never
+    rendered without the link; an anonymous build with NO photographs gets no
+    brief unit at all, because an index line alone is a label, not a teaser. -#}
+{%- if variant == "brief" and not (v.showStory and build.story) %}
+<div class="container">
+    <a class="case-study__more link--accent" href="/saunas/#build-{{ build.id }}">View the work</a>
 </div>
 {%- endif %}
 {%- if variant != "brief" %}

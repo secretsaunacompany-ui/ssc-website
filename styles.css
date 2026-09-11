@@ -4253,6 +4253,24 @@ section.surface--elevated:has(> .wide-container) {
     padding-block-start: 0;
 }
 
+/* WHERE A #build- ANCHOR LANDS. The nav is fixed and 148px tall, so a fresh
+   navigation to /saunas/#build-clarke put the article top at y=0 UNDERNEATH it:
+   the draft ribbon and the index line were both hidden, and the first thing a
+   visitor saw was the story, or on a photographed build the plate (Jen, Stage 3,
+   C3).
+
+   --nav-band is the token the nav is already sized from, so this offset tracks
+   the logo at every width instead of carrying a magic number, and --spacing-md
+   is the unit's own tightest rhythm -- the ribbon-to-index gap -- so the ribbon
+   clears the nav by exactly as much as it sits above the index line. 148 + 24 =
+   172px at 1440. Nav height alone would set the ribbon's elevated fill flush
+   against the nav's scrim and the two dark bands would read as one;
+   --section-pad would open 126px of empty ground first, and 70px of it on a
+   phone. */
+.case-study {
+    scroll-margin-top: calc(var(--nav-band) + var(--spacing-md));
+}
+
 .case-study > * + * {
     margin-block-start: var(--spacing-2xl);
 }
@@ -4391,6 +4409,21 @@ section.surface--elevated:has(> .wide-container) {
 
 /* The attribution, in the index voice. The text is exactly the data's
    `attribution` string: no leading dash, no "said", no glyph. */
+/* THE ATTRIBUTION IS A <footer>, AND THIS SHEET HAS A BARE `footer` RULE.
+   That rule dresses the PAGE footer -- `background: var(--ground)`,
+   `padding: var(--spacing-2xl) var(--gutter) var(--spacing-lg)`,
+   `position: relative`, plus a `footer::before` 1px ember hairline -- and an
+   element selector reaches this one just as happily. Measured on the Clarke unit
+   at 1440 before this fix (Jen, Stage 3, C1): padding 64px 86.4px 32px, a 112px
+   tall box, the page footer's hairline drawn straight across the top of the
+   attribution, and the text indented 86px out of the quote's column. The unit's
+   own rule had overridden `margin` alone, so everything else came through.
+
+   The three resets below are the whole fix, and they are stated rather than
+   folded into a shorthand so it is obvious what is being cancelled and why.
+   The cleaner repo-level fix is scoping the site rule to the page footer
+   (`body > footer` or a class); Jen explicitly left that to Razor, and it lands
+   the same pixels. Noted, not taken here. */
 .case-study__quote footer {
     font-family: var(--font-primary);
     font-size: var(--text-2xs);
@@ -4400,6 +4433,15 @@ section.surface--elevated:has(> .wide-container) {
     line-height: var(--leading-caption);
     color: var(--ink-quiet);
     margin-block-start: var(--spacing-sm);
+    padding: 0;
+    background: none;
+    position: static;
+}
+
+/* The page footer's ember hairline, off. It is 1px of gradient that belongs to
+   the bottom of a page, not to a client's name. */
+.case-study__quote footer::before {
+    content: none;
 }
 
 /* A placeholder quote changes COLOUR and nothing else, so the geometry graded in
@@ -4470,9 +4512,30 @@ section.surface--elevated:has(> .wide-container) {
     letter-spacing: var(--tracking-caps);
     line-height: var(--leading-caption);
     color: var(--ink-quiet);
-    max-width: var(--measure-caption);
+    /* THE MEASURE HAS TO CARRY THE PADDING. `max-width` is border-box here, and
+       this box also pays --gutter on each side, so a bare --measure-caption left
+       45ch MINUS 173px of content at 1440 -- 151px, and a caption of six words
+       broke onto two lines (Jen, Stage 3, C2a). The intent was a 45ch LINE, so
+       the padding is added back. */
+    max-width: calc(var(--measure-caption) + 2 * var(--gutter));
     padding: var(--spacing-sm) var(--gutter) 0;
     margin: 0;
+}
+
+/* THE LEFT CAPTION MEETS THE TEXT COLUMN, which is not the same as meeting the
+   gutter. Below about 1373px (--hold + 2 * --gutter) the container is not yet
+   centred and the two coincide. Above it the column sits at 206px while a
+   gutter-padded caption sits at 86px, and the caption row visibly floats 120px
+   left of the credits ledger beneath it (Jen, Stage 3, C2b).
+
+   The figure is half the article, so `100% - var(--hold) / 2 + var(--gutter)`
+   is the distance from this figure's left edge to the contained column:
+   719.5 - 600 + 86.4 = 205.9px at 1440 (the half-pixel is the 1px grid gap).
+   Narrower than the contained tier the calc goes negative and `max()` hands it
+   back to the gutter, which is the correct answer there. The RIGHT caption is
+   untouched and keeps --gutter from its own image's edge, as the spec says. */
+.case-study__details figure:first-child figcaption {
+    padding-inline-start: max(var(--gutter), calc(100% - var(--hold) / 2 + var(--gutter)));
 }
 
 /* ---- 5. Credits ------------------------------------------------------------
@@ -4577,6 +4640,14 @@ section.surface--elevated:has(> .wide-container) {
 
     .case-study__details {
         grid-template-columns: 1fr;
+    }
+
+    /* STACKED, THE CAPTION HAS SOMETHING UNDER IT. On the wide branch nothing
+       follows a caption inside its figure, so 0 below is right. Stacked, the
+       next photograph does -- and at 390 it sat directly on the caption's
+       descenders with only the 1px rule between (Jen, Stage 3, C2c). */
+    .case-study__details figcaption {
+        padding-block-end: var(--spacing-sm);
     }
 
     /* 112px label, 230px value. Two columns still hold, and a ledger never

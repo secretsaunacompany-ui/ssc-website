@@ -169,6 +169,20 @@
  *     kill this: the macro wrap still suppresses the unit, so the name is
  *     computed and never printed. Two guards, two pins, deliberately.
  *
+ * 13. THE STORY-ABSENT LINK BRANCH IS NEUTRALISED -- the anchor is the branch's
+ *     CONDITION (`variant == "brief" and not (v.showStory and build.story)`), so
+ *     removing the container, inverting the test or defaulting it false are one
+ *     mutant.
+ *     Wrong-world: a build published `anonymous` WITH photographs renders a brief
+ *     unit of index -> plate and no way through to the full one. The unit becomes
+ *     a picture with a label and no action -- which is what it did before Jen's
+ *     Stage 3 ruling, and no real record in the data file exercises it, so
+ *     nothing else in the suite would ever notice it going back.
+ *     Killed by: N, "story absent: exactly one View the work link" and "the link
+ *     is the last part of the article" -- both spec literals from Jen's ruling.
+ *     Not visible to B, P or V: today's two records are `pending` and `fixture`,
+ *     neither of which is an anonymous-with-photos build.
+ *
  * COVERED BUT NOT MUTATED: `renderable` defaulted true in `view()`. Group N
  * reddens on it (a pending build would render) and so does G's "renderable:
  * pending without preview is false". Recorded as coverage rather than added as a
@@ -456,12 +470,23 @@ function groupG() {
  * silently returned the empty string for every template would pass every
  * assertion here, and this group would be decoration.
  */
-function renderMacroDirectly(build, v) {
+function renderMacroDirectly(build, v, variant = 'full') {
   const env = new nunjucks.Environment(
     new nunjucks.FileSystemLoader(path.join(REPO_ROOT, 'src/_includes')),
     { autoescape: true }
   );
-  const tpl = '{% import "macros/case-study.njk" as cs %}{{ cs.caseStudy(build, v, "full") }}';
+  // STUBS, AND WHAT THEY ARE AND ARE NOT. `macros/hero.njk` calls three filters
+  // that `.eleventy.js` registers on the Eleventy environment, and they cannot
+  // be imported out of it. They are stubbed here because the assertions in this
+  // group are about WHICH PARTS RENDER AND IN WHAT ORDER -- a link's presence
+  // and its position among its siblings -- and not about image URLs or
+  // dimensions. Nothing here asserts anything a stub produces. The real filters
+  // (including `heroAlt`, which THROWS on an empty alt) are exercised against
+  // real builds by groups P, B and V, which is where that behaviour belongs.
+  env.addFilter('heroWidths', () => [400, 800, 1200]);
+  env.addFilter('heroDims', () => ({ w: 1200, h: 800 }));
+  env.addFilter('heroAlt', (alt) => alt);
+  const tpl = `{% import "macros/case-study.njk" as cs %}{{ cs.caseStudy(build, v, ${JSON.stringify(variant)}) }}`;
   return env.renderString(tpl, { build, v });
 }
 
@@ -493,7 +518,54 @@ function groupN() {
   const namedOut = renderMacroDirectly(named, view(named, false)).trim();
   check('N', 'control: a named build DOES render through the same call',
     namedOut.includes('Rendered Residence') && namedOut.includes('id="build-synth"'),
-    `the renderer produced ${namedOut.length} byte(s); if this is empty the pin above is vacuous`);
+    `the renderer produced ${namedOut.length} byte(s); if this is vacuous the pin above is too`);
+
+  /* ---- Jen's Stage 3 ruling: where "View the work" lives ----
+     The link is the brief unit's one action, and before the ruling it was a
+     child of the story's container -- so an `anonymous` build with photographs,
+     which renders no story, rendered a brief unit with no way through to the
+     full one. These two pin both halves of the ruling, because only the
+     story-present half was ever exercised by real data. */
+
+  // Story ABSENT (anonymous: no story, no quote) with photographs. The link
+  // becomes the LAST part of the article, in its own container.
+  const anon = synth({
+    permission: 'anonymous', photos: true,
+    hero: 'stem', hero_alt: 'A sauna',
+    details: [], display_name: 'Should Not Appear',
+  });
+  const anonOut = renderMacroDirectly(anon, view(anon, false), 'brief');
+  const anonLinks = (anonOut.match(/case-study__more/g) || []).length;
+  check('N', 'story absent: exactly one "View the work" link',
+    anonLinks === 1, `found ${anonLinks}`);
+  check('N', 'story absent: no story renders (the premise of the ruling)',
+    !anonOut.includes('case-study__story'), 'a story rendered under anonymous');
+  // "Last part of the article": the link's container is the final element before
+  // the closing tag. Compared as positions, so it cannot pass by coincidence.
+  const linkPos = anonOut.indexOf('case-study__more');
+  const closePos = anonOut.lastIndexOf('</article>');
+  const afterLink = anonOut.slice(linkPos, closePos);
+  check('N', 'story absent: the link is the last part of the article',
+    linkPos > -1 && closePos > linkPos && !/<(img|p|dl|blockquote)\b/.test(afterLink),
+    `content after the link: ${JSON.stringify(afterLink.replace(/\s+/g, ' ').slice(0, 160))}`);
+  check('N', 'story absent: the link follows the plate',
+    anonOut.indexOf('case-study__hero') > -1
+      && anonOut.indexOf('case-study__hero') < linkPos,
+    'expected index -> plate -> link');
+
+  // Story PRESENT: unchanged -- the link stays inside the story's container.
+  const briefNamed = synth({ permission: 'named', story: 'A paragraph about a house.' });
+  const namedBrief = renderMacroDirectly(briefNamed, view(briefNamed, false), 'brief');
+  const namedLinks = (namedBrief.match(/case-study__more/g) || []).length;
+  check('N', 'story present: exactly one "View the work" link',
+    namedLinks === 1, `found ${namedLinks}`);
+  const storyPos = namedBrief.indexOf('case-study__story');
+  const namedLinkPos = namedBrief.indexOf('case-study__more');
+  // Inside the SAME container: no </div> between the paragraph and the link.
+  check('N', 'story present: the link sits inside the story container',
+    storyPos > -1 && namedLinkPos > storyPos
+      && !namedBrief.slice(storyPos, namedLinkPos).includes('</div>'),
+    'a container closed between the story and the link, so the link is no longer the story\'s');
 }
 
 /* ---------------------------------------------------------------- group P */
