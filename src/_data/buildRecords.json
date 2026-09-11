@@ -11,9 +11,9 @@
     "wood_interior": "Clear cedar, horizontal",
     "wood_exterior": "Lunawood Arctic Triple, vertical",
     "heater": "Homecraft Revive",
-    "story": "[Story: drafted 2026-09-10 and held with the client record until his consent; this placeholder renders in preview]",
+    "story": "[Story: drafted 2026-09-10 and held with the client record until consent is given; this placeholder renders in preview]",
     "quote": {
-      "text": "[Clarke: his answer to one of the five questions, verbatim]",
+      "text": "[Clarke: the answer to one of the five questions, verbatim]",
       "attribution": "Clarke, Kitsilano",
       "placeholder": true
     },

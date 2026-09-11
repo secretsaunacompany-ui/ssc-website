@@ -4307,7 +4307,16 @@ section.surface--elevated:has(> .wide-container) {
     font-variant-numeric: lining-nums tabular-nums;
     border-top: 1px solid var(--rule);
     padding-block: var(--spacing-md);
-    margin: 0;
+    /* `margin-block-end`, NEVER the `margin` shorthand, and this is a fix rather
+       than a tidy (Razor W1). The shorthand was here and it silently killed the
+       ribbon gap: `.case-study__ribbon + *` above has the same specificity
+       (0,1,0) and comes EARLIER in the file, so a shorthand here re-set the
+       margin-block-start that rule had just given, and the ribbon sat flush on
+       this line's top hairline at 1440, 768 and 390 alike. The only job the
+       reset has is cancelling the `p` rule's `margin-block: 0 var(--spacing-md)`
+       bottom margin, so it now says only that, and the sibling rule keeps its
+       24px. A shorthand that resets more than it means to is the whole defect. */
+    margin-block-end: 0;
     /* the rule spans the full hold; the `p` measure must not cap it */
     max-width: none;
     text-align: left;
@@ -4410,7 +4419,16 @@ section.surface--elevated:has(> .wide-container) {
     grid-template-columns: 1fr 1fr;
     gap: 1px;
     background: var(--rule);
-    margin: 0;
+    /* NO `margin: 0` HERE, and its absence is load-bearing (Razor W2). This is a
+       DIRECT CHILD of `.case-study`, so `.case-study > * + *` is what gives it
+       its 64px part gap -- and that selector has the same specificity (0,1,0)
+       and sits earlier in the file, so a `margin: 0` here overrode it and the
+       pair sat flush under the story or the quote at 1440 and 768. It survived
+       at 390 only because the narrow branch re-declares the gap later still,
+       which is exactly the shape of a bug that hides from a phone-width check.
+       A <div> has no UA margin, so there was nothing to reset in the first
+       place: the two resets below are for the <figure> and the <figcaption>,
+       which do. */
     padding: 0;
 }
 
