@@ -25,3 +25,7 @@ _site/
 
 # Rhythm suite working directory (mutant dist copies)
 .rhythm/
+
+# Case-study preview build (CASE_STUDY_PREVIEW=1): holds the unpublished
+# client draft. Never committed, never deployed.
+.case-study-preview/
