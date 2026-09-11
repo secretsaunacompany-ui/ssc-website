@@ -79,22 +79,31 @@ function view(build, preview) {
   // §7.5(d): an anonymous build is headed "Private Residence".
   const displayName = permission === "anonymous" ? "Private Residence" : build.display_name;
 
+  // WHETHER THIS UNIT IS RENDERED AT ALL. Both callers test it before calling
+  // the macro; the three `show*` fields below AND against it anyway, so the
+  // view fails closed on its own rather than on the discipline of every future
+  // caller (Razor N3, batch 1). A caller that forgets the outer test now gets
+  // an empty unit instead of a client's story.
+  const renderable = publishable || preview;
+
   // §7.5(d)/(e). Under `name_only` the photographs are ignored even if the
   // record carries them -- that answer said name, not pictures -- which lands
   // the unit in state (a), text only.
-  const showPhotos = build.photos === true
+  const showPhotos = renderable
+    && build.photos === true
     && permission !== "name_only"
     && hasImages;
 
   // Prose about the home rides on consent to the name, or on preview.
-  const showStory = NAME_CONSENTED.has(permission) || preview;
+  const showStory = renderable && (NAME_CONSENTED.has(permission) || preview);
 
   // ONE expression. A placeholder quote renders under preview regardless of
   // permission and never otherwise; a real quote renders under the two answers
   // that consent to the name, because a quote attributed by name is a
   // name-bearing element.
   const quote = build.quote;
-  const showQuote = Boolean(quote)
+  const showQuote = renderable
+    && Boolean(quote)
     && (quote.placeholder ? preview : NAME_CONSENTED.has(permission));
 
   // The ribbon marks what preview added. A publishable build under preview is
@@ -108,7 +117,7 @@ function view(build, preview) {
 
   return {
     publishable,
-    renderable: publishable || preview,
+    renderable,
     displayName,
     showPhotos,
     showStory,

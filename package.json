@@ -30,7 +30,9 @@
     "stacking:check": "node scripts/stacking-probe.mjs",
     "//image-variants": "Generates the missing 400w/800w rungs for the sub-page hero stems and writes src/_data/heroVariants.json. It WRITES to src/img and src/_data, so it is not part of any suite; run it when a hero frame changes. `image-variants:check` writes nothing and fails if the data file has drifted from the files on disk.",
     "image-variants": "node scripts/image-variants.mjs",
-    "image-variants:check": "node scripts/image-variants.mjs --check"
+    "image-variants:check": "node scripts/image-variants.mjs --check",
+    "//case-study:test": "The permission gate. It builds production into dist/ AND the gated preview into .case-study-preview/ itself, so it is SERIAL and must never run beside another dist-reading suite (fonts:test, rhythm:test, stacking:check, image-audit) -- those read dist/ while this one is deleting and rebuilding it. Group B rebuilds the merge-base with main in a temp git worktree; after a killed run, `git worktree prune`. Needs no prior `npm run build`.",
+    "case-study:test": "node scripts/case-study.test.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
