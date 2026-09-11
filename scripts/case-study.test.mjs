@@ -51,53 +51,140 @@
  * AFTER A KILLED RUN (timeout, Ctrl-C), group B's `buildRef` may leave a temp
  * worktree registered in `.git`. Run `git worktree prune`.
  *
- * THE MUTATION TABLE, AND WHERE EACH CONTROL COMES FROM
- * ----------------------------------------------------
+ * THE MUTATION TABLE: WHAT EACH MUTANT CHANGES, AND WHERE ITS CONTROL COMES FROM
+ * -----------------------------------------------------------------------------
  * Run through `~/marvin/scripts/mutation-battery.mjs`, never a hand-rolled
- * script. Every mutant below must be killed. The third column is the point of
- * the table: an expectation computed BY THE CODE UNDER TEST moves with the
- * mutation and can never fail, so each kill names where its control actually
- * comes from -- a spec literal (a value written from doc 10 or from Lee's
- * answers), or the baseline build (a DIFFERENT COMMIT, which no mutation of
- * this working tree can reach). A same-helper control is never a mutant's only
- * kill. A survivor is repaired by RE-DERIVING ITS CONTROL, never by adding
- * cases and never by waiving it.
+ * script. Every mutant must be killed.
  *
- *  #  mutant                                  killed by / control provenance
- *  -  --------------------------------------  ---------------------------------
- *  1  gate becomes `permission !== "pending"`  G, spec literals on synthetic
- *                                              inputs ("", absent, "fixture");
- *                                              plus P's fixture-id literal.
- *                                              NOT P's set-equality: both arms
- *                                              move together.
- *  2  gate case-folds                          G, spec literal "Named"
- *  3  /saunas/ loop drops `renderable`         B, baseline build of the
- *                                              merge-base -- a different commit;
- *                                              plus P's fixture-id literal
- *  4  ribbon drops `!publishable`              G, synthetic `named` under
- *                                              preview expects the literal null
- *  5  clarke's permission -> "named" in data   B (baseline diff) and V (the unit
- *                                              must carry a ribbon: spec
- *                                              literal). NOT P, whose two arms
- *                                              agree.
- *  6  home ignores `showPhotos`                V, "exactly one brief and it is
- *                                              the fixture" (spec literal;
- *                                              relies on data order, Clarke
- *                                              first)
- *  7  displayName ignores `anonymous`          G, literal "Private Residence"
- *  8  previewFlag drops the Netlify interlock  G, expects a throw
- *  9  renderable becomes `preview` alone       G, (named, preview false) ->
- *                                              literal true
- * 10  showStory ignores `anonymous`            G, literal false for `anonymous`
- *                                              (Petra flags 1-2). Live under the
- *                                              renderable AND, because
- *                                              `anonymous` IS publishable, so
- *                                              renderable is true there and the
- *                                              AND masks nothing.
+ * THE JOURNAL RECORDS IDS, PATHS AND OUTCOMES -- NOT WHAT A MUTANT CHANGED. This
+ * table is the only place a reader in a month can see that, so each entry says
+ * three things in words: what it changes, what differs in the world when the code
+ * is wrong that way, and which control catches it.
+ *
+ * The third part is the one that rots quietly. An expectation computed BY THE
+ * CODE UNDER TEST moves with the mutation and can never fail, so each kill names
+ * where its control actually comes from: a SPEC LITERAL (a value written from
+ * doc 10 or from Lee's answers), or the BASELINE BUILD (a different commit, which
+ * no mutation of this working tree can reach). A same-helper control is never a
+ * mutant's only kill. A survivor is repaired by RE-DERIVING ITS CONTROL, never by
+ * adding cases and never by waiving it.
+ *
+ * MUTANTS ARE AIMED AT BEHAVIOUR, NOT AT LINES. Each anchor targets the decision
+ * itself -- a guard's condition, a gate's set test -- so that neutralising the
+ * behaviour in any spelling is what the anchor catches, rather than one edit
+ * someone happened to make. An anchor that no longer matches makes the battery
+ * REFUSE, loudly; it never counts as a pass. (Mutant 7's anchor had to be
+ * re-aimed once already, when the W2 fix rewrote its line.)
+ *
+ * 1. GATE BY INEQUALITY. `isPublishable` becomes `permission !== "pending"`
+ *    instead of membership of the three-string set.
+ *    Wrong-world: "", a missing field, a typo and the layout fixture all become
+ *    publishable, so an unfinished record publishes because a field was absent.
+ *    Killed by: G, spec literals on synthetic inputs ("", absent, "fixture");
+ *    and P's "the fixture never reaches production" literal. NOT P's
+ *    set-equality, whose two arms move together.
+ *
+ * 2. GATE CASE-FOLDS. `isPublishable` lower-cases `permission` before the set
+ *    test.
+ *    Wrong-world: "Named" publishes. A capital letter in a hand-edited data file
+ *    silently becomes consent.
+ *    Killed by: G, spec literal "Named".
+ *
+ * 3. THE /saunas/ LOOP STOPS TESTING `renderable` (`{% if true %}`).
+ *    Wrong-world: the page stops filtering and hands every record to the macro.
+ *    Killed by: B ONLY, both of its assertions, against the merge-base build --
+ *    a different commit. CORRECTED after the W2 wrap (Razor batch-2 re-check):
+ *    P's fixture-id literal NO LONGER fires here, because the macro now refuses a
+ *    non-renderable build. What reaches dist is two EMPTY
+ *    `<section class="case-study-slot">` elements -- the wrapper lives in the
+ *    page, outside the macro -- so there is a real markup difference and no
+ *    `#build-` id at all. Two guards in series, and only the outer one is visible
+ *    to P.
+ *
+ * 4. THE RIBBON STOPS TESTING `!publishable`.
+ *    Wrong-world: a build that publishes anyway wears "Draft. Not for
+ *    publication." in preview, so the ribbon stops meaning "preview added this"
+ *    and reviewers learn to ignore it.
+ *    Killed by: G, a synthetic `named` build under preview expecting literal
+ *    `null`.
+ *
+ * 5. THE DATA LIES: Clarke's `permission` is flipped to "named" in
+ *    buildRecords.json.
+ *    Wrong-world: a client's build publishes on the live site before he has
+ *    answered. This is the actual accident the whole feature is built around.
+ *    Killed by: B (baseline diff -- a different commit) and V (the unit must
+ *    carry a ribbon: spec literal). NOT P, whose two arms agree: the data says
+ *    publishable and dist agrees, so P sees a consistent world.
+ *
+ * 6. THE HOME PAGE STOPS TESTING `showPhotos` when picking its one unit.
+ *    Wrong-world: the home slot is a plate slot, so it takes Clarke's text-only
+ *    unit and the home page gets a case study with no photograph.
+ *    Killed by: V, "exactly one brief and it is the fixture" (spec literal;
+ *    relies on data order, Clarke first).
+ *
+ * 7. `displayName` STOPS SPECIAL-CASING `anonymous`.
+ *    Wrong-world: a client who asked not to be named is named, under a unit whose
+ *    whole promise was that he would not be.
+ *    Killed by: G, literal "Private Residence".
+ *
+ * 8. `previewFlag` STOPS THROWING ON NETLIFY.
+ *    Wrong-world: the preview flag set in the Netlify UI -- which no file in this
+ *    repo can see -- builds unpublished client work onto a public URL.
+ *    Killed by: G, expects a throw.
+ *
+ * 9. `renderable` BECOMES `preview` ALONE.
+ *    Wrong-world: the inverse failure. Builds that DO have permission vanish from
+ *    production, so the feature silently stops working the day it starts being
+ *    used.
+ *    Killed by: G, (named, preview false) -> literal true.
+ *
+ * 10. `showStory` STOPS SPECIAL-CASING `anonymous`.
+ *     Wrong-world: a description of the home publishes under an answer that
+ *     covered the name and the photographs but never the description -- and
+ *     "Kitsilano, a front-yard sauna behind a tall hedge" identifies the house
+ *     whether or not a name sits above it (Petra, Stage 0.3, flags 1-2).
+ *     Killed by: G, literal false for `anonymous`. Live under the `renderable`
+ *     AND, because `anonymous` IS publishable, so renderable is true there and
+ *     the AND masks nothing.
+ *
+ * 11. THE MACRO'S `renderable` GUARD IS NEUTRALISED -- the anchor is the guard's
+ *     CONDITION (`{%- if v.renderable -%}` -> `{%- if true -%}`), so any way of
+ *     defeating it is the same mutant: wrap deleted, condition inverted, truthy
+ *     default.
+ *     Wrong-world: a template that calls the macro without testing `renderable`
+ *     first publishes the index line and the credits ledger of a `pending` build
+ *     -- the display name, the neighbourhood, the year, the footprint and six
+ *     build facts. The story and the photographs stay withheld, so it is the
+ *     identifying half that escapes.
+ *     Killed by: N, literal ZERO BYTES. Nothing else moves: both real callers
+ *     test `renderable`, so dist is unchanged and B, P and V stay green -- which
+ *     is exactly why this pin had to be written down.
+ *
+ * 12. `view()` STOPS NULLING `displayName` FOR A NON-RENDERABLE BUILD -- the
+ *     anchor is the nulling CONDITION (`const displayName = !renderable`), not
+ *     the ternary under it, so it survives a reformat of the branch bodies.
+ *     Wrong-world: a future template that prints `v.displayName` directly gets a
+ *     client's name for a build that renders nothing.
+ *     Killed by: G, literal null for a non-renderable build. Group N does NOT
+ *     kill this: the macro wrap still suppresses the unit, so the name is
+ *     computed and never printed. Two guards, two pins, deliberately.
+ *
+ * COVERED BUT NOT MUTATED: `renderable` defaulted true in `view()`. Group N
+ * reddens on it (a pending build would render) and so does G's "renderable:
+ * pending without preview is false". Recorded as coverage rather than added as a
+ * mutant, because it is the same blind spot as 11 and 12 and a third mutant there
+ * would buy nothing.
  *
  * WHAT NO MUTANT COVERS, stated rather than left to be discovered: group M. Its
  * red evidence is a one-off -- an em dash put into the fixture story, which
  * reddens `no em dash in rendered prose` on both pages and nothing else.
+ *
+ * MUTANTS 11 AND 12 EXIST BECAUSE THEIR TARGETS ARE INVISIBLE TO EVERY OTHER
+ * GROUP. Razor deleted both guards by hand in the batch-2 re-check and the suite
+ * returned 87/87, exit 0, twice. A guard whose removal nothing notices is a
+ * guard the next edit deletes. If either mutant ever SURVIVES, the pin has
+ * stopped working -- repair it by re-deriving its control, never by waiving it.
+ * stopped working -- repair it by re-deriving its control, never by waiving it.
  */
 import fs from 'node:fs';
 import os from 'node:os';
@@ -110,6 +197,7 @@ import { buildRef } from './lib/build-ref.mjs';
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const require = createRequire(path.join(REPO_ROOT, '/'));
 const { chromium } = require('playwright');
+const nunjucks = require('nunjucks');
 
 /**
  * The gate itself, required rather than re-implemented. A test that writes its
@@ -324,6 +412,14 @@ function groupG() {
   check('G', 'a non-renderable build shows nothing at all',
     closed.showStory === false && closed.showPhotos === false && closed.showQuote === false,
     `got ${JSON.stringify(closed)}`);
+  // The display name is ABSENT, not merely unused, when the unit does not
+  // render -- so a future template printing `v.displayName` directly gets
+  // nothing rather than a client's name. Spec literal: null.
+  check('G', 'a non-renderable build has no displayName at all',
+    closed.displayName === null, `got ${JSON.stringify(closed.displayName)}`);
+  check('G', 'a renderable build still has one',
+    view(synth({ permission: 'named' }), false).displayName === 'Synth Residence',
+    'expected the record\'s display_name');
 
   // Mutant 8: the Netlify interlock.
   let threw = false;
@@ -334,6 +430,70 @@ function groupG() {
   check('G', 'previewFlag({}) is false', previewFlag({}) === false, 'expected false');
   check('G', 'previewFlag("true") is false', previewFlag({ CASE_STUDY_PREVIEW: 'true' }) === false,
     'the flag is the literal "1"; anything else is off');
+}
+
+/* ---------------------------------------------------------------- group N */
+
+/**
+ * THE REGRESSION PIN FOR THE `renderable` GUARD.
+ *
+ * `view()` fails closed and the macro refuses to render a build that is not
+ * renderable. Both of those are guards for a caller that does not exist yet: the
+ * two templates that call the macro today both test `b.view.renderable` first,
+ * so DELETING EITHER GUARD CHANGES NOTHING THAT ANY PAGE RENDERS, and the whole
+ * suite stayed green when Razor deleted them by hand (batch-2 re-check, W3).
+ *
+ * A guard whose removal nothing notices is a guard that will be removed. This
+ * group is the thing that notices. It renders the macro DIRECTLY, through real
+ * nunjucks, on a synthetic `pending` build, with no caller test in front of it --
+ * which is precisely the third template the guard exists for, written down once
+ * so it cannot be forgotten.
+ *
+ * The expected value is a spec literal: ZERO BYTES. Not "fewer facts", not "no
+ * story" -- nothing at all.
+ *
+ * The vacuity control is the `named` render below. Without it, a loader that
+ * silently returned the empty string for every template would pass every
+ * assertion here, and this group would be decoration.
+ */
+function renderMacroDirectly(build, v) {
+  const env = new nunjucks.Environment(
+    new nunjucks.FileSystemLoader(path.join(REPO_ROOT, 'src/_includes')),
+    { autoescape: true }
+  );
+  const tpl = '{% import "macros/case-study.njk" as cs %}{{ cs.caseStudy(build, v, "full") }}';
+  return env.renderString(tpl, { build, v });
+}
+
+function groupN() {
+  const { view } = builds;
+
+  // The caller a future repo will contain: it does NOT test `renderable`.
+  const pending = synth({
+    permission: 'pending',
+    display_name: 'Clarkeish Residence',
+    location: 'Kitsilano, Vancouver',
+    footprint: "7' x 7'",
+    quote: { text: 'He said a thing.', attribution: 'Clarkeish, Kitsilano' },
+  });
+  const out = renderMacroDirectly(pending, view(pending, false)).trim();
+
+  check('N', 'a pending build rendered with no caller test emits zero bytes',
+    out === '', `emitted ${out.length} byte(s): ${JSON.stringify(out.slice(0, 200))}`);
+  check('N', 'and therefore carries no unit id',
+    !out.includes('id="build-'), 'a #build- id reached the output');
+  for (const fact of ['Clarkeish Residence', 'Kitsilano', "7' x 7'", 'Homecraft', 'cedar']) {
+    check('N', `and no client fact: ${JSON.stringify(fact)}`,
+      !out.includes(fact), `"${fact}" reached the output`);
+  }
+
+  // VACUITY CONTROL. If this renders empty too, the three assertions above are
+  // measuring a broken loader, not a working guard.
+  const named = synth({ permission: 'named', display_name: 'Rendered Residence' });
+  const namedOut = renderMacroDirectly(named, view(named, false)).trim();
+  check('N', 'control: a named build DOES render through the same call',
+    namedOut.includes('Rendered Residence') && namedOut.includes('id="build-synth"'),
+    `the renderer produced ${namedOut.length} byte(s); if this is empty the pin above is vacuous`);
 }
 
 /* ---------------------------------------------------------------- group P */
@@ -653,6 +813,9 @@ async function groupsVandM() {
 
     process.stdout.write('G  the gate, pure\n');
     groupG();
+
+    process.stdout.write('\nN  the macro, called with no caller test\n');
+    groupN();
 
     process.stdout.write('\nP  production build\n');
     buildProduction();
