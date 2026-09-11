@@ -32,6 +32,12 @@ in this project has already been ruled on, usually for a reason that is not obvi
 
 - **One look at the seven new sub-page heroes on Lee's phone.** Verified live at dd8a0d7 on all seven routes and measured at 40 viewports headless, but the short-viewport case that produced the relay's one CRITICAL (390 CSS px at 640 tall or under, where `min-height` binds and the box collapses 122px) cannot be proven on a real device from here.
 
+- **Case-study relay (ssc-website-case-study-clarke) is COMPLETE on `relay/case-study-clarke-B2` at 8b5eb3f + this docs commit, and is NOT merged, NOT pushed, NOT deployed.** Two things are Lee's before anything moves: (1) look at the review sheet (artifact published 2026-09-11, 'Case-Study Unit Preview'); (2) the consent email to the first client, three separate answers (description, name, photographs), in Lee's own words, after Pierre's BC PIPA read; Lee sends it himself. Merge to main is allowed under the Tier 3 rule once Lee has seen the piece (production HTML is byte-identical to main, so a merge changes nothing live); the permission FLIP is a separate later commit and needs the whitelist entry, the visual-diff baseline advance and group B's retirement in the same commit (Parking Lot).
+
+- **Suite provenance for this relay, four states, do not collapse:** rhythm:test verdict from a SOLO batch-2 re-run (75 passed, 2 failed, the main 680d137 baseline B2/B-m1; the first batch-2 run crashed mid-mutation with no summary line and is killed, no verdict; the batch-1 chained run was OOM-killed, no verdict); image-audit and stacking:check PASS on dist/ (orchestrator run at 8b05d50) and on .case-study-preview (batch 2, red evidence shown); dom-integrity RUN FAILURE on jsChanged is a documented exit with no verdict and zero whitelist additions. Absence of the `N passed, M failed` summary line IS the verdict; read logs to the end.
+
+- **`.dom-integrity/` and `.rhythm/` still leak into WORKING builds** the way `.case-study-preview/` did before batch 2 added it to WORKING_COPY_EXCLUDE (inherited; plan file 16 scopes the note here).
+
 ## Open questions awaiting Lee
 
 | Question | Why it matters | Raised |
@@ -57,6 +63,10 @@ in this project has already been ruled on, usually for a reason that is not obvi
 ---
 
 ## Log (newest first)
+
+### 2026-09-11 -- Case-study relay closed at Stage 3.5 (branch relay/case-study-clarke-B2, 8b5eb3f + docs)
+
+Built, gated, unpublished. Batch 1 (2bd97d2, fix cfcfabb): the unit, the gate, pages, styles; Razor WARNING (two dead CSS declarations lint:css passed), fixed and re-measured. Batch 2 (2015e0b..7189236, fixes d416a8b, 8b05d50): suite 97/97 with every green shown red by a reverted alteration, mutants 12/0/0, Razor WARNING (blanket stamp strip; N3 half-taken) fixed, re-check found the guard unpinned, pinned by group N. Behavioural CONCERNS (three, none blocking). Jen CONCERNS: 4 (quote footer inheriting the site footer rule; caption measure; anchor offset; hero sizes), fixed in 39e49f2 + 8b5eb3f, measured, Razor re-check CLOSED; her 0.7 spec amended on disk. Suite 103/103, mutants 13/0/0. Declared not fully gated: two fix passes after the one re-review (the W3 pin; the Stage-3 pass), each with its named evidence. Three site-wide classes captured without widening: in-page anchor offsets, the rhythm harness's four non-failure states, the bare footer rule. Ted self-corrected twice unprompted (a stamp probe that could not move the stamp; a crashed rhythm run misread as a baseline). Nothing merged, pushed, deployed or sent to the client.
 
 ### 2026-09-10 -- coordinator-driven session (website-charter-casestudy)
 
