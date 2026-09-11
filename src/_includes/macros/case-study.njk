@@ -132,6 +132,14 @@
   gap of whatever was omitted.
 #}
 {%- macro caseStudy(build, v, variant) -%}
+{#- THE ONE GATE THE MACRO HONOURS, and it is still not a decision: `renderable`
+    is computed in src/_data/builds.js. Both callers test it before calling this
+    macro, and this repeats it so that a caller which forgets emits NOTHING --
+    not an index line, not a credits ledger, not an empty <article> with an id.
+    Razor's batch-2 review measured the earlier version: with only the `show*`
+    fields gated, a forgotten outer test still published the display name, the
+    neighbourhood and six build facts of a build whose owner had not answered. -#}
+{%- if v.renderable -%}
 <article class="case-study{% if variant == "brief" %} case-study--brief{% endif %}" id="build-{{ build.id }}" aria-labelledby="build-{{ build.id }}-index">
 {{ indexBlock(build, v) }}
 {%- if v.showPhotos and build.hero %}
@@ -155,4 +163,5 @@
 {{ credits(build) }}
 {%- endif %}
 </article>
+{%- endif -%}
 {%- endmacro -%}

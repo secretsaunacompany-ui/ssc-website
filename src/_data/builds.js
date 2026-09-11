@@ -76,15 +76,27 @@ function view(build, preview) {
   const publishable = isPublishable(build);
   const hasImages = Boolean(build.hero) || (Array.isArray(build.details) && build.details.length > 0);
 
-  // §7.5(d): an anonymous build is headed "Private Residence".
-  const displayName = permission === "anonymous" ? "Private Residence" : build.display_name;
-
   // WHETHER THIS UNIT IS RENDERED AT ALL. Both callers test it before calling
-  // the macro; the three `show*` fields below AND against it anyway, so the
-  // view fails closed on its own rather than on the discipline of every future
-  // caller (Razor N3, batch 1). A caller that forgets the outer test now gets
-  // an empty unit instead of a client's story.
+  // the macro, and EVERY field below rides on it, so the view fails closed on
+  // its own rather than on the discipline of every future caller (Razor N3,
+  // batch 1; finished after Razor's batch-2 review).
+  //
+  // THE FIRST ATTEMPT AT THIS WAS HALF A FIX, and the half that was missing was
+  // the half that mattered. Only the three `show*` fields were gated, so a
+  // caller that forgot the outer test still got the index line and the credits
+  // ledger -- which is to say the client's display name, his neighbourhood, the
+  // year, the footprint and six build facts, published under `pending`. The
+  // story and the photographs were withheld and the identifying material was
+  // not. `renderable` now gates the whole unit: the macro renders nothing at
+  // all for a build that is not renderable, and `displayName` is null there so
+  // that a future template printing it directly gets nothing rather than a name.
   const renderable = publishable || preview;
+
+  // §7.5(d): an anonymous build is headed "Private Residence". Null when the
+  // unit does not render, so the name is not merely unused but absent.
+  const displayName = !renderable
+    ? null
+    : (permission === "anonymous" ? "Private Residence" : build.display_name);
 
   // §7.5(d)/(e). Under `name_only` the photographs are ignored even if the
   // record carries them -- that answer said name, not pictures -- which lands

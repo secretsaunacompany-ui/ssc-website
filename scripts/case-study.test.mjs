@@ -50,6 +50,54 @@
  *
  * AFTER A KILLED RUN (timeout, Ctrl-C), group B's `buildRef` may leave a temp
  * worktree registered in `.git`. Run `git worktree prune`.
+ *
+ * THE MUTATION TABLE, AND WHERE EACH CONTROL COMES FROM
+ * ----------------------------------------------------
+ * Run through `~/marvin/scripts/mutation-battery.mjs`, never a hand-rolled
+ * script. Every mutant below must be killed. The third column is the point of
+ * the table: an expectation computed BY THE CODE UNDER TEST moves with the
+ * mutation and can never fail, so each kill names where its control actually
+ * comes from -- a spec literal (a value written from doc 10 or from Lee's
+ * answers), or the baseline build (a DIFFERENT COMMIT, which no mutation of
+ * this working tree can reach). A same-helper control is never a mutant's only
+ * kill. A survivor is repaired by RE-DERIVING ITS CONTROL, never by adding
+ * cases and never by waiving it.
+ *
+ *  #  mutant                                  killed by / control provenance
+ *  -  --------------------------------------  ---------------------------------
+ *  1  gate becomes `permission !== "pending"`  G, spec literals on synthetic
+ *                                              inputs ("", absent, "fixture");
+ *                                              plus P's fixture-id literal.
+ *                                              NOT P's set-equality: both arms
+ *                                              move together.
+ *  2  gate case-folds                          G, spec literal "Named"
+ *  3  /saunas/ loop drops `renderable`         B, baseline build of the
+ *                                              merge-base -- a different commit;
+ *                                              plus P's fixture-id literal
+ *  4  ribbon drops `!publishable`              G, synthetic `named` under
+ *                                              preview expects the literal null
+ *  5  clarke's permission -> "named" in data   B (baseline diff) and V (the unit
+ *                                              must carry a ribbon: spec
+ *                                              literal). NOT P, whose two arms
+ *                                              agree.
+ *  6  home ignores `showPhotos`                V, "exactly one brief and it is
+ *                                              the fixture" (spec literal;
+ *                                              relies on data order, Clarke
+ *                                              first)
+ *  7  displayName ignores `anonymous`          G, literal "Private Residence"
+ *  8  previewFlag drops the Netlify interlock  G, expects a throw
+ *  9  renderable becomes `preview` alone       G, (named, preview false) ->
+ *                                              literal true
+ * 10  showStory ignores `anonymous`            G, literal false for `anonymous`
+ *                                              (Petra flags 1-2). Live under the
+ *                                              renderable AND, because
+ *                                              `anonymous` IS publishable, so
+ *                                              renderable is true there and the
+ *                                              AND masks nothing.
+ *
+ * WHAT NO MUTANT COVERS, stated rather than left to be discovered: group M. Its
+ * red evidence is a one-off -- an em dash put into the fixture story, which
+ * reddens `no em dash in rendered prose` on both pages and nothing else.
  */
 import fs from 'node:fs';
 import os from 'node:os';
@@ -142,9 +190,21 @@ function htmlFiles(root) {
  * did not change, and the stamp is a function of an asset this relay is allowed
  * to change. Everything else -- every tag, attribute, and character of text --
  * still has to match byte for byte.
+ *
+ * THE PATTERN NAMES THE TWO ASSETS AND ONLY THOSE TWO. It was written once as a
+ * blanket `/\?v=[0-9a-f]+/g`, which is a different and much weaker gate: this
+ * site stamps THIRTEEN assets, so the blanket form silently forgave a moved
+ * stamp on `js/forms.js`, `js/data.js`, `js/map.js` and nine others -- and
+ * Razor's batch-2 review proved it by editing `js/forms.js` and watching group B
+ * stay green. Two files are what this relay touched; every other stamp moving is
+ * a real difference and must fail. The capture group is what keeps the asset
+ * name in the output, so two different assets can never normalise to the same
+ * string.
  */
+const STAMPED_BY_THIS_RELAY = /(\/styles\.css|\/js\/animations\.js)\?v=[0-9a-f]+/g;
+
 function stripStamps(html) {
-  return html.replace(/\?v=[0-9a-f]+/g, '?v=STAMP');
+  return html.replace(STAMPED_BY_THIS_RELAY, '$1?v=STAMP');
 }
 
 /* ---------------------------------------------------------------- group G */
@@ -369,6 +429,20 @@ function groupB() {
 
 /* ------------------------------------------------------------- groups V, M */
 
+/**
+ * `page.$eval` THROWS when its selector matches nothing, and a throw here lands
+ * in the outer catch and cancels every later assertion in the group -- so one
+ * missing element reports as a single ERROR and hides twenty-nine results that
+ * were never run. That is the worst possible shape for a gate: the output gets
+ * SHORTER when more is wrong. This returns `null` instead, and each check then
+ * fails on its own terms and says which element was absent. (Razor N2, batch 2.)
+ */
+async function evalOne(page, selector, fn) {
+  const handle = await page.$(selector);
+  if (!handle) return null;
+  return handle.evaluate(fn);
+}
+
 /** The index line, composed from the DATA, not read back from the page and not
  *  written as a literal that would have to be edited every time a fact does. */
 function expectedIndex(record, displayName) {
@@ -397,27 +471,30 @@ async function groupsVandM() {
       `got [${units}]`);
 
     for (const id of ['build-clarke', 'build-fixture-layout']) {
-      const ribbon = await page.$eval(`#${id}`, (el) => {
+      const ribbon = await evalOne(page, `#${id}`, (el) => {
         const r = el.querySelector('.case-study__ribbon');
         return r ? r.textContent.trim() : null;
       });
       check('V', `${id} wears a ribbon in preview`, Boolean(ribbon), 'no .case-study__ribbon in the unit');
     }
     check('V', 'clarke\'s ribbon names the pending permission',
-      (await page.$eval('#build-clarke .case-study__ribbon', (e) => e.textContent.trim()))
-        === 'Draft. Not for publication. Permission: pending', 'ribbon text differs');
+      (await evalOne(page, '#build-clarke .case-study__ribbon', (e) => e.textContent.trim()))
+        === 'Draft. Not for publication. Permission: pending', 'ribbon text differs or the ribbon is absent');
 
     // Clarke: text only.
-    const clarkeShape = await page.$eval('#build-clarke', (el) => ({
-      heroes: el.querySelectorAll('.case-study__hero').length,
-      details: el.querySelectorAll('.case-study__details').length,
-      quotes: el.querySelectorAll('.case-study__quote').length,
-      placeholderQuotes: el.querySelectorAll('.case-study__quote--placeholder').length,
-      rows: el.querySelectorAll('.case-study__credit-row').length,
-      index: el.querySelector('.case-study__index').textContent.trim(),
-      labelledby: el.getAttribute('aria-labelledby'),
-      indexId: el.querySelector('.case-study__index').id,
-    }));
+    const clarkeShape = (await evalOne(page, '#build-clarke', (el) => {
+      const idx = el.querySelector('.case-study__index');
+      return {
+        heroes: el.querySelectorAll('.case-study__hero').length,
+        details: el.querySelectorAll('.case-study__details').length,
+        quotes: el.querySelectorAll('.case-study__quote').length,
+        placeholderQuotes: el.querySelectorAll('.case-study__quote--placeholder').length,
+        rows: el.querySelectorAll('.case-study__credit-row').length,
+        index: idx ? idx.textContent.trim() : null,
+        labelledby: el.getAttribute('aria-labelledby'),
+        indexId: idx ? idx.id : null,
+      };
+    })) || { absent: true };
     check('V', 'clarke has no hero plate', clarkeShape.heroes === 0, `got ${clarkeShape.heroes}`);
     check('V', 'clarke has no detail pair', clarkeShape.details === 0, `got ${clarkeShape.details}`);
     check('V', 'clarke has one placeholder quote',
@@ -434,17 +511,20 @@ async function groupsVandM() {
     // The index line is uppercased by CSS, not in the data -- so the assertion
     // above compares the source case and this one proves the transform.
     check('V', 'the index line is uppercased by the stylesheet',
-      (await page.$eval('#build-clarke .case-study__index', (e) => getComputedStyle(e).textTransform)) === 'uppercase',
-      'expected text-transform: uppercase');
+      (await evalOne(page, '#build-clarke .case-study__index', (e) => getComputedStyle(e).textTransform)) === 'uppercase',
+      'expected text-transform: uppercase, or the index line is absent');
 
     // The fixture: plate, pair, three rows.
-    const fixShape = await page.$eval('#build-fixture-layout', (el) => ({
-      heroes: el.querySelectorAll('.case-study__hero').length,
-      figures: el.querySelectorAll('.case-study__details figure').length,
-      captions: el.querySelectorAll('.case-study__details figcaption').length,
-      rows: el.querySelectorAll('.case-study__credit-row').length,
-      index: el.querySelector('.case-study__index').textContent.trim(),
-    }));
+    const fixShape = (await evalOne(page, '#build-fixture-layout', (el) => {
+      const idx = el.querySelector('.case-study__index');
+      return {
+        heroes: el.querySelectorAll('.case-study__hero').length,
+        figures: el.querySelectorAll('.case-study__details figure').length,
+        captions: el.querySelectorAll('.case-study__details figcaption').length,
+        rows: el.querySelectorAll('.case-study__credit-row').length,
+        index: idx ? idx.textContent.trim() : null,
+      };
+    })) || { absent: true };
     check('V', 'the fixture has one hero plate', fixShape.heroes === 1, `got ${fixShape.heroes}`);
     check('V', 'the fixture has two figures with two captions',
       fixShape.figures === 2 && fixShape.captions === 2,
@@ -531,14 +611,14 @@ async function groupsVandM() {
       `got [${briefs}]`);
 
     if (briefs.length === 1) {
-      const brief = await page.$eval('article.case-study--brief', (el) => ({
+      const brief = (await evalOne(page, 'article.case-study--brief', (el) => ({
         heroes: el.querySelectorAll('.case-study__hero').length,
         stories: el.querySelectorAll('.case-study__story').length,
         quotes: el.querySelectorAll('.case-study__quote').length,
         details: el.querySelectorAll('.case-study__details').length,
         credits: el.querySelectorAll('.case-study__credits').length,
         more: el.querySelector('.case-study__more') ? el.querySelector('.case-study__more').getAttribute('href') : null,
-      }));
+      }))) || { absent: true };
       check('V', 'the brief unit is plate + story + link, with no pair or ledger',
         brief.heroes === 1 && brief.stories === 1 && brief.quotes === 0
         && brief.details === 0 && brief.credits === 0,
