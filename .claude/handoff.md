@@ -32,6 +32,14 @@ in this project has already been ruled on, usually for a reason that is not obvi
 
 - **One look at the seven new sub-page heroes on Lee's phone.** Verified live at dd8a0d7 on all seven routes and measured at 40 viewports headless, but the short-viewport case that produced the relay's one CRITICAL (390 CSS px at 640 tall or under, where `min-height` binds and the box collapses 122px) cannot be proven on a real device from here.
 
+- **Relay ssc-website-case-study-clarke, PAUSED at Stage 2 by Lee's quota pause (2026-09-10 evening, relayed by the business session).** Resume point: Razor's batch-1 review is UN-RUN, not failed (the agent died on the 16:40 session-limit 429 before writing `state/relay/ssc-website-case-study-clarke-razor-review-b1.md`); re-spawn Razor from the same inputs (requirement list and diff in the session scratchpad, or regenerate: `git diff 95fb7c2...relay/case-study-clarke-B1`). Do NOT advance past Stage 2 on the strength of Ted's commit. Then batch 2 (the suite with the ten-mutant battery; group B must normalise the `?v=` cache stamps before diffing, and dom-integrity's RUN FAILURE on a client-JS diff needs a recorded reading), behavioural render, Jen Stage 3, 3.5 docs, close. Ted's batch 1 is commit 2bd97d2 on `relay/case-study-clarke-B1` in the worker worktree `worktrees/ssc-website/relay-ssc-website-case-study-clarke`. A background `rhythm:test` Ted started there was still running at pause time (2 processes) and MUTATES files then restores them: confirm it has exited (`pgrep -f rhythm.test`) before staging anything there, or kill it deliberately and say so. Pack: `~/marvin/state/relay/ssc-website-case-study-clarke-pack.json`; plan and critics at `~/.claude/plans/case-study-clarke*.md` (outside the repo on purpose: the story paragraph is the client's personal information before consent). Nothing merged, pushed or deployed; the branch is not pushed before Lee sees the piece.
+
+- **Record Lee's 2026-09-10 answers through the writers when unparked:** charter APPROVED as written ("Let's approve the website charter"; nothing changes on disk, record the ratification and report charter-adopted); nav mark E1 closed as VETOED (badge kept; Saul's finding: 3.84 px cap height at a 22 px nav is under the 5 px floor); favicon: the 64 px badge stays, monograms are a later design session; Formspree 90-day retention and the Cloudinary account deletion are OWED BY LEE (his dashboards; deletion is irreversible; never prompt for credentials), and the privacy page's retention promise is not true until the Formspree setting is made.
+
+- **Lee, 2026-09-10: read-only audit of the fifteen tracked `.claude/plans/` files on main for client-identifying content** (his words: "Let's do an audit for the public website as far as accidentally exposing client names"). READ them, do not grep them; report findings; remove nothing without his say; rewrite no git history.
+
+- **Clarke case-study email:** add the three consent sentences to Lee's unsent Gmail draft of 2026-09-10 in his voice (the page is permanently public and search-indexed on secretsaunacompany.ca; "leave the whole build off the site" is a fine answer; he can withdraw any time, takedown within 48 hours, caches lag), then Pierre reviews the wording and the proposed DECISIONS entry ("no client build is published without express consent covering the description, the name and the photographs as three separate answers, recorded with its date and the wording asked; withdrawal honoured within 48 hours") under BC PIPA. Lee sends. Nothing client-facing leaves a session.
+
 ## Open questions awaiting Lee
 
 | Question | Why it matters | Raised |
@@ -57,6 +65,10 @@ in this project has already been ruled on, usually for a reason that is not obvi
 ---
 
 ## Log (newest first)
+
+### 2026-09-10 (evening) -- PAUSED by Lee: "we can pause the coordinator and its associated sessions; we've blown through half of our week's quota in a few hours"
+
+Stopped between relay Stage 1 and Stage 2 of `ssc-website-case-study-clarke`. Done today: charter, DECISIONS and hand-off verified present on main (the brief was written from a stale primary checkout; the primary sits on `relay/cloudinary-migration` only because orchestrator-main holds `main`); charter put to Lee and APPROVED; post-deploy tail sent as one decision and answered (all recommendations taken); plan for the doc 10 s7 case-study unit written and passed after three Fable critic rounds (round 1: the story named the client and his partner under a gate that renders anonymously; round 2: the privacy fix had moved into the plan files themselves in a tracked directory of a public repo; round 3: pass); Petra's Stage 0.3 pre-check moved the story out of the repo entirely and gated story and quote on the named answers; Jen's Stage 0.7 spec on disk; Ted's batch 1 committed (2bd97d2, eight files, build/lint/preview green, production HTML unchanged). Waiting on: Lee's unpark (coordinator item ssc-website-10), then the Razor re-run. See Owed right now for the exact resume point and the four queued items.
 
 ### 2026-09-10 -- coordinator-driven session (website-charter-casestudy)
 
