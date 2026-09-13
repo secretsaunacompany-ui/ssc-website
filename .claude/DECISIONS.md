@@ -92,6 +92,21 @@ First contact is a call. Lee's 2026-08-02 dictation said distance was no problem
 
 No attributable client testimonial and no Google review is on file (local-seo-action-plan.md). The homepage's three quotes carry 'Private Client, Squamish BC', a place claim nobody can back. Until the review campaign and the case-study replies produce a name, the section shows the two strongest quotes attributed plainly as 'Client'. A named testimonial replaces one of them; nothing unnamed is added.
 
+### The charter is ratified as written; it is the drift measure and only Lee approves a rewrite.
+*2026-09-10, Lee*
+
+Asked whether the charter at `.claude/CHARTER.md` (committed 2026-08-23, 13fb8ad) stated the project's purpose correctly, Lee answered "Let's approve the website charter" with no amendment. Nothing changed on disk; what changed is that the file is now ratified rather than merely present, so its purpose, non-goals and three drift tripwires are the standard a drift review measures against. A session may quote it and may propose an amendment; only Lee approves a rewrite, because a charter edited to match what got built is drift with the evidence destroyed.
+
+### The nav keeps the badge; Saul's E1 wordmark is vetoed on legibility.
+*2026-09-10, Lee*
+
+The alternative mark on the unmerged branch `relay/redesign-wave-a-mark` was measured at a 3.84 px cap height inside the 22 px nav, under the 5 px floor legibility needs at that size, so it would have shipped a mark nobody can read on a phone. Lee closed it: the existing badge stays and E1 is not revisited as a nav mark. This also resolves the open question row that carried an unsupported "(resolved 2026-09-07)" marker with no recorded resolution behind it.
+
+### The favicon stays the 64 px badge; a monogram is a later design session, not a side quest.
+*2026-09-10, Lee*
+
+`favicon-64.png` renders the badge legibly at tab size and nothing is broken about it. Monogram or lettermark alternatives are real design work with their own review, not something to slip into an unrelated relay, so the question is closed rather than left open as a standing invitation to redesign it in passing.
+
 ---
 
 ## Engineering pins
@@ -158,3 +173,8 @@ The four S2 gallery files named Gemini_Generated_Image_* and nano-banana-* are p
 *2026-09-05, Lee*
 
 The fact-gathering questions in docs/redesign-2026-07/20-fact-gathering-questions.md were answered by Lee in three dictated rounds on the evening of 2026-08-02, transcribed verbatim at ~/marvin/state/ssc-website-doc20-lee-answers-2026-08-02.md with a structured extraction (all of Part A and Part B, D47-D50; open only B32, the manufacturer heater terms SSC asks for itself, and C39-45, the case studies pending client replies). The website ROADMAP was never updated and described WP-2, WP-3 and WP-4 as blocked on those answers for a month; a grill on 2026-09-05 re-asked four of them before the transcript surfaced. George works from that transcript plus the 2026-09-05 grill capture, not from doc 20's questions. A session that reads the ROADMAP alone and re-asks Lee is repeating a mistake already made twice.
+
+### The privacy page's retention promise is not true until Lee sets the Formspree auto-delete.
+*2026-09-10, Lee, Petra item 3*
+
+The site tells visitors their quote data is not kept indefinitely, and the 90-day auto-delete that would make that true is a Formspree dashboard setting that has not been made. Until it is, the page states a retention practice the system does not implement. Both that setting and the Cloudinary account deletion are Lee's own dashboards and stay with him: the deletion is irreversible, and no session prompts for or handles those credentials.
