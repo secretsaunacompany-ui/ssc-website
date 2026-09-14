@@ -55,7 +55,7 @@ function runBuild(dir) {
  */
 export const WORKING_COPY_EXCLUDE = new Set([
   'node_modules', '.git', 'dist', '_site', '.visual-diff', '.netlify',
-  '.cache', 'tmp', '.env',
+  '.cache', 'tmp', '.env', '.case-study-preview',
 ]);
 
 /**

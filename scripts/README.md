@@ -542,6 +542,88 @@ and exits 2** rather than passing vacuously.
 
 ---
 
+## case-study — is a client's build still unpublished?
+
+`npm run case-study:test`
+
+The case-study unit renders a client's name, a description of his house, his
+words and photographs of his garden. He has not said yes. Everything rests on
+one string in `src/_data/buildRecords.json` and on `isPublishable` in
+`src/_data/builds.js`, and the failure mode is silent in the direction that
+matters: no error, the page simply renders, and it is in a search index before
+anyone notices.
+
+Five groups, each a different kind of evidence:
+
+| Group | Claim | What controls it |
+|---|---|---|
+| **G** | the gate is right | pure functions on synthetic inputs — `""`, absent, `"Named"`, `"named "`, a number, an array. Expectations are spec literals, never values the code computed. |
+| **P** | the gate is the one the page consults | `dist/`'s `#build-*` ids against the publishable ids in the data, read with the test's **own** literal set. Plus two absolutes: no ribbon markup in production, ever; no `#build-fixture-layout` in production, ever. |
+| **B** | this feature changed nothing at all | production HTML against a build of the **merge-base with main** — a different commit, so no mutation of the working tree can move both sides. |
+| **V** | the unit is correct where it does render | the gated preview build, in a real browser at 1440 / 768 / 390. |
+| **M** | house rules hold | no em dash, no heading inside a unit, non-empty `alt` on every image. |
+
+**Group P has a precondition and it fails loudly.** If every record were
+publishable, its set-equality would compare two identical full sets and say
+nothing whatever about the loop. The permanent layout fixture is the sentinel
+that keeps it non-vacuous after the first real permission flip.
+
+**Group B normalises exactly one thing and normalises it on both sides:**
+`?v=<hash>` on `/styles.css` and `/js/animations.js`. Those stamps are a
+function of assets this feature is allowed to change; every other byte still has
+to match. It is not a substring check for `case-study` — that assertion exists
+too, separately, and is the weaker of the two.
+
+**Why V measures computed styles rather than reading the stylesheet.**
+`npm run lint:css` passing is not evidence that CSS is live. Two declarations in
+batch 1 of this relay were dead in the cascade (a later equal-specificity
+shorthand won) and stylelint said nothing, because a stylesheet's text and the
+value that reaches an element are different claims. V reads
+`getComputedStyle().marginTop` off the index line and the detail pair at all
+three widths. A test that greps the stylesheet instead is an assertion that
+cannot fail.
+
+### Running it
+
+It **builds both trees itself** — production into `dist/`, the gated preview
+into `.case-study-preview/` — so it needs no prior `npm run build` and it works
+inside `scripts/mutation-battery.mjs`, whose disposable worktree copy has
+neither. Both builds go through `node_modules/.bin/eleventy`, never `npx`, for
+the reason `scripts/lib/build-ref.mjs` records.
+
+It is therefore **serial**. Never run it beside `fonts:test`, `rhythm:test`,
+`stacking:check` or `image-audit`: those read `dist/` while this one is deleting
+and rebuilding it.
+
+**After a killed run (timeout, Ctrl-C), run `git worktree prune`.** Group B's
+`buildRef` registers a temp git worktree and removes it in a `finally`; a
+SIGKILL skips the `finally` and the registration survives in `.git` pointing at
+a directory that is gone.
+
+### `DIST_DIR`
+
+`image-audit` and `stacking-probe` both hardcoded `dist/`. They now read
+`DIST_DIR` (default `dist`), so they can be aimed at the preview tree:
+
+```
+DIST_DIR=.case-study-preview npm run image-audit
+DIST_DIR=.case-study-preview npm run stacking:check
+```
+
+Every vacuity guard still applies to whatever tree is named, so pointing either
+at an empty or wrong directory fails loudly rather than passing.
+
+### dom-integrity refuses on this branch, and that is the documented exit
+
+Batch 1 added one selector string to `GROUP_SELECTOR` in `js/animations.js`.
+`dom-integrity` refuses to run when client JS differs between baseline and
+candidate, so it reports a RUN FAILURE here. **Do not whitelist it and do not
+patch the harness.** `.case-study__credits` matches zero elements on every
+production page, and the HTML-identity claim this relay needs is carried by
+group B instead — which is the stronger statement of the two anyway.
+
+---
+
 ## For developers: how determinism is achieved
 
 Two runs of an unchanged site must produce byte-identical screenshots, or the
